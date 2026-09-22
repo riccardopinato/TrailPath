@@ -47,11 +47,19 @@ class Activities extends Table {
 
   DateTimeColumn get endedAt => dateTime().nullable()();
 
+  DateTimeColumn get updatedAt => dateTime().nullable()();
+
   RealColumn get distanceMeters => real().withDefault(const Constant(0))();
 
   RealColumn get ascentMeters => real().withDefault(const Constant(0))();
 
   IntColumn get movingSeconds => integer().withDefault(const Constant(0))();
+
+  TextColumn get profile => text().withDefault(const Constant('hiking'))();
+
+  TextColumn get encodedGeometry => text().nullable()();
+
+  BoolColumn get isPaused => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -85,7 +93,20 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.memory() => AppDatabase._(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (migrator) => migrator.createAll(),
+        onUpgrade: (migrator, from, to) async {
+          if (from < 2) {
+            await migrator.addColumn(activities, activities.updatedAt);
+            await migrator.addColumn(activities, activities.profile);
+            await migrator.addColumn(activities, activities.encodedGeometry);
+            await migrator.addColumn(activities, activities.isPaused);
+          }
+        },
+      );
 
   Stream<List<SavedRoute>> watchSavedRoutes() {
     return (select(savedRoutes)
@@ -206,6 +227,92 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  Future<String> createActivityDraft({
+    required RouteProfile profile,
+  }) async {
+    final now = DateTime.now();
+    final id = 'activity-${now.microsecondsSinceEpoch}';
+    await into(activities).insert(
+      ActivitiesCompanion.insert(
+        id: id,
+        startedAt: now,
+        updatedAt: Value(now),
+        profile: Value(profile.name),
+        isPaused: const Value(false),
+      ),
+    );
+    return id;
+  }
+
+  Future<void> updateActivityDraft({
+    required String activityId,
+    required TrackRecorderSnapshot snapshot,
+  }) async {
+    await (update(activities)..where((row) => row.id.equals(activityId))).write(
+      ActivitiesCompanion(
+        updatedAt: Value(DateTime.now()),
+        distanceMeters: Value(snapshot.distanceMeters),
+        ascentMeters: Value(snapshot.ascentMeters),
+        movingSeconds: Value(snapshot.elapsed.inSeconds),
+        encodedGeometry: Value(_encodePoints(snapshot.points)),
+        isPaused: Value(snapshot.status == TrackRecorderStatus.paused),
+      ),
+    );
+  }
+
+  Future<void> completeActivity({
+    required String activityId,
+    required String name,
+    required TrackRecorderSnapshot snapshot,
+  }) async {
+    await (update(activities)..where((row) => row.id.equals(activityId))).write(
+      ActivitiesCompanion(
+        name: Value(name),
+        endedAt: Value(DateTime.now()),
+        updatedAt: Value(DateTime.now()),
+        distanceMeters: Value(snapshot.distanceMeters),
+        ascentMeters: Value(snapshot.ascentMeters),
+        movingSeconds: Value(snapshot.elapsed.inSeconds),
+        encodedGeometry: Value(_encodePoints(snapshot.points)),
+        isPaused: const Value(false),
+      ),
+    );
+  }
+
+  Future<void> discardActivity(String activityId) async {
+    await (delete(activities)..where((row) => row.id.equals(activityId))).go();
+  }
+
+  Future<Activity?> latestRecoverableActivity() {
+    return (select(activities)
+          ..where((row) => row.endedAt.isNull())
+          ..orderBy([(row) => OrderingTerm.desc(row.startedAt)])
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
+  Stream<List<Activity>> watchCompletedActivities() {
+    return (select(activities)
+          ..where((row) => row.endedAt.isNotNull())
+          ..orderBy([(row) => OrderingTerm.desc(row.startedAt)]))
+        .watch();
+  }
+
+  List<GeoPoint> decodeActivityPoints(Activity activity) {
+    return _decodePoints(activity.encodedGeometry);
+  }
+
+  GpxDocument activityToGpx(Activity activity) {
+    final points = decodeActivityPoints(activity);
+    if (points.length < 2) {
+      throw const FormatException('Activity geometry is incomplete.');
+    }
+    return GpxDocument(
+      name: activity.name ?? 'TrailPath activity',
+      points: points,
+    );
+  }
+
   Future<void> deleteSavedRoute(String routeId) async {
     await transaction(() async {
       await (delete(waypoints)..where((row) => row.routeId.equals(routeId)))
@@ -221,4 +328,54 @@ LazyDatabase _openConnection() {
     final file = File('${directory.path}/trailpath.sqlite');
     return NativeDatabase.createInBackground(file);
   });
+}
+
+
+String _encodePoints(List<GeoPoint> points) {
+  return jsonEncode(
+    points
+        .map(
+          (point) => {
+            'lat': point.latitude,
+            'lon': point.longitude,
+            if (point.elevationMeters != null) 'ele': point.elevationMeters,
+            if (point.timestamp != null)
+              'time': point.timestamp!.toUtc().toIso8601String(),
+          },
+        )
+        .toList(growable: false),
+  );
+}
+
+List<GeoPoint> _decodePoints(String? encodedGeometry) {
+  if (encodedGeometry == null || encodedGeometry.isEmpty) {
+    return const [];
+  }
+  final decoded = jsonDecode(encodedGeometry);
+  if (decoded is! List) {
+    return const [];
+  }
+
+  final points = <GeoPoint>[];
+  for (final entry in decoded) {
+    if (entry is! Map) {
+      continue;
+    }
+    final latitude = entry['lat'];
+    final longitude = entry['lon'];
+    if (latitude is! num || longitude is! num) {
+      continue;
+    }
+    final elevation = entry['ele'];
+    final time = entry['time'];
+    points.add(
+      GeoPoint(
+        latitude: latitude.toDouble(),
+        longitude: longitude.toDouble(),
+        elevationMeters: elevation is num ? elevation.toDouble() : null,
+        timestamp: time is String ? DateTime.tryParse(time) : null,
+      ),
+    );
+  }
+  return List<GeoPoint>.unmodifiable(points);
 }
