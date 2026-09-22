@@ -22,6 +22,8 @@ class RoutePlannerState {
     this.isRouting = false,
     this.isSnapped = false,
     this.routingSource = 'local',
+    this.elevationProfile = const ElevationProfile.unavailable(),
+    this.isElevationLoading = false,
   });
 
   final List<GeoPoint> points;
@@ -34,9 +36,17 @@ class RoutePlannerState {
   final bool isRouting;
   final bool isSnapped;
   final String routingSource;
+  final ElevationProfile elevationProfile;
+  final bool isElevationLoading;
 
   bool get canSave =>
       points.length >= 2 && geometry.length >= 2 && distanceMeters > 0;
+
+  bool get hasElevation => elevationProfile.isAvailable;
+
+  double get ascentMeters => elevationProfile.ascentMeters;
+
+  double get descentMeters => elevationProfile.descentMeters;
 
   RoutePlannerState copyWith({
     List<GeoPoint>? points,
@@ -49,6 +59,8 @@ class RoutePlannerState {
     bool? isRouting,
     bool? isSnapped,
     String? routingSource,
+    ElevationProfile? elevationProfile,
+    bool? isElevationLoading,
   }) {
     return RoutePlannerState(
       points: points ?? this.points,
@@ -61,6 +73,8 @@ class RoutePlannerState {
       isRouting: isRouting ?? this.isRouting,
       isSnapped: isSnapped ?? this.isSnapped,
       routingSource: routingSource ?? this.routingSource,
+      elevationProfile: elevationProfile ?? this.elevationProfile,
+      isElevationLoading: isElevationLoading ?? this.isElevationLoading,
     );
   }
 }
@@ -69,6 +83,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
   final List<List<GeoPoint>> _undoStack = [];
   final List<List<GeoPoint>> _redoStack = [];
   int _routingGeneration = 0;
+  int _elevationGeneration = 0;
 
   @override
   RoutePlannerState build() => const RoutePlannerState();
@@ -111,17 +126,21 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       return;
     }
 
+    _elevationGeneration++;
     state = state.copyWith(
       profile: profile,
       isSnapped: false,
       routingSource: 'local',
       estimatedDuration: _estimateDuration(state.distanceMeters, profile),
+      elevationProfile: const ElevationProfile.unavailable(),
+      isElevationLoading: false,
     );
     unawaited(_refreshRoute());
   }
 
   void resetAfterSave() {
     _routingGeneration++;
+    _elevationGeneration++;
     _undoStack.clear();
     _redoStack.clear();
     state = RoutePlannerState(profile: state.profile);
@@ -135,6 +154,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
   }
 
   void _applyPoints(List<GeoPoint> points) {
+    _elevationGeneration++;
     final immutable = List<GeoPoint>.unmodifiable(points);
     final distance = calculateRouteDistanceMeters(immutable);
 
@@ -148,6 +168,8 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       isRouting: immutable.length >= 2,
       isSnapped: false,
       routingSource: 'local',
+      elevationProfile: const ElevationProfile.unavailable(),
+      isElevationLoading: false,
     );
 
     unawaited(_refreshRoute());
@@ -164,6 +186,8 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         isRouting: false,
         isSnapped: false,
         routingSource: 'local',
+        elevationProfile: const ElevationProfile.unavailable(),
+        isElevationLoading: false,
       );
       return;
     }
@@ -190,7 +214,11 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         isRouting: false,
         isSnapped: plan.isSnapped,
         routingSource: plan.routingSource,
+        elevationProfile: const ElevationProfile.unavailable(),
+        isElevationLoading: true,
       );
+
+      unawaited(_refreshElevation(generation, plan.geometry));
     } on Object {
       if (generation != _routingGeneration) {
         return;
@@ -204,6 +232,41 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         isRouting: false,
         isSnapped: false,
         routingSource: 'local',
+        elevationProfile: const ElevationProfile.unavailable(),
+        isElevationLoading: true,
+      );
+
+      unawaited(_refreshElevation(generation, waypoints));
+    }
+  }
+
+  Future<void> _refreshElevation(
+    int routingGeneration,
+    List<GeoPoint> geometry,
+  ) async {
+    final elevationGeneration = ++_elevationGeneration;
+
+    try {
+      final profile = await ref.read(elevationEngineProvider).resolve(geometry);
+
+      if (routingGeneration != _routingGeneration ||
+          elevationGeneration != _elevationGeneration) {
+        return;
+      }
+
+      state = state.copyWith(
+        elevationProfile: profile,
+        isElevationLoading: false,
+      );
+    } on Object {
+      if (routingGeneration != _routingGeneration ||
+          elevationGeneration != _elevationGeneration) {
+        return;
+      }
+
+      state = state.copyWith(
+        elevationProfile: const ElevationProfile.unavailable(),
+        isElevationLoading: false,
       );
     }
   }
