@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:trail_path/core/config/map_config.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
@@ -24,7 +25,6 @@ class BackToCarScreen extends ConsumerStatefulWidget {
 }
 
 class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
-  static const _styleUrl = 'https://demotiles.maplibre.org/style.json';
 
   MapLibreMapController? _mapController;
   StreamSubscription<PositionSample>? _positionSubscription;
@@ -215,7 +215,7 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
             child: _runningWidgetTest
                 ? const ColoredBox(color: Color(0xFFDDE8D9))
                 : MapLibreMap(
-                    styleString: _styleUrl,
+                    styleString: MapConfig.styleUrl,
                     initialCameraPosition: CameraPosition(
                       target: LatLng(first.latitude, first.longitude),
                       zoom: 15,
