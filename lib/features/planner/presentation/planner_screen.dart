@@ -163,14 +163,18 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
 
         notifier.setFollowing(true);
         await _centerOn(location.sample!, bearing: true);
+        return;
       case LocationUiStatus.permissionDenied:
         await notifier.requestAccess();
+        return;
       case LocationUiStatus.permissionDeniedForever:
       case LocationUiStatus.serviceDisabled:
         await notifier.openRelevantSettings();
+        return;
       case LocationUiStatus.unavailable:
       case LocationUiStatus.checking:
         await notifier.retry();
+        return;
     }
   }
 
@@ -180,16 +184,20 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     switch (location.status) {
       case LocationUiStatus.permissionDenied:
         await notifier.requestAccess();
+        return;
       case LocationUiStatus.permissionDeniedForever:
       case LocationUiStatus.serviceDisabled:
         await notifier.openRelevantSettings();
+        return;
       case LocationUiStatus.unavailable:
         await notifier.retry();
+        return;
       case LocationUiStatus.ready:
         if (location.sample != null) {
           notifier.setFollowing(true);
           await _centerOn(location.sample!, bearing: true);
         }
+        return;
       case LocationUiStatus.checking:
         return;
     }
