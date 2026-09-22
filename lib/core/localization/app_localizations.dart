@@ -51,6 +51,24 @@ class AppLocalizations {
   String get locationPermissionNeeded => _value('locationPermissionNeeded');
   String get locationReady => _value('locationReady');
   String get locationWaiting => _value('locationWaiting');
+  String get tapMapContinue => _value('tapMapContinue');
+  String get pointsShort => _value('pointsShort');
+  String get waypoints => _value('waypoints');
+  String get undo => _value('undo');
+  String get redo => _value('redo');
+  String get clear => _value('clear');
+  String get saveRoute => _value('saveRoute');
+  String get save => _value('save');
+  String get cancel => _value('cancel');
+  String get route => _value('route');
+  String get routeName => _value('routeName');
+  String get routeSaved => _value('routeSaved');
+  String get profileHiking => _value('profileHiking');
+  String get profileTrailRun => _value('profileTrailRun');
+  String get profileWalking => _value('profileWalking');
+  String get profileMtb => _value('profileMtb');
+  String get profileCycling => _value('profileCycling');
+  String get profileDogWalk => _value('profileDogWalk');
 
   static const Map<String, Map<String, String>> _values = {
     'it': {
@@ -76,6 +94,24 @@ class AppLocalizations {
       'locationPermissionNeeded': 'Consenti l’accesso alla posizione',
       'locationReady': 'GPS attivo',
       'locationWaiting': 'In attesa della posizione',
+      'tapMapContinue': 'Tocca la mappa per aggiungere altri punti',
+      'pointsShort': 'pt',
+      'waypoints': 'Punti',
+      'undo': 'Annulla',
+      'redo': 'Ripristina',
+      'clear': 'Pulisci',
+      'saveRoute': 'Salva percorso',
+      'save': 'Salva',
+      'cancel': 'Annulla',
+      'route': 'Percorso',
+      'routeName': 'Nome percorso',
+      'routeSaved': 'Percorso salvato',
+      'profileHiking': 'Trekking',
+      'profileTrailRun': 'Trail run',
+      'profileWalking': 'Passeggiata',
+      'profileMtb': 'MTB',
+      'profileCycling': 'Bici',
+      'profileDogWalk': 'Cane',
     },
     'en': {
       'planner': 'Plan',
@@ -100,6 +136,24 @@ class AppLocalizations {
       'locationPermissionNeeded': 'Allow location access',
       'locationReady': 'GPS active',
       'locationWaiting': 'Waiting for location',
+      'tapMapContinue': 'Tap the map to add more points',
+      'pointsShort': 'pts',
+      'waypoints': 'Points',
+      'undo': 'Undo',
+      'redo': 'Redo',
+      'clear': 'Clear',
+      'saveRoute': 'Save route',
+      'save': 'Save',
+      'cancel': 'Cancel',
+      'route': 'Route',
+      'routeName': 'Route name',
+      'routeSaved': 'Route saved',
+      'profileHiking': 'Hiking',
+      'profileTrailRun': 'Trail run',
+      'profileWalking': 'Walking',
+      'profileMtb': 'MTB',
+      'profileCycling': 'Cycling',
+      'profileDogWalk': 'Dog walk',
     },
     'es': {
       'planner': 'Planificar',
@@ -124,6 +178,24 @@ class AppLocalizations {
       'locationPermissionNeeded': 'Permite el acceso a la ubicación',
       'locationReady': 'GPS activo',
       'locationWaiting': 'Esperando ubicación',
+      'tapMapContinue': 'Toca el mapa para añadir más puntos',
+      'pointsShort': 'pts',
+      'waypoints': 'Puntos',
+      'undo': 'Deshacer',
+      'redo': 'Rehacer',
+      'clear': 'Limpiar',
+      'saveRoute': 'Guardar ruta',
+      'save': 'Guardar',
+      'cancel': 'Cancelar',
+      'route': 'Ruta',
+      'routeName': 'Nombre de la ruta',
+      'routeSaved': 'Ruta guardada',
+      'profileHiking': 'Senderismo',
+      'profileTrailRun': 'Trail run',
+      'profileWalking': 'Paseo',
+      'profileMtb': 'MTB',
+      'profileCycling': 'Bici',
+      'profileDogWalk': 'Perro',
     },
     'fr': {
       'planner': 'Planifier',
@@ -148,6 +220,24 @@ class AppLocalizations {
       'locationPermissionNeeded': 'Autorisez l’accès à la position',
       'locationReady': 'GPS actif',
       'locationWaiting': 'En attente de la position',
+      'tapMapContinue': 'Touchez la carte pour ajouter des points',
+      'pointsShort': 'pts',
+      'waypoints': 'Points',
+      'undo': 'Annuler',
+      'redo': 'Rétablir',
+      'clear': 'Effacer',
+      'saveRoute': 'Enregistrer',
+      'save': 'Enregistrer',
+      'cancel': 'Annuler',
+      'route': 'Parcours',
+      'routeName': 'Nom du parcours',
+      'routeSaved': 'Parcours enregistré',
+      'profileHiking': 'Randonnée',
+      'profileTrailRun': 'Trail',
+      'profileWalking': 'Marche',
+      'profileMtb': 'VTT',
+      'profileCycling': 'Vélo',
+      'profileDogWalk': 'Chien',
     },
     'pt': {
       'planner': 'Planear',
@@ -172,6 +262,24 @@ class AppLocalizations {
       'locationPermissionNeeded': 'Permita o acesso à localização',
       'locationReady': 'GPS ativo',
       'locationWaiting': 'A aguardar localização',
+      'tapMapContinue': 'Toque no mapa para adicionar mais pontos',
+      'pointsShort': 'pts',
+      'waypoints': 'Pontos',
+      'undo': 'Anular',
+      'redo': 'Refazer',
+      'clear': 'Limpar',
+      'saveRoute': 'Guardar percurso',
+      'save': 'Guardar',
+      'cancel': 'Cancelar',
+      'route': 'Percurso',
+      'routeName': 'Nome do percurso',
+      'routeSaved': 'Percurso guardado',
+      'profileHiking': 'Caminhada',
+      'profileTrailRun': 'Trail run',
+      'profileWalking': 'Passeio',
+      'profileMtb': 'MTB',
+      'profileCycling': 'Bicicleta',
+      'profileDogWalk': 'Cão',
     },
   };
 }
