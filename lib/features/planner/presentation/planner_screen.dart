@@ -57,6 +57,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   }
 
   Future<void> _initializeLocation() async {
+    if (mounted) {
+      setState(() {
+        _locationBusy = true;
+        _locationError = null;
+      });
+    }
+
     if (_runningWidgetTest) {
       if (mounted) {
         setState(() => _locationBusy = false);
@@ -98,6 +105,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
       setState(() {
         _permissionGranted = true;
+        _locationServiceEnabled = true;
         _locationBusy = false;
         _position = current;
         _locationError = null;
@@ -142,6 +150,27 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         zoom,
       ),
     );
+  }
+
+  Future<void> _resolveLocationIssue() async {
+    if (_locationBusy) {
+      return;
+    }
+
+    try {
+      if (!_locationServiceEnabled) {
+        await _locationEngine.openLocationSettings();
+      } else if (!_permissionGranted) {
+        await _locationEngine.openAppSettings();
+      }
+    } on Object {
+      // Re-check below and surface a localized status chip if access remains
+      // unavailable.
+    }
+
+    if (mounted) {
+      await _initializeLocation();
+    }
   }
 
   Future<void> _centerOnUser() async {
@@ -667,7 +696,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                             ? strings.locationUnavailable
                             : strings.locationPermissionNeeded,
                     dark: dark,
-                    onTap: _initializeLocation,
+                    onTap: _resolveLocationIssue,
                   ),
               ],
             ),
