@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/maps/map_config.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/outdoor/application/battery_mode_controller.dart';
 
@@ -24,7 +25,7 @@ class BackToCarScreen extends ConsumerStatefulWidget {
 }
 
 class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
-  static const _styleUrl = 'https://demotiles.maplibre.org/style.json';
+  static const _styleUrl = MapConfig.styleUrl;
 
   MapLibreMapController? _mapController;
   StreamSubscription<PositionSample>? _positionSubscription;
