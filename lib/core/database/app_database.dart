@@ -152,6 +152,12 @@ class AppDatabase extends _$AppDatabase {
         .watch();
   }
 
+  Future<List<SavedRoute>> listSavedRoutes() {
+    return (select(savedRoutes)
+          ..orderBy([(row) => OrderingTerm.desc(row.updatedAt)]))
+        .get();
+  }
+
   Future<String> savePlannedRoute({
     required String name,
     required String profile,
