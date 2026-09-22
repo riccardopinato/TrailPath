@@ -297,6 +297,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
               )
               .toList(growable: false),
           distanceMeters: planner.distanceMeters,
+          ascentMeters: planner.ascentMeters,
+          descentMeters: planner.descentMeters,
           estimatedDuration: planner.estimatedDuration,
         );
 
@@ -576,7 +578,7 @@ class _PlannerCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'v0.3.1',
+                  'v0.4.0',
                   style: TextStyle(
                     color: scheme.onPrimaryContainer,
                     fontSize: 11,
@@ -641,6 +643,13 @@ class _PlannerCard extends StatelessWidget {
             strings: strings,
             planner: planner,
           ),
+          if (planner.points.length >= 2) ...[
+            const SizedBox(height: 12),
+            _ElevationPanel(
+              strings: strings,
+              planner: planner,
+            ),
+          ],
           const SizedBox(height: 10),
           Row(
             children: [
@@ -737,6 +746,326 @@ String _formatDuration(Duration duration) {
   }
   final minuteText = minutes.toString().padLeft(2, '0');
   return '$hours h $minuteText';
+}
+
+class _ElevationPanel extends StatefulWidget {
+  const _ElevationPanel({
+    required this.strings,
+    required this.planner,
+  });
+
+  final AppLocalizations strings;
+  final RoutePlannerState planner;
+
+  @override
+  State<_ElevationPanel> createState() => _ElevationPanelState();
+}
+
+class _ElevationPanelState extends State<_ElevationPanel> {
+  int? _selectedIndex;
+
+  @override
+  void didUpdateWidget(covariant _ElevationPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final sampleCount = widget.planner.elevationProfile.samples.length;
+    if (_selectedIndex != null && _selectedIndex! >= sampleCount) {
+      _selectedIndex = sampleCount == 0 ? null : sampleCount - 1;
+    }
+  }
+
+  void _selectAt(double dx, double width) {
+    final samples = widget.planner.elevationProfile.samples;
+    if (samples.isEmpty || width <= 0) {
+      return;
+    }
+    final normalized = (dx / width).clamp(0.0, 1.0);
+    final index = (normalized * (samples.length - 1)).round();
+    setState(() => _selectedIndex = index);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final planner = widget.planner;
+    final profile = planner.elevationProfile;
+
+    if (planner.isElevationLoading) {
+      return Row(
+        children: [
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            widget.strings.elevationLoading,
+            style: TextStyle(
+              color: scheme.onSurfaceVariant,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (!profile.isAvailable || profile.samples.length < 2) {
+      return Row(
+        children: [
+          Icon(
+            Icons.terrain_outlined,
+            size: 17,
+            color: scheme.onSurfaceVariant,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              widget.strings.elevationUnavailable,
+              style: TextStyle(
+                color: scheme.onSurfaceVariant,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    final selected = profile.samples[
+        (_selectedIndex ?? 0).clamp(0, profile.samples.length - 1)];
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.52),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  widget.strings.elevationProfile,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              Text(
+                '+${profile.ascentMeters.round()} m',
+                style: TextStyle(
+                  color: scheme.primary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                '−${profile.descentMeters.round()} m',
+                style: TextStyle(
+                  color: scheme.onSurfaceVariant,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapDown: (details) =>
+                    _selectAt(details.localPosition.dx, constraints.maxWidth),
+                onHorizontalDragStart: (details) =>
+                    _selectAt(details.localPosition.dx, constraints.maxWidth),
+                onHorizontalDragUpdate: (details) =>
+                    _selectAt(details.localPosition.dx, constraints.maxWidth),
+                child: SizedBox(
+                  height: 88,
+                  child: CustomPaint(
+                    painter: _ElevationProfilePainter(
+                      profile: profile,
+                      selectedIndex: _selectedIndex,
+                      lineColor: scheme.primary,
+                      fillColor: scheme.primary.withValues(alpha: 0.14),
+                      guideColor:
+                          scheme.onSurfaceVariant.withValues(alpha: 0.35),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 7),
+          Row(
+            children: [
+              _ElevationValue(
+                label: widget.strings.elevation,
+                value:
+                    '${selected.point.elevationMeters?.round() ?? 0} m',
+              ),
+              const SizedBox(width: 16),
+              _ElevationValue(
+                label: widget.strings.distance,
+                value: _formatDistance(selected.distanceMeters),
+              ),
+              const SizedBox(width: 16),
+              _ElevationValue(
+                label: widget.strings.grade,
+                value:
+                    '${selected.gradePercent >= 0 ? '+' : ''}${selected.gradePercent.toStringAsFixed(1)}%',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ElevationValue extends StatelessWidget {
+  const _ElevationValue({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: scheme.onSurfaceVariant,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 1),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ElevationProfilePainter extends CustomPainter {
+  const _ElevationProfilePainter({
+    required this.profile,
+    required this.selectedIndex,
+    required this.lineColor,
+    required this.fillColor,
+    required this.guideColor,
+  });
+
+  final ElevationProfile profile;
+  final int? selectedIndex;
+  final Color lineColor;
+  final Color fillColor;
+  final Color guideColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final samples = profile.samples;
+    if (samples.length < 2 || size.width <= 0 || size.height <= 0) {
+      return;
+    }
+
+    final minElevation = profile.minElevationMeters;
+    final elevationSpan =
+        (profile.maxElevationMeters - minElevation).abs() < 1
+            ? 1.0
+            : profile.maxElevationMeters - minElevation;
+    final totalDistance = samples.last.distanceMeters <= 0
+        ? 1.0
+        : samples.last.distanceMeters;
+
+    Offset pointFor(ElevationSample sample) {
+      final x = sample.distanceMeters / totalDistance * size.width;
+      final normalized =
+          (sample.point.elevationMeters! - minElevation) / elevationSpan;
+      final y = size.height - (normalized * (size.height - 6)) - 3;
+      return Offset(x, y);
+    }
+
+    final linePath = Path();
+    final first = pointFor(samples.first);
+    linePath.moveTo(first.dx, first.dy);
+    for (var index = 1; index < samples.length; index++) {
+      final point = pointFor(samples[index]);
+      linePath.lineTo(point.dx, point.dy);
+    }
+
+    final fillPath = Path.from(linePath)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+
+    canvas.drawPath(
+      fillPath,
+      Paint()
+        ..color = fillColor
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawPath(
+      linePath,
+      Paint()
+        ..color = lineColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+
+    if (selectedIndex != null &&
+        selectedIndex! >= 0 &&
+        selectedIndex! < samples.length) {
+      final selectedPoint = pointFor(samples[selectedIndex!]);
+      canvas.drawLine(
+        Offset(selectedPoint.dx, 0),
+        Offset(selectedPoint.dx, size.height),
+        Paint()
+          ..color = guideColor
+          ..strokeWidth = 1,
+      );
+      canvas.drawCircle(
+        selectedPoint,
+        4.5,
+        Paint()..color = lineColor,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ElevationProfilePainter oldDelegate) {
+    return oldDelegate.profile != profile ||
+        oldDelegate.selectedIndex != selectedIndex ||
+        oldDelegate.lineColor != lineColor ||
+        oldDelegate.fillColor != fillColor ||
+        oldDelegate.guideColor != guideColor;
+  }
 }
 
 class _RoutingStatus extends StatelessWidget {
