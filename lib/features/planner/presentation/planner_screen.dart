@@ -193,17 +193,20 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }
 
     final planner = ref.read(routePlannerProvider);
-    final geometry = planner.points
+    final routeGeometry = planner.geometry
+        .map((point) => LatLng(point.latitude, point.longitude))
+        .toList(growable: false);
+    final waypoints = planner.points
         .map((point) => LatLng(point.latitude, point.longitude))
         .toList(growable: false);
 
     await controller.clearLines();
     await controller.clearCircles();
 
-    if (geometry.length >= 2) {
+    if (routeGeometry.length >= 2) {
       await controller.addLine(
         LineOptions(
-          geometry: geometry,
+          geometry: routeGeometry,
           lineColor: '#2F6F45',
           lineWidth: 5.5,
           lineOpacity: 0.96,
@@ -212,16 +215,17 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       );
     }
 
-    if (geometry.isNotEmpty) {
+    if (waypoints.isNotEmpty) {
       await controller.addCircles(
         [
-          for (var index = 0; index < geometry.length; index++)
+          for (var index = 0; index < waypoints.length; index++)
             CircleOptions(
-              geometry: geometry[index],
-              circleRadius: index == 0 || index == geometry.length - 1 ? 7 : 5,
+              geometry: waypoints[index],
+              circleRadius:
+                  index == 0 || index == waypoints.length - 1 ? 7 : 5,
               circleColor: index == 0
                   ? '#205B38'
-                  : index == geometry.length - 1
+                  : index == waypoints.length - 1
                       ? '#E86A45'
                       : '#FFFFFF',
               circleStrokeColor: '#2F6F45',
@@ -276,7 +280,15 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     await ref.read(appDatabaseProvider).savePlannedRoute(
           name: name.trim(),
           profile: planner.profile.name,
-          points: planner.points
+          waypointsData: planner.points
+              .map(
+                (point) => (
+                  latitude: point.latitude,
+                  longitude: point.longitude,
+                ),
+              )
+              .toList(growable: false),
+          geometryData: planner.geometry
               .map(
                 (point) => (
                   latitude: point.latitude,
@@ -303,6 +315,16 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     final strings = AppLocalizations.of(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
     final planner = ref.watch(routePlannerProvider);
+
+    ref.listen<RoutePlannerState>(
+      routePlannerProvider,
+      (previous, next) {
+        if (previous?.geometry != next.geometry ||
+            previous?.isRouting != next.isRouting) {
+          unawaited(_syncPlannerAnnotations());
+        }
+      },
+    );
 
     return Stack(
       children: [
@@ -554,7 +576,7 @@ class _PlannerCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'v0.3',
+                  'v0.3.1',
                   style: TextStyle(
                     color: scheme.onPrimaryContainer,
                     fontSize: 11,
@@ -614,7 +636,12 @@ class _PlannerCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 13),
+          const SizedBox(height: 12),
+          _RoutingStatus(
+            strings: strings,
+            planner: planner,
+          ),
+          const SizedBox(height: 10),
           Row(
             children: [
               Icon(
@@ -710,6 +737,53 @@ String _formatDuration(Duration duration) {
   }
   final minuteText = minutes.toString().padLeft(2, '0');
   return '$hours h $minuteText';
+}
+
+class _RoutingStatus extends StatelessWidget {
+  const _RoutingStatus({
+    required this.strings,
+    required this.planner,
+  });
+
+  final AppLocalizations strings;
+  final RoutePlannerState planner;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    final (icon, label) = planner.points.length < 2
+        ? (Icons.alt_route_rounded, strings.routingReady)
+        : planner.isRouting
+            ? (Icons.sync_rounded, strings.routingCalculating)
+            : planner.isSnapped
+                ? (Icons.route_rounded, strings.routeSnapped)
+                : (Icons.cloud_off_rounded, strings.routeLocalFallback);
+
+    return Row(
+      children: [
+        if (planner.isRouting)
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+        else
+          Icon(icon, size: 17, color: scheme.primary),
+        const SizedBox(width: 7),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: scheme.onSurfaceVariant,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _Metric extends StatelessWidget {
