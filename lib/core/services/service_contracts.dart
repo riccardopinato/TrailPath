@@ -90,6 +90,13 @@ abstract interface class GpxService {
   Future<String> export(GpxDocument document);
 }
 
+abstract interface class PlaceSearchService {
+  Future<List<PlaceSearchResult>> search(
+    String query, {
+    String? languageCode,
+  });
+}
+
 abstract interface class SafetyService {
   Future<SafetySnapshot> inspect();
 }
