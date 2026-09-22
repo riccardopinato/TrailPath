@@ -43,6 +43,8 @@ class ActiveNavigationState {
 
 class ActiveNavigationController extends Notifier<ActiveNavigationState> {
   StreamSubscription<NavigationEvent>? _subscription;
+  NavigationEngine? _engine;
+  NavigationFeedback? _feedback;
 
   @override
   ActiveNavigationState build() {
@@ -74,6 +76,7 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
 
     try {
       final feedback = ref.read(navigationFeedbackProvider);
+      _feedback = feedback;
       try {
         await feedback.configure(languageCode);
       } on Object {
@@ -82,9 +85,17 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
       }
       final voice = _voiceMessages(languageCode);
 
+      if (!ref.mounted) {
+        return;
+      }
+
       final engine = ref.read(navigationEngineProvider);
+      _engine = engine;
       _subscription = engine.events.listen(
         (event) {
+          if (!ref.mounted) {
+            return;
+          }
           state = state.copyWith(
             event: event,
             isActive: event.type != NavigationEventType.stopped,
@@ -107,28 +118,50 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
           }
         },
         onError: (Object error, StackTrace stackTrace) {
+          if (!ref.mounted) {
+            return;
+          }
           state = state.copyWith(error: error.toString());
         },
       );
 
       final batteryMode = await ref.read(batteryModeProvider.future);
+      if (!ref.mounted) {
+        return;
+      }
       await engine.start(route, mode: batteryMode);
+      if (!ref.mounted) {
+        return;
+      }
       state = state.copyWith(isActive: true, clearError: true);
     } on Object catch (error) {
-      state = state.copyWith(isActive: false, error: error.toString());
+      if (ref.mounted) {
+        state = state.copyWith(isActive: false, error: error.toString());
+      }
     }
   }
 
   Future<void> stop() async {
-    await ref.read(navigationEngineProvider).stop();
-    try {
-      await ref.read(navigationFeedbackProvider).stop();
-    } on Object {
-      // TTS shutdown failures must not keep navigation state active.
-    }
-    await _subscription?.cancel();
+    final engine = _engine;
+    final feedback = _feedback;
+    final subscription = _subscription;
     _subscription = null;
-    state = state.copyWith(isActive: false);
+
+    if (engine != null) {
+      await engine.stop();
+    }
+    if (feedback != null) {
+      try {
+        await feedback.stop();
+      } on Object {
+        // TTS shutdown failures must not keep navigation state active.
+      }
+    }
+    await subscription?.cancel();
+
+    if (ref.mounted) {
+      state = state.copyWith(isActive: false);
+    }
   }
 }
 
