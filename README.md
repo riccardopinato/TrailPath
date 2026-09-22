@@ -4,16 +4,16 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.5.0 - GPX Engine
+v0.6.0 - Track Recorder
 
-TrailPath now imports and exports GPX tracks, preserves elevation and timestamps, loads imported tracks directly into the planner and shares current or saved routes through the native Android/iOS share sheet.
+TrailPath now records outdoor activities with live GPS, map trace, pause/resume, background location support, autosave, crash recovery and persistent activity history.
 
 ### Included
 
 - Flutter Android + iOS codebase
 - Riverpod dependency injection and state foundation
 - GoRouter navigation foundation
-- Drift local database schema v1
+- Drift local database schema v2 with recoverable activity drafts
 - Map, routing, elevation, location, recording, navigation, offline, GPX and safety contracts
 - live MapLibre map in the planner
 - live GPS position with accuracy and heading
@@ -33,7 +33,7 @@ TrailPath now imports and exports GPX tracks, preserves elevation and timestamps
 - GPX sharing from both planner and saved routes
 - separate waypoint and snapped-geometry persistence in Drift
 - saved-routes list with delete flow
-- recording shell
+- live map-first track recorder with distance, ascent, pace and GPS accuracy\n- foreground/background GPS recording on Android and iOS\n- pause/resume, 5-second/point-based autosave and crash recovery\n- completed activity history with GPX sharing and deletion
 - light and dark outdoor themes
 - Italian, English, Spanish, French and Portuguese localization foundation
 - structured logging
