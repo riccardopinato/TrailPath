@@ -44,6 +44,20 @@ class AppLocalizations {
   String get noRoutes => _value('noRoutes');
   String get noRoutesHint => _value('noRoutesHint');
   String get foundationReady => _value('foundationReady');
+  String get mapPositionReady => _value('mapPositionReady');
+  String get mapLayers => _value('mapLayers');
+  String get myLocation => _value('myLocation');
+  String get gpsChecking => _value('gpsChecking');
+  String get gpsWaiting => _value('gpsWaiting');
+  String get gpsDisabled => _value('gpsDisabled');
+  String get gpsPermissionRequired => _value('gpsPermissionRequired');
+  String get gpsOpenSettings => _value('gpsOpenSettings');
+  String get gpsUnavailable => _value('gpsUnavailable');
+
+  String gpsAccuracy(double meters) {
+    final rounded = meters.isFinite ? meters.round() : 0;
+    return _value('gpsAccuracy').replaceFirst('{meters}', '$rounded');
+  }
 
   static const Map<String, Map<String, String>> _values = {
     'it': {
@@ -61,7 +75,17 @@ class AppLocalizations {
       'yourRoutes': 'I tuoi percorsi',
       'noRoutes': 'Nessun percorso salvato',
       'noRoutesHint': 'I percorsi pianificati compariranno qui.',
-      'foundationReady': 'Motore mappa pronto per v0.2',
+      'foundationReady': 'Fondazione pronta',
+      'mapPositionReady': 'Mappa reale e posizione GPS attive',
+      'mapLayers': 'Livelli mappa',
+      'myLocation': 'La mia posizione',
+      'gpsChecking': 'Ricerca GPS…',
+      'gpsWaiting': 'In attesa del segnale GPS',
+      'gpsDisabled': 'GPS disattivato · tocca per attivarlo',
+      'gpsPermissionRequired': 'Consenti la posizione',
+      'gpsOpenSettings': 'Posizione bloccata · apri impostazioni',
+      'gpsUnavailable': 'GPS non disponibile · riprova',
+      'gpsAccuracy': 'GPS ±{meters} m',
     },
     'en': {
       'planner': 'Plan',
@@ -78,7 +102,17 @@ class AppLocalizations {
       'yourRoutes': 'Your routes',
       'noRoutes': 'No saved routes',
       'noRoutesHint': 'Routes you plan will appear here.',
-      'foundationReady': 'Map engine ready for v0.2',
+      'foundationReady': 'Foundation ready',
+      'mapPositionReady': 'Live map and GPS position enabled',
+      'mapLayers': 'Map layers',
+      'myLocation': 'My location',
+      'gpsChecking': 'Finding GPS…',
+      'gpsWaiting': 'Waiting for GPS signal',
+      'gpsDisabled': 'GPS disabled · tap to enable',
+      'gpsPermissionRequired': 'Allow location access',
+      'gpsOpenSettings': 'Location blocked · open settings',
+      'gpsUnavailable': 'GPS unavailable · retry',
+      'gpsAccuracy': 'GPS ±{meters} m',
     },
     'es': {
       'planner': 'Planificar',
@@ -95,7 +129,17 @@ class AppLocalizations {
       'yourRoutes': 'Tus rutas',
       'noRoutes': 'No hay rutas guardadas',
       'noRoutesHint': 'Las rutas planificadas aparecerán aquí.',
-      'foundationReady': 'Motor de mapa listo para v0.2',
+      'foundationReady': 'Base lista',
+      'mapPositionReady': 'Mapa real y posición GPS activos',
+      'mapLayers': 'Capas del mapa',
+      'myLocation': 'Mi ubicación',
+      'gpsChecking': 'Buscando GPS…',
+      'gpsWaiting': 'Esperando señal GPS',
+      'gpsDisabled': 'GPS desactivado · toca para activarlo',
+      'gpsPermissionRequired': 'Permitir ubicación',
+      'gpsOpenSettings': 'Ubicación bloqueada · abrir ajustes',
+      'gpsUnavailable': 'GPS no disponible · reintentar',
+      'gpsAccuracy': 'GPS ±{meters} m',
     },
     'fr': {
       'planner': 'Planifier',
@@ -112,7 +156,17 @@ class AppLocalizations {
       'yourRoutes': 'Vos parcours',
       'noRoutes': 'Aucun parcours enregistré',
       'noRoutesHint': 'Vos parcours planifiés apparaîtront ici.',
-      'foundationReady': 'Moteur cartographique prêt pour v0.2',
+      'foundationReady': 'Base prête',
+      'mapPositionReady': 'Carte réelle et position GPS actives',
+      'mapLayers': 'Couches de carte',
+      'myLocation': 'Ma position',
+      'gpsChecking': 'Recherche GPS…',
+      'gpsWaiting': 'En attente du signal GPS',
+      'gpsDisabled': 'GPS désactivé · toucher pour activer',
+      'gpsPermissionRequired': 'Autoriser la localisation',
+      'gpsOpenSettings': 'Localisation bloquée · ouvrir réglages',
+      'gpsUnavailable': 'GPS indisponible · réessayer',
+      'gpsAccuracy': 'GPS ±{meters} m',
     },
     'pt': {
       'planner': 'Planear',
@@ -129,7 +183,17 @@ class AppLocalizations {
       'yourRoutes': 'Os seus percursos',
       'noRoutes': 'Nenhum percurso guardado',
       'noRoutesHint': 'Os percursos planeados aparecerão aqui.',
-      'foundationReady': 'Motor de mapa pronto para v0.2',
+      'foundationReady': 'Base pronta',
+      'mapPositionReady': 'Mapa real e posição GPS ativos',
+      'mapLayers': 'Camadas do mapa',
+      'myLocation': 'A minha localização',
+      'gpsChecking': 'A procurar GPS…',
+      'gpsWaiting': 'A aguardar sinal GPS',
+      'gpsDisabled': 'GPS desativado · toque para ativar',
+      'gpsPermissionRequired': 'Permitir localização',
+      'gpsOpenSettings': 'Localização bloqueada · abrir definições',
+      'gpsUnavailable': 'GPS indisponível · tentar novamente',
+      'gpsAccuracy': 'GPS ±{meters} m',
     },
   };
 }
