@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:trail_path/core/domain/elevation_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/infrastructure/elevation/open_meteo_elevation_engine.dart';
 
