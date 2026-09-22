@@ -149,6 +149,7 @@ class RecordingController extends Notifier<RecordingState> {
         clearError: true,
       );
 
+      await ref.read(runtimePermissionProvider).prepareRecording();
       final batteryMode = await ref.read(batteryModeProvider.future);
       await _recorder.setBatteryMode(batteryMode);
       await _bindRecorder();
