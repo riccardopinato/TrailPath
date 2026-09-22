@@ -26,6 +26,7 @@ class RouteNavigationEngine implements NavigationEngine {
   RoutePlan? _route;
   bool _isOffRoute = false;
   bool _arrived = false;
+  BatteryMode _batteryMode = BatteryMode.balanced;
   double _maxAcceptedAccuracyMeters = 60;
 
   @override
@@ -44,6 +45,7 @@ class RouteNavigationEngine implements NavigationEngine {
     _route = route;
     _isOffRoute = false;
     _arrived = false;
+    _batteryMode = mode;
     _maxAcceptedAccuracyMeters =
         batteryModePolicy(mode).maxAcceptedAccuracyMeters;
 
@@ -68,6 +70,30 @@ class RouteNavigationEngine implements NavigationEngine {
       ),
     );
 
+    _subscription = locationEngine.watch(mode: mode).listen(
+      _onPosition,
+      onError: (Object error, StackTrace stackTrace) {
+        if (!_controller.isClosed) {
+          _controller.addError(error, stackTrace);
+        }
+      },
+    );
+  }
+
+  @override
+  Future<void> setBatteryMode(BatteryMode mode) async {
+    if (_batteryMode == mode) {
+      return;
+    }
+    _batteryMode = mode;
+    _maxAcceptedAccuracyMeters =
+        batteryModePolicy(mode).maxAcceptedAccuracyMeters;
+
+    if (_route == null || _subscription == null) {
+      return;
+    }
+
+    await _subscription?.cancel();
     _subscription = locationEngine.watch(mode: mode).listen(
       _onPosition,
       onError: (Object error, StackTrace stackTrace) {
