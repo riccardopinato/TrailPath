@@ -1,7 +1,9 @@
-import 'dart:math' as math;
+import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/core/services/service_providers.dart';
 
 final routePlannerProvider =
     NotifierProvider<RoutePlannerController, RoutePlannerState>(
@@ -11,37 +13,54 @@ final routePlannerProvider =
 class RoutePlannerState {
   const RoutePlannerState({
     this.points = const [],
+    this.geometry = const [],
     this.profile = RouteProfile.hiking,
     this.distanceMeters = 0,
     this.estimatedDuration = Duration.zero,
     this.canUndo = false,
     this.canRedo = false,
+    this.isRouting = false,
+    this.isSnapped = false,
+    this.routingSource = 'local',
   });
 
   final List<GeoPoint> points;
+  final List<GeoPoint> geometry;
   final RouteProfile profile;
   final double distanceMeters;
   final Duration estimatedDuration;
   final bool canUndo;
   final bool canRedo;
+  final bool isRouting;
+  final bool isSnapped;
+  final String routingSource;
 
-  bool get canSave => points.length >= 2 && distanceMeters > 0;
+  bool get canSave =>
+      points.length >= 2 && geometry.length >= 2 && distanceMeters > 0;
 
   RoutePlannerState copyWith({
     List<GeoPoint>? points,
+    List<GeoPoint>? geometry,
     RouteProfile? profile,
     double? distanceMeters,
     Duration? estimatedDuration,
     bool? canUndo,
     bool? canRedo,
+    bool? isRouting,
+    bool? isSnapped,
+    String? routingSource,
   }) {
     return RoutePlannerState(
       points: points ?? this.points,
+      geometry: geometry ?? this.geometry,
       profile: profile ?? this.profile,
       distanceMeters: distanceMeters ?? this.distanceMeters,
       estimatedDuration: estimatedDuration ?? this.estimatedDuration,
       canUndo: canUndo ?? this.canUndo,
       canRedo: canRedo ?? this.canRedo,
+      isRouting: isRouting ?? this.isRouting,
+      isSnapped: isSnapped ?? this.isSnapped,
+      routingSource: routingSource ?? this.routingSource,
     );
   }
 }
@@ -49,6 +68,7 @@ class RoutePlannerState {
 class RoutePlannerController extends Notifier<RoutePlannerState> {
   final List<List<GeoPoint>> _undoStack = [];
   final List<List<GeoPoint>> _redoStack = [];
+  int _routingGeneration = 0;
 
   @override
   RoutePlannerState build() => const RoutePlannerState();
@@ -90,13 +110,18 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     if (profile == state.profile) {
       return;
     }
+
     state = state.copyWith(
       profile: profile,
+      isSnapped: false,
+      routingSource: 'local',
       estimatedDuration: _estimateDuration(state.distanceMeters, profile),
     );
+    unawaited(_refreshRoute());
   }
 
   void resetAfterSave() {
+    _routingGeneration++;
     _undoStack.clear();
     _redoStack.clear();
     state = RoutePlannerState(profile: state.profile);
@@ -111,45 +136,81 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
 
   void _applyPoints(List<GeoPoint> points) {
     final immutable = List<GeoPoint>.unmodifiable(points);
-    final distance = calculateDistanceMeters(immutable);
+    final distance = calculateRouteDistanceMeters(immutable);
+
     state = state.copyWith(
       points: immutable,
+      geometry: immutable,
       distanceMeters: distance,
       estimatedDuration: _estimateDuration(distance, state.profile),
       canUndo: _undoStack.isNotEmpty,
       canRedo: _redoStack.isNotEmpty,
+      isRouting: immutable.length >= 2,
+      isSnapped: false,
+      routingSource: 'local',
     );
+
+    unawaited(_refreshRoute());
+  }
+
+  Future<void> _refreshRoute() async {
+    final generation = ++_routingGeneration;
+    final waypoints = List<GeoPoint>.unmodifiable(state.points);
+    final profile = state.profile;
+
+    if (waypoints.length < 2) {
+      state = state.copyWith(
+        geometry: waypoints,
+        isRouting: false,
+        isSnapped: false,
+        routingSource: 'local',
+      );
+      return;
+    }
+
+    state = state.copyWith(isRouting: true);
+
+    try {
+      final plan = await ref.read(routingEngineProvider).calculate(
+            RouteRequest(
+              points: waypoints,
+              profile: profile,
+              snapToNetwork: true,
+            ),
+          );
+
+      if (generation != _routingGeneration) {
+        return;
+      }
+
+      state = state.copyWith(
+        geometry: plan.geometry,
+        distanceMeters: plan.distanceMeters,
+        estimatedDuration: plan.estimatedDuration,
+        isRouting: false,
+        isSnapped: plan.isSnapped,
+        routingSource: plan.routingSource,
+      );
+    } on Object {
+      if (generation != _routingGeneration) {
+        return;
+      }
+
+      final distance = calculateRouteDistanceMeters(waypoints);
+      state = state.copyWith(
+        geometry: waypoints,
+        distanceMeters: distance,
+        estimatedDuration: _estimateDuration(distance, profile),
+        isRouting: false,
+        isSnapped: false,
+        routingSource: 'local',
+      );
+    }
   }
 }
 
-double calculateDistanceMeters(List<GeoPoint> points) {
-  if (points.length < 2) {
-    return 0;
-  }
-
-  var total = 0.0;
-  for (var index = 1; index < points.length; index++) {
-    total += _haversineMeters(points[index - 1], points[index]);
-  }
-  return total;
-}
-
-double _haversineMeters(GeoPoint a, GeoPoint b) {
-  const earthRadiusMeters = 6371008.8;
-  final lat1 = _degreesToRadians(a.latitude);
-  final lat2 = _degreesToRadians(b.latitude);
-  final deltaLat = _degreesToRadians(b.latitude - a.latitude);
-  final deltaLon = _degreesToRadians(b.longitude - a.longitude);
-
-  final sinLat = math.sin(deltaLat / 2);
-  final sinLon = math.sin(deltaLon / 2);
-  final h = sinLat * sinLat +
-      math.cos(lat1) * math.cos(lat2) * sinLon * sinLon;
-  final arc = 2 * math.atan2(math.sqrt(h), math.sqrt(1 - h));
-  return earthRadiusMeters * arc;
-}
-
-double _degreesToRadians(double degrees) => degrees * math.pi / 180;
+double calculateDistanceMeters(List<GeoPoint> points) =>
+    calculateRouteDistanceMeters(points);
 
 Duration _estimateDuration(double distanceMeters, RouteProfile profile) {
   if (distanceMeters <= 0) {
