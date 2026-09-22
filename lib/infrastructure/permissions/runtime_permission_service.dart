@@ -15,11 +15,31 @@ class RuntimePermissionService {
       await Permission.notification.request();
     }
 
-    final location = await Permission.locationWhenInUse.status;
+    var location = await Permission.locationWhenInUse.status;
+    if (location.isDenied) {
+      location = await Permission.locationWhenInUse.request();
+    }
+
     if (!location.isGranted) {
-      await Permission.locationWhenInUse.request();
+      if (location.isPermanentlyDenied) {
+        throw const RecordingPermissionException(
+          'Location permission is permanently denied. Open Android app settings and enable location for TrailPath.',
+        );
+      }
+      throw const RecordingPermissionException(
+        'Location permission is required to record a trail.',
+      );
     }
   }
 
   Future<bool> openSettings() => openAppSettings();
+}
+
+class RecordingPermissionException implements Exception {
+  const RecordingPermissionException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
 }
