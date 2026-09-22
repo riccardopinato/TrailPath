@@ -12,6 +12,7 @@ import 'package:trail_path/infrastructure/navigation/route_navigation_engine.dar
 import 'package:trail_path/infrastructure/recording/geolocator_track_recorder.dart';
 import 'package:trail_path/infrastructure/routing/openstreetmap_routing_engine.dart';
 import 'package:trail_path/infrastructure/safety/device_safety_service.dart';
+import 'package:trail_path/infrastructure/search/nominatim_place_search_service.dart';
 
 final mapEngineProvider = Provider<MapEngine>(
   (ref) => const MapLibreMapEngine(),
@@ -72,6 +73,10 @@ final navigationFeedbackProvider = Provider<NavigationFeedback>((ref) {
 
 final offlineMapManagerProvider = Provider<OfflineMapManager>(
   (ref) => const MapLibreOfflineMapManager(),
+);
+
+final placeSearchServiceProvider = Provider<NominatimPlaceSearchService>(
+  (ref) => const NominatimPlaceSearchService(),
 );
 
 final safetyServiceProvider = Provider<SafetyService>(
