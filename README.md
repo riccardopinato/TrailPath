@@ -53,6 +53,9 @@ TrailPath v0.9.1 hardens real-device use: production OpenFreeMap rendering, func
 - TTS/haptic feedback isolated so voice failures cannot stop GPS navigation
 - live battery-mode reconfiguration for active recording and navigation
 - GPS permission/service recovery through Android/iOS system settings
+- Android runtime notification/location permission preparation before recording
+- battery policies now drive native Android GPS sampling intervals during navigation and Back to Car
+- navigation lifecycle regression test covering the previous localization startup crash
 - offline readiness reconciled against actual native MapLibre regions
 - native Android emulator smoke test in GitHub Actions
 - light and dark outdoor themes
