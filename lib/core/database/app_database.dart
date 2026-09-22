@@ -227,6 +227,20 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  RoutePlan savedRouteToPlan(SavedRoute route) {
+    final document = savedRouteToGpx(route);
+    return RoutePlan(
+      geometry: document.points,
+      distanceMeters: route.distanceMeters,
+      ascentMeters: route.ascentMeters,
+      descentMeters: route.descentMeters,
+      estimatedDuration: Duration(seconds: route.durationSeconds),
+      profile: _routeProfileFromName(route.profile),
+      isSnapped: true,
+      routingSource: 'saved-route',
+    );
+  }
+
   Future<String> createActivityDraft({
     required RouteProfile profile,
   }) async {
@@ -378,4 +392,14 @@ List<GeoPoint> _decodePoints(String? encodedGeometry) {
     );
   }
   return List<GeoPoint>.unmodifiable(points);
+}
+
+
+RouteProfile _routeProfileFromName(String value) {
+  for (final profile in RouteProfile.values) {
+    if (profile.name == value) {
+      return profile;
+    }
+  }
+  return RouteProfile.hiking;
 }
