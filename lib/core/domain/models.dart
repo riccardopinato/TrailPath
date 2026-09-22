@@ -164,11 +164,32 @@ class NavigationEvent {
     required this.type,
     this.message,
     this.distanceMeters,
+    this.currentPoint,
+    this.nearestRoutePoint,
+    this.progressMeters = 0,
+    this.remainingMeters = 0,
+    this.distanceToRouteMeters = 0,
+    this.routeDistanceMeters = 0,
+    this.isOffRoute = false,
   });
 
   final NavigationEventType type;
   final String? message;
   final double? distanceMeters;
+  final GeoPoint? currentPoint;
+  final GeoPoint? nearestRoutePoint;
+  final double progressMeters;
+  final double remainingMeters;
+  final double distanceToRouteMeters;
+  final double routeDistanceMeters;
+  final bool isOffRoute;
+
+  double get progressFraction {
+    if (routeDistanceMeters <= 0) {
+      return 0;
+    }
+    return (progressMeters / routeDistanceMeters).clamp(0.0, 1.0);
+  }
 }
 
 class OfflineRegion {
