@@ -100,18 +100,38 @@ jobs:
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
 
-
-  android-smoke:
+  applab-android:
+    name: AppLab Android Gate
     needs: validate-and-build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
+      - name: Checkout TrailPath
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
       - name: Download debug APK
         uses: actions/download-artifact@v6
         with:
           name: TrailPath-v0.9.1-debug
           path: apk
+
+      - name: Checkout AppLab
+        uses: actions/checkout@v6
+        with:
+          repository: riccardopinato/AppLab
+          path: .applab
+
+      - name: Install Maestro
+        run: |
+          chmod +x .applab/scripts/*.sh
+          .applab/scripts/install_maestro.sh
 
       - name: Enable KVM
         run: |
@@ -120,19 +140,37 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Boot Android emulator and smoke test
+      - name: Run TrailPath through AppLab
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: 35
+          target: google_apis
           arch: x86_64
-          profile: pixel_6
+          profile: pixel_7_pro
           disable-animations: true
           script: |
             adb install -r apk/app-debug.apk
-            adb logcat -c
-            adb shell am start -W -n com.riccardopinato.trail_path/.MainActivity
-            sleep 8
-            test -n "$(adb shell pidof com.riccardopinato.trail_path | tr -d '\r')" || (echo "TrailPath process is not running after launch."; adb logcat -d -v brief; exit 1)
-            adb logcat -d -v brief > /tmp/trailpath-logcat.txt
-            ! grep -q "Process: com.riccardopinato.trail_path" /tmp/trailpath-logcat.txt || (cat /tmp/trailpath-logcat.txt; exit 1)
-            echo "TrailPath Android smoke test passed."
+            adb shell pm grant com.riccardopinato.trail_path android.permission.ACCESS_FINE_LOCATION || true
+            adb shell pm grant com.riccardopinato.trail_path android.permission.ACCESS_COARSE_LOCATION || true
+
+            RUN_MAESTRO=true \
+            MAESTRO_FLOW="$GITHUB_WORKSPACE/.maestro/applab-smoke.yaml" \
+            REPORT_DIR="$GITHUB_WORKSPACE/applab-report" \
+              .applab/scripts/verify_apk.sh \
+              "$GITHUB_WORKSPACE/apk/app-debug.apk" \
+              "com.riccardopinato.trail_path"
+
+            grep -Fq -- "- Result: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
+            grep -Fq -- "- Maestro: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
+            test -s "$GITHUB_WORKSPACE/applab-report/launch.png"
+            test -s "$GITHUB_WORKSPACE/applab-report/post-maestro.png"
+            test -s "$GITHUB_WORKSPACE/applab-report/logcat.txt"
+
+      - name: Upload AppLab report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrailPath-AppLab-${{ github.sha }}
+          path: applab-report/
+          if-no-files-found: warn
+          retention-days: 14
