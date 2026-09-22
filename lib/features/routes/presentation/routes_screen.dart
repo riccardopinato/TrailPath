@@ -271,8 +271,6 @@ class _RouteCard extends StatelessWidget {
 
   final SavedRoute route;
   final VoidCallback onNavigate;
-  final VoidCallback? onPrimary;
-  final String? primaryTooltip;
   final VoidCallback onShare;
   final VoidCallback onDelete;
 
@@ -341,6 +339,8 @@ class _BaseCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final VoidCallback? onPrimary;
+  final String? primaryTooltip;
   final VoidCallback onShare;
   final VoidCallback onDelete;
 
