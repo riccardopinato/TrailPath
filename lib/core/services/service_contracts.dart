@@ -21,9 +21,15 @@ abstract interface class ElevationEngine {
 abstract interface class LocationEngine {
   Future<bool> isServiceEnabled();
 
-  Future<bool> hasPermission();
+  Future<LocationPermissionState> permissionStatus();
 
-  Future<bool> requestPermission();
+  Future<LocationPermissionState> requestPermission();
+
+  Future<bool> openAppSettings();
+
+  Future<bool> openLocationSettings();
+
+  Stream<bool> serviceStatus();
 
   Future<PositionSample?> current();
 
