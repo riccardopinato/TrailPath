@@ -9,6 +9,7 @@ import 'package:trail_path/infrastructure/maps/maplibre_map_engine.dart';
 import 'package:trail_path/infrastructure/maps/maplibre_offline_map_manager.dart';
 import 'package:trail_path/infrastructure/navigation/flutter_tts_navigation_feedback.dart';
 import 'package:trail_path/infrastructure/navigation/route_navigation_engine.dart';
+import 'package:trail_path/infrastructure/permissions/runtime_permission_service.dart';
 import 'package:trail_path/infrastructure/recording/geolocator_track_recorder.dart';
 import 'package:trail_path/infrastructure/routing/openstreetmap_routing_engine.dart';
 import 'package:trail_path/infrastructure/safety/device_safety_service.dart';
@@ -43,6 +44,10 @@ final gpxServiceProvider = Provider<GpxService>(
   (ref) => const XmlGpxService(),
 );
 
+
+final runtimePermissionProvider = Provider<RuntimePermissionService>(
+  (ref) => const RuntimePermissionService(),
+);
 
 final trackRecorderProvider = Provider<TrackRecorder>((ref) {
   final recorder = GeolocatorTrackRecorder();
