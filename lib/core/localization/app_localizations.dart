@@ -33,6 +33,8 @@ class AppLocalizations {
   String get record => _value('record');
   String get routes => _value('routes');
   String get searchPlace => _value('searchPlace');
+  String get noSearchResults => _value('noSearchResults');
+  String get searchFailed => _value('searchFailed');
   String get createRoute => _value('createRoute');
   String get tapMapHint => _value('tapMapHint');
   String get distance => _value('distance');
@@ -168,6 +170,8 @@ class AppLocalizations {
       'record': 'Registra',
       'routes': 'Percorsi',
       'searchPlace': 'Cerca luogo o sentiero',
+      'noSearchResults': 'Nessun risultato trovato',
+      'searchFailed': 'Ricerca non disponibile. Riprova più tardi',
       'createRoute': 'Crea un percorso',
       'tapMapHint': 'Tocca la mappa per aggiungere il primo punto',
       'distance': 'Distanza',
@@ -302,6 +306,8 @@ class AppLocalizations {
       'record': 'Record',
       'routes': 'Routes',
       'searchPlace': 'Search place or trail',
+      'noSearchResults': 'No results found',
+      'searchFailed': 'Search is unavailable. Try again later',
       'createRoute': 'Create a route',
       'tapMapHint': 'Tap the map to add the first point',
       'distance': 'Distance',
@@ -436,6 +442,8 @@ class AppLocalizations {
       'record': 'Registrar',
       'routes': 'Rutas',
       'searchPlace': 'Buscar lugar o sendero',
+      'noSearchResults': 'No se encontraron resultados',
+      'searchFailed': 'La búsqueda no está disponible. Inténtalo de nuevo',
       'createRoute': 'Crear una ruta',
       'tapMapHint': 'Toca el mapa para añadir el primer punto',
       'distance': 'Distancia',
@@ -570,6 +578,8 @@ class AppLocalizations {
       'record': 'Enregistrer',
       'routes': 'Parcours',
       'searchPlace': 'Rechercher un lieu ou sentier',
+      'noSearchResults': 'Aucun résultat trouvé',
+      'searchFailed': 'Recherche indisponible. Réessayez plus tard',
       'createRoute': 'Créer un parcours',
       'tapMapHint': 'Touchez la carte pour ajouter le premier point',
       'distance': 'Distance',
@@ -704,6 +714,8 @@ class AppLocalizations {
       'record': 'Gravar',
       'routes': 'Percursos',
       'searchPlace': 'Pesquisar local ou trilho',
+      'noSearchResults': 'Nenhum resultado encontrado',
+      'searchFailed': 'Pesquisa indisponível. Tente novamente mais tarde',
       'createRoute': 'Criar um percurso',
       'tapMapHint': 'Toque no mapa para adicionar o primeiro ponto',
       'distance': 'Distância',

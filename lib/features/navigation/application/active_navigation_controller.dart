@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/outdoor/application/battery_mode_controller.dart';
 
@@ -41,13 +43,31 @@ class ActiveNavigationState {
 
 class ActiveNavigationController extends Notifier<ActiveNavigationState> {
   StreamSubscription<NavigationEvent>? _subscription;
+  NavigationEngine? _engine;
+  NavigationFeedback? _feedback;
 
   @override
   ActiveNavigationState build() {
+    ref.listen(batteryModeProvider, (previous, next) {
+      next.whenData((mode) {
+        if (state.isActive) {
+          unawaited(_applyBatteryMode(mode));
+        }
+      });
+    });
     ref.onDispose(() {
       _subscription?.cancel();
     });
     return const ActiveNavigationState();
+  }
+
+  Future<void> _applyBatteryMode(BatteryMode mode) async {
+    try {
+      await ref.read(navigationEngineProvider).setBatteryMode(mode);
+    } on Object {
+      // Keep navigation alive if a platform stream cannot be reconfigured
+      // while the activity is running.
+    }
   }
 
   Future<void> start(RoutePlan route, String languageCode) async {
@@ -56,12 +76,26 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
 
     try {
       final feedback = ref.read(navigationFeedbackProvider);
-      await feedback.configure(languageCode);
+      _feedback = feedback;
+      try {
+        await feedback.configure(languageCode);
+      } on Object {
+        // Voice feedback is optional. Navigation must continue if TTS is
+        // unavailable or the device has no matching voice installed.
+      }
       final voice = _voiceMessages(languageCode);
 
+      if (!ref.mounted) {
+        return;
+      }
+
       final engine = ref.read(navigationEngineProvider);
+      _engine = engine;
       _subscription = engine.events.listen(
         (event) {
+          if (!ref.mounted) {
+            return;
+          }
           state = state.copyWith(
             event: event,
             isActive: event.type != NavigationEventType.stopped,
@@ -70,13 +104,13 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
 
           switch (event.type) {
             case NavigationEventType.offRoute:
-              unawaited(feedback.alert());
-              unawaited(feedback.speak(voice.offRoute));
+              unawaited(_safeAlert(feedback));
+              unawaited(_safeSpeak(feedback, voice.offRoute));
             case NavigationEventType.backOnRoute:
-              unawaited(feedback.speak(voice.backOnRoute));
+              unawaited(_safeSpeak(feedback, voice.backOnRoute));
             case NavigationEventType.arrived:
-              unawaited(feedback.alert());
-              unawaited(feedback.speak(voice.arrived));
+              unawaited(_safeAlert(feedback));
+              unawaited(_safeSpeak(feedback, voice.arrived));
             case NavigationEventType.started:
             case NavigationEventType.instruction:
             case NavigationEventType.stopped:
@@ -84,27 +118,71 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
           }
         },
         onError: (Object error, StackTrace stackTrace) {
+          if (!ref.mounted) {
+            return;
+          }
           state = state.copyWith(error: error.toString());
         },
       );
 
       final batteryMode = await ref.read(batteryModeProvider.future);
+      if (!ref.mounted) {
+        return;
+      }
       await engine.start(route, mode: batteryMode);
+      if (!ref.mounted) {
+        return;
+      }
       state = state.copyWith(isActive: true, clearError: true);
     } on Object catch (error) {
-      state = state.copyWith(isActive: false, error: error.toString());
+      if (ref.mounted) {
+        state = state.copyWith(isActive: false, error: error.toString());
+      }
     }
   }
 
   Future<void> stop() async {
-    await ref.read(navigationEngineProvider).stop();
-    await ref.read(navigationFeedbackProvider).stop();
-    await _subscription?.cancel();
+    final engine = _engine;
+    final feedback = _feedback;
+    final subscription = _subscription;
     _subscription = null;
-    state = state.copyWith(isActive: false);
+
+    if (engine != null) {
+      await engine.stop();
+    }
+    if (feedback != null) {
+      try {
+        await feedback.stop();
+      } on Object {
+        // TTS shutdown failures must not keep navigation state active.
+      }
+    }
+    await subscription?.cancel();
+
+    if (ref.mounted) {
+      state = state.copyWith(isActive: false);
+    }
   }
 }
 
+Future<void> _safeSpeak(
+  NavigationFeedback feedback,
+  String message,
+) async {
+  try {
+    await feedback.speak(message);
+  } on Object {
+    // Voice guidance is best-effort.
+  }
+}
+
+Future<void> _safeAlert(NavigationFeedback feedback) async {
+  try {
+    await feedback.alert();
+  } on Object {
+    // Haptics are best-effort.
+  }
+}
 
 ({String offRoute, String backOnRoute, String arrived}) _voiceMessages(
   String languageCode,

@@ -30,5 +30,8 @@ MapLibre offline regions, storage controls and fully offline use of prepared rou
 ## v0.9 - Outdoor Intelligence
 Activity profiles, adaptive GPS battery modes, persistent Back to Car guidance, device safety checks and quick location sharing.
 
+## v0.9.1 - Runtime Recovery
+Production basemap, functional place search, real-device navigation lifecycle fixes, resilient TTS, GPS settings recovery, offline-state reconciliation and Android emulator smoke testing.
+
 ## v1.0 - Release
 Onboarding, Premium foundation, optional backup/sync, accessibility, performance and store QA.

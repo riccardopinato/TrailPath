@@ -198,10 +198,12 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
               strings: strings,
               mode: mode,
               loading: modeAsync.isLoading,
-              onChanged: (selected) {
-                ref
+              onChanged: (selected) async {
+                await ref
                     .read(batteryModeProvider.notifier)
                     .setMode(selected);
+                await ref.read(trackRecorderProvider).setBatteryMode(selected);
+                await ref.read(navigationEngineProvider).setBatteryMode(selected);
               },
             ),
             const SizedBox(height: 14),

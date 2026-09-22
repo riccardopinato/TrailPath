@@ -108,6 +108,12 @@ class _FakeLocationEngine implements LocationEngine {
   Future<PositionSample?> current() async => null;
 
   @override
+  Future<bool> openAppSettings() async => true;
+
+  @override
+  Future<bool> openLocationSettings() async => true;
+
+  @override
   Stream<PositionSample> watch({
     BatteryMode mode = BatteryMode.balanced,
   }) =>

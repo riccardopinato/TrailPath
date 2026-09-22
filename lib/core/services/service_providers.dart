@@ -9,9 +9,11 @@ import 'package:trail_path/infrastructure/maps/maplibre_map_engine.dart';
 import 'package:trail_path/infrastructure/maps/maplibre_offline_map_manager.dart';
 import 'package:trail_path/infrastructure/navigation/flutter_tts_navigation_feedback.dart';
 import 'package:trail_path/infrastructure/navigation/route_navigation_engine.dart';
+import 'package:trail_path/infrastructure/permissions/runtime_permission_service.dart';
 import 'package:trail_path/infrastructure/recording/geolocator_track_recorder.dart';
 import 'package:trail_path/infrastructure/routing/openstreetmap_routing_engine.dart';
 import 'package:trail_path/infrastructure/safety/device_safety_service.dart';
+import 'package:trail_path/infrastructure/search/nominatim_place_search_service.dart';
 
 final mapEngineProvider = Provider<MapEngine>(
   (ref) => const MapLibreMapEngine(),
@@ -43,6 +45,10 @@ final gpxServiceProvider = Provider<GpxService>(
 );
 
 
+final runtimePermissionProvider = Provider<RuntimePermissionService>(
+  (ref) => const RuntimePermissionService(),
+);
+
 final trackRecorderProvider = Provider<TrackRecorder>((ref) {
   final recorder = GeolocatorTrackRecorder();
   ref.onDispose(() {
@@ -72,6 +78,10 @@ final navigationFeedbackProvider = Provider<NavigationFeedback>((ref) {
 
 final offlineMapManagerProvider = Provider<OfflineMapManager>(
   (ref) => const MapLibreOfflineMapManager(),
+);
+
+final placeSearchServiceProvider = Provider<PlaceSearchService>(
+  (ref) => NominatimPlaceSearchService(),
 );
 
 final safetyServiceProvider = Provider<SafetyService>(

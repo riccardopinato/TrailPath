@@ -26,6 +26,10 @@ abstract interface class LocationEngine {
 
   Future<bool> requestPermission();
 
+  Future<bool> openAppSettings();
+
+  Future<bool> openLocationSettings();
+
   Future<PositionSample?> current();
 
   Stream<PositionSample> watch({
@@ -59,6 +63,8 @@ abstract interface class NavigationEngine {
     BatteryMode mode = BatteryMode.balanced,
   });
 
+  Future<void> setBatteryMode(BatteryMode mode);
+
   Future<void> stop();
 
   Future<void> dispose();
@@ -88,6 +94,13 @@ abstract interface class GpxService {
   Future<GpxDocument> parse(String xml);
 
   Future<String> export(GpxDocument document);
+}
+
+abstract interface class PlaceSearchService {
+  Future<List<PlaceSearchResult>> search(
+    String query, {
+    String? languageCode,
+  });
 }
 
 abstract interface class SafetyService {

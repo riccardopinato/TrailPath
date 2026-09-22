@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/features/navigation/application/active_navigation_controller.dart';
@@ -19,29 +20,38 @@ class NavigationScreen extends ConsumerStatefulWidget {
 }
 
 class _NavigationScreenState extends ConsumerState<NavigationScreen> {
-  static const _styleUrl = 'https://demotiles.maplibre.org/style.json';
   MapLibreMapController? _mapController;
   bool _styleReady = false;
-  late final String _languageCode;
+  bool _navigationStarted = false;
+  ActiveNavigationController? _navigationController;
 
   bool get _runningWidgetTest =>
       Platform.environment['FLUTTER_TEST']?.toLowerCase() == 'true';
 
   @override
-  void initState() {
-    super.initState();
-    _languageCode = Localizations.localeOf(context).languageCode;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_navigationStarted) {
+      return;
+    }
+    _navigationStarted = true;
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final controller = ref.read(activeNavigationProvider.notifier);
+    _navigationController = controller;
     Future<void>.microtask(
-      () => ref.read(activeNavigationProvider.notifier).start(
-            widget.route,
-            _languageCode,
-          ),
+      () => controller.start(
+        widget.route,
+        languageCode,
+      ),
     );
   }
 
   @override
   void dispose() {
-    unawaited(ref.read(activeNavigationProvider.notifier).stop());
+    final controller = _navigationController;
+    if (controller != null) {
+      unawaited(controller.stop());
+    }
     _mapController?.dispose();
     super.dispose();
   }
@@ -124,7 +134,7 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
             child: _runningWidgetTest
                 ? const ColoredBox(color: Color(0xFFDDE8D9))
                 : MapLibreMap(
-                    styleString: _styleUrl,
+                    styleString: MapConfig.styleUrl,
                     initialCameraPosition: CameraPosition(
                       target: LatLng(first.latitude, first.longitude),
                       zoom: 14.5,
