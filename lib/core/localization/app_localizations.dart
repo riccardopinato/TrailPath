@@ -71,6 +71,10 @@ class AppLocalizations {
   String get profileDogWalk => _value('profileDogWalk');
   String get delete => _value('delete');
   String get deleteRoute => _value('deleteRoute');
+  String get routingReady => _value('routingReady');
+  String get routingCalculating => _value('routingCalculating');
+  String get routeSnapped => _value('routeSnapped');
+  String get routeLocalFallback => _value('routeLocalFallback');
 
   static const Map<String, Map<String, String>> _values = {
     'it': {
@@ -116,6 +120,10 @@ class AppLocalizations {
       'profileDogWalk': 'Cane',
       'delete': 'Elimina',
       'deleteRoute': 'Eliminare il percorso?',
+      'routingReady': 'Routing pronto',
+      'routingCalculating': 'Calcolo percorso su sentieri e strade…',
+      'routeSnapped': 'Percorso agganciato alla rete OSM',
+      'routeLocalFallback': 'Modalità locale: linea diretta',
     },
     'en': {
       'planner': 'Plan',
@@ -160,6 +168,10 @@ class AppLocalizations {
       'profileDogWalk': 'Dog walk',
       'delete': 'Delete',
       'deleteRoute': 'Delete route?',
+      'routingReady': 'Routing ready',
+      'routingCalculating': 'Routing along paths and roads…',
+      'routeSnapped': 'Route snapped to the OSM network',
+      'routeLocalFallback': 'Local mode: direct line',
     },
     'es': {
       'planner': 'Planificar',
@@ -204,6 +216,10 @@ class AppLocalizations {
       'profileDogWalk': 'Perro',
       'delete': 'Eliminar',
       'deleteRoute': '¿Eliminar la ruta?',
+      'routingReady': 'Routing listo',
+      'routingCalculating': 'Calculando por caminos y carreteras…',
+      'routeSnapped': 'Ruta ajustada a la red OSM',
+      'routeLocalFallback': 'Modo local: línea directa',
     },
     'fr': {
       'planner': 'Planifier',
@@ -248,6 +264,10 @@ class AppLocalizations {
       'profileDogWalk': 'Chien',
       'delete': 'Supprimer',
       'deleteRoute': 'Supprimer le parcours ?',
+      'routingReady': 'Routage prêt',
+      'routingCalculating': 'Calcul sur chemins et routes…',
+      'routeSnapped': 'Parcours calé sur le réseau OSM',
+      'routeLocalFallback': 'Mode local : ligne directe',
     },
     'pt': {
       'planner': 'Planear',
@@ -292,6 +312,10 @@ class AppLocalizations {
       'profileDogWalk': 'Cão',
       'delete': 'Eliminar',
       'deleteRoute': 'Eliminar percurso?',
+      'routingReady': 'Roteamento pronto',
+      'routingCalculating': 'A calcular por trilhos e estradas…',
+      'routeSnapped': 'Percurso ajustado à rede OSM',
+      'routeLocalFallback': 'Modo local: linha direta',
     },
   };
 }
