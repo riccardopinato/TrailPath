@@ -73,7 +73,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }
 
     try {
-      final serviceEnabled = await _locationEngine.isServiceEnabled();
+      final engine = ref.read(locationEngineProvider);
+      final serviceEnabled = await engine.isServiceEnabled();
       if (!serviceEnabled) {
         if (mounted) {
           setState(() {
@@ -84,9 +85,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         return;
       }
 
-      var permission = await _locationEngine.hasPermission();
+      var permission = await engine.hasPermission();
       if (!permission) {
-        permission = await _locationEngine.requestPermission();
+        permission = await engine.requestPermission();
       }
 
       if (!permission) {
@@ -99,7 +100,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         return;
       }
 
-      final current = await _locationEngine.current();
+      final current = await engine.current();
       if (!mounted) {
         return;
       }
@@ -117,7 +118,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       }
 
       await _positionSubscription?.cancel();
-      _positionSubscription = _locationEngine.watch().listen(
+      _positionSubscription = engine.watch().listen(
         (sample) {
           if (!mounted) {
             return;
@@ -158,11 +159,12 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       return;
     }
 
+    final engine = ref.read(locationEngineProvider);
     try {
       if (!_locationServiceEnabled) {
-        await _locationEngine.openLocationSettings();
+        await engine.openLocationSettings();
       } else if (!_permissionGranted) {
-        await _locationEngine.openAppSettings();
+        await engine.openAppSettings();
       }
     } on Object {
       // Re-check below and surface a localized status chip if access remains
@@ -175,6 +177,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   }
 
   Future<void> _centerOnUser() async {
+    final engine = ref.read(locationEngineProvider);
     if (_locationBusy) {
       return;
     }
@@ -185,7 +188,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }
 
     var sample = _position;
-    sample ??= await _locationEngine.current();
+    sample ??= await engine.current();
     if (sample != null) {
       if (mounted) {
         setState(() => _position = sample);
@@ -341,6 +344,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
   Future<void> _importGpx() async {
     final strings = AppLocalizations.of(context);
+    final gpxService = ref.read(gpxServiceProvider);
+    final plannerController = ref.read(routePlannerProvider.notifier);
     try {
       final file = await FilePicker.pickFile(
         type: FileType.custom,
@@ -352,8 +357,11 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
       final bytes = await file.readAsBytes();
       final xml = utf8.decode(bytes);
-      final document = await ref.read(gpxServiceProvider).parse(xml);
-      ref.read(routePlannerProvider.notifier).importGpx(document);
+      final document = await gpxService.parse(xml);
+      if (!mounted) {
+        return;
+      }
+      plannerController.importGpx(document);
       await _syncPlannerAnnotations();
 
       if (mounted) {
@@ -476,6 +484,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   }
 
   Future<void> _saveRoute() async {
+    final database = ref.read(appDatabaseProvider);
+    final plannerController = ref.read(routePlannerProvider.notifier);
     final planner = ref.read(routePlannerProvider);
     if (!planner.canSave) {
       return;
@@ -518,7 +528,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       return;
     }
 
-    await ref.read(appDatabaseProvider).savePlannedRoute(
+    await database.savePlannedRoute(
           name: name.trim(),
           profile: planner.profile.name,
           waypointsData: planner.points,
@@ -531,7 +541,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           estimatedDuration: planner.estimatedDuration,
         );
 
-    ref.read(routePlannerProvider.notifier).resetAfterSave();
+    if (!mounted) {
+      return;
+    }
+    plannerController.resetAfterSave();
     await _syncPlannerAnnotations();
 
     if (mounted) {
