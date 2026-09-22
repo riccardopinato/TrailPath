@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/services/service_providers.dart';
 
 class RoutesScreen extends ConsumerWidget {
   const RoutesScreen({super.key});
@@ -48,6 +53,7 @@ class RoutesScreen extends ConsumerWidget {
                       final route = items[index];
                       return _RouteCard(
                         route: route,
+                        onShare: () => _shareRoute(context, ref, route),
                         onDelete: () => _deleteRoute(context, ref, route),
                       );
                     },
@@ -59,6 +65,41 @@ class RoutesScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _shareRoute(
+    BuildContext context,
+    WidgetRef ref,
+    SavedRoute route,
+  ) async {
+    final strings = AppLocalizations.of(context);
+    try {
+      final document = ref.read(appDatabaseProvider).savedRouteToGpx(route);
+      final xml = await ref.read(gpxServiceProvider).export(document);
+      final renderBox = context.findRenderObject() as RenderBox?;
+
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [
+            XFile.fromData(
+              Uint8List.fromList(utf8.encode(xml)),
+              mimeType: 'application/gpx+xml',
+            ),
+          ],
+          fileNameOverrides: [_safeGpxFileName(route.name)],
+          title: route.name,
+          sharePositionOrigin: renderBox == null
+              ? null
+              : renderBox.localToGlobal(Offset.zero) & renderBox.size,
+        ),
+      );
+    } on Object {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(strings.gpxExportError)),
+        );
+      }
+    }
   }
 
   Future<void> _deleteRoute(
@@ -94,10 +135,12 @@ class RoutesScreen extends ConsumerWidget {
 class _RouteCard extends StatelessWidget {
   const _RouteCard({
     required this.route,
+    required this.onShare,
     required this.onDelete,
   });
 
   final SavedRoute route;
+  final VoidCallback onShare;
   final VoidCallback onDelete;
 
   @override
@@ -155,6 +198,11 @@ class _RouteCard extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+              IconButton(
+                tooltip: strings.shareGpx,
+                onPressed: onShare,
+                icon: const Icon(Icons.ios_share_rounded),
               ),
               IconButton(
                 tooltip: strings.delete,
@@ -251,4 +299,13 @@ String _profileName(AppLocalizations strings, String profile) {
     'dogWalk' => strings.profileDogWalk,
     _ => profile,
   };
+}
+
+
+String _safeGpxFileName(String name) {
+  final cleaned = name
+      .replaceAll(RegExp(r'[^A-Za-z0-9._ -]+'), '')
+      .trim()
+      .replaceAll(RegExp(r'\s+'), '_');
+  return '${cleaned.isEmpty ? 'TrailPath_route' : cleaned}.gpx';
 }
