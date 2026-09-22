@@ -8,6 +8,7 @@ import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/services/service_providers.dart';
+import 'package:trail_path/features/navigation/presentation/navigation_screen.dart';
 
 class RoutesScreen extends ConsumerWidget {
   const RoutesScreen({super.key});
@@ -71,6 +72,8 @@ class RoutesScreen extends ConsumerWidget {
                           for (final route in routeItems) ...[
                             _RouteCard(
                               route: route,
+                              onNavigate: () =>
+                                  _openNavigation(context, ref, route),
                               onShare: () =>
                                   _shareRoute(context, ref, route),
                               onDelete: () =>
@@ -107,6 +110,22 @@ class RoutesScreen extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openNavigation(
+    BuildContext context,
+    WidgetRef ref,
+    SavedRoute route,
+  ) async {
+    final plan = ref.read(appDatabaseProvider).savedRouteToPlan(route);
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => NavigationScreen(
+          routeName: route.name,
+          route: plan,
         ),
       ),
     );
@@ -245,11 +264,15 @@ class RoutesScreen extends ConsumerWidget {
 class _RouteCard extends StatelessWidget {
   const _RouteCard({
     required this.route,
+    required this.onNavigate,
     required this.onShare,
     required this.onDelete,
   });
 
   final SavedRoute route;
+  final VoidCallback onNavigate;
+  final VoidCallback? onPrimary;
+  final String? primaryTooltip;
   final VoidCallback onShare;
   final VoidCallback onDelete;
 
@@ -265,6 +288,8 @@ class _RouteCard extends StatelessWidget {
           '${_formatDistance(route.distanceMeters)} · '
           '${_formatDuration(duration)} · '
           '${_profileName(strings, route.profile)}',
+      onPrimary: onNavigate,
+      primaryTooltip: strings.navigate,
       onShare: onShare,
       onDelete: onDelete,
     );
@@ -307,6 +332,8 @@ class _BaseCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.onPrimary,
+    this.primaryTooltip,
     required this.onShare,
     required this.onDelete,
   });
@@ -369,6 +396,12 @@ class _BaseCard extends StatelessWidget {
                 ],
               ),
             ),
+            if (onPrimary != null)
+              IconButton(
+                tooltip: primaryTooltip,
+                onPressed: onPrimary,
+                icon: const Icon(Icons.navigation_rounded),
+              ),
             IconButton(
               tooltip: strings.shareGpx,
               onPressed: onShare,
