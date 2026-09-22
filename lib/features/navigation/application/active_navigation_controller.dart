@@ -41,6 +41,8 @@ class ActiveNavigationState {
 
 class ActiveNavigationController extends Notifier<ActiveNavigationState> {
   StreamSubscription<NavigationEvent>? _subscription;
+  NavigationEngine? _engine;
+  NavigationFeedback? _feedback;
 
   @override
   ActiveNavigationState build() {
@@ -56,10 +58,12 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
 
     try {
       final feedback = ref.read(navigationFeedbackProvider);
+      _feedback = feedback;
       await _ignoreFeedback(() => feedback.configure(languageCode));
       final voice = _voiceMessages(languageCode);
 
       final engine = ref.read(navigationEngineProvider);
+      _engine = engine;
       _subscription = engine.events.listen(
         (event) {
           state = state.copyWith(
@@ -97,11 +101,21 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
   }
 
   Future<void> stop() async {
-    await ref.read(navigationEngineProvider).stop();
-    await ref.read(navigationFeedbackProvider).stop();
+    final engine = _engine;
+    final feedback = _feedback;
+    if (engine != null) {
+      await engine.stop();
+    }
+    if (feedback != null) {
+      await _ignoreFeedback(feedback.stop);
+    }
     await _subscription?.cancel();
     _subscription = null;
-    state = state.copyWith(isActive: false);
+    _engine = null;
+    _feedback = null;
+    if (ref.mounted) {
+      state = state.copyWith(isActive: false);
+    }
   }
 }
 
