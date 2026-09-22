@@ -86,6 +86,20 @@ class AppLocalizations {
   String get gpxImported => _value('gpxImported');
   String get gpxImportError => _value('gpxImportError');
   String get gpxExportError => _value('gpxExportError');
+  String get recording => _value('recording');
+  String get paused => _value('paused');
+  String get pause => _value('pause');
+  String get resume => _value('resume');
+  String get finish => _value('finish');
+  String get discard => _value('discard');
+  String get recoveredRecording => _value('recoveredRecording');
+  String get recoveredRecordingHint => _value('recoveredRecordingHint');
+  String get activityName => _value('activityName');
+  String get activitySaved => _value('activitySaved');
+  String get activityTooShort => _value('activityTooShort');
+  String get currentPace => _value('currentPace');
+  String get gpsAccuracy => _value('gpsAccuracy');
+  String get backgroundRecording => _value('backgroundRecording');
 
   static const Map<String, Map<String, String>> _values = {
     'it': {
@@ -146,6 +160,20 @@ class AppLocalizations {
       'gpxImported': 'GPX importato',
       'gpxImportError': 'Impossibile importare questo GPX',
       'gpxExportError': 'Impossibile esportare il GPX',
+      'recording': 'Registrazione in corso',
+      'paused': 'Registrazione in pausa',
+      'pause': 'Pausa',
+      'resume': 'Riprendi',
+      'finish': 'Termina',
+      'discard': 'Scarta',
+      'recoveredRecording': 'Registrazione recuperata',
+      'recoveredRecordingHint': 'Ho trovato una registrazione interrotta. Puoi riprenderla o scartarla.',
+      'activityName': 'Nome attività',
+      'activitySaved': 'Attività salvata',
+      'activityTooShort': 'Traccia troppo breve per essere salvata',
+      'currentPace': 'Passo',
+      'gpsAccuracy': 'Precisione GPS',
+      'backgroundRecording': 'Registrazione GPS anche in background',
     },
     'en': {
       'planner': 'Plan',
@@ -205,6 +233,20 @@ class AppLocalizations {
       'gpxImported': 'GPX imported',
       'gpxImportError': 'Could not import this GPX',
       'gpxExportError': 'Could not export GPX',
+      'recording': 'Recording in progress',
+      'paused': 'Recording paused',
+      'pause': 'Pause',
+      'resume': 'Resume',
+      'finish': 'Finish',
+      'discard': 'Discard',
+      'recoveredRecording': 'Recovered recording',
+      'recoveredRecordingHint': 'An interrupted recording was found. You can resume it or discard it.',
+      'activityName': 'Activity name',
+      'activitySaved': 'Activity saved',
+      'activityTooShort': 'Track is too short to save',
+      'currentPace': 'Pace',
+      'gpsAccuracy': 'GPS accuracy',
+      'backgroundRecording': 'GPS recording continues in background',
     },
     'es': {
       'planner': 'Planificar',
@@ -264,6 +306,20 @@ class AppLocalizations {
       'gpxImported': 'GPX importado',
       'gpxImportError': 'No se pudo importar este GPX',
       'gpxExportError': 'No se pudo exportar el GPX',
+      'recording': 'Registro en curso',
+      'paused': 'Registro en pausa',
+      'pause': 'Pausa',
+      'resume': 'Reanudar',
+      'finish': 'Finalizar',
+      'discard': 'Descartar',
+      'recoveredRecording': 'Registro recuperado',
+      'recoveredRecordingHint': 'Se encontró un registro interrumpido. Puedes reanudarlo o descartarlo.',
+      'activityName': 'Nombre de actividad',
+      'activitySaved': 'Actividad guardada',
+      'activityTooShort': 'La ruta es demasiado corta para guardarla',
+      'currentPace': 'Ritmo',
+      'gpsAccuracy': 'Precisión GPS',
+      'backgroundRecording': 'El GPS continúa registrando en segundo plano',
     },
     'fr': {
       'planner': 'Planifier',
@@ -323,6 +379,20 @@ class AppLocalizations {
       'gpxImported': 'GPX importé',
       'gpxImportError': 'Impossible d’importer ce GPX',
       'gpxExportError': 'Impossible d’exporter le GPX',
+      'recording': 'Enregistrement en cours',
+      'paused': 'Enregistrement en pause',
+      'pause': 'Pause',
+      'resume': 'Reprendre',
+      'finish': 'Terminer',
+      'discard': 'Supprimer',
+      'recoveredRecording': 'Enregistrement récupéré',
+      'recoveredRecordingHint': 'Un enregistrement interrompu a été trouvé. Vous pouvez le reprendre ou le supprimer.',
+      'activityName': 'Nom de l’activité',
+      'activitySaved': 'Activité enregistrée',
+      'activityTooShort': 'Trace trop courte pour être enregistrée',
+      'currentPace': 'Allure',
+      'gpsAccuracy': 'Précision GPS',
+      'backgroundRecording': 'Le GPS continue en arrière-plan',
     },
     'pt': {
       'planner': 'Planear',
@@ -382,6 +452,20 @@ class AppLocalizations {
       'gpxImported': 'GPX importado',
       'gpxImportError': 'Não foi possível importar este GPX',
       'gpxExportError': 'Não foi possível exportar o GPX',
+      'recording': 'Gravação em curso',
+      'paused': 'Gravação em pausa',
+      'pause': 'Pausa',
+      'resume': 'Retomar',
+      'finish': 'Terminar',
+      'discard': 'Descartar',
+      'recoveredRecording': 'Gravação recuperada',
+      'recoveredRecordingHint': 'Foi encontrada uma gravação interrompida. Pode retomá-la ou descartá-la.',
+      'activityName': 'Nome da atividade',
+      'activitySaved': 'Atividade guardada',
+      'activityTooShort': 'Percurso demasiado curto para guardar',
+      'currentPace': 'Ritmo',
+      'gpsAccuracy': 'Precisão GPS',
+      'backgroundRecording': 'A gravação GPS continua em segundo plano',
     },
   };
 }
