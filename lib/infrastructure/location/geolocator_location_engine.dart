@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/models.dart';
@@ -52,12 +53,36 @@ class GeolocatorLocationEngine implements LocationEngine {
     BatteryMode mode = BatteryMode.balanced,
   }) {
     final policy = batteryModePolicy(mode);
-    final settings = LocationSettings(
-      accuracy: _accuracy(policy.accuracy),
+    return Geolocator.getPositionStream(
+      locationSettings: _watchSettings(policy),
+    ).map(_toSample);
+  }
+
+  LocationSettings _watchSettings(BatteryModePolicy policy) {
+    final accuracy = _accuracy(policy.accuracy);
+
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return AndroidSettings(
+        accuracy: accuracy,
+        distanceFilter: policy.distanceFilterMeters,
+        intervalDuration: policy.interval,
+      );
+    }
+
+    if (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS) {
+      return AppleSettings(
+        accuracy: accuracy,
+        distanceFilter: policy.distanceFilterMeters,
+        activityType: ActivityType.fitness,
+        pauseLocationUpdatesAutomatically: true,
+      );
+    }
+
+    return LocationSettings(
+      accuracy: accuracy,
       distanceFilter: policy.distanceFilterMeters,
     );
-    return Geolocator.getPositionStream(locationSettings: settings)
-        .map(_toSample);
   }
 
   LocationAccuracy _accuracy(GpsAccuracyPreset preset) {
