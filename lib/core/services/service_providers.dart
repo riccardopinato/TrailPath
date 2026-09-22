@@ -11,6 +11,7 @@ import 'package:trail_path/infrastructure/navigation/flutter_tts_navigation_feed
 import 'package:trail_path/infrastructure/navigation/route_navigation_engine.dart';
 import 'package:trail_path/infrastructure/recording/geolocator_track_recorder.dart';
 import 'package:trail_path/infrastructure/routing/openstreetmap_routing_engine.dart';
+import 'package:trail_path/infrastructure/safety/device_safety_service.dart';
 
 final mapEngineProvider = Provider<MapEngine>(
   (ref) => const MapLibreMapEngine(),
@@ -71,4 +72,11 @@ final navigationFeedbackProvider = Provider<NavigationFeedback>((ref) {
 
 final offlineMapManagerProvider = Provider<OfflineMapManager>(
   (ref) => const MapLibreOfflineMapManager(),
+);
+
+final safetyServiceProvider = Provider<SafetyService>(
+  (ref) => DeviceSafetyService(
+    locationEngine: ref.watch(locationEngineProvider),
+    offlineMapManager: ref.watch(offlineMapManagerProvider),
+  ),
 );
