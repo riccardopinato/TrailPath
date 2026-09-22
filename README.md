@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.1.0 - Strong Foundation
+v0.2.0 - Map & Position
 
-This first baseline establishes the application architecture before routing and live maps are enabled.
+TrailPath now renders a live MapLibre map and connects the planner to device location, heading and native permission handling while preserving the v0.1 architecture.
 
 ### Included
 
@@ -15,7 +15,10 @@ This first baseline establishes the application architecture before routing and 
 - GoRouter navigation foundation
 - Drift local database schema v1
 - Map, routing, elevation, location, recording, navigation, offline, GPX and safety contracts
-- map-first planner shell
+- live MapLibre map in the planner
+- live GPS position with accuracy and heading
+- user-location compass rendering and recenter control
+- Android/iOS native location permission setup
 - recording and saved-routes shells
 - light and dark outdoor themes
 - Italian, English, Spanish, French and Portuguese localization foundation
