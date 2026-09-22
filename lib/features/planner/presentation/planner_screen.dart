@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
@@ -23,7 +24,6 @@ class PlannerScreen extends ConsumerStatefulWidget {
 }
 
 class _PlannerScreenState extends ConsumerState<PlannerScreen> {
-  static const _styleUrl = 'https://demotiles.maplibre.org/style.json';
   static const _fallbackCenter = LatLng(45.232, 11.750);
 
   MapLibreMapController? _mapController;
@@ -33,7 +33,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   bool _locationServiceEnabled = true;
   bool _locationBusy = true;
   bool _styleReady = false;
+  bool _searchBusy = false;
   String? _locationError;
+  final TextEditingController _searchController = TextEditingController();
 
   LocationEngine get _locationEngine => ref.read(locationEngineProvider);
 
@@ -49,6 +51,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   @override
   void dispose() {
     _positionSubscription?.cancel();
+    _searchController.dispose();
     _mapController?.dispose();
     super.dispose();
   }
@@ -159,6 +162,114 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       }
       await _focusPosition(sample);
     }
+  }
+
+  Future<void> _searchPlaces() async {
+    final query = _searchController.text.trim();
+    if (query.length < 2 || _searchBusy) {
+      return;
+    }
+
+    setState(() => _searchBusy = true);
+    try {
+      final languageCode = Localizations.localeOf(context).languageCode;
+      final results = await ref.read(placeSearchServiceProvider).search(
+            query,
+            languageCode: languageCode,
+          );
+
+      if (!mounted) {
+        return;
+      }
+
+      if (results.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).noSearchResults)),
+        );
+        return;
+      }
+
+      final selected = await showModalBottomSheet<PlaceSearchResult>(
+        context: context,
+        showDragHandle: true,
+        isScrollControlled: true,
+        builder: (context) {
+          final strings = AppLocalizations.of(context);
+          return SafeArea(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.62,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 2, 20, 10),
+                    child: Text(
+                      strings.searchPlace,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: results.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final result = results[index];
+                        return ListTile(
+                          leading: const Icon(Icons.place_outlined),
+                          title: Text(
+                            result.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            result.displayName,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () => Navigator.of(context).pop(result),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+
+      if (selected != null && mounted) {
+        await _focusSearchResult(selected);
+      }
+    } on Object {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).searchFailed)),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _searchBusy = false);
+      }
+    }
+  }
+
+  Future<void> _focusSearchResult(PlaceSearchResult result) async {
+    final controller = _mapController;
+    if (controller == null) {
+      return;
+    }
+    await controller.animateCamera(
+      CameraUpdate.newLatLngZoom(
+        LatLng(result.point.latitude, result.point.longitude),
+        15.5,
+      ),
+    );
   }
 
   Future<void> _addWaypoint(LatLng coordinates) async {
@@ -400,7 +511,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           child: _runningWidgetTest
               ? _MapTestFallback(dark: dark)
               : MapLibreMap(
-                  styleString: _styleUrl,
+                  styleString: MapConfig.styleUrl,
                   initialCameraPosition: const CameraPosition(
                     target: _fallbackCenter,
                     zoom: 6.8,
@@ -499,7 +610,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  height: 50,
+                  height: 52,
                   decoration: BoxDecoration(
                     color: dark
                         ? const Color(0xEB172019)
@@ -513,23 +624,36 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.search, size: 21),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          strings.searchPlace,
-                          style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                  padding: const EdgeInsets.only(left: 14, right: 4),
+                  child: TextField(
+                    controller: _searchController,
+                    textInputAction: TextInputAction.search,
+                    onSubmitted: (_) => unawaited(_searchPlaces()),
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: strings.searchPlace,
+                      prefixIcon: const Icon(Icons.search, size: 21),
+                      prefixIconConstraints: const BoxConstraints(
+                        minWidth: 34,
+                        minHeight: 34,
                       ),
-                    ],
+                      suffixIcon: _searchBusy
+                          ? const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            )
+                          : IconButton(
+                              tooltip: strings.searchPlace,
+                              onPressed: _searchPlaces,
+                              icon: const Icon(Icons.arrow_forward_rounded),
+                            ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
