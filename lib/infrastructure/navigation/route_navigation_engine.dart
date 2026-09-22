@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/domain/navigation_math.dart';
@@ -25,12 +26,16 @@ class RouteNavigationEngine implements NavigationEngine {
   RoutePlan? _route;
   bool _isOffRoute = false;
   bool _arrived = false;
+  double _maxAcceptedAccuracyMeters = 60;
 
   @override
   Stream<NavigationEvent> get events => _controller.stream;
 
   @override
-  Future<void> start(RoutePlan route) async {
+  Future<void> start(
+    RoutePlan route, {
+    BatteryMode mode = BatteryMode.balanced,
+  }) async {
     if (route.geometry.length < 2) {
       throw ArgumentError('Navigation requires a route with at least two points.');
     }
@@ -39,6 +44,8 @@ class RouteNavigationEngine implements NavigationEngine {
     _route = route;
     _isOffRoute = false;
     _arrived = false;
+    _maxAcceptedAccuracyMeters =
+        batteryModePolicy(mode).maxAcceptedAccuracyMeters;
 
     final enabled = await locationEngine.isServiceEnabled();
     if (!enabled) {
@@ -61,7 +68,7 @@ class RouteNavigationEngine implements NavigationEngine {
       ),
     );
 
-    _subscription = locationEngine.watch().listen(
+    _subscription = locationEngine.watch(mode: mode).listen(
       _onPosition,
       onError: (Object error, StackTrace stackTrace) {
         if (!_controller.isClosed) {
@@ -73,7 +80,8 @@ class RouteNavigationEngine implements NavigationEngine {
 
   void _onPosition(PositionSample sample) {
     final route = _route;
-    if (route == null || sample.accuracyMeters > 60) {
+    if (route == null ||
+        sample.accuracyMeters > _maxAcceptedAccuracyMeters) {
       return;
     }
 

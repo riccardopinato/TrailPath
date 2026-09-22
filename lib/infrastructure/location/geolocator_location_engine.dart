@@ -1,4 +1,5 @@
 import 'package:geolocator/geolocator.dart';
+import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 
@@ -41,13 +42,24 @@ class GeolocatorLocationEngine implements LocationEngine {
   }
 
   @override
-  Stream<PositionSample> watch() {
-    const settings = LocationSettings(
-      accuracy: LocationAccuracy.best,
-      distanceFilter: 5,
+  Stream<PositionSample> watch({
+    BatteryMode mode = BatteryMode.balanced,
+  }) {
+    final policy = batteryModePolicy(mode);
+    final settings = LocationSettings(
+      accuracy: _accuracy(policy.accuracy),
+      distanceFilter: policy.distanceFilterMeters,
     );
     return Geolocator.getPositionStream(locationSettings: settings)
         .map(_toSample);
+  }
+
+  LocationAccuracy _accuracy(GpsAccuracyPreset preset) {
+    return switch (preset) {
+      GpsAccuracyPreset.navigation => LocationAccuracy.bestForNavigation,
+      GpsAccuracyPreset.high => LocationAccuracy.high,
+      GpsAccuracyPreset.medium => LocationAccuracy.medium,
+    };
   }
 
   PositionSample _toSample(Position position) {

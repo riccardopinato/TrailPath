@@ -1,3 +1,4 @@
+import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/models.dart';
 
 abstract interface class MapEngine {
@@ -27,11 +28,15 @@ abstract interface class LocationEngine {
 
   Future<PositionSample?> current();
 
-  Stream<PositionSample> watch();
+  Stream<PositionSample> watch({
+    BatteryMode mode = BatteryMode.balanced,
+  });
 }
 
 abstract interface class TrackRecorder {
   Stream<TrackRecorderSnapshot> get snapshots;
+
+  Future<void> setBatteryMode(BatteryMode mode);
 
   Future<void> start();
 
@@ -49,7 +54,10 @@ abstract interface class TrackRecorder {
 abstract interface class NavigationEngine {
   Stream<NavigationEvent> get events;
 
-  Future<void> start(RoutePlan route);
+  Future<void> start(
+    RoutePlan route, {
+    BatteryMode mode = BatteryMode.balanced,
+  });
 
   Future<void> stop();
 

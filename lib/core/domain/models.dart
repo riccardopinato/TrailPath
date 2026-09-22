@@ -237,18 +237,34 @@ class GpxDocument {
   final List<GeoPoint> points;
 }
 
+class ReturnPoint {
+  const ReturnPoint({
+    required this.id,
+    required this.point,
+    required this.savedAt,
+    required this.accuracyMeters,
+  });
+
+  final String id;
+  final GeoPoint point;
+  final DateTime savedAt;
+  final double accuracyMeters;
+}
+
 class SafetySnapshot {
   const SafetySnapshot({
     required this.batteryPercent,
     required this.hasLocationPermission,
     required this.locationServiceEnabled,
     required this.isOfflineMapAvailable,
+    this.isPowerSaveMode = false,
   });
 
   final int batteryPercent;
   final bool hasLocationPermission;
   final bool locationServiceEnabled;
   final bool isOfflineMapAvailable;
+  final bool isPowerSaveMode;
 }
 
 

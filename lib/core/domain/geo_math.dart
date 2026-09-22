@@ -29,4 +29,21 @@ double haversineMeters(GeoPoint a, GeoPoint b) {
   return earthRadiusMeters * arc;
 }
 
+double bearingDegrees(GeoPoint from, GeoPoint to) {
+  final lat1 = _degreesToRadians(from.latitude);
+  final lat2 = _degreesToRadians(to.latitude);
+  final deltaLon = _degreesToRadians(to.longitude - from.longitude);
+
+  final y = math.sin(deltaLon) * math.cos(lat2);
+  final x = math.cos(lat1) * math.sin(lat2) -
+      math.sin(lat1) * math.cos(lat2) * math.cos(deltaLon);
+  final bearing = math.atan2(y, x) * 180 / math.pi;
+  return normalizeDegrees(bearing);
+}
+
+double normalizeDegrees(double degrees) {
+  final normalized = degrees % 360;
+  return normalized < 0 ? normalized + 360 : normalized;
+}
+
 double _degreesToRadians(double degrees) => degrees * math.pi / 180;

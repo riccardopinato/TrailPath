@@ -65,6 +65,32 @@ class Activities extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class SavedReturnPoints extends Table {
+  TextColumn get id => text()();
+
+  RealColumn get latitude => real()();
+
+  RealColumn get longitude => real()();
+
+  RealColumn get elevationMeters => real().nullable()();
+
+  DateTimeColumn get savedAt => dateTime()();
+
+  RealColumn get accuracyMeters => real()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class AppSettings extends Table {
+  TextColumn get key => text()();
+
+  TextColumn get value => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {key};
+}
+
 class Waypoints extends Table {
   TextColumn get id => text()();
 
@@ -84,7 +110,15 @@ class Waypoints extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [SavedRoutes, Activities, Waypoints])
+@DriftDatabase(
+  tables: [
+    SavedRoutes,
+    Activities,
+    Waypoints,
+    SavedReturnPoints,
+    AppSettings,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase._(super.executor);
 
@@ -93,7 +127,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.memory() => AppDatabase._(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -104,6 +138,10 @@ class AppDatabase extends _$AppDatabase {
             await migrator.addColumn(activities, activities.profile);
             await migrator.addColumn(activities, activities.encodedGeometry);
             await migrator.addColumn(activities, activities.isPaused);
+          }
+          if (from < 3) {
+            await migrator.createTable(savedReturnPoints);
+            await migrator.createTable(appSettings);
           }
         },
       );
@@ -339,6 +377,59 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  Future<void> saveReturnPoint({
+    required GeoPoint point,
+    required double accuracyMeters,
+  }) async {
+    await into(savedReturnPoints).insertOnConflictUpdate(
+      SavedReturnPointsCompanion.insert(
+        id: 'car',
+        latitude: point.latitude,
+        longitude: point.longitude,
+        elevationMeters: Value(point.elevationMeters),
+        savedAt: DateTime.now(),
+        accuracyMeters: accuracyMeters,
+      ),
+    );
+  }
+
+  Stream<ReturnPoint?> watchReturnPoint() {
+    return (select(savedReturnPoints)
+          ..where((row) => row.id.equals('car'))
+          ..limit(1))
+        .watchSingleOrNull()
+        .map(_returnPointFromRow);
+  }
+
+  Future<ReturnPoint?> getReturnPoint() async {
+    final row = await (select(savedReturnPoints)
+          ..where((candidate) => candidate.id.equals('car'))
+          ..limit(1))
+        .getSingleOrNull();
+    return _returnPointFromRow(row);
+  }
+
+  Future<void> clearReturnPoint() async {
+    await (delete(savedReturnPoints)..where((row) => row.id.equals('car'))).go();
+  }
+
+  Future<void> setSetting(String key, String value) async {
+    await into(appSettings).insertOnConflictUpdate(
+      AppSettingsCompanion.insert(
+        key: key,
+        value: value,
+      ),
+    );
+  }
+
+  Future<String?> getSetting(String key) async {
+    final row = await (select(appSettings)
+          ..where((candidate) => candidate.key.equals(key))
+          ..limit(1))
+        .getSingleOrNull();
+    return row?.value;
+  }
+
   Future<void> deleteSavedRoute(String routeId) async {
     await transaction(() async {
       await (delete(waypoints)..where((row) => row.routeId.equals(routeId)))
@@ -346,6 +437,22 @@ class AppDatabase extends _$AppDatabase {
       await (delete(savedRoutes)..where((row) => row.id.equals(routeId))).go();
     });
   }
+}
+
+ReturnPoint? _returnPointFromRow(SavedReturnPoint? row) {
+  if (row == null) {
+    return null;
+  }
+  return ReturnPoint(
+    id: row.id,
+    point: GeoPoint(
+      latitude: row.latitude,
+      longitude: row.longitude,
+      elevationMeters: row.elevationMeters,
+    ),
+    savedAt: row.savedAt,
+    accuracyMeters: row.accuracyMeters,
+  );
 }
 
 LazyDatabase _openConnection() {
