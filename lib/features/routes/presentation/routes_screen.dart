@@ -237,7 +237,7 @@ String _formatDuration(Duration duration) {
   if (hours == 0) {
     return '${minutes} min';
   }
-  return '${hours}h ${minutes.toString().padLeft(2, '0')}';
+  return '$hours h ${minutes.toString().padLeft(2, '0')}';
 }
 
 String _profileName(AppLocalizations strings, String profile) {
