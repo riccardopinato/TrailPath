@@ -132,15 +132,7 @@ jobs:
             adb logcat -c
             adb shell am start -W -n com.riccardopinato.trail_path/.MainActivity
             sleep 8
-            PID="$(adb shell pidof com.riccardopinato.trail_path | tr -d '\r')"
-            if [ -z "$PID" ]; then
-              echo "TrailPath process is not running after launch."
-              adb logcat -d -v brief
-              exit 1
-            fi
+            test -n "$(adb shell pidof com.riccardopinato.trail_path | tr -d '\r')" || (echo "TrailPath process is not running after launch."; adb logcat -d -v brief; exit 1)
             adb logcat -d -v brief > /tmp/trailpath-logcat.txt
-            if grep -q "Process: com.riccardopinato.trail_path" /tmp/trailpath-logcat.txt; then
-              cat /tmp/trailpath-logcat.txt
-              exit 1
-            fi
-            echo "TrailPath Android smoke test passed with PID $PID."
+            ! grep -q "Process: com.riccardopinato.trail_path" /tmp/trailpath-logcat.txt || (cat /tmp/trailpath-logcat.txt; exit 1)
+            echo "TrailPath Android smoke test passed."
