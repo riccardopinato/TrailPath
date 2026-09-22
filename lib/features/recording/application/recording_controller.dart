@@ -74,6 +74,13 @@ class RecordingController extends Notifier<RecordingState> {
 
   @override
   RecordingState build() {
+    ref.listen(batteryModeProvider, (previous, next) {
+      next.whenData((mode) {
+        if (state.isActive) {
+          unawaited(_recorder.setBatteryMode(mode));
+        }
+      });
+    });
     ref.onDispose(() {
       _subscription?.cancel();
     });
@@ -149,6 +156,7 @@ class RecordingController extends Notifier<RecordingState> {
         clearError: true,
       );
 
+      await ref.read(runtimePermissionProvider).prepareRecording();
       final batteryMode = await ref.read(batteryModeProvider.future);
       await _recorder.setBatteryMode(batteryMode);
       await _bindRecorder();
@@ -181,6 +189,7 @@ class RecordingController extends Notifier<RecordingState> {
       clearError: true,
     );
     try {
+      await ref.read(runtimePermissionProvider).prepareRecording();
       final batteryMode = await ref.read(batteryModeProvider.future);
       await _recorder.setBatteryMode(batteryMode);
       await _recorder.resume();
