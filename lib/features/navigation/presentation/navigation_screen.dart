@@ -22,19 +22,23 @@ class NavigationScreen extends ConsumerStatefulWidget {
 class _NavigationScreenState extends ConsumerState<NavigationScreen> {
   MapLibreMapController? _mapController;
   bool _styleReady = false;
-  late final String _languageCode;
+  bool _navigationStarted = false;
 
   bool get _runningWidgetTest =>
       Platform.environment['FLUTTER_TEST']?.toLowerCase() == 'true';
 
   @override
-  void initState() {
-    super.initState();
-    _languageCode = Localizations.localeOf(context).languageCode;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_navigationStarted) {
+      return;
+    }
+    _navigationStarted = true;
+    final languageCode = Localizations.localeOf(context).languageCode;
     Future<void>.microtask(
       () => ref.read(activeNavigationProvider.notifier).start(
             widget.route,
-            _languageCode,
+            languageCode,
           ),
     );
   }
