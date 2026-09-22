@@ -406,7 +406,10 @@ class _BaseCard extends StatelessWidget {
                 onPressed: onPrimary,
                 icon: const Icon(Icons.navigation_rounded),
               ),
-            extraAction?,
+            ...switch (extraAction) {
+              final Widget action => [action],
+              null => const <Widget>[],
+            },
             PopupMenuButton<String>(
               tooltip: strings.routes,
               onSelected: (value) {
