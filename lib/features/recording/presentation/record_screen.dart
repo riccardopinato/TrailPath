@@ -154,6 +154,10 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
       follow: false,
     );
 
+    if (!mounted) {
+      return;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
