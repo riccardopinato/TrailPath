@@ -25,7 +25,7 @@ class OpenMeteoElevationEngine implements ElevationEngine {
 
     final sampled = resampleRouteByDistance(
       points,
-      maxPoints: maxSamples.clamp(2, 100),
+      maxPoints: maxSamples.clamp(2, 100).toInt(),
     );
 
     final latitudes = sampled
@@ -234,8 +234,8 @@ List<GeoPoint> resampleRouteByDistance(
       segmentIndex++;
     }
 
-    final beforeIndex = (segmentIndex - 1).clamp(0, points.length - 1);
-    final afterIndex = segmentIndex.clamp(0, points.length - 1);
+    final beforeIndex = (segmentIndex - 1).clamp(0, points.length - 1).toInt();
+    final afterIndex = segmentIndex.clamp(0, points.length - 1).toInt();
     final beforeDistance = cumulative[beforeIndex];
     final afterDistance = cumulative[afterIndex];
     final span = afterDistance - beforeDistance;
