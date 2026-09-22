@@ -100,6 +100,10 @@ class AppLocalizations {
   String get currentPace => _value('currentPace');
   String get gpsAccuracy => _value('gpsAccuracy');
   String get backgroundRecording => _value('backgroundRecording');
+  String get yourActivities => _value('yourActivities');
+  String get noActivities => _value('noActivities');
+  String get noActivitiesHint => _value('noActivitiesHint');
+  String get deleteActivity => _value('deleteActivity');
 
   static const Map<String, Map<String, String>> _values = {
     'it': {
@@ -174,6 +178,10 @@ class AppLocalizations {
       'currentPace': 'Passo',
       'gpsAccuracy': 'Precisione GPS',
       'backgroundRecording': 'Registrazione GPS anche in background',
+      'yourActivities': 'Le tue attività',
+      'noActivities': 'Nessuna attività registrata',
+      'noActivitiesHint': 'Le attività completate compariranno qui.',
+      'deleteActivity': 'Eliminare l’attività?',
     },
     'en': {
       'planner': 'Plan',
@@ -247,6 +255,10 @@ class AppLocalizations {
       'currentPace': 'Pace',
       'gpsAccuracy': 'GPS accuracy',
       'backgroundRecording': 'GPS recording continues in background',
+      'yourActivities': 'Your activities',
+      'noActivities': 'No recorded activities',
+      'noActivitiesHint': 'Completed activities will appear here.',
+      'deleteActivity': 'Delete activity?',
     },
     'es': {
       'planner': 'Planificar',
@@ -320,6 +332,10 @@ class AppLocalizations {
       'currentPace': 'Ritmo',
       'gpsAccuracy': 'Precisión GPS',
       'backgroundRecording': 'El GPS continúa registrando en segundo plano',
+      'yourActivities': 'Tus actividades',
+      'noActivities': 'No hay actividades registradas',
+      'noActivitiesHint': 'Las actividades completadas aparecerán aquí.',
+      'deleteActivity': '¿Eliminar la actividad?',
     },
     'fr': {
       'planner': 'Planifier',
@@ -393,6 +409,10 @@ class AppLocalizations {
       'currentPace': 'Allure',
       'gpsAccuracy': 'Précision GPS',
       'backgroundRecording': 'Le GPS continue en arrière-plan',
+      'yourActivities': 'Vos activités',
+      'noActivities': 'Aucune activité enregistrée',
+      'noActivitiesHint': 'Les activités terminées apparaîtront ici.',
+      'deleteActivity': 'Supprimer l’activité ?',
     },
     'pt': {
       'planner': 'Planear',
@@ -466,6 +486,10 @@ class AppLocalizations {
       'currentPace': 'Ritmo',
       'gpsAccuracy': 'Precisão GPS',
       'backgroundRecording': 'A gravação GPS continua em segundo plano',
+      'yourActivities': 'As suas atividades',
+      'noActivities': 'Nenhuma atividade gravada',
+      'noActivitiesHint': 'As atividades concluídas aparecerão aqui.',
+      'deleteActivity': 'Eliminar atividade?',
     },
   };
 }
