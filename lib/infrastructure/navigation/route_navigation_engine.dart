@@ -93,7 +93,12 @@ class RouteNavigationEngine implements NavigationEngine {
     if (!_isCurrent(session)) {
       return;
     }
-    _subscription = locationEngine.watch(mode: mode).listen(
+    _subscription = locationEngine
+        .watch(
+          mode: mode,
+          keepAliveInBackground: true,
+        )
+        .listen(
       (sample) {
         if (_isCurrent(session)) {
           _onPosition(sample);
@@ -127,7 +132,12 @@ class RouteNavigationEngine implements NavigationEngine {
     if (!_isCurrent(session) || _route == null) {
       return;
     }
-    _subscription = locationEngine.watch(mode: mode).listen(
+    _subscription = locationEngine
+        .watch(
+          mode: mode,
+          keepAliveInBackground: true,
+        )
+        .listen(
       (sample) {
         if (_isCurrent(session)) {
           _onPosition(sample);
