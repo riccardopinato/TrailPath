@@ -34,6 +34,8 @@ void main() {
 
     await engine.start(route);
 
+    expect(location.lastKeepAliveInBackground, isTrue);
+
     location.add(
       const PositionSample(
         point: GeoPoint(latitude: 45.001, longitude: 11.005),
@@ -93,6 +95,8 @@ void main() {
 class _FakeLocationEngine implements LocationEngine {
   final _controller = StreamController<PositionSample>.broadcast();
 
+  bool lastKeepAliveInBackground = false;
+
   void add(PositionSample sample) => _controller.add(sample);
 
   @override
@@ -116,6 +120,9 @@ class _FakeLocationEngine implements LocationEngine {
   @override
   Stream<PositionSample> watch({
     BatteryMode mode = BatteryMode.balanced,
-  }) =>
-      _controller.stream;
+    bool keepAliveInBackground = false,
+  }) {
+    lastKeepAliveInBackground = keepAliveInBackground;
+    return _controller.stream;
+  }
 }
