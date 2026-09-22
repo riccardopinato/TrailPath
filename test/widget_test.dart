@@ -22,6 +22,6 @@ void main() {
 
     expect(find.text('TrailPath'), findsOneWidget);
     expect(find.text('0 m'), findsOneWidget);
-    expect(find.text('v0.3.1'), findsOneWidget);
+    expect(find.text('v0.4.0'), findsOneWidget);
   });
 }
