@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.4.0 - Elevation
+v0.5.0 - GPX Engine
 
-TrailPath now enriches routed geometry with terrain elevation, ascent/descent, grade and an interactive elevation profile while keeping routing and elevation providers independently replaceable.
+TrailPath now imports and exports GPX tracks, preserves elevation and timestamps, loads imported tracks directly into the planner and shares current or saved routes through the native Android/iOS share sheet.
 
 ### Included
 
@@ -27,6 +27,10 @@ TrailPath now enriches routed geometry with terrain elevation, ascent/descent, g
 - Open-Meteo/Copernicus terrain elevation sampling up to 100 points
 - ascent/descent and segment grade calculation with DEM noise filtering
 - interactive elevation profile with drag inspection
+- GPX 1.1 parser/exporter with track, route and waypoint fallback
+- native .gpx file import through the platform file picker
+- elevation/time preservation on GPX round-trip
+- GPX sharing from both planner and saved routes
 - separate waypoint and snapped-geometry persistence in Drift
 - saved-routes list with delete flow
 - recording shell
