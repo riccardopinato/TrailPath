@@ -327,6 +327,18 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  Future<void> setSavedRouteOfflineReady(
+    String routeId, {
+    required bool isReady,
+  }) async {
+    await (update(savedRoutes)..where((row) => row.id.equals(routeId))).write(
+      SavedRoutesCompanion(
+        isOfflineReady: Value(isReady),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
   Future<void> deleteSavedRoute(String routeId) async {
     await transaction(() async {
       await (delete(waypoints)..where((row) => row.routeId.equals(routeId)))
