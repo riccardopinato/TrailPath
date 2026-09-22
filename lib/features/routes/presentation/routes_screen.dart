@@ -7,9 +7,9 @@ import 'package:share_plus/share_plus.dart';
 import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
-import 'package:trail_path/features/offline/application/offline_downloads_controller.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/navigation/presentation/navigation_screen.dart';
+import 'package:trail_path/features/offline/application/offline_downloads_controller.dart';
 
 class RoutesScreen extends ConsumerWidget {
   const RoutesScreen({super.key});
@@ -406,7 +406,7 @@ class _BaseCard extends StatelessWidget {
                 onPressed: onPrimary,
                 icon: const Icon(Icons.navigation_rounded),
               ),
-            if (extraAction != null) extraAction!,
+            extraAction?,
             PopupMenuButton<String>(
               tooltip: strings.routes,
               onSelected: (value) {
