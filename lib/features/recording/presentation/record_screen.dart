@@ -21,6 +21,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
 
   MapLibreMapController? _mapController;
   bool _styleReady = false;
+  Future<void> _mapMutationChain = Future<void>.value();
 
   bool get _runningWidgetTest =>
       Platform.environment['FLUTTER_TEST']?.toLowerCase() == 'true';
@@ -28,9 +29,8 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
   @override
   void initState() {
     super.initState();
-    Future<void>.microtask(
-      () => ref.read(recordingControllerProvider.notifier).checkRecovery(),
-    );
+    final controller = ref.read(recordingControllerProvider.notifier);
+    Future<void>.microtask(controller.checkRecovery);
   }
 
   @override
@@ -40,6 +40,26 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
   }
 
   Future<void> _syncTrack(
+    TrackRecorderSnapshot snapshot, {
+    bool follow = true,
+  }) {
+    final operation = _mapMutationChain
+        .catchError((Object _) {})
+        .then((_) async {
+      if (!mounted) {
+        return;
+      }
+      try {
+        await _syncTrackNow(snapshot, follow: follow);
+      } on Object {
+        // Ignore native map mutations that race with view disposal.
+      }
+    });
+    _mapMutationChain = operation;
+    return operation;
+  }
+
+  Future<void> _syncTrackNow(
     TrackRecorderSnapshot snapshot, {
     bool follow = true,
   }) async {
