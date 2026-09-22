@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/infrastructure/location/geolocator_location_engine.dart';
 import 'package:trail_path/infrastructure/maps/maplibre_map_engine.dart';
+import 'package:trail_path/infrastructure/routing/openstreetmap_routing_engine.dart';
 
 final mapEngineProvider = Provider<MapEngine>(
   (ref) => const MapLibreMapEngine(),
@@ -9,4 +10,12 @@ final mapEngineProvider = Provider<MapEngine>(
 
 final locationEngineProvider = Provider<LocationEngine>(
   (ref) => const GeolocatorLocationEngine(),
+);
+
+
+final routingEngineProvider = Provider<RoutingEngine>(
+  (ref) => const FallbackRoutingEngine(
+    primary: OpenStreetMapRoutingEngine(),
+    fallback: StraightLineRoutingEngine(),
+  ),
 );
