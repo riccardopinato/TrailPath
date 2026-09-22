@@ -103,14 +103,19 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
   Future<void> stop() async {
     final engine = _engine;
     final feedback = _feedback;
+
+    // Detach first. Some engines emit a final "stopped" event while stopping;
+    // the provider may already be leaving the widget tree at that point.
+    await _subscription?.cancel();
+    _subscription = null;
+
     if (engine != null) {
       await engine.stop();
     }
     if (feedback != null) {
       await _ignoreFeedback(feedback.stop);
     }
-    await _subscription?.cancel();
-    _subscription = null;
+
     _engine = null;
     _feedback = null;
     if (ref.mounted) {
