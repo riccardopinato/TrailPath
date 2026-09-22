@@ -1,10 +1,10 @@
 # TrailPath roadmap
 
 ## v0.1 - Strong Foundation
-Architecture, database, service boundaries, localization, themes, CI and application shell.
+Completed. Architecture, database, service boundaries, localization, themes, CI and application shell.
 
 ## v0.2 - Map & Position
-Real MapLibre map, GPS, heading, follow-user controls, runtime permissions and native background preparation.
+Completed. Real MapLibre map, OpenFreeMap basemap, Geolocator engine, live GPS, accuracy state, heading-aware user puck, follow-user controls, runtime permissions and native permission bootstrap.
 
 ## v0.3 - Route Planner
 Waypoint editing, route requests, snap-to-network, undo/redo, distance, duration and persistence.
