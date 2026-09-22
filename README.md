@@ -4,16 +4,16 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.8.0 - Offline
+v0.9.0 - Outdoor Intelligence
 
-TrailPath can now prepare saved routes for offline use with native MapLibre regions, live download progress, storage management and route navigation that remains map-capable when connectivity disappears.
+TrailPath now adds adaptive GPS battery modes, persistent Back to Car guidance, a device Safety Check and quick location sharing while keeping the existing offline-first route workflow.
 
 ### Included
 
 - Flutter Android + iOS codebase
 - Riverpod dependency injection and state foundation
 - GoRouter navigation foundation
-- Drift local database schema v2 with recoverable activity drafts
+- Drift local database schema v3 with recoverable activity drafts, return points and app settings
 - Map, routing, elevation, location, recording, navigation, offline, GPX and safety contracts
 - live MapLibre map in the planner
 - live GPS position with accuracy and heading
@@ -42,6 +42,11 @@ TrailPath can now prepare saved routes for offline use with native MapLibre regi
 - adaptive offline-region bounds and zoom levels to control storage size
 - live offline download progress and persistent route readiness
 - offline map library with storage usage, deletion and ambient-cache controls
+- Performance / Balanced / Saver GPS battery modes that alter real sampling behavior
+- persistent Back to Car parking point with local distance and bearing guidance
+- dedicated Back to Car map with live return line and heading-aware direction arrow
+- device Safety Check for battery, system battery saver, GPS permissions/services and offline-map readiness
+- quick current-position sharing through the native share sheet
 - light and dark outdoor themes
 - Italian, English, Spanish, French and Portuguese localization foundation
 - structured logging
