@@ -251,6 +251,18 @@ class ReturnPoint {
   final double accuracyMeters;
 }
 
+class PlaceSearchResult {
+  const PlaceSearchResult({
+    required this.name,
+    required this.displayName,
+    required this.point,
+  });
+
+  final String name;
+  final String displayName;
+  final GeoPoint point;
+}
+
 class SafetySnapshot {
   const SafetySnapshot({
     required this.batteryPercent,
