@@ -69,6 +69,8 @@ class AppLocalizations {
   String get profileMtb => _value('profileMtb');
   String get profileCycling => _value('profileCycling');
   String get profileDogWalk => _value('profileDogWalk');
+  String get delete => _value('delete');
+  String get deleteRoute => _value('deleteRoute');
 
   static const Map<String, Map<String, String>> _values = {
     'it': {
@@ -112,6 +114,8 @@ class AppLocalizations {
       'profileMtb': 'MTB',
       'profileCycling': 'Bici',
       'profileDogWalk': 'Cane',
+      'delete': 'Elimina',
+      'deleteRoute': 'Eliminare il percorso?',
     },
     'en': {
       'planner': 'Plan',
@@ -154,6 +158,8 @@ class AppLocalizations {
       'profileMtb': 'MTB',
       'profileCycling': 'Cycling',
       'profileDogWalk': 'Dog walk',
+      'delete': 'Delete',
+      'deleteRoute': 'Delete route?',
     },
     'es': {
       'planner': 'Planificar',
@@ -196,6 +202,8 @@ class AppLocalizations {
       'profileMtb': 'MTB',
       'profileCycling': 'Bici',
       'profileDogWalk': 'Perro',
+      'delete': 'Eliminar',
+      'deleteRoute': '¿Eliminar la ruta?',
     },
     'fr': {
       'planner': 'Planifier',
@@ -238,6 +246,8 @@ class AppLocalizations {
       'profileMtb': 'VTT',
       'profileCycling': 'Vélo',
       'profileDogWalk': 'Chien',
+      'delete': 'Supprimer',
+      'deleteRoute': 'Supprimer le parcours ?',
     },
     'pt': {
       'planner': 'Planear',
@@ -280,6 +290,8 @@ class AppLocalizations {
       'profileMtb': 'MTB',
       'profileCycling': 'Bicicleta',
       'profileDogWalk': 'Cão',
+      'delete': 'Eliminar',
+      'deleteRoute': 'Eliminar percurso?',
     },
   };
 }
