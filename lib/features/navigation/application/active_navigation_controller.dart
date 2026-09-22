@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/core/services/service_providers.dart';
@@ -45,10 +46,26 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
 
   @override
   ActiveNavigationState build() {
+    ref.listen(batteryModeProvider, (previous, next) {
+      next.whenData((mode) {
+        if (state.isActive) {
+          unawaited(_applyBatteryMode(mode));
+        }
+      });
+    });
     ref.onDispose(() {
       _subscription?.cancel();
     });
     return const ActiveNavigationState();
+  }
+
+  Future<void> _applyBatteryMode(BatteryMode mode) async {
+    try {
+      await ref.read(navigationEngineProvider).setBatteryMode(mode);
+    } on Object {
+      // Keep navigation alive if a platform stream cannot be reconfigured
+      // while the activity is running.
+    }
   }
 
   Future<void> start(RoutePlan route, String languageCode) async {
