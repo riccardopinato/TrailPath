@@ -37,6 +37,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   PlaceSearchResult? _searchResult;
   String? _locationError;
   final TextEditingController _searchController = TextEditingController();
+  Future<void> _mapMutationChain = Future<void>.value();
 
   LocationEngine get _locationEngine => ref.read(locationEngineProvider);
 
@@ -72,8 +73,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       return;
     }
 
+    final locationEngine = ref.read(locationEngineProvider);
+
     try {
-      final serviceEnabled = await _locationEngine.isServiceEnabled();
+      final serviceEnabled = await locationEngine.isServiceEnabled();
       if (!serviceEnabled) {
         if (mounted) {
           setState(() {
@@ -84,9 +87,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         return;
       }
 
-      var permission = await _locationEngine.hasPermission();
+      var permission = await locationEngine.hasPermission();
       if (!permission) {
-        permission = await _locationEngine.requestPermission();
+        permission = await locationEngine.requestPermission();
       }
 
       if (!permission) {
@@ -99,7 +102,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         return;
       }
 
-      final current = await _locationEngine.current();
+      final current = await locationEngine.current();
       if (!mounted) {
         return;
       }
@@ -117,7 +120,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       }
 
       await _positionSubscription?.cancel();
-      _positionSubscription = _locationEngine.watch().listen(
+      _positionSubscription = locationEngine.watch().listen(
         (sample) {
           if (!mounted) {
             return;
@@ -158,11 +161,12 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       return;
     }
 
+    final locationEngine = ref.read(locationEngineProvider);
     try {
       if (!_locationServiceEnabled) {
-        await _locationEngine.openLocationSettings();
+        await locationEngine.openLocationSettings();
       } else if (!_permissionGranted) {
-        await _locationEngine.openAppSettings();
+        await locationEngine.openAppSettings();
       }
     } on Object {
       // Re-check below and surface a localized status chip if access remains
@@ -185,7 +189,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }
 
     var sample = _position;
-    sample ??= await _locationEngine.current();
+    sample ??= await locationEngine.current();
     if (sample != null) {
       if (mounted) {
         setState(() => _position = sample);
@@ -411,7 +415,24 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }
   }
 
-  Future<void> _syncPlannerAnnotations() async {
+  Future<void> _syncPlannerAnnotations() {
+    final operation = _mapMutationChain
+        .catchError((Object _) {})
+        .then((_) async {
+      if (!mounted) {
+        return;
+      }
+      try {
+        await _syncPlannerAnnotationsNow();
+      } on Object {
+        // MapLibre can be disposed while a queued native mutation is pending.
+      }
+    });
+    _mapMutationChain = operation;
+    return operation;
+  }
+
+  Future<void> _syncPlannerAnnotationsNow() async {
     if (_runningWidgetTest || !_styleReady) {
       return;
     }
