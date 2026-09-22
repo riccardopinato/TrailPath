@@ -38,8 +38,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   String? _locationError;
   final TextEditingController _searchController = TextEditingController();
 
-  LocationEngine get _locationEngine => ref.read(locationEngineProvider);
-
   bool get _runningWidgetTest =>
       Platform.environment['FLUTTER_TEST']?.toLowerCase() == 'true';
 
