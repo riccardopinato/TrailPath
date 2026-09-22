@@ -96,6 +96,51 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v6
         with:
-          name: TrailPath-v0.9.0-debug
+          name: TrailPath-v0.9.1-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
+
+
+  android-smoke:
+    needs: validate-and-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Download debug APK
+        uses: actions/download-artifact@v7
+        with:
+          name: TrailPath-v0.9.1-debug
+          path: apk
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Boot Android emulator and smoke test
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            adb install -r apk/app-debug.apk
+            adb logcat -c
+            adb shell am start -W -n com.riccardopinato.trail_path/.MainActivity
+            sleep 8
+            PID="$(adb shell pidof com.riccardopinato.trail_path | tr -d '\r')"
+            if [ -z "$PID" ]; then
+              echo "TrailPath process is not running after launch."
+              adb logcat -d -v brief
+              exit 1
+            fi
+            adb logcat -d -v brief > /tmp/trailpath-logcat.txt
+            if grep -q "Process: com.riccardopinato.trail_path" /tmp/trailpath-logcat.txt; then
+              cat /tmp/trailpath-logcat.txt
+              exit 1
+            fi
+            echo "TrailPath Android smoke test passed with PID $PID."
