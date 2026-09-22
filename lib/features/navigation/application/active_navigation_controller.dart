@@ -56,6 +56,7 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
     try {
       final feedback = ref.read(navigationFeedbackProvider);
       await feedback.configure(languageCode);
+      final voice = _voiceMessages(languageCode);
 
       final engine = ref.read(navigationEngineProvider);
       _subscription = engine.events.listen(
@@ -69,12 +70,12 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
           switch (event.type) {
             case NavigationEventType.offRoute:
               unawaited(feedback.alert());
-              unawaited(feedback.speak('Fuori percorso'));
+              unawaited(feedback.speak(voice.offRoute));
             case NavigationEventType.backOnRoute:
-              unawaited(feedback.speak('Sei tornato sul percorso'));
+              unawaited(feedback.speak(voice.backOnRoute));
             case NavigationEventType.arrived:
               unawaited(feedback.alert());
-              unawaited(feedback.speak('Sei arrivato'));
+              unawaited(feedback.speak(voice.arrived));
             case NavigationEventType.started:
             case NavigationEventType.instruction:
             case NavigationEventType.stopped:
@@ -100,4 +101,37 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
     _subscription = null;
     state = state.copyWith(isActive: false);
   }
+}
+
+
+({String offRoute, String backOnRoute, String arrived}) _voiceMessages(
+  String languageCode,
+) {
+  return switch (languageCode) {
+    'it' => (
+        offRoute: 'Fuori percorso',
+        backOnRoute: 'Sei tornato sul percorso',
+        arrived: 'Sei arrivato',
+      ),
+    'es' => (
+        offRoute: 'Fuera de ruta',
+        backOnRoute: 'Has vuelto a la ruta',
+        arrived: 'Has llegado',
+      ),
+    'fr' => (
+        offRoute: 'Hors parcours',
+        backOnRoute: 'Vous êtes revenu sur le parcours',
+        arrived: 'Vous êtes arrivé',
+      ),
+    'pt' => (
+        offRoute: 'Fora do percurso',
+        backOnRoute: 'Regressou ao percurso',
+        arrived: 'Chegou ao destino',
+      ),
+    _ => (
+        offRoute: 'Off route',
+        backOnRoute: 'You are back on route',
+        arrived: 'You have arrived',
+      ),
+  };
 }
