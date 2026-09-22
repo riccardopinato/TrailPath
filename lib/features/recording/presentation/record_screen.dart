@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/maps/map_config.dart';
 import 'package:trail_path/features/recording/application/recording_controller.dart';
 
 class RecordScreen extends ConsumerStatefulWidget {
@@ -16,7 +17,7 @@ class RecordScreen extends ConsumerStatefulWidget {
 }
 
 class _RecordScreenState extends ConsumerState<RecordScreen> {
-  static const _styleUrl = 'https://demotiles.maplibre.org/style.json';
+  static const _styleUrl = MapConfig.styleUrl;
   static const _fallbackCenter = LatLng(45.232, 11.750);
 
   MapLibreMapController? _mapController;
