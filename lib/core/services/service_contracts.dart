@@ -52,6 +52,18 @@ abstract interface class NavigationEngine {
   Future<void> start(RoutePlan route);
 
   Future<void> stop();
+
+  Future<void> dispose();
+}
+
+abstract interface class NavigationFeedback {
+  Future<void> configure(String languageCode);
+
+  Future<void> speak(String message);
+
+  Future<void> alert();
+
+  Future<void> stop();
 }
 
 abstract interface class OfflineMapManager {
