@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
@@ -51,7 +52,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
 
     final client = HttpClient()
       ..connectionTimeout = timeout
-      ..userAgent = 'TrailPath/0.3.1';
+      ..userAgent = MapConfig.userAgent;
 
     try {
       final requestHttp = await client.getUrl(uri).timeout(timeout);
@@ -64,7 +65,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         );
       }
 
-      final body = await response.transform(utf8.decoder).join();
+      final body = await response.transform(utf8.decoder).join().timeout(timeout);
       final payload = jsonDecode(body);
       if (payload is! Map<String, dynamic>) {
         throw const RoutingException('Invalid routing response.');
@@ -116,8 +117,14 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         throw const RoutingException('Route geometry could not be decoded.');
       }
 
-      final distance = (route['distance'] as num?)?.toDouble() ?? 0;
-      final seconds = (route['duration'] as num?)?.round() ?? 0;
+      final reportedDistance = (route['distance'] as num?)?.toDouble() ?? 0;
+      final distance = reportedDistance > 0
+          ? reportedDistance
+          : calculateRouteDistanceMeters(points);
+      final reportedSeconds = (route['duration'] as num?)?.round() ?? 0;
+      final seconds = reportedSeconds > 0
+          ? reportedSeconds
+          : _estimateSeconds(distance, request.profile);
 
       return RoutePlan(
         geometry: List<GeoPoint>.unmodifiable(points),
