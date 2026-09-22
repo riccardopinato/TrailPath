@@ -3,12 +3,13 @@ import 'dart:io';
 
 import 'package:maplibre_gl/maplibre_gl.dart' as ml;
 import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/core/maps/map_config.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 
 class MapLibreOfflineMapManager implements OfflineMapManager {
   const MapLibreOfflineMapManager();
 
-  static const String _styleUrl = 'https://demotiles.maplibre.org/style.json';
+  static const String _styleUrl = MapConfig.styleUrl;
 
   bool get _isSupported => Platform.isAndroid || Platform.isIOS;
 
