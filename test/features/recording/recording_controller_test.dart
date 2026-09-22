@@ -42,6 +42,11 @@ void main() {
             longitude: 11.001,
             elevationMeters: 110,
           ),
+          GeoPoint(
+            latitude: 45.002,
+            longitude: 11.002,
+            elevationMeters: 112,
+          ),
         ],
         distanceMeters: 140,
         ascentMeters: 10,
