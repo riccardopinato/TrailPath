@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.3.1 - Routing & Snap
+v0.4.0 - Elevation
 
-TrailPath now routes planner waypoints along the OpenStreetMap foot/bike network through a provider-backed RoutingEngine, while retaining the local straight-line fallback when network routing is unavailable.
+TrailPath now enriches routed geometry with terrain elevation, ascent/descent, grade and an interactive elevation profile while keeping routing and elevation providers independently replaceable.
 
 ### Included
 
@@ -24,6 +24,9 @@ TrailPath now routes planner waypoints along the OpenStreetMap foot/bike network
 - activity profiles with foot/bike routing profiles
 - asynchronous snap-to-network routing through routing.openstreetmap.de
 - automatic local straight-line fallback when routing is unavailable
+- Open-Meteo/Copernicus terrain elevation sampling up to 100 points
+- ascent/descent and segment grade calculation with DEM noise filtering
+- interactive elevation profile with drag inspection
 - separate waypoint and snapped-geometry persistence in Drift
 - saved-routes list with delete flow
 - recording shell
