@@ -708,7 +708,8 @@ String _formatDuration(Duration duration) {
   if (hours == 0) {
     return '${minutes} min';
   }
-  return '$hours h ${minutes.toString().padLeft(2, '0')}';
+  final minuteText = minutes.toString().padLeft(2, '0');
+  return '$hours h $minuteText';
 }
 
 class _Metric extends StatelessWidget {
