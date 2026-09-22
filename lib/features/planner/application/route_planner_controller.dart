@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trail_path/core/domain/elevation_math.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_providers.dart';
@@ -24,6 +25,7 @@ class RoutePlannerState {
     this.routingSource = 'local',
     this.elevationProfile = const ElevationProfile.unavailable(),
     this.isElevationLoading = false,
+    this.importedName,
   });
 
   final List<GeoPoint> points;
@@ -38,6 +40,7 @@ class RoutePlannerState {
   final String routingSource;
   final ElevationProfile elevationProfile;
   final bool isElevationLoading;
+  final String? importedName;
 
   bool get canSave =>
       points.length >= 2 && geometry.length >= 2 && distanceMeters > 0;
@@ -61,6 +64,8 @@ class RoutePlannerState {
     String? routingSource,
     ElevationProfile? elevationProfile,
     bool? isElevationLoading,
+    String? importedName,
+    bool clearImportedName = false,
   }) {
     return RoutePlannerState(
       points: points ?? this.points,
@@ -75,6 +80,8 @@ class RoutePlannerState {
       routingSource: routingSource ?? this.routingSource,
       elevationProfile: elevationProfile ?? this.elevationProfile,
       isElevationLoading: isElevationLoading ?? this.isElevationLoading,
+      importedName:
+          clearImportedName ? null : importedName ?? this.importedName,
     );
   }
 }
@@ -134,6 +141,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       estimatedDuration: _estimateDuration(state.distanceMeters, profile),
       elevationProfile: const ElevationProfile.unavailable(),
       isElevationLoading: false,
+      clearImportedName: true,
     );
     unawaited(_refreshRoute());
   }
@@ -144,6 +152,80 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     _undoStack.clear();
     _redoStack.clear();
     state = RoutePlannerState(profile: state.profile);
+  }
+
+  void importGpx(GpxDocument document) {
+    _routingGeneration++;
+    _elevationGeneration++;
+    _undoStack.clear();
+    _redoStack.clear();
+
+    final geometry = List<GeoPoint>.unmodifiable(document.points);
+    final distance = calculateRouteDistanceMeters(geometry);
+    final hasCompleteElevation =
+        geometry.every((point) => point.elevationMeters != null);
+    final elevationProfile = hasCompleteElevation
+        ? buildElevationProfile(
+            geometry,
+            source: 'gpx',
+          )
+        : const ElevationProfile.unavailable();
+
+    state = RoutePlannerState(
+      points: [geometry.first, geometry.last],
+      geometry: geometry,
+      profile: state.profile,
+      distanceMeters: distance,
+      estimatedDuration: _estimateDuration(distance, state.profile),
+      canUndo: false,
+      canRedo: false,
+      isRouting: false,
+      isSnapped: false,
+      routingSource: 'gpx',
+      elevationProfile: elevationProfile,
+      isElevationLoading: !hasCompleteElevation,
+      importedName: document.name,
+    );
+
+    if (!hasCompleteElevation) {
+      unawaited(_refreshImportedElevation(geometry));
+    }
+  }
+
+  GpxDocument exportGpx(String name) {
+    final sourcePoints = state.elevationProfile.isAvailable
+        ? state.elevationProfile.points
+        : state.geometry;
+    if (sourcePoints.length < 2) {
+      throw StateError('No route available for GPX export.');
+    }
+
+    return GpxDocument(
+      name: name,
+      points: List<GeoPoint>.unmodifiable(sourcePoints),
+    );
+  }
+
+  Future<void> _refreshImportedElevation(List<GeoPoint> geometry) async {
+    final generation = ++_elevationGeneration;
+    try {
+      final profile = await ref.read(elevationEngineProvider).resolve(geometry);
+      if (generation != _elevationGeneration) {
+        return;
+      }
+      state = state.copyWith(
+        elevationProfile: profile,
+        isElevationLoading: false,
+      );
+    } on Object {
+      if (generation != _elevationGeneration) {
+        return;
+      }
+      state = state.copyWith(
+        elevationProfile: const ElevationProfile.unavailable(),
+        isElevationLoading: false,
+      );
+    }
   }
 
   void _pushUndo() {
@@ -170,6 +252,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       routingSource: 'local',
       elevationProfile: const ElevationProfile.unavailable(),
       isElevationLoading: false,
+      clearImportedName: true,
     );
 
     unawaited(_refreshRoute());
