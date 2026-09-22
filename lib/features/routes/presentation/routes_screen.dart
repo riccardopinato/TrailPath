@@ -73,10 +73,10 @@ class RoutesScreen extends ConsumerWidget {
     SavedRoute route,
   ) async {
     final strings = AppLocalizations.of(context);
+    final renderBox = context.findRenderObject() as RenderBox?;
     try {
       final document = ref.read(appDatabaseProvider).savedRouteToGpx(route);
       final xml = await ref.read(gpxServiceProvider).export(document);
-      final renderBox = context.findRenderObject() as RenderBox?;
 
       await SharePlus.instance.share(
         ShareParams(
