@@ -28,7 +28,7 @@ Saved-route following, live route projection and progress, remaining distance, o
 MapLibre offline regions, storage controls and fully offline use of prepared routes.
 
 ## v0.9 - Outdoor Intelligence
-Activity profiles, battery modes, back-to-car and safety/share tools.
+Activity profiles, adaptive GPS battery modes, persistent Back to Car guidance, device safety checks and quick location sharing.
 
 ## v1.0 - Release
 Onboarding, Premium foundation, optional backup/sync, accessibility, performance and store QA.
