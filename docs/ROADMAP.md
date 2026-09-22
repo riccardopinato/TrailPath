@@ -13,7 +13,7 @@ Waypoint editing, direct route geometry, activity profiles, undo/redo, offline d
 Provider-backed foot/bike route requests, asynchronous snap-to-network geometry, routing status feedback, provider abstraction and automatic local fallback.
 
 ## v0.4 - Elevation
-Interactive elevation profile, ascent, descent and grade.
+Open-Meteo/Copernicus elevation sampling, interactive profile inspection, ascent/descent, grade calculation, DEM noise filtering and persisted route elevation metrics.
 
 ## v0.5 - GPX Engine
 Robust GPX import/export and system share flows.
