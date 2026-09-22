@@ -25,7 +25,7 @@ class _HomeShellState extends State<HomeShell> {
     final strings = AppLocalizations.of(context);
 
     return Scaffold(
-      body: IndexedStack(index: _index, children: _pages),
+      body: _pages[_index],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (value) {
