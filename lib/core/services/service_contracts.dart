@@ -26,6 +26,10 @@ abstract interface class LocationEngine {
 
   Future<bool> requestPermission();
 
+  Future<bool> openAppSettings();
+
+  Future<bool> openLocationSettings();
+
   Future<PositionSample?> current();
 
   Stream<PositionSample> watch({
