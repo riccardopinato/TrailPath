@@ -56,7 +56,12 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
 
     try {
       final feedback = ref.read(navigationFeedbackProvider);
-      await feedback.configure(languageCode);
+      try {
+        await feedback.configure(languageCode);
+      } on Object {
+        // Voice feedback is optional. Navigation must continue if TTS is
+        // unavailable or the device has no matching voice installed.
+      }
       final voice = _voiceMessages(languageCode);
 
       final engine = ref.read(navigationEngineProvider);
@@ -70,13 +75,13 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
 
           switch (event.type) {
             case NavigationEventType.offRoute:
-              unawaited(feedback.alert());
-              unawaited(feedback.speak(voice.offRoute));
+              unawaited(_safeAlert(feedback));
+              unawaited(_safeSpeak(feedback, voice.offRoute));
             case NavigationEventType.backOnRoute:
-              unawaited(feedback.speak(voice.backOnRoute));
+              unawaited(_safeSpeak(feedback, voice.backOnRoute));
             case NavigationEventType.arrived:
-              unawaited(feedback.alert());
-              unawaited(feedback.speak(voice.arrived));
+              unawaited(_safeAlert(feedback));
+              unawaited(_safeSpeak(feedback, voice.arrived));
             case NavigationEventType.started:
             case NavigationEventType.instruction:
             case NavigationEventType.stopped:
@@ -98,13 +103,35 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
 
   Future<void> stop() async {
     await ref.read(navigationEngineProvider).stop();
-    await ref.read(navigationFeedbackProvider).stop();
+    try {
+      await ref.read(navigationFeedbackProvider).stop();
+    } on Object {
+      // TTS shutdown failures must not keep navigation state active.
+    }
     await _subscription?.cancel();
     _subscription = null;
     state = state.copyWith(isActive: false);
   }
 }
 
+Future<void> _safeSpeak(
+  NavigationFeedback feedback,
+  String message,
+) async {
+  try {
+    await feedback.speak(message);
+  } on Object {
+    // Voice guidance is best-effort.
+  }
+}
+
+Future<void> _safeAlert(NavigationFeedback feedback) async {
+  try {
+    await feedback.alert();
+  } on Object {
+    // Haptics are best-effort.
+  }
+}
 
 ({String offRoute, String backOnRoute, String arrived}) _voiceMessages(
   String languageCode,
