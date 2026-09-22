@@ -25,26 +25,38 @@ class GeolocatorTrackRecorder implements TrackRecorder {
   double? _currentSpeedMetersPerSecond;
   double? _accuracyMeters;
   BatteryMode _batteryMode = BatteryMode.balanced;
+  bool _disposed = false;
+  int _session = 0;
 
   @override
   Stream<TrackRecorderSnapshot> get snapshots => _controller.stream;
 
   @override
   Future<void> setBatteryMode(BatteryMode mode) async {
-    if (_batteryMode == mode) {
+    if (_disposed || _batteryMode == mode) {
       return;
     }
     _batteryMode = mode;
     if (_status == TrackRecorderStatus.recording) {
-      await _positionSubscription?.cancel();
+      final session = ++_session;
+      final previous = _positionSubscription;
       _positionSubscription = null;
-      await _startPositionStream();
+      await previous?.cancel();
+      if (_isCurrent(session) && _status == TrackRecorderStatus.recording) {
+        await _startPositionStream(session);
+      }
     }
   }
 
   @override
   Future<void> start() async {
+    _ensureUsable();
+    final session = ++_session;
     await _cancelStreams();
+    if (!_isCurrent(session)) {
+      return;
+    }
+
     _points = const [];
     _distanceMeters = 0;
     _ascentMeters = 0;
@@ -55,20 +67,30 @@ class GeolocatorTrackRecorder implements TrackRecorder {
     _activeStartedAt = DateTime.now();
     _emit();
     _startTicker();
+
     try {
-      await _startPositionStream();
+      await _startPositionStream(session);
     } on Object {
-      await _cancelStreams();
-      _status = TrackRecorderStatus.idle;
-      _activeStartedAt = null;
-      _emit();
+      if (_isCurrent(session)) {
+        ++_session;
+        await _cancelStreams();
+        _status = TrackRecorderStatus.idle;
+        _activeStartedAt = null;
+        _emit();
+      }
       rethrow;
     }
   }
 
   @override
   Future<void> restore(TrackRecorderSnapshot snapshot) async {
+    _ensureUsable();
+    ++_session;
     await _cancelStreams();
+    if (_disposed) {
+      return;
+    }
+
     _points = List<GeoPoint>.unmodifiable(snapshot.points);
     _distanceMeters = snapshot.distanceMeters;
     _ascentMeters = snapshot.ascentMeters;
@@ -82,9 +104,10 @@ class GeolocatorTrackRecorder implements TrackRecorder {
 
   @override
   Future<void> pause() async {
-    if (_status != TrackRecorderStatus.recording) {
+    if (_disposed || _status != TrackRecorderStatus.recording) {
       return;
     }
+    ++_session;
     _captureElapsed();
     _status = TrackRecorderStatus.paused;
     await _cancelStreams();
@@ -93,33 +116,44 @@ class GeolocatorTrackRecorder implements TrackRecorder {
 
   @override
   Future<void> resume() async {
+    _ensureUsable();
     if (_status != TrackRecorderStatus.paused) {
       return;
     }
+
+    final session = ++_session;
     _status = TrackRecorderStatus.recording;
     _activeStartedAt = DateTime.now();
     _emit();
     _startTicker();
+
     try {
-      await _startPositionStream();
+      await _startPositionStream(session);
     } on Object {
-      _captureElapsed();
-      await _cancelStreams();
-      _status = TrackRecorderStatus.paused;
-      _emit();
+      if (_isCurrent(session)) {
+        ++_session;
+        _captureElapsed();
+        await _cancelStreams();
+        _status = TrackRecorderStatus.paused;
+        _emit();
+      }
       rethrow;
     }
   }
 
   @override
   Future<TrackRecorderSnapshot> stop() async {
+    ++_session;
     if (_status == TrackRecorderStatus.recording) {
       _captureElapsed();
     }
     _status = TrackRecorderStatus.stopping;
     await _cancelStreams();
+
     final completed = _snapshot(TrackRecorderStatus.completed);
-    _controller.add(completed);
+    if (!_controller.isClosed) {
+      _controller.add(completed);
+    }
     _status = TrackRecorderStatus.idle;
     _activeStartedAt = null;
     return completed;
@@ -127,21 +161,39 @@ class GeolocatorTrackRecorder implements TrackRecorder {
 
   @override
   Future<void> dispose() async {
+    if (_disposed) {
+      return;
+    }
+    _disposed = true;
+    ++_session;
     await _cancelStreams();
     if (!_controller.isClosed) {
       await _controller.close();
     }
   }
 
-  Future<void> _startPositionStream() async {
+  Future<void> _startPositionStream(int session) async {
+    if (!_isCurrent(session)) {
+      return;
+    }
+
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!_isCurrent(session)) {
+      return;
+    }
     if (!serviceEnabled) {
       throw const TrackRecorderException('Location services are disabled.');
     }
 
     var permission = await Geolocator.checkPermission();
+    if (!_isCurrent(session)) {
+      return;
+    }
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
+    }
+    if (!_isCurrent(session)) {
+      return;
     }
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
@@ -149,11 +201,19 @@ class GeolocatorTrackRecorder implements TrackRecorder {
     }
 
     final settings = _locationSettings();
+    if (!_isCurrent(session)) {
+      return;
+    }
+
     _positionSubscription =
         Geolocator.getPositionStream(locationSettings: settings).listen(
-      _onPosition,
+      (position) {
+        if (_isCurrent(session)) {
+          _onPosition(position);
+        }
+      },
       onError: (Object error, StackTrace stackTrace) {
-        if (!_controller.isClosed) {
+        if (_isCurrent(session) && !_controller.isClosed) {
           _controller.addError(error, stackTrace);
         }
       },
@@ -207,7 +267,7 @@ class GeolocatorTrackRecorder implements TrackRecorder {
   }
 
   void _onPosition(Position position) {
-    if (_status != TrackRecorderStatus.recording) {
+    if (_disposed || _status != TrackRecorderStatus.recording) {
       return;
     }
 
@@ -225,8 +285,7 @@ class GeolocatorTrackRecorder implements TrackRecorder {
     final next = GeoPoint(
       latitude: position.latitude,
       longitude: position.longitude,
-      elevationMeters:
-          position.altitude.isFinite ? position.altitude : null,
+      elevationMeters: position.altitude.isFinite ? position.altitude : null,
       timestamp: position.timestamp,
     );
 
@@ -243,9 +302,7 @@ class GeolocatorTrackRecorder implements TrackRecorder {
           ? next.timestamp!.difference(previous.timestamp!).inMilliseconds /
               1000
           : null;
-      if (seconds != null &&
-          seconds > 0 &&
-          segmentDistance / seconds > 55) {
+      if (seconds != null && seconds > 0 && segmentDistance / seconds > 55) {
         _emit();
         return;
       }
@@ -270,7 +327,11 @@ class GeolocatorTrackRecorder implements TrackRecorder {
     _ticker?.cancel();
     _ticker = Timer.periodic(
       const Duration(seconds: 1),
-      (_) => _emit(),
+      (_) {
+        if (!_disposed && _status == TrackRecorderStatus.recording) {
+          _emit();
+        }
+      },
     );
   }
 
@@ -311,8 +372,17 @@ class GeolocatorTrackRecorder implements TrackRecorder {
   Future<void> _cancelStreams() async {
     _ticker?.cancel();
     _ticker = null;
-    await _positionSubscription?.cancel();
+    final subscription = _positionSubscription;
     _positionSubscription = null;
+    await subscription?.cancel();
+  }
+
+  bool _isCurrent(int session) => !_disposed && session == _session;
+
+  void _ensureUsable() {
+    if (_disposed) {
+      throw StateError('Track recorder has been disposed.');
+    }
   }
 }
 
