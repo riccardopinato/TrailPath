@@ -249,7 +249,7 @@ class _NavigationPanel extends StatelessWidget {
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                 ),
               ),
-              const Text('v0.7', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+              const Text('v0.9', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
             ],
           ),
           const SizedBox(height: 14),
