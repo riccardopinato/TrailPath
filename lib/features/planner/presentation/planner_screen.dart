@@ -706,7 +706,7 @@ String _formatDuration(Duration duration) {
   final hours = duration.inHours;
   final minutes = duration.inMinutes.remainder(60);
   if (hours == 0) {
-    return '${minutes} min';
+    return '$minutes min';
   }
   final minuteText = minutes.toString().padLeft(2, '0');
   return '$hours h $minuteText';
