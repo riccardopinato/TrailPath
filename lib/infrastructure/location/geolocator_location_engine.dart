@@ -46,7 +46,8 @@ class GeolocatorLocationEngine implements LocationEngine {
       accuracy: LocationAccuracy.best,
       distanceFilter: 5,
     );
-    return Geolocator.getPositionStream(locationSettings: settings).map(_toSample);
+    return Geolocator.getPositionStream(locationSettings: settings)
+        .map(_toSample);
   }
 
   PositionSample _toSample(Position position) {
