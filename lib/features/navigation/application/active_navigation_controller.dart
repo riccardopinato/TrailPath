@@ -1,0 +1,103 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/core/services/service_providers.dart';
+
+final activeNavigationProvider =
+    NotifierProvider<ActiveNavigationController, ActiveNavigationState>(
+  ActiveNavigationController.new,
+);
+
+class ActiveNavigationState {
+  const ActiveNavigationState({
+    this.route,
+    this.event,
+    this.isActive = false,
+    this.error,
+  });
+
+  final RoutePlan? route;
+  final NavigationEvent? event;
+  final bool isActive;
+  final String? error;
+
+  ActiveNavigationState copyWith({
+    RoutePlan? route,
+    NavigationEvent? event,
+    bool? isActive,
+    String? error,
+    bool clearError = false,
+  }) {
+    return ActiveNavigationState(
+      route: route ?? this.route,
+      event: event ?? this.event,
+      isActive: isActive ?? this.isActive,
+      error: clearError ? null : error ?? this.error,
+    );
+  }
+}
+
+class ActiveNavigationController extends Notifier<ActiveNavigationState> {
+  StreamSubscription<NavigationEvent>? _subscription;
+
+  @override
+  ActiveNavigationState build() {
+    ref.onDispose(() {
+      _subscription?.cancel();
+    });
+    return const ActiveNavigationState();
+  }
+
+  Future<void> start(RoutePlan route, String languageCode) async {
+    await _subscription?.cancel();
+    state = ActiveNavigationState(route: route);
+
+    try {
+      final feedback = ref.read(navigationFeedbackProvider);
+      await feedback.configure(languageCode);
+
+      final engine = ref.read(navigationEngineProvider);
+      _subscription = engine.events.listen(
+        (event) {
+          state = state.copyWith(
+            event: event,
+            isActive: event.type != NavigationEventType.stopped,
+            clearError: true,
+          );
+
+          switch (event.type) {
+            case NavigationEventType.offRoute:
+              unawaited(feedback.alert());
+              unawaited(feedback.speak('Fuori percorso'));
+            case NavigationEventType.backOnRoute:
+              unawaited(feedback.speak('Sei tornato sul percorso'));
+            case NavigationEventType.arrived:
+              unawaited(feedback.alert());
+              unawaited(feedback.speak('Sei arrivato'));
+            case NavigationEventType.started:
+            case NavigationEventType.instruction:
+            case NavigationEventType.stopped:
+              break;
+          }
+        },
+        onError: (Object error, StackTrace stackTrace) {
+          state = state.copyWith(error: error.toString());
+        },
+      );
+
+      await engine.start(route);
+      state = state.copyWith(isActive: true, clearError: true);
+    } on Object catch (error) {
+      state = state.copyWith(isActive: false, error: error.toString());
+    }
+  }
+
+  Future<void> stop() async {
+    await ref.read(navigationEngineProvider).stop();
+    await ref.read(navigationFeedbackProvider).stop();
+    await _subscription?.cancel();
+    _subscription = null;
+    state = state.copyWith(isActive: false);
+  }
+}
