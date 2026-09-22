@@ -10,7 +10,7 @@ Real MapLibre map, GPS, heading, follow-user controls, runtime permissions and n
 Waypoint editing, direct route geometry, activity profiles, undo/redo, offline distance/duration metrics and local persistence.
 
 ## v0.3.1 - Routing & Snap
-Provider-backed route requests and snap-to-network behind the existing RoutingEngine abstraction.
+Provider-backed foot/bike route requests, asynchronous snap-to-network geometry, routing status feedback, provider abstraction and automatic local fallback.
 
 ## v0.4 - Elevation
 Interactive elevation profile, ascent, descent and grade.
