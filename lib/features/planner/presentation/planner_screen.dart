@@ -245,7 +245,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     child: ListView.separated(
                       shrinkWrap: true,
                       itemCount: results.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      separatorBuilder: (context, index) => const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final result = results[index];
                         return ListTile(
