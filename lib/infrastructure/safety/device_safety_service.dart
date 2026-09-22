@@ -19,15 +19,25 @@ class DeviceSafetyService implements SafetyService {
     final powerSaveMode = await _safePowerSaveMode();
     final serviceEnabled = await locationEngine.isServiceEnabled();
     final hasPermission = await locationEngine.hasPermission();
-    final regions = await offlineMapManager.listRegions();
+    final hasOfflineMap = await _safeHasOfflineMap();
 
     return SafetySnapshot(
       batteryPercent: batteryLevel,
       hasLocationPermission: hasPermission,
       locationServiceEnabled: serviceEnabled,
-      isOfflineMapAvailable: regions.any((region) => region.isComplete),
+      isOfflineMapAvailable: hasOfflineMap,
       isPowerSaveMode: powerSaveMode,
     );
+  }
+
+
+  Future<bool> _safeHasOfflineMap() async {
+    try {
+      final regions = await offlineMapManager.listRegions();
+      return regions.any((region) => region.isComplete);
+    } on Object {
+      return false;
+    }
   }
 
   Future<int> _safeBatteryLevel() async {
