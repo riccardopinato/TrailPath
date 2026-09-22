@@ -35,11 +35,15 @@ abstract interface class TrackRecorder {
 
   Future<void> start();
 
+  Future<void> restore(TrackRecorderSnapshot snapshot);
+
   Future<void> pause();
 
   Future<void> resume();
 
   Future<TrackRecorderSnapshot> stop();
+
+  Future<void> dispose();
 }
 
 abstract interface class NavigationEngine {
