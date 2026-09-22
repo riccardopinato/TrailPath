@@ -4,13 +4,18 @@ import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/planner/application/route_planner_controller.dart';
+import 'package:trail_path/infrastructure/elevation/open_meteo_elevation_engine.dart';
 import 'package:trail_path/infrastructure/routing/openstreetmap_routing_engine.dart';
 
 void main() {
-  ProviderContainer containerWith(RoutingEngine engine) {
+  ProviderContainer containerWith(
+    RoutingEngine engine, {
+    ElevationEngine elevationEngine = const UnavailableElevationEngine(),
+  }) {
     return ProviderContainer(
       overrides: [
         routingEngineProvider.overrideWithValue(engine),
+        elevationEngineProvider.overrideWithValue(elevationEngine),
       ],
     );
   }
@@ -74,7 +79,10 @@ void main() {
   });
 
   test('planner replaces direct line with snapped geometry', () async {
-    final container = containerWith(const _SnappedRoutingEngine());
+    final container = containerWith(
+      const _SnappedRoutingEngine(),
+      elevationEngine: const _FakeElevationEngine(),
+    );
     addTearDown(container.dispose);
 
     final controller = container.read(routePlannerProvider.notifier);
@@ -89,6 +97,9 @@ void main() {
     expect(state.geometry, hasLength(3));
     expect(state.distanceMeters, 1500);
     expect(state.routingSource, 'test-snap');
+    expect(state.hasElevation, isTrue);
+    expect(state.ascentMeters, 25);
+    expect(state.descentMeters, 5);
   });
 
   test('distance helper returns zero for fewer than two points', () {
@@ -123,6 +134,28 @@ class _SnappedRoutingEngine implements RoutingEngine {
       profile: request.profile,
       isSnapped: true,
       routingSource: engineId,
+    );
+  }
+}
+
+
+class _FakeElevationEngine implements ElevationEngine {
+  const _FakeElevationEngine();
+
+  @override
+  String get engineId => 'test-elevation';
+
+  @override
+  Future<ElevationProfile> resolve(List<GeoPoint> points) async {
+    final elevated = [
+      points.first.copyWith(elevationMeters: 100),
+      points[1].copyWith(elevationMeters: 125),
+      points.last.copyWith(elevationMeters: 120),
+    ];
+    return buildElevationProfile(
+      elevated,
+      source: engineId,
+      noiseThresholdMeters: 0,
     );
   }
 }
