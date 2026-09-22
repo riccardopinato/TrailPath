@@ -104,6 +104,15 @@ class AppLocalizations {
   String get noActivities => _value('noActivities');
   String get noActivitiesHint => _value('noActivitiesHint');
   String get deleteActivity => _value('deleteActivity');
+  String get navigate => _value('navigate');
+  String get navigationActive => _value('navigationActive');
+  String get offRoute => _value('offRoute');
+  String get backOnRoute => _value('backOnRoute');
+  String get arrived => _value('arrived');
+  String get remainingDistance => _value('remainingDistance');
+  String get routeProgress => _value('routeProgress');
+  String get distanceFromRoute => _value('distanceFromRoute');
+  String get backToRouteHint => _value('backToRouteHint');
 
   static const Map<String, Map<String, String>> _values = {
     'it': {
@@ -182,6 +191,15 @@ class AppLocalizations {
       'noActivities': 'Nessuna attività registrata',
       'noActivitiesHint': 'Le attività completate compariranno qui.',
       'deleteActivity': 'Eliminare l’attività?',
+      'navigate': 'Naviga',
+      'navigationActive': 'Navigazione attiva',
+      'offRoute': 'Fuori percorso',
+      'backOnRoute': 'Tornato sul percorso',
+      'arrived': 'Arrivato',
+      'remainingDistance': 'Rimanente',
+      'routeProgress': 'Progresso',
+      'distanceFromRoute': 'Dalla traccia',
+      'backToRouteHint': 'Rientra verso la linea del percorso indicata sulla mappa.',
     },
     'en': {
       'planner': 'Plan',
@@ -259,6 +277,15 @@ class AppLocalizations {
       'noActivities': 'No recorded activities',
       'noActivitiesHint': 'Completed activities will appear here.',
       'deleteActivity': 'Delete activity?',
+      'navigate': 'Navigate',
+      'navigationActive': 'Navigation active',
+      'offRoute': 'Off route',
+      'backOnRoute': 'Back on route',
+      'arrived': 'Arrived',
+      'remainingDistance': 'Remaining',
+      'routeProgress': 'Progress',
+      'distanceFromRoute': 'From route',
+      'backToRouteHint': 'Head back toward the route line shown on the map.',
     },
     'es': {
       'planner': 'Planificar',
@@ -336,6 +363,15 @@ class AppLocalizations {
       'noActivities': 'No hay actividades registradas',
       'noActivitiesHint': 'Las actividades completadas aparecerán aquí.',
       'deleteActivity': '¿Eliminar la actividad?',
+      'navigate': 'Navegar',
+      'navigationActive': 'Navegación activa',
+      'offRoute': 'Fuera de ruta',
+      'backOnRoute': 'De nuevo en ruta',
+      'arrived': 'Has llegado',
+      'remainingDistance': 'Restante',
+      'routeProgress': 'Progreso',
+      'distanceFromRoute': 'De la ruta',
+      'backToRouteHint': 'Vuelve hacia la línea de ruta mostrada en el mapa.',
     },
     'fr': {
       'planner': 'Planifier',
@@ -413,6 +449,15 @@ class AppLocalizations {
       'noActivities': 'Aucune activité enregistrée',
       'noActivitiesHint': 'Les activités terminées apparaîtront ici.',
       'deleteActivity': 'Supprimer l’activité ?',
+      'navigate': 'Naviguer',
+      'navigationActive': 'Navigation active',
+      'offRoute': 'Hors parcours',
+      'backOnRoute': 'De retour sur le parcours',
+      'arrived': 'Arrivé',
+      'remainingDistance': 'Restant',
+      'routeProgress': 'Progression',
+      'distanceFromRoute': 'Du parcours',
+      'backToRouteHint': 'Revenez vers la ligne du parcours affichée sur la carte.',
     },
     'pt': {
       'planner': 'Planear',
@@ -490,6 +535,15 @@ class AppLocalizations {
       'noActivities': 'Nenhuma atividade gravada',
       'noActivitiesHint': 'As atividades concluídas aparecerão aqui.',
       'deleteActivity': 'Eliminar atividade?',
+      'navigate': 'Navegar',
+      'navigationActive': 'Navegação ativa',
+      'offRoute': 'Fora do percurso',
+      'backOnRoute': 'De volta ao percurso',
+      'arrived': 'Chegou',
+      'remainingDistance': 'Restante',
+      'routeProgress': 'Progresso',
+      'distanceFromRoute': 'Do percurso',
+      'backToRouteHint': 'Regresse à linha do percurso apresentada no mapa.',
     },
   };
 }
