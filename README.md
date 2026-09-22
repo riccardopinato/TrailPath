@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.6.0 - Track Recorder
+v0.7.0 - Navigation
 
-TrailPath now records outdoor activities with live GPS, map trace, pause/resume, background location support, autosave, crash recovery and persistent activity history.
+TrailPath now follows saved routes with live GPS progress, remaining distance, off-route detection, back-to-route guidance and localized voice/haptic alerts.
 
 ### Included
 
@@ -34,6 +34,10 @@ TrailPath now records outdoor activities with live GPS, map trace, pause/resume,
 - separate waypoint and snapped-geometry persistence in Drift
 - saved-routes list with delete flow
 - live map-first track recorder with distance, ascent, pace and GPS accuracy\n- foreground/background GPS recording on Android and iOS\n- pause/resume, 5-second/point-based autosave and crash recovery\n- completed activity history with GPX sharing and deletion
+- saved-route navigation with live progress and remaining distance
+- off-route / back-on-route hysteresis and arrival detection
+- visual back-to-route connector on the map
+- localized TTS and haptic navigation alerts
 - light and dark outdoor themes
 - Italian, English, Spanish, French and Portuguese localization foundation
 - structured logging
