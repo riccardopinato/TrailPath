@@ -81,6 +81,11 @@ class AppLocalizations {
   String get grade => _value('grade');
   String get elevationLoading => _value('elevationLoading');
   String get elevationUnavailable => _value('elevationUnavailable');
+  String get importGpx => _value('importGpx');
+  String get shareGpx => _value('shareGpx');
+  String get gpxImported => _value('gpxImported');
+  String get gpxImportError => _value('gpxImportError');
+  String get gpxExportError => _value('gpxExportError');
 
   static const Map<String, Map<String, String>> _values = {
     'it': {
@@ -136,6 +141,11 @@ class AppLocalizations {
       'grade': 'Pendenza',
       'elevationLoading': 'Calcolo quota e dislivello…',
       'elevationUnavailable': 'Profilo altimetrico non disponibile',
+      'importGpx': 'Importa GPX',
+      'shareGpx': 'Condividi GPX',
+      'gpxImported': 'GPX importato',
+      'gpxImportError': 'Impossibile importare questo GPX',
+      'gpxExportError': 'Impossibile esportare il GPX',
     },
     'en': {
       'planner': 'Plan',
@@ -190,6 +200,11 @@ class AppLocalizations {
       'grade': 'Grade',
       'elevationLoading': 'Calculating elevation and ascent…',
       'elevationUnavailable': 'Elevation profile unavailable',
+      'importGpx': 'Import GPX',
+      'shareGpx': 'Share GPX',
+      'gpxImported': 'GPX imported',
+      'gpxImportError': 'Could not import this GPX',
+      'gpxExportError': 'Could not export GPX',
     },
     'es': {
       'planner': 'Planificar',
@@ -244,6 +259,11 @@ class AppLocalizations {
       'grade': 'Pendiente',
       'elevationLoading': 'Calculando altitud y desnivel…',
       'elevationUnavailable': 'Perfil de elevación no disponible',
+      'importGpx': 'Importar GPX',
+      'shareGpx': 'Compartir GPX',
+      'gpxImported': 'GPX importado',
+      'gpxImportError': 'No se pudo importar este GPX',
+      'gpxExportError': 'No se pudo exportar el GPX',
     },
     'fr': {
       'planner': 'Planifier',
@@ -298,6 +318,11 @@ class AppLocalizations {
       'grade': 'Pente',
       'elevationLoading': 'Calcul de l’altitude et du dénivelé…',
       'elevationUnavailable': 'Profil altimétrique indisponible',
+      'importGpx': 'Importer GPX',
+      'shareGpx': 'Partager GPX',
+      'gpxImported': 'GPX importé',
+      'gpxImportError': 'Impossible d’importer ce GPX',
+      'gpxExportError': 'Impossible d’exporter le GPX',
     },
     'pt': {
       'planner': 'Planear',
@@ -352,6 +377,11 @@ class AppLocalizations {
       'grade': 'Inclinação',
       'elevationLoading': 'A calcular altitude e desnível…',
       'elevationUnavailable': 'Perfil de elevação indisponível',
+      'importGpx': 'Importar GPX',
+      'shareGpx': 'Partilhar GPX',
+      'gpxImported': 'GPX importado',
+      'gpxImportError': 'Não foi possível importar este GPX',
+      'gpxExportError': 'Não foi possível exportar o GPX',
     },
   };
 }
