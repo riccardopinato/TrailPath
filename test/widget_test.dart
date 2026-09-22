@@ -17,7 +17,8 @@ void main() {
         child: const TrailPathApp(),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.text('TrailPath'), findsOneWidget);
     expect(find.text('0 m'), findsOneWidget);
