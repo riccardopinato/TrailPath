@@ -7,7 +7,10 @@ Architecture, database, service boundaries, localization, themes, CI and applica
 Real MapLibre map, GPS, heading, follow-user controls, runtime permissions and native background preparation.
 
 ## v0.3 - Route Planner
-Waypoint editing, route requests, snap-to-network, undo/redo, distance, duration and persistence.
+Waypoint editing, direct route geometry, activity profiles, undo/redo, offline distance/duration metrics and local persistence.
+
+## v0.3.1 - Routing & Snap
+Provider-backed route requests and snap-to-network behind the existing RoutingEngine abstraction.
 
 ## v0.4 - Elevation
 Interactive elevation profile, ascent, descent and grade.
