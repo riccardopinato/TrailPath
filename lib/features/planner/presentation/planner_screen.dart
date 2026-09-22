@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
@@ -182,6 +186,78 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     await _syncPlannerAnnotations();
   }
 
+  Future<void> _importGpx() async {
+    final strings = AppLocalizations.of(context);
+    try {
+      final file = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: const ['gpx'],
+      );
+      if (file == null) {
+        return;
+      }
+
+      final bytes = await file.readAsBytes();
+      final xml = utf8.decode(bytes);
+      final document = await ref.read(gpxServiceProvider).parse(xml);
+      ref.read(routePlannerProvider.notifier).importGpx(document);
+      await _syncPlannerAnnotations();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(strings.gpxImported)),
+        );
+      }
+    } on Object {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(strings.gpxImportError)),
+        );
+      }
+    }
+  }
+
+  Future<void> _shareCurrentGpx() async {
+    final strings = AppLocalizations.of(context);
+    try {
+      final planner = ref.read(routePlannerProvider);
+      if (!planner.canSave) {
+        return;
+      }
+
+      final name = planner.importedName?.trim().isNotEmpty == true
+          ? planner.importedName!.trim()
+          : 'TrailPath route';
+      final document =
+          ref.read(routePlannerProvider.notifier).exportGpx(name);
+      final xml = await ref.read(gpxServiceProvider).export(document);
+      final fileName = _safeGpxFileName(name);
+
+      final renderBox = context.findRenderObject() as RenderBox?;
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [
+            XFile.fromData(
+              Uint8List.fromList(utf8.encode(xml)),
+              mimeType: 'application/gpx+xml',
+            ),
+          ],
+          fileNameOverrides: [fileName],
+          title: name,
+          sharePositionOrigin: renderBox == null
+              ? null
+              : renderBox.localToGlobal(Offset.zero) & renderBox.size,
+        ),
+      );
+    } on Object {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(strings.gpxExportError)),
+        );
+      }
+    }
+  }
+
   Future<void> _syncPlannerAnnotations() async {
     if (_runningWidgetTest || !_styleReady) {
       return;
@@ -244,7 +320,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
     final strings = AppLocalizations.of(context);
     final nameController = TextEditingController(
-      text: '${strings.route} ${DateTime.now().day}/${DateTime.now().month}',
+      text: planner.importedName?.trim().isNotEmpty == true
+          ? planner.importedName!.trim()
+          : '${strings.route} ${DateTime.now().day}/${DateTime.now().month}',
     );
 
     final name = await showDialog<String>(
@@ -280,22 +358,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     await ref.read(appDatabaseProvider).savePlannedRoute(
           name: name.trim(),
           profile: planner.profile.name,
-          waypointsData: planner.points
-              .map(
-                (point) => (
-                  latitude: point.latitude,
-                  longitude: point.longitude,
-                ),
-              )
-              .toList(growable: false),
-          geometryData: planner.geometry
-              .map(
-                (point) => (
-                  latitude: point.latitude,
-                  longitude: point.longitude,
-                ),
-              )
-              .toList(growable: false),
+          waypointsData: planner.points,
+          geometryData: planner.elevationProfile.isAvailable
+              ? planner.elevationProfile.points
+              : planner.geometry,
           distanceMeters: planner.distanceMeters,
           ascentMeters: planner.ascentMeters,
           descentMeters: planner.descentMeters,
@@ -500,6 +566,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                 ref.read(routePlannerProvider.notifier).setProfile(profile);
               },
               onClear: planner.points.isEmpty ? null : _clearRoute,
+              onImport: _importGpx,
+              onShare: planner.canSave ? _shareCurrentGpx : null,
               onSave: planner.canSave ? _saveRoute : null,
             ),
           ),
@@ -517,6 +585,8 @@ class _PlannerCard extends StatelessWidget {
     required this.locationReady,
     required this.onProfileChanged,
     required this.onClear,
+    required this.onImport,
+    required this.onShare,
     required this.onSave,
   });
 
@@ -526,6 +596,8 @@ class _PlannerCard extends StatelessWidget {
   final bool locationReady;
   final ValueChanged<RouteProfile> onProfileChanged;
   final VoidCallback? onClear;
+  final VoidCallback onImport;
+  final VoidCallback? onShare;
   final VoidCallback? onSave;
 
   @override
@@ -693,24 +765,41 @@ class _PlannerCard extends StatelessWidget {
               ],
             ],
           ),
-          if (planner.points.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                TextButton.icon(
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              IconButton(
+                tooltip: strings.importGpx,
+                onPressed: onImport,
+                icon: const Icon(Icons.file_open_outlined),
+              ),
+              if (planner.points.isNotEmpty)
+                IconButton(
+                  tooltip: strings.clear,
                   onPressed: onClear,
                   icon: const Icon(Icons.delete_outline_rounded),
-                  label: Text(strings.clear),
                 ),
-                const Spacer(),
+              if (planner.canSave)
+                IconButton(
+                  tooltip: strings.shareGpx,
+                  onPressed: onShare,
+                  icon: const Icon(Icons.ios_share_rounded),
+                ),
+              const Spacer(),
+              if (planner.canSave)
                 FilledButton.icon(
                   onPressed: onSave,
                   icon: const Icon(Icons.bookmark_add_outlined),
                   label: Text(strings.saveRoute),
+                )
+              else
+                OutlinedButton.icon(
+                  onPressed: onImport,
+                  icon: const Icon(Icons.upload_file_rounded),
+                  label: Text(strings.importGpx),
                 ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ],
       ),
     );
@@ -1241,4 +1330,13 @@ class _MapTestFallback extends StatelessWidget {
       child: const Center(child: Icon(Icons.map_outlined, size: 54)),
     );
   }
+}
+
+
+String _safeGpxFileName(String name) {
+  final cleaned = name
+      .replaceAll(RegExp(r'[^A-Za-z0-9._ -]+'), '')
+      .trim()
+      .replaceAll(RegExp(r'\s+'), '_');
+  return '${cleaned.isEmpty ? 'TrailPath_route' : cleaned}.gpx';
 }
