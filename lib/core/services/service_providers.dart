@@ -11,8 +11,8 @@ import 'package:trail_path/infrastructure/navigation/flutter_tts_navigation_feed
 import 'package:trail_path/infrastructure/navigation/route_navigation_engine.dart';
 import 'package:trail_path/infrastructure/recording/geolocator_track_recorder.dart';
 import 'package:trail_path/infrastructure/routing/openstreetmap_routing_engine.dart';
-import 'package:trail_path/infrastructure/search/nominatim_place_search_service.dart';
 import 'package:trail_path/infrastructure/safety/device_safety_service.dart';
+import 'package:trail_path/infrastructure/search/nominatim_place_search_service.dart';
 
 final mapEngineProvider = Provider<MapEngine>(
   (ref) => const MapLibreMapEngine(),
