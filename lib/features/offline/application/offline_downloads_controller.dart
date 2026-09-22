@@ -50,6 +50,9 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
       activeRouteIds: {...state.activeRouteIds, routeId},
     );
 
+    final manager = ref.read(offlineMapManagerProvider);
+    final database = ref.read(appDatabaseProvider);
+
     try {
       final request = offlineRegionRequestForRoute(
         id: routeId,
@@ -58,8 +61,10 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
       );
 
       var completed = false;
-      await for (final snapshot
-          in ref.read(offlineMapManagerProvider).download(request)) {
+      await for (final snapshot in manager.download(request)) {
+        if (!ref.mounted) {
+          return false;
+        }
         state = state.copyWith(
           snapshots: {...state.snapshots, routeId: snapshot},
         );
@@ -67,16 +72,16 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
       }
 
       if (completed) {
-        await ref
-            .read(appDatabaseProvider)
-            .setSavedRouteOfflineReady(routeId, isReady: true);
+        await database.setSavedRouteOfflineReady(routeId, isReady: true);
       }
       return completed;
     } on Object {
       return false;
     } finally {
-      final active = {...state.activeRouteIds}..remove(routeId);
-      state = state.copyWith(activeRouteIds: active);
+      if (ref.mounted) {
+        final active = {...state.activeRouteIds}..remove(routeId);
+        state = state.copyWith(activeRouteIds: active);
+      }
     }
   }
 }
