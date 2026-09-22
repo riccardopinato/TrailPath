@@ -22,7 +22,7 @@ GPX 1.1 import/export, track/route fallback parsing, elevation and timestamp pre
 Live GPS track recording, map trace, distance/ascent/pace metrics, pause/resume, Android foreground service support, iOS background location mode, serial autosave, crash recovery, completed activity history and GPX sharing.
 
 ## v0.7 - Navigation
-Route following, voice/haptics, off-route detection and back-to-route.
+Saved-route following, live route projection and progress, remaining distance, off-route/back-on-route hysteresis, arrival detection, map back-to-route connector and localized voice/haptic alerts.
 
 ## v0.8 - Offline
 MapLibre offline regions, storage controls and fully offline use of prepared routes.
