@@ -44,6 +44,13 @@ class AppLocalizations {
   String get noRoutes => _value('noRoutes');
   String get noRoutesHint => _value('noRoutesHint');
   String get foundationReady => _value('foundationReady');
+  String get mapLayers => _value('mapLayers');
+  String get centerLocation => _value('centerLocation');
+  String get locationServiceOff => _value('locationServiceOff');
+  String get locationUnavailable => _value('locationUnavailable');
+  String get locationPermissionNeeded => _value('locationPermissionNeeded');
+  String get locationReady => _value('locationReady');
+  String get locationWaiting => _value('locationWaiting');
 
   static const Map<String, Map<String, String>> _values = {
     'it': {
@@ -61,7 +68,14 @@ class AppLocalizations {
       'yourRoutes': 'I tuoi percorsi',
       'noRoutes': 'Nessun percorso salvato',
       'noRoutesHint': 'I percorsi pianificati compariranno qui.',
-      'foundationReady': 'Motore mappa pronto per v0.2',
+            'foundationReady': 'Mappa e posizione attive',
+      'mapLayers': 'Livelli mappa',
+      'centerLocation': 'Centra sulla mia posizione',
+      'locationServiceOff': 'Attiva i servizi di localizzazione',
+      'locationUnavailable': 'Posizione temporaneamente non disponibile',
+      'locationPermissionNeeded': 'Consenti l’accesso alla posizione',
+      'locationReady': 'GPS attivo',
+      'locationWaiting': 'In attesa della posizione',
     },
     'en': {
       'planner': 'Plan',
@@ -78,7 +92,14 @@ class AppLocalizations {
       'yourRoutes': 'Your routes',
       'noRoutes': 'No saved routes',
       'noRoutesHint': 'Routes you plan will appear here.',
-      'foundationReady': 'Map engine ready for v0.2',
+            'foundationReady': 'Map and location active',
+      'mapLayers': 'Map layers',
+      'centerLocation': 'Center on my location',
+      'locationServiceOff': 'Turn on location services',
+      'locationUnavailable': 'Location temporarily unavailable',
+      'locationPermissionNeeded': 'Allow location access',
+      'locationReady': 'GPS active',
+      'locationWaiting': 'Waiting for location',
     },
     'es': {
       'planner': 'Planificar',
@@ -95,7 +116,14 @@ class AppLocalizations {
       'yourRoutes': 'Tus rutas',
       'noRoutes': 'No hay rutas guardadas',
       'noRoutesHint': 'Las rutas planificadas aparecerán aquí.',
-      'foundationReady': 'Motor de mapa listo para v0.2',
+            'foundationReady': 'Mapa y ubicación activos',
+      'mapLayers': 'Capas del mapa',
+      'centerLocation': 'Centrar en mi ubicación',
+      'locationServiceOff': 'Activa los servicios de ubicación',
+      'locationUnavailable': 'Ubicación temporalmente no disponible',
+      'locationPermissionNeeded': 'Permite el acceso a la ubicación',
+      'locationReady': 'GPS activo',
+      'locationWaiting': 'Esperando ubicación',
     },
     'fr': {
       'planner': 'Planifier',
@@ -112,7 +140,14 @@ class AppLocalizations {
       'yourRoutes': 'Vos parcours',
       'noRoutes': 'Aucun parcours enregistré',
       'noRoutesHint': 'Vos parcours planifiés apparaîtront ici.',
-      'foundationReady': 'Moteur cartographique prêt pour v0.2',
+            'foundationReady': 'Carte et position actives',
+      'mapLayers': 'Couches de carte',
+      'centerLocation': 'Centrer sur ma position',
+      'locationServiceOff': 'Activez les services de localisation',
+      'locationUnavailable': 'Position temporairement indisponible',
+      'locationPermissionNeeded': 'Autorisez l’accès à la position',
+      'locationReady': 'GPS actif',
+      'locationWaiting': 'En attente de la position',
     },
     'pt': {
       'planner': 'Planear',
@@ -129,7 +164,14 @@ class AppLocalizations {
       'yourRoutes': 'Os seus percursos',
       'noRoutes': 'Nenhum percurso guardado',
       'noRoutesHint': 'Os percursos planeados aparecerão aqui.',
-      'foundationReady': 'Motor de mapa pronto para v0.2',
+            'foundationReady': 'Mapa e localização ativos',
+      'mapLayers': 'Camadas do mapa',
+      'centerLocation': 'Centrar na minha localização',
+      'locationServiceOff': 'Ative os serviços de localização',
+      'locationUnavailable': 'Localização temporariamente indisponível',
+      'locationPermissionNeeded': 'Permita o acesso à localização',
+      'locationReady': 'GPS ativo',
+      'locationWaiting': 'A aguardar localização',
     },
   };
 }
