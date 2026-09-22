@@ -128,7 +128,7 @@ class PositionSample {
   final double? headingDegrees;
 }
 
-enum TrackRecorderStatus { idle, recording, paused, stopping }
+enum TrackRecorderStatus { idle, recording, paused, stopping, completed }
 
 class TrackRecorderSnapshot {
   const TrackRecorderSnapshot({
@@ -136,12 +136,18 @@ class TrackRecorderSnapshot {
     required this.points,
     required this.distanceMeters,
     required this.elapsed,
+    this.ascentMeters = 0,
+    this.currentSpeedMetersPerSecond,
+    this.accuracyMeters,
   });
 
   final TrackRecorderStatus status;
   final List<GeoPoint> points;
   final double distanceMeters;
   final Duration elapsed;
+  final double ascentMeters;
+  final double? currentSpeedMetersPerSecond;
+  final double? accuracyMeters;
 }
 
 enum NavigationEventType {
