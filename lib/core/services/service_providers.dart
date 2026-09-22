@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/infrastructure/elevation/open_meteo_elevation_engine.dart';
+import 'package:trail_path/infrastructure/gpx/xml_gpx_service.dart';
 import 'package:trail_path/infrastructure/location/geolocator_location_engine.dart';
 import 'package:trail_path/infrastructure/maps/maplibre_map_engine.dart';
 import 'package:trail_path/infrastructure/routing/openstreetmap_routing_engine.dart';
@@ -27,4 +28,9 @@ final elevationEngineProvider = Provider<ElevationEngine>(
     primary: OpenMeteoElevationEngine(),
     fallback: UnavailableElevationEngine(),
   ),
+);
+
+
+final gpxServiceProvider = Provider<GpxService>(
+  (ref) => const XmlGpxService(),
 );
