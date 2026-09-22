@@ -59,6 +59,8 @@ abstract interface class NavigationEngine {
     BatteryMode mode = BatteryMode.balanced,
   });
 
+  Future<void> setBatteryMode(BatteryMode mode);
+
   Future<void> stop();
 
   Future<void> dispose();
