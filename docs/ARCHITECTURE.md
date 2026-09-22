@@ -34,8 +34,13 @@ A future BRouter or other offline router can replace an online implementation wi
 
 ## Data
 
-Drift schema v1 stores saved routes, recorded activities and waypoints. Geometry is deliberately represented independently from the map renderer.
+Drift schema v3 stores saved routes, recorded activities, waypoints, persistent return points and lightweight app settings. Geometry is deliberately represented independently from the map renderer.
 
 ## Offline direction
 
 v1 must allow an already saved route, downloaded map region, GPS recording and route-following navigation to remain functional without connectivity. Full offline route calculation is a later engine replacement, not a prerequisite for the first usable releases.
+
+
+## Outdoor intelligence
+
+Battery modes are domain policies, not UI-only preferences. Recording and navigation resolve the selected policy into native GPS accuracy, distance filters and sampling intervals. Back to Car stores its return point in Drift and computes distance/bearing locally so guidance remains useful without connectivity.
