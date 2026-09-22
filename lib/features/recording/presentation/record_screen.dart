@@ -101,6 +101,8 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
 
   Future<void> _finishRecording() async {
     final strings = AppLocalizations.of(context);
+    final recordingController =
+        ref.read(recordingControllerProvider.notifier);
     final now = DateTime.now();
     final defaultName =
         '${strings.record} ${now.day}/${now.month} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
@@ -136,9 +138,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
       return;
     }
 
-    final saved = await ref
-        .read(recordingControllerProvider.notifier)
-        .finish(name);
+    final saved = await recordingController.finish(name);
 
     if (!mounted) {
       return;
@@ -169,6 +169,8 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
 
   Future<void> _discardRecording() async {
     final strings = AppLocalizations.of(context);
+    final recordingController =
+        ref.read(recordingControllerProvider.notifier);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -191,7 +193,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
       return;
     }
 
-    await ref.read(recordingControllerProvider.notifier).discard();
+    await recordingController.discard();
     await _syncTrack(
       const TrackRecorderSnapshot(
         status: TrackRecorderStatus.idle,
