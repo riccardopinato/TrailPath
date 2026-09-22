@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:trail_path/core/domain/models.dart';
 
 part 'app_database.g.dart';
 
@@ -95,8 +96,8 @@ class AppDatabase extends _$AppDatabase {
   Future<String> savePlannedRoute({
     required String name,
     required String profile,
-    required List<({double latitude, double longitude})> waypointsData,
-    required List<({double latitude, double longitude})> geometryData,
+    required List<GeoPoint> waypointsData,
+    required List<GeoPoint> geometryData,
     required double distanceMeters,
     required double ascentMeters,
     required double descentMeters,
@@ -114,6 +115,10 @@ class AppDatabase extends _$AppDatabase {
             (point) => {
               'lat': point.latitude,
               'lon': point.longitude,
+              if (point.elevationMeters != null)
+                'ele': point.elevationMeters,
+              if (point.timestamp != null)
+                'time': point.timestamp!.toUtc().toIso8601String(),
             },
           )
           .toList(growable: false),
@@ -146,6 +151,8 @@ class AppDatabase extends _$AppDatabase {
                 sortIndex: index,
                 latitude: waypointsData[index].latitude,
                 longitude: waypointsData[index].longitude,
+                elevationMeters:
+                    Value(waypointsData[index].elevationMeters),
               ),
           ],
         );
@@ -153,6 +160,50 @@ class AppDatabase extends _$AppDatabase {
     });
 
     return id;
+  }
+
+  GpxDocument savedRouteToGpx(SavedRoute route) {
+    final encoded = route.encodedGeometry;
+    if (encoded == null || encoded.isEmpty) {
+      throw const FormatException('Saved route has no geometry.');
+    }
+
+    final decoded = jsonDecode(encoded);
+    if (decoded is! List) {
+      throw const FormatException('Saved route geometry is invalid.');
+    }
+
+    final points = <GeoPoint>[];
+    for (final entry in decoded) {
+      if (entry is! Map) {
+        continue;
+      }
+      final latitude = entry['lat'];
+      final longitude = entry['lon'];
+      if (latitude is! num || longitude is! num) {
+        continue;
+      }
+      final elevation = entry['ele'];
+      final time = entry['time'];
+
+      points.add(
+        GeoPoint(
+          latitude: latitude.toDouble(),
+          longitude: longitude.toDouble(),
+          elevationMeters: elevation is num ? elevation.toDouble() : null,
+          timestamp: time is String ? DateTime.tryParse(time) : null,
+        ),
+      );
+    }
+
+    if (points.length < 2) {
+      throw const FormatException('Saved route geometry is incomplete.');
+    }
+
+    return GpxDocument(
+      name: route.name,
+      points: List<GeoPoint>.unmodifiable(points),
+    );
   }
 
   Future<void> deleteSavedRoute(String routeId) async {
