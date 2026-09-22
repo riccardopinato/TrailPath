@@ -1,0 +1,30 @@
+name: trail_path
+description: TrailPath - planner, recorder and offline navigation foundation for outdoor routes.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: ^3.4.3
+  go_router: ^18.0.1
+  drift: ^2.35.0
+  path_provider: ^2.1.6
+  maplibre_gl: ^0.27.1
+  geolocator: ^14.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  drift_dev: ^2.35.0
+  build_runner: ^2.16.1
+  mocktail: ^1.0.5
+
+flutter:
+  uses-material-design: true
