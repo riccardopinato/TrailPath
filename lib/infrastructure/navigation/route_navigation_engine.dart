@@ -11,7 +11,7 @@ class RouteNavigationEngine implements NavigationEngine {
     this.offRouteThresholdMeters = 45,
     this.backOnRouteThresholdMeters = 25,
     this.arrivalThresholdMeters = 25,
-  }) : _locationEngine = locationEngine;
+  }) : _locationEngine = locationEngine; // ignore: prefer_initializing_formals
 
   final LocationEngine _locationEngine;
   final double offRouteThresholdMeters;
