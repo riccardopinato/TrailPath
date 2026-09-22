@@ -4,11 +4,7 @@ import 'package:trail_path/app/app.dart';
 
 void main() {
   testWidgets('TrailPath foundation boots into planner shell', (tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: TrailPathApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: TrailPathApp()));
     await tester.pumpAndSettle();
 
     expect(find.text('TrailPath'), findsOneWidget);

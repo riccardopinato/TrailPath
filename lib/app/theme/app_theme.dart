@@ -23,12 +23,12 @@ abstract final class AppTheme {
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
-      scaffoldBackgroundColor:
-          isDark ? night : const Color(0xFFF3F6F1),
+      scaffoldBackgroundColor: isDark ? night : const Color(0xFFF3F6F1),
       navigationBarTheme: NavigationBarThemeData(
         height: 72,
-        backgroundColor:
-            isDark ? const Color(0xFF151D18) : const Color(0xFFFBFCFA),
+        backgroundColor: isDark
+            ? const Color(0xFF151D18)
+            : const Color(0xFFFBFCFA),
         indicatorColor: isDark
             ? const Color(0xFF284B39)
             : const Color(0xFFD8EBDD),
@@ -41,19 +41,19 @@ abstract final class AppTheme {
         ),
       ),
       textTheme: ThemeData(brightness: brightness).textTheme.copyWith(
-            headlineMedium: const TextStyle(
-              fontWeight: FontWeight.w800,
-              letterSpacing: -1.0,
-            ),
-            titleLarge: const TextStyle(
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-            ),
-            titleMedium: const TextStyle(
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.2,
-            ),
-          ),
+        headlineMedium: const TextStyle(
+          fontWeight: FontWeight.w800,
+          letterSpacing: -1.0,
+        ),
+        titleLarge: const TextStyle(
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.5,
+        ),
+        titleMedium: const TextStyle(
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.2,
+        ),
+      ),
     );
   }
 }

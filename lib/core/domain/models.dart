@@ -13,8 +13,8 @@ class GeoPoint {
     required this.longitude,
     this.elevationMeters,
     this.timestamp,
-  })  : assert(latitude >= -90 && latitude <= 90),
-        assert(longitude >= -180 && longitude <= 180);
+  }) : assert(latitude >= -90 && latitude <= 90),
+       assert(longitude >= -180 && longitude <= 180);
 
   final double latitude;
   final double longitude;
@@ -92,12 +92,7 @@ class PositionSample {
   final double? headingDegrees;
 }
 
-enum TrackRecorderStatus {
-  idle,
-  recording,
-  paused,
-  stopping,
-}
+enum TrackRecorderStatus { idle, recording, paused, stopping }
 
 class TrackRecorderSnapshot {
   const TrackRecorderSnapshot({
@@ -171,10 +166,7 @@ class OfflineRegionRequest {
 }
 
 class GpxDocument {
-  const GpxDocument({
-    required this.name,
-    required this.points,
-  });
+  const GpxDocument({required this.name, required this.points});
 
   final String name;
   final List<GeoPoint> points;

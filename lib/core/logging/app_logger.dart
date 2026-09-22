@@ -11,11 +11,7 @@ abstract final class AppLogger {
     developer.log(message, name: _name, level: 900);
   }
 
-  static void error(
-    String message, {
-    Object? error,
-    StackTrace? stackTrace,
-  }) {
+  static void error(String message, {Object? error, StackTrace? stackTrace}) {
     developer.log(
       message,
       name: _name,

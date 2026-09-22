@@ -6,10 +6,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     initialLocation: '/',
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const HomeShell(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const HomeShell()),
     ],
   );
 

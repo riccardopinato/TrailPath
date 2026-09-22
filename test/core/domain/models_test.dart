@@ -16,11 +16,7 @@ void main() {
     });
 
     test('copyWith preserves unspecified values', () {
-      const point = GeoPoint(
-        latitude: 45,
-        longitude: 11,
-        elevationMeters: 100,
-      );
+      const point = GeoPoint(latitude: 45, longitude: 11, elevationMeters: 100);
 
       final moved = point.copyWith(latitude: 46);
 

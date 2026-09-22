@@ -37,9 +37,7 @@ class PlannerScreen extends StatelessWidget {
         ),
         Positioned.fill(
           child: IgnorePointer(
-            child: CustomPaint(
-              painter: _TerrainPainter(dark: dark),
-            ),
+            child: CustomPaint(painter: _TerrainPainter(dark: dark)),
           ),
         ),
         SafeArea(
@@ -76,15 +74,9 @@ class PlannerScreen extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    _MapActionButton(
-                      icon: Icons.layers_outlined,
-                      dark: dark,
-                    ),
+                    _MapActionButton(icon: Icons.layers_outlined, dark: dark),
                     const SizedBox(width: 8),
-                    _MapActionButton(
-                      icon: Icons.my_location,
-                      dark: dark,
-                    ),
+                    _MapActionButton(icon: Icons.my_location, dark: dark),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -205,33 +197,20 @@ class _PlannerCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _Metric(
-                  label: strings.distance,
-                  value: '0.0 km',
-                ),
+                child: _Metric(label: strings.distance, value: '0.0 km'),
               ),
               Expanded(
-                child: _Metric(
-                  label: strings.ascent,
-                  value: '+0 m',
-                ),
+                child: _Metric(label: strings.ascent, value: '+0 m'),
               ),
               Expanded(
-                child: _Metric(
-                  label: strings.duration,
-                  value: '--',
-                ),
+                child: _Metric(label: strings.duration, value: '--'),
               ),
             ],
           ),
           const SizedBox(height: 14),
           Row(
             children: [
-              Icon(
-                Icons.check_circle_outline,
-                size: 17,
-                color: scheme.primary,
-              ),
+              Icon(Icons.check_circle_outline, size: 17, color: scheme.primary),
               const SizedBox(width: 7),
               Expanded(
                 child: Text(
@@ -252,10 +231,7 @@ class _PlannerCard extends StatelessWidget {
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric({
-    required this.label,
-    required this.value,
-  });
+  const _Metric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -276,10 +252,7 @@ class _Metric extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w800,
-          ),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
         ),
       ],
     );
@@ -287,10 +260,7 @@ class _Metric extends StatelessWidget {
 }
 
 class _MapActionButton extends StatelessWidget {
-  const _MapActionButton({
-    required this.icon,
-    required this.dark,
-  });
+  const _MapActionButton({required this.icon, required this.dark});
 
   final IconData icon;
   final bool dark;
@@ -317,8 +287,9 @@ class _TerrainPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final contourPaint = Paint()
-      ..color = (dark ? Colors.white : AppTheme.forest)
-          .withValues(alpha: dark ? 0.055 : 0.08)
+      ..color = (dark ? Colors.white : AppTheme.forest).withValues(
+        alpha: dark ? 0.055 : 0.08,
+      )
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
@@ -335,8 +306,9 @@ class _TerrainPainter extends CustomPainter {
     }
 
     final trailPaint = Paint()
-      ..color = (dark ? const Color(0xFF91C89E) : AppTheme.forest)
-          .withValues(alpha: 0.42)
+      ..color = (dark ? const Color(0xFF91C89E) : AppTheme.forest).withValues(
+        alpha: 0.42,
+      )
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;

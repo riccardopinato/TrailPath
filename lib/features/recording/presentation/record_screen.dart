@@ -41,10 +41,7 @@ class RecordScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const _RecordingMetric(
-                      value: '00:00:00',
-                      label: 'TIME',
-                    ),
+                    const _RecordingMetric(value: '00:00:00', label: 'TIME'),
                     const SizedBox(height: 28),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
