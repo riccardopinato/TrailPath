@@ -75,6 +75,12 @@ class AppLocalizations {
   String get routingCalculating => _value('routingCalculating');
   String get routeSnapped => _value('routeSnapped');
   String get routeLocalFallback => _value('routeLocalFallback');
+  String get elevationProfile => _value('elevationProfile');
+  String get elevation => _value('elevation');
+  String get descent => _value('descent');
+  String get grade => _value('grade');
+  String get elevationLoading => _value('elevationLoading');
+  String get elevationUnavailable => _value('elevationUnavailable');
 
   static const Map<String, Map<String, String>> _values = {
     'it': {
@@ -124,6 +130,12 @@ class AppLocalizations {
       'routingCalculating': 'Calcolo percorso su sentieri e strade…',
       'routeSnapped': 'Percorso agganciato alla rete OSM',
       'routeLocalFallback': 'Modalità locale: linea diretta',
+      'elevationProfile': 'Profilo altimetrico',
+      'elevation': 'Quota',
+      'descent': 'Discesa',
+      'grade': 'Pendenza',
+      'elevationLoading': 'Calcolo quota e dislivello…',
+      'elevationUnavailable': 'Profilo altimetrico non disponibile',
     },
     'en': {
       'planner': 'Plan',
@@ -172,6 +184,12 @@ class AppLocalizations {
       'routingCalculating': 'Routing along paths and roads…',
       'routeSnapped': 'Route snapped to the OSM network',
       'routeLocalFallback': 'Local mode: direct line',
+      'elevationProfile': 'Elevation profile',
+      'elevation': 'Elevation',
+      'descent': 'Descent',
+      'grade': 'Grade',
+      'elevationLoading': 'Calculating elevation and ascent…',
+      'elevationUnavailable': 'Elevation profile unavailable',
     },
     'es': {
       'planner': 'Planificar',
@@ -220,6 +238,12 @@ class AppLocalizations {
       'routingCalculating': 'Calculando por caminos y carreteras…',
       'routeSnapped': 'Ruta ajustada a la red OSM',
       'routeLocalFallback': 'Modo local: línea directa',
+      'elevationProfile': 'Perfil de elevación',
+      'elevation': 'Altitud',
+      'descent': 'Descenso',
+      'grade': 'Pendiente',
+      'elevationLoading': 'Calculando altitud y desnivel…',
+      'elevationUnavailable': 'Perfil de elevación no disponible',
     },
     'fr': {
       'planner': 'Planifier',
@@ -268,6 +292,12 @@ class AppLocalizations {
       'routingCalculating': 'Calcul sur chemins et routes…',
       'routeSnapped': 'Parcours calé sur le réseau OSM',
       'routeLocalFallback': 'Mode local : ligne directe',
+      'elevationProfile': 'Profil altimétrique',
+      'elevation': 'Altitude',
+      'descent': 'Descente',
+      'grade': 'Pente',
+      'elevationLoading': 'Calcul de l’altitude et du dénivelé…',
+      'elevationUnavailable': 'Profil altimétrique indisponible',
     },
     'pt': {
       'planner': 'Planear',
@@ -316,6 +346,12 @@ class AppLocalizations {
       'routingCalculating': 'A calcular por trilhos e estradas…',
       'routeSnapped': 'Percurso ajustado à rede OSM',
       'routeLocalFallback': 'Modo local: linha direta',
+      'elevationProfile': 'Perfil de elevação',
+      'elevation': 'Altitude',
+      'descent': 'Descida',
+      'grade': 'Inclinação',
+      'elevationLoading': 'A calcular altitude e desnível…',
+      'elevationUnavailable': 'Perfil de elevação indisponível',
     },
   };
 }
