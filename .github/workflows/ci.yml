@@ -48,7 +48,11 @@ jobs:
           permissions = '''<manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET" />
               <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />'''
+              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+              <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+              <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+              <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />'''
           if "ACCESS_FINE_LOCATION" not in text:
               text = text.replace(marker, permissions)
               manifest.write_text(text)
@@ -60,6 +64,12 @@ jobs:
                   "</dict>",
                   "  <key>NSLocationWhenInUseUsageDescription</key>\n"
                   "  <string>TrailPath uses your location to show your position, follow outdoor routes and record tracks.</string>\n"
+                  "  <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>\n"
+                  "  <string>TrailPath uses background location only while you are recording an outdoor activity.</string>\n"
+                  "  <key>UIBackgroundModes</key>\n"
+                  "  <array>\n"
+                  "    <string>location</string>\n"
+                  "  </array>\n"
                   "</dict>",
               )
               plist.write_text(text)
@@ -86,6 +96,6 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v6
         with:
-          name: TrailPath-v0.5.0-debug
+          name: TrailPath-v0.6.0-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
