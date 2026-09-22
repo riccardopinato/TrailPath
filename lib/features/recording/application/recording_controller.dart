@@ -6,6 +6,7 @@ import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/core/services/service_providers.dart';
+import 'package:trail_path/features/outdoor/application/battery_mode_controller.dart';
 
 final recordingControllerProvider =
     NotifierProvider<RecordingController, RecordingState>(
@@ -148,6 +149,8 @@ class RecordingController extends Notifier<RecordingState> {
         clearError: true,
       );
 
+      final batteryMode = await ref.read(batteryModeProvider.future);
+      await _recorder.setBatteryMode(batteryMode);
       await _bindRecorder();
       await _recorder.start();
     } on Object catch (error) {
@@ -178,6 +181,8 @@ class RecordingController extends Notifier<RecordingState> {
       clearError: true,
     );
     try {
+      final batteryMode = await ref.read(batteryModeProvider.future);
+      await _recorder.setBatteryMode(batteryMode);
       await _recorder.resume();
     } on Object catch (error) {
       state = state.copyWith(error: error.toString());
