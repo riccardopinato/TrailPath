@@ -19,7 +19,7 @@ Open-Meteo/Copernicus elevation sampling, interactive profile inspection, ascent
 GPX 1.1 import/export, track/route fallback parsing, elevation and timestamp preservation, planner import, saved-route export and native Android/iOS share flows.
 
 ## v0.6 - Track Recorder
-Background GPS recording, pause/resume, autosave and crash recovery.
+Live GPS track recording, map trace, distance/ascent/pace metrics, pause/resume, Android foreground service support, iOS background location mode, serial autosave, crash recovery, completed activity history and GPX sharing.
 
 ## v0.7 - Navigation
 Route following, voice/haptics, off-route detection and back-to-route.
