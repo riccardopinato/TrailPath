@@ -121,10 +121,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }
   }
 
-  Future<void> _focusPosition(
-    PositionSample sample, {
-    double zoom = 16,
-  }) async {
+  Future<void> _focusPosition(PositionSample sample, {double zoom = 16}) async {
     final controller = _mapController;
     if (controller == null) {
       return;
@@ -293,8 +290,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     message: !_locationServiceEnabled
                         ? strings.locationServiceOff
                         : _locationError != null
-                            ? strings.locationUnavailable
-                            : strings.locationPermissionNeeded,
+                        ? strings.locationUnavailable
+                        : strings.locationPermissionNeeded,
                     dark: dark,
                     onTap: _initializeLocation,
                   ),
@@ -311,7 +308,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
               strings: strings,
               position: _position,
               locationReady:
-                  _permissionGranted && _locationServiceEnabled && _locationError == null,
+                  _permissionGranted &&
+                  _locationServiceEnabled &&
+                  _locationError == null,
             ),
           ),
         ),
@@ -505,11 +504,7 @@ class _MapActionButton extends StatelessWidget {
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onTap,
-          child: SizedBox(
-            width: 42,
-            height: 42,
-            child: Icon(icon, size: 20),
-          ),
+          child: SizedBox(width: 42, height: 42, child: Icon(icon, size: 20)),
         ),
       ),
     );
@@ -571,9 +566,7 @@ class _MapTestFallback extends StatelessWidget {
   Widget build(BuildContext context) {
     return ColoredBox(
       color: dark ? const Color(0xFF17261D) : const Color(0xFFDDE8D9),
-      child: const Center(
-        child: Icon(Icons.map_outlined, size: 54),
-      ),
+      child: const Center(child: Icon(Icons.map_outlined, size: 54)),
     );
   }
 }
