@@ -4,6 +4,7 @@ import 'package:trail_path/infrastructure/elevation/open_meteo_elevation_engine.
 import 'package:trail_path/infrastructure/gpx/xml_gpx_service.dart';
 import 'package:trail_path/infrastructure/location/geolocator_location_engine.dart';
 import 'package:trail_path/infrastructure/maps/maplibre_map_engine.dart';
+import 'package:trail_path/infrastructure/recording/geolocator_track_recorder.dart';
 import 'package:trail_path/infrastructure/routing/openstreetmap_routing_engine.dart';
 
 final mapEngineProvider = Provider<MapEngine>(
@@ -34,3 +35,12 @@ final elevationEngineProvider = Provider<ElevationEngine>(
 final gpxServiceProvider = Provider<GpxService>(
   (ref) => const XmlGpxService(),
 );
+
+
+final trackRecorderProvider = Provider<TrackRecorder>((ref) {
+  final recorder = GeolocatorTrackRecorder();
+  ref.onDispose(() {
+    recorder.dispose();
+  });
+  return recorder;
+});
