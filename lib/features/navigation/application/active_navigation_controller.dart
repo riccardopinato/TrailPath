@@ -56,7 +56,7 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
 
     try {
       final feedback = ref.read(navigationFeedbackProvider);
-      await feedback.configure(languageCode);
+      await _ignoreFeedback(() => feedback.configure(languageCode));
       final voice = _voiceMessages(languageCode);
 
       final engine = ref.read(navigationEngineProvider);
@@ -70,13 +70,13 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
 
           switch (event.type) {
             case NavigationEventType.offRoute:
-              unawaited(feedback.alert());
-              unawaited(feedback.speak(voice.offRoute));
+              unawaited(_ignoreFeedback(feedback.alert));
+              unawaited(_ignoreFeedback(() => feedback.speak(voice.offRoute)));
             case NavigationEventType.backOnRoute:
-              unawaited(feedback.speak(voice.backOnRoute));
+              unawaited(_ignoreFeedback(() => feedback.speak(voice.backOnRoute)));
             case NavigationEventType.arrived:
-              unawaited(feedback.alert());
-              unawaited(feedback.speak(voice.arrived));
+              unawaited(_ignoreFeedback(feedback.alert));
+              unawaited(_ignoreFeedback(() => feedback.speak(voice.arrived)));
             case NavigationEventType.started:
             case NavigationEventType.instruction:
             case NavigationEventType.stopped:
@@ -105,6 +105,15 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
   }
 }
 
+
+Future<void> _ignoreFeedback(Future<void> Function() action) async {
+  try {
+    await action();
+  } on Object {
+    // Voice and haptics are enhancements. Navigation must keep running if
+    // a device has no compatible TTS engine or feedback channel.
+  }
+}
 
 ({String offRoute, String backOnRoute, String arrived}) _voiceMessages(
   String languageCode,
