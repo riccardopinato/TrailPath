@@ -16,7 +16,7 @@ Provider-backed foot/bike route requests, asynchronous snap-to-network geometry,
 Open-Meteo/Copernicus elevation sampling, interactive profile inspection, ascent/descent, grade calculation, DEM noise filtering and persisted route elevation metrics.
 
 ## v0.5 - GPX Engine
-Robust GPX import/export and system share flows.
+GPX 1.1 import/export, track/route fallback parsing, elevation and timestamp preservation, planner import, saved-route export and native Android/iOS share flows.
 
 ## v0.6 - Track Recorder
 Background GPS recording, pause/resume, autosave and crash recovery.
