@@ -47,6 +47,14 @@ TrailPath v0.9.1 hardens real-device use: production OpenFreeMap rendering, func
 - dedicated Back to Car map with live return line and heading-aware direction arrow
 - device Safety Check for battery, system battery saver, GPS permissions/services and offline-map readiness
 - quick current-position sharing through the native share sheet
+- production OpenFreeMap Liberty basemap shared by planner, recorder, navigation, Back to Car and offline downloads
+- user-triggered place/trail search with cached, rate-limited geocoding
+- navigation startup moved to a safe localization lifecycle
+- TTS/haptic feedback isolated so voice failures cannot stop GPS navigation
+- live battery-mode reconfiguration for active recording and navigation
+- GPS permission/service recovery through Android/iOS system settings
+- offline readiness reconciled against actual native MapLibre regions
+- native Android emulator smoke test in GitHub Actions
 - light and dark outdoor themes
 - Italian, English, Spanish, French and Portuguese localization foundation
 - structured logging
