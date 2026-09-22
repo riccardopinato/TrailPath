@@ -34,6 +34,7 @@ abstract interface class LocationEngine {
 
   Stream<PositionSample> watch({
     BatteryMode mode = BatteryMode.balanced,
+    bool keepAliveInBackground = false,
   });
 }
 
