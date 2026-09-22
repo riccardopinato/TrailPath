@@ -34,6 +34,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   bool _locationBusy = true;
   bool _styleReady = false;
   bool _searchBusy = false;
+  PlaceSearchResult? _searchResult;
   String? _locationError;
   final TextEditingController _searchController = TextEditingController();
 
@@ -289,6 +290,11 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   }
 
   Future<void> _focusSearchResult(PlaceSearchResult result) async {
+    if (mounted) {
+      setState(() => _searchResult = result);
+    }
+    await _syncPlannerAnnotations();
+
     final controller = _mapController;
     if (controller == null) {
       return;
@@ -431,24 +437,34 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       );
     }
 
-    if (waypoints.isNotEmpty) {
-      await controller.addCircles(
-        [
-          for (var index = 0; index < waypoints.length; index++)
-            CircleOptions(
-              geometry: waypoints[index],
-              circleRadius:
-                  index == 0 || index == waypoints.length - 1 ? 7 : 5,
-              circleColor: index == 0
-                  ? '#205B38'
-                  : index == waypoints.length - 1
-                      ? '#E86A45'
-                      : '#FFFFFF',
-              circleStrokeColor: '#2F6F45',
-              circleStrokeWidth: 2.5,
-            ),
-        ],
-      );
+    final searchResult = _searchResult;
+    final circles = <CircleOptions>[
+      for (var index = 0; index < waypoints.length; index++)
+        CircleOptions(
+          geometry: waypoints[index],
+          circleRadius: index == 0 || index == waypoints.length - 1 ? 7 : 5,
+          circleColor: index == 0
+              ? '#205B38'
+              : index == waypoints.length - 1
+                  ? '#E86A45'
+                  : '#FFFFFF',
+          circleStrokeColor: '#2F6F45',
+          circleStrokeWidth: 2.5,
+        ),
+      if (searchResult != null)
+        CircleOptions(
+          geometry: LatLng(
+            searchResult.point.latitude,
+            searchResult.point.longitude,
+          ),
+          circleRadius: 8,
+          circleColor: '#1565C0',
+          circleStrokeColor: '#FFFFFF',
+          circleStrokeWidth: 2.5,
+        ),
+    ];
+    if (circles.isNotEmpty) {
+      await controller.addCircles(circles);
     }
   }
 
