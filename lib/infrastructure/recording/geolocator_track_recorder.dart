@@ -42,7 +42,15 @@ class GeolocatorTrackRecorder implements TrackRecorder {
     _activeStartedAt = DateTime.now();
     _emit();
     _startTicker();
-    await _startPositionStream();
+    try {
+      await _startPositionStream();
+    } on Object {
+      await _cancelStreams();
+      _status = TrackRecorderStatus.idle;
+      _activeStartedAt = null;
+      _emit();
+      rethrow;
+    }
   }
 
   @override
@@ -79,7 +87,15 @@ class GeolocatorTrackRecorder implements TrackRecorder {
     _activeStartedAt = DateTime.now();
     _emit();
     _startTicker();
-    await _startPositionStream();
+    try {
+      await _startPositionStream();
+    } on Object {
+      _captureElapsed();
+      await _cancelStreams();
+      _status = TrackRecorderStatus.paused;
+      _emit();
+      rethrow;
+    }
   }
 
   @override
