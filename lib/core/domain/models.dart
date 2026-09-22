@@ -70,16 +70,48 @@ class RoutePlan {
   final String routingSource;
 }
 
+class ElevationSample {
+  const ElevationSample({
+    required this.point,
+    required this.distanceMeters,
+    required this.gradePercent,
+  });
+
+  final GeoPoint point;
+  final double distanceMeters;
+  final double gradePercent;
+}
+
 class ElevationProfile {
   const ElevationProfile({
     required this.points,
+    required this.samples,
     required this.ascentMeters,
     required this.descentMeters,
+    required this.minElevationMeters,
+    required this.maxElevationMeters,
+    this.isAvailable = true,
+    this.source = 'unknown',
   });
 
+  const ElevationProfile.unavailable()
+      : points = const [],
+        samples = const [],
+        ascentMeters = 0,
+        descentMeters = 0,
+        minElevationMeters = 0,
+        maxElevationMeters = 0,
+        isAvailable = false,
+        source = 'unavailable';
+
   final List<GeoPoint> points;
+  final List<ElevationSample> samples;
   final double ascentMeters;
   final double descentMeters;
+  final double minElevationMeters;
+  final double maxElevationMeters;
+  final bool isAvailable;
+  final String source;
 }
 
 class PositionSample {
@@ -198,4 +230,14 @@ class RoutingException implements Exception {
 
   @override
   String toString() => 'RoutingException: $message';
+}
+
+
+class ElevationException implements Exception {
+  const ElevationException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => 'ElevationException: $message';
 }
