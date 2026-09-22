@@ -95,18 +95,19 @@ class AppDatabase extends _$AppDatabase {
   Future<String> savePlannedRoute({
     required String name,
     required String profile,
-    required List<({double latitude, double longitude})> points,
+    required List<({double latitude, double longitude})> waypointsData,
+    required List<({double latitude, double longitude})> geometryData,
     required double distanceMeters,
     required Duration estimatedDuration,
   }) async {
-    if (points.length < 2) {
+    if (waypointsData.length < 2 || geometryData.length < 2) {
       throw ArgumentError('A route requires at least two points.');
     }
 
     final now = DateTime.now();
     final id = 'route-${now.microsecondsSinceEpoch}';
     final geometry = jsonEncode(
-      points
+      geometryData
           .map(
             (point) => {
               'lat': point.latitude,
@@ -134,13 +135,13 @@ class AppDatabase extends _$AppDatabase {
         batch.insertAll(
           waypoints,
           [
-            for (var index = 0; index < points.length; index++)
+            for (var index = 0; index < waypointsData.length; index++)
               WaypointsCompanion.insert(
                 id: '$id-wp-$index',
                 routeId: id,
                 sortIndex: index,
-                latitude: points[index].latitude,
-                longitude: points[index].longitude,
+                latitude: waypointsData[index].latitude,
+                longitude: waypointsData[index].longitude,
               ),
           ],
         );
