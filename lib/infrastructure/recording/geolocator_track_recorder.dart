@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
@@ -23,9 +24,23 @@ class GeolocatorTrackRecorder implements TrackRecorder {
   DateTime? _activeStartedAt;
   double? _currentSpeedMetersPerSecond;
   double? _accuracyMeters;
+  BatteryMode _batteryMode = BatteryMode.balanced;
 
   @override
   Stream<TrackRecorderSnapshot> get snapshots => _controller.stream;
+
+  @override
+  Future<void> setBatteryMode(BatteryMode mode) async {
+    if (_batteryMode == mode) {
+      return;
+    }
+    _batteryMode = mode;
+    if (_status == TrackRecorderStatus.recording) {
+      await _positionSubscription?.cancel();
+      _positionSubscription = null;
+      await _startPositionStream();
+    }
+  }
 
   @override
   Future<void> start() async {
@@ -146,17 +161,20 @@ class GeolocatorTrackRecorder implements TrackRecorder {
   }
 
   LocationSettings _locationSettings() {
+    final policy = batteryModePolicy(_batteryMode);
+    final accuracy = _accuracy(policy.accuracy);
+
     if (defaultTargetPlatform == TargetPlatform.android) {
       return AndroidSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
-        distanceFilter: 3,
-        intervalDuration: const Duration(seconds: 3),
+        accuracy: accuracy,
+        distanceFilter: policy.distanceFilterMeters,
+        intervalDuration: policy.interval,
         useMSLAltitude: true,
-        foregroundNotificationConfig: const ForegroundNotificationConfig(
+        foregroundNotificationConfig: ForegroundNotificationConfig(
           notificationTitle: 'TrailPath · registrazione attiva',
           notificationText:
               'La traccia GPS continua anche con TrailPath in background.',
-          enableWakeLock: true,
+          enableWakeLock: policy.keepCpuAwake,
           setOngoing: true,
         ),
       );
@@ -165,19 +183,27 @@ class GeolocatorTrackRecorder implements TrackRecorder {
     if (defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS) {
       return AppleSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
+        accuracy: accuracy,
         activityType: ActivityType.fitness,
-        distanceFilter: 3,
+        distanceFilter: policy.distanceFilterMeters,
         pauseLocationUpdatesAutomatically: false,
         showBackgroundLocationIndicator: true,
         allowBackgroundLocationUpdates: true,
       );
     }
 
-    return const LocationSettings(
-      accuracy: LocationAccuracy.bestForNavigation,
-      distanceFilter: 3,
+    return LocationSettings(
+      accuracy: accuracy,
+      distanceFilter: policy.distanceFilterMeters,
     );
+  }
+
+  LocationAccuracy _accuracy(GpsAccuracyPreset preset) {
+    return switch (preset) {
+      GpsAccuracyPreset.navigation => LocationAccuracy.bestForNavigation,
+      GpsAccuracyPreset.high => LocationAccuracy.high,
+      GpsAccuracyPreset.medium => LocationAccuracy.medium,
+    };
   }
 
   void _onPosition(Position position) {
@@ -189,7 +215,9 @@ class GeolocatorTrackRecorder implements TrackRecorder {
     _currentSpeedMetersPerSecond =
         position.speed.isFinite && position.speed >= 0 ? position.speed : null;
 
-    if (position.accuracy.isFinite && position.accuracy > 40) {
+    final policy = batteryModePolicy(_batteryMode);
+    if (position.accuracy.isFinite &&
+        position.accuracy > policy.maxAcceptedAccuracyMeters) {
       _emit();
       return;
     }
@@ -206,7 +234,7 @@ class GeolocatorTrackRecorder implements TrackRecorder {
       final previous = _points.last;
       final segmentDistance = haversineMeters(previous, next);
 
-      if (segmentDistance < 2) {
+      if (segmentDistance < policy.minimumSegmentMeters) {
         _emit();
         return;
       }
