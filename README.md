@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.9.0 - Outdoor Intelligence
+v0.9.1 - Runtime Recovery
 
-TrailPath now adds adaptive GPS battery modes, persistent Back to Car guidance, a device Safety Check and quick location sharing while keeping the existing offline-first route workflow.
+TrailPath v0.9.1 hardens real-device runtime behavior: production OpenFreeMap tiles, functional place search, safer navigation startup, resilient TTS feedback and Android runtime permission preparation.
 
 ### Included
 
@@ -15,7 +15,8 @@ TrailPath now adds adaptive GPS battery modes, persistent Back to Car guidance, 
 - GoRouter navigation foundation
 - Drift local database schema v3 with recoverable activity drafts, return points and app settings
 - Map, routing, elevation, location, recording, navigation, offline, GPX and safety contracts
-- live MapLibre map in the planner
+- live MapLibre map using OpenFreeMap/OpenStreetMap data
+- functional user-triggered place search through Nominatim
 - live GPS position with accuracy and heading
 - user-location compass rendering and recenter control
 - Android/iOS native location permission setup
@@ -37,7 +38,7 @@ TrailPath now adds adaptive GPS battery modes, persistent Back to Car guidance, 
 - saved-route navigation with live progress and remaining distance
 - off-route / back-on-route hysteresis and arrival detection
 - visual back-to-route connector on the map
-- localized TTS and haptic navigation alerts
+- localized TTS and haptic navigation alerts that no longer block GPS navigation if device feedback fails
 - per-route MapLibre offline map preparation
 - adaptive offline-region bounds and zoom levels to control storage size
 - live offline download progress and persistent route readiness
