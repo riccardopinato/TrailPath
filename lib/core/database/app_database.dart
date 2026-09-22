@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/drift.dart';
@@ -80,8 +81,82 @@ class AppDatabase extends _$AppDatabase {
 
   factory AppDatabase.open() => AppDatabase._(_openConnection());
 
+  factory AppDatabase.memory() => AppDatabase._(NativeDatabase.memory());
+
   @override
   int get schemaVersion => 1;
+
+  Stream<List<SavedRoute>> watchSavedRoutes() {
+    return (select(savedRoutes)
+          ..orderBy([(row) => OrderingTerm.desc(row.updatedAt)]))
+        .watch();
+  }
+
+  Future<String> savePlannedRoute({
+    required String name,
+    required String profile,
+    required List<({double latitude, double longitude})> points,
+    required double distanceMeters,
+    required Duration estimatedDuration,
+  }) async {
+    if (points.length < 2) {
+      throw ArgumentError('A route requires at least two points.');
+    }
+
+    final now = DateTime.now();
+    final id = 'route-${now.microsecondsSinceEpoch}';
+    final geometry = jsonEncode(
+      points
+          .map(
+            (point) => {
+              'lat': point.latitude,
+              'lon': point.longitude,
+            },
+          )
+          .toList(growable: false),
+    );
+
+    await transaction(() async {
+      await into(savedRoutes).insert(
+        SavedRoutesCompanion.insert(
+          id: id,
+          name: name,
+          createdAt: now,
+          updatedAt: now,
+          profile: profile,
+          distanceMeters: Value(distanceMeters),
+          durationSeconds: Value(estimatedDuration.inSeconds),
+          encodedGeometry: Value(geometry),
+        ),
+      );
+
+      await batch((batch) {
+        batch.insertAll(
+          waypoints,
+          [
+            for (var index = 0; index < points.length; index++)
+              WaypointsCompanion.insert(
+                id: '$id-wp-$index',
+                routeId: id,
+                sortIndex: index,
+                latitude: points[index].latitude,
+                longitude: points[index].longitude,
+              ),
+          ],
+        );
+      });
+    });
+
+    return id;
+  }
+
+  Future<void> deleteSavedRoute(String routeId) async {
+    await transaction(() async {
+      await (delete(waypoints)..where((row) => row.routeId.equals(routeId)))
+          .go();
+      await (delete(savedRoutes)..where((row) => row.id.equals(routeId))).go();
+    });
+  }
 }
 
 LazyDatabase _openConnection() {
