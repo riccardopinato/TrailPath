@@ -6,7 +6,9 @@ import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/features/location/application/location_controller.dart';
 
-final mapRenderingEnabledProvider = Provider<bool>((ref) => true);\n\nclass PlannerScreen extends ConsumerStatefulWidget {
+final mapRenderingEnabledProvider = Provider<bool>((ref) => true);
+
+class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
 
   @override
@@ -78,7 +80,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                   logoEnabled: false,
                   myLocationEnabled: location.hasUsableLocation,
                   locationSource: ManualLocationSource(),
-                  myLocationRenderMode: location.hasUsableLocation\n                      ? MyLocationRenderMode.compass\n                      : MyLocationRenderMode.normal,
+                  myLocationRenderMode: location.hasUsableLocation
+                      ? MyLocationRenderMode.compass
+                      : MyLocationRenderMode.normal,
                   myLocationTrackingMode: location.isFollowing
                       ? MyLocationTrackingMode.trackingCompass
                       : MyLocationTrackingMode.none,
