@@ -22,6 +22,7 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
   static const _styleUrl = 'https://demotiles.maplibre.org/style.json';
   MapLibreMapController? _mapController;
   bool _styleReady = false;
+  late final String _languageCode;
 
   bool get _runningWidgetTest =>
       Platform.environment['FLUTTER_TEST']?.toLowerCase() == 'true';
@@ -29,13 +30,13 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
   @override
   void initState() {
     super.initState();
-    Future<void>.microtask(() {
-      final languageCode = Localizations.localeOf(context).languageCode;
-      return ref.read(activeNavigationProvider.notifier).start(
+    _languageCode = Localizations.localeOf(context).languageCode;
+    Future<void>.microtask(
+      () => ref.read(activeNavigationProvider.notifier).start(
             widget.route,
-            languageCode,
-          );
-    });
+            _languageCode,
+          ),
+    );
   }
 
   @override
@@ -95,7 +96,6 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
           lineColor: '#D84315',
           lineWidth: 3.5,
           lineOpacity: 0.9,
-          lineDasharray: const [1.5, 1.5],
         ),
       );
     }
