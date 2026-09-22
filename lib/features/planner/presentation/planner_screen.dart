@@ -833,8 +833,10 @@ class _ElevationPanelState extends State<_ElevationPanel> {
       );
     }
 
-    final selected = profile.samples[
-        (_selectedIndex ?? 0).clamp(0, profile.samples.length - 1)];
+    final selectedIndex = (_selectedIndex ?? 0)
+        .clamp(0, profile.samples.length - 1)
+        .toInt();
+    final selected = profile.samples[selectedIndex];
 
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
