@@ -18,11 +18,33 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
   @override
   void initState() {
     super.initState();
-    _regionsFuture = ref.read(offlineMapManagerProvider).listRegions();
+    _regionsFuture = _loadRegions();
+  }
+
+  Future<List<OfflineRegion>> _loadRegions() async {
+    final regions = await ref.read(offlineMapManagerProvider).listRegions();
+    final completeIds = regions
+        .where((region) => region.isComplete)
+        .map((region) => region.id)
+        .toSet();
+    final database = ref.read(appDatabaseProvider);
+    final routes = await database.listSavedRoutes();
+
+    for (final route in routes) {
+      final actualReady = completeIds.contains(route.id);
+      if (route.isOfflineReady != actualReady) {
+        await database.setSavedRouteOfflineReady(
+          route.id,
+          isReady: actualReady,
+        );
+      }
+    }
+
+    return regions;
   }
 
   Future<void> _refresh() async {
-    final future = ref.read(offlineMapManagerProvider).listRegions();
+    final future = _loadRegions();
     setState(() => _regionsFuture = future);
     await future;
   }
