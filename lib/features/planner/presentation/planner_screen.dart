@@ -4,10 +4,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/core/services/service_providers.dart';
+import 'package:trail_path/features/planner/application/route_planner_controller.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
@@ -26,6 +28,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   bool _permissionGranted = false;
   bool _locationServiceEnabled = true;
   bool _locationBusy = true;
+  bool _styleReady = false;
   String? _locationError;
 
   LocationEngine get _locationEngine => ref.read(locationEngineProvider);
@@ -154,10 +157,152 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }
   }
 
+  Future<void> _addWaypoint(LatLng coordinates) async {
+    ref.read(routePlannerProvider.notifier).addPoint(
+          GeoPoint(
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude,
+          ),
+        );
+    await _syncPlannerAnnotations();
+  }
+
+  Future<void> _undo() async {
+    ref.read(routePlannerProvider.notifier).undo();
+    await _syncPlannerAnnotations();
+  }
+
+  Future<void> _redo() async {
+    ref.read(routePlannerProvider.notifier).redo();
+    await _syncPlannerAnnotations();
+  }
+
+  Future<void> _clearRoute() async {
+    ref.read(routePlannerProvider.notifier).clear();
+    await _syncPlannerAnnotations();
+  }
+
+  Future<void> _syncPlannerAnnotations() async {
+    if (_runningWidgetTest || !_styleReady) {
+      return;
+    }
+
+    final controller = _mapController;
+    if (controller == null) {
+      return;
+    }
+
+    final planner = ref.read(routePlannerProvider);
+    final geometry = planner.points
+        .map((point) => LatLng(point.latitude, point.longitude))
+        .toList(growable: false);
+
+    await controller.clearLines();
+    await controller.clearCircles();
+
+    if (geometry.length >= 2) {
+      await controller.addLine(
+        LineOptions(
+          geometry: geometry,
+          lineColor: '#2F6F45',
+          lineWidth: 5.5,
+          lineOpacity: 0.96,
+          lineJoin: 'round',
+        ),
+      );
+    }
+
+    if (geometry.isNotEmpty) {
+      await controller.addCircles(
+        [
+          for (var index = 0; index < geometry.length; index++)
+            CircleOptions(
+              geometry: geometry[index],
+              circleRadius: index == 0 || index == geometry.length - 1 ? 7 : 5,
+              circleColor: index == 0
+                  ? '#205B38'
+                  : index == geometry.length - 1
+                      ? '#E86A45'
+                      : '#FFFFFF',
+              circleStrokeColor: '#2F6F45',
+              circleStrokeWidth: 2.5,
+            ),
+        ],
+      );
+    }
+  }
+
+  Future<void> _saveRoute() async {
+    final planner = ref.read(routePlannerProvider);
+    if (!planner.canSave) {
+      return;
+    }
+
+    final strings = AppLocalizations.of(context);
+    final nameController = TextEditingController(
+      text: '${strings.route} ${DateTime.now().day}/${DateTime.now().month}',
+    );
+
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(strings.saveRoute),
+        content: TextField(
+          controller: nameController,
+          autofocus: true,
+          maxLength: 80,
+          decoration: InputDecoration(labelText: strings.routeName),
+          onSubmitted: (value) => Navigator.of(context).pop(value.trim()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(strings.cancel),
+          ),
+          FilledButton(
+            onPressed: () =>
+                Navigator.of(context).pop(nameController.text.trim()),
+            child: Text(strings.save),
+          ),
+        ],
+      ),
+    );
+    nameController.dispose();
+
+    if (!mounted || name == null || name.trim().isEmpty) {
+      return;
+    }
+
+    await ref.read(appDatabaseProvider).savePlannedRoute(
+          name: name.trim(),
+          profile: planner.profile.name,
+          points: planner.points
+              .map(
+                (point) => (
+                  latitude: point.latitude,
+                  longitude: point.longitude,
+                ),
+              )
+              .toList(growable: false),
+          distanceMeters: planner.distanceMeters,
+          estimatedDuration: planner.estimatedDuration,
+        );
+
+    ref.read(routePlannerProvider.notifier).resetAfterSave();
+    await _syncPlannerAnnotations();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(strings.routeSaved)),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final planner = ref.watch(routePlannerProvider);
 
     return Stack(
       children: [
@@ -176,6 +321,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     if (sample != null) {
                       unawaited(_focusPosition(sample, zoom: 15.5));
                     }
+                  },
+                  onStyleLoadedCallback: () {
+                    _styleReady = true;
+                    unawaited(_syncPlannerAnnotations());
+                  },
+                  onMapClick: (point, coordinates) {
+                    unawaited(_addWaypoint(coordinates));
                   },
                   compassEnabled: true,
                   compassViewPosition: CompassViewPosition.topRight,
@@ -232,9 +384,17 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     ),
                     const Spacer(),
                     _MapActionButton(
-                      icon: Icons.layers_outlined,
+                      icon: Icons.undo_rounded,
                       dark: dark,
-                      tooltip: strings.mapLayers,
+                      tooltip: strings.undo,
+                      onTap: planner.canUndo ? _undo : null,
+                    ),
+                    const SizedBox(width: 8),
+                    _MapActionButton(
+                      icon: Icons.redo_rounded,
+                      dark: dark,
+                      tooltip: strings.redo,
+                      onTap: planner.canRedo ? _redo : null,
                     ),
                     const SizedBox(width: 8),
                     _MapActionButton(
@@ -290,8 +450,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     message: !_locationServiceEnabled
                         ? strings.locationServiceOff
                         : _locationError != null
-                        ? strings.locationUnavailable
-                        : strings.locationPermissionNeeded,
+                            ? strings.locationUnavailable
+                            : strings.locationPermissionNeeded,
                     dark: dark,
                     onTap: _initializeLocation,
                   ),
@@ -306,11 +466,17 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
             minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
             child: _PlannerCard(
               strings: strings,
+              planner: planner,
               position: _position,
               locationReady:
                   _permissionGranted &&
                   _locationServiceEnabled &&
                   _locationError == null,
+              onProfileChanged: (profile) {
+                ref.read(routePlannerProvider.notifier).setProfile(profile);
+              },
+              onClear: planner.points.isEmpty ? null : _clearRoute,
+              onSave: planner.canSave ? _saveRoute : null,
             ),
           ),
         ),
@@ -322,13 +488,21 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 class _PlannerCard extends StatelessWidget {
   const _PlannerCard({
     required this.strings,
+    required this.planner,
     required this.position,
     required this.locationReady,
+    required this.onProfileChanged,
+    required this.onClear,
+    required this.onSave,
   });
 
   final AppLocalizations strings;
+  final RoutePlannerState planner;
   final PositionSample? position;
   final bool locationReady;
+  final ValueChanged<RouteProfile> onProfileChanged;
+  final VoidCallback? onClear;
+  final VoidCallback? onSave;
 
   @override
   Widget build(BuildContext context) {
@@ -337,9 +511,9 @@ class _PlannerCard extends StatelessWidget {
     final accuracy = position?.accuracyMeters;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(18, 17, 18, 16),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 15),
       decoration: BoxDecoration(
-        color: scheme.surface.withValues(alpha: 0.96),
+        color: scheme.surface.withValues(alpha: 0.97),
         borderRadius: BorderRadius.circular(26),
         boxShadow: [
           BoxShadow(
@@ -361,17 +535,26 @@ class _PlannerCard extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
               ),
+              Text(
+                '${planner.points.length} ${strings.pointsShort}',
+                style: TextStyle(
+                  color: scheme.onSurfaceVariant,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(width: 9),
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
+                  horizontal: 9,
+                  vertical: 5,
                 ),
                 decoration: BoxDecoration(
                   color: scheme.primaryContainer,
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'v0.2',
+                  'v0.3',
                   style: TextStyle(
                     color: scheme.onPrimaryContainer,
                     fontSize: 11,
@@ -383,23 +566,51 @@ class _PlannerCard extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            strings.tapMapHint,
+            planner.points.isEmpty ? strings.tapMapHint : strings.tapMapContinue,
             style: TextStyle(
               color: scheme.onSurfaceVariant,
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 38,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                for (final profile in RouteProfile.values)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 7),
+                    child: ChoiceChip(
+                      selected: planner.profile == profile,
+                      label: Text(_profileLabel(strings, profile)),
+                      onSelected: (_) => onProfileChanged(profile),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
-                child: _Metric(label: strings.distance, value: '0.0 km'),
+                child: _Metric(
+                  label: strings.distance,
+                  value: _formatDistance(planner.distanceMeters),
+                ),
               ),
               Expanded(
-                child: _Metric(label: strings.ascent, value: '+0 m'),
+                child: _Metric(
+                  label: strings.duration,
+                  value: _formatDuration(planner.estimatedDuration),
+                ),
               ),
               Expanded(
-                child: _Metric(label: strings.duration, value: '--'),
+                child: _Metric(
+                  label: strings.waypoints,
+                  value: planner.points.length.toString(),
+                ),
               ),
             ],
           ),
@@ -446,10 +657,58 @@ class _PlannerCard extends StatelessWidget {
               ],
             ],
           ),
+          if (planner.points.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                TextButton.icon(
+                  onPressed: onClear,
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  label: Text(strings.clear),
+                ),
+                const Spacer(),
+                FilledButton.icon(
+                  onPressed: onSave,
+                  icon: const Icon(Icons.bookmark_add_outlined),
+                  label: Text(strings.saveRoute),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
   }
+}
+
+String _profileLabel(AppLocalizations strings, RouteProfile profile) {
+  return switch (profile) {
+    RouteProfile.hiking => strings.profileHiking,
+    RouteProfile.trailRunning => strings.profileTrailRun,
+    RouteProfile.walking => strings.profileWalking,
+    RouteProfile.mountainBike => strings.profileMtb,
+    RouteProfile.cycling => strings.profileCycling,
+    RouteProfile.dogWalk => strings.profileDogWalk,
+  };
+}
+
+String _formatDistance(double meters) {
+  if (meters < 1000) {
+    return '${meters.round()} m';
+  }
+  return '${(meters / 1000).toStringAsFixed(1)} km';
+}
+
+String _formatDuration(Duration duration) {
+  if (duration == Duration.zero) {
+    return '--';
+  }
+  final hours = duration.inHours;
+  final minutes = duration.inMinutes.remainder(60);
+  if (hours == 0) {
+    return '${minutes} min';
+  }
+  return '${hours}h ${minutes.toString().padLeft(2, '0')}';
 }
 
 class _Metric extends StatelessWidget {
@@ -504,7 +763,14 @@ class _MapActionButton extends StatelessWidget {
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onTap,
-          child: SizedBox(width: 42, height: 42, child: Icon(icon, size: 20)),
+          child: Opacity(
+            opacity: onTap == null ? 0.38 : 1,
+            child: SizedBox(
+              width: 42,
+              height: 42,
+              child: Icon(icon, size: 20),
+            ),
+          ),
         ),
       ),
     );
