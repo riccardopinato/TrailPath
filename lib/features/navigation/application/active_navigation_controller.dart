@@ -56,7 +56,19 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
       });
     });
     ref.onDispose(() {
-      _subscription?.cancel();
+      final subscription = _subscription;
+      _subscription = null;
+      unawaited(subscription?.cancel() ?? Future<void>.value());
+
+      final engine = _engine;
+      if (engine != null) {
+        unawaited(engine.stop());
+      }
+
+      final feedback = _feedback;
+      if (feedback != null) {
+        unawaited(feedback.stop());
+      }
     });
     return const ActiveNavigationState();
   }
@@ -72,6 +84,9 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
 
   Future<void> start(RoutePlan route, String languageCode) async {
     await _subscription?.cancel();
+    if (!ref.mounted) {
+      return;
+    }
     state = ActiveNavigationState(route: route);
 
     try {
