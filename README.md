@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.7.0 - Navigation
+v0.8.0 - Offline
 
-TrailPath now follows saved routes with live GPS progress, remaining distance, off-route detection, back-to-route guidance and localized voice/haptic alerts.
+TrailPath can now prepare saved routes for offline use with native MapLibre regions, live download progress, storage management and route navigation that remains map-capable when connectivity disappears.
 
 ### Included
 
@@ -38,6 +38,10 @@ TrailPath now follows saved routes with live GPS progress, remaining distance, o
 - off-route / back-on-route hysteresis and arrival detection
 - visual back-to-route connector on the map
 - localized TTS and haptic navigation alerts
+- per-route MapLibre offline map preparation
+- adaptive offline-region bounds and zoom levels to control storage size
+- live offline download progress and persistent route readiness
+- offline map library with storage usage, deletion and ambient-cache controls
 - light and dark outdoor themes
 - Italian, English, Spanish, French and Portuguese localization foundation
 - structured logging
