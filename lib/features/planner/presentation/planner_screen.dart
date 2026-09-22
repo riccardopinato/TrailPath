@@ -15,6 +15,7 @@ import 'package:trail_path/core/maps/map_config.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/planner/application/route_planner_controller.dart';
+import 'package:trail_path/infrastructure/search/nominatim_place_search_service.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
@@ -160,6 +161,103 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       }
       await _focusPosition(sample);
     }
+  }
+
+  Future<void> _searchPlace() async {
+    final strings = AppLocalizations.of(context);
+    final queryController = TextEditingController();
+    final query = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(strings.searchPlace),
+        content: TextField(
+          controller: queryController,
+          autofocus: true,
+          textInputAction: TextInputAction.search,
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.search_rounded),
+            hintText: strings.searchPlace,
+          ),
+          onSubmitted: (value) => Navigator.of(context).pop(value.trim()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(strings.cancel),
+          ),
+          FilledButton.icon(
+            onPressed: () =>
+                Navigator.of(context).pop(queryController.text.trim()),
+            icon: const Icon(Icons.search_rounded),
+            label: Text(strings.searchPlace),
+          ),
+        ],
+      ),
+    );
+    queryController.dispose();
+
+    if (!mounted || query == null || query.trim().length < 2) {
+      return;
+    }
+
+    List<PlaceSearchResult> results;
+    try {
+      results = await ref.read(placeSearchServiceProvider).search(query);
+    } on Object catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.toString())),
+        );
+      }
+      return;
+    }
+
+    if (!mounted) {
+      return;
+    }
+    if (results.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(strings.locationUnavailable)),
+      );
+      return;
+    }
+
+    final selected = await showModalBottomSheet<PlaceSearchResult>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: ListView.separated(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 20),
+          itemCount: results.length,
+          separatorBuilder: (context, index) => const Divider(height: 1),
+          itemBuilder: (context, index) {
+            final result = results[index];
+            return ListTile(
+              leading: const Icon(Icons.place_outlined),
+              title: Text(
+                result.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: result.type.isEmpty ? null : Text(result.type),
+              onTap: () => Navigator.of(context).pop(result),
+            );
+          },
+        ),
+      ),
+    );
+
+    if (selected == null || !mounted) {
+      return;
+    }
+
+    await _mapController?.animateCamera(
+      CameraUpdate.newLatLngZoom(
+        LatLng(selected.point.latitude, selected.point.longitude),
+        15.5,
+      ),
+    );
   }
 
   Future<void> _addWaypoint(LatLng coordinates) async {
@@ -499,38 +597,46 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Container(
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: dark
-                        ? const Color(0xEB172019)
-                        : const Color(0xF5FFFFFF),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _searchPlace,
                     borderRadius: BorderRadius.circular(18),
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
-                        color: Colors.black.withValues(alpha: 0.08),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.search, size: 21),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          strings.searchPlace,
-                          style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
-                            fontWeight: FontWeight.w600,
+                    child: Container(
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: dark
+                            ? const Color(0xEB172019)
+                            : const Color(0xF5FFFFFF),
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
+                            color: Colors.black.withValues(alpha: 0.08),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.search, size: 21),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              strings.searchPlace,
+                              style: TextStyle(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right_rounded, size: 20),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
