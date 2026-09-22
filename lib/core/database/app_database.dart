@@ -98,6 +98,8 @@ class AppDatabase extends _$AppDatabase {
     required List<({double latitude, double longitude})> waypointsData,
     required List<({double latitude, double longitude})> geometryData,
     required double distanceMeters,
+    required double ascentMeters,
+    required double descentMeters,
     required Duration estimatedDuration,
   }) async {
     if (waypointsData.length < 2 || geometryData.length < 2) {
@@ -126,6 +128,8 @@ class AppDatabase extends _$AppDatabase {
           updatedAt: now,
           profile: profile,
           distanceMeters: Value(distanceMeters),
+          ascentMeters: Value(ascentMeters),
+          descentMeters: Value(descentMeters),
           durationSeconds: Value(estimatedDuration.inSeconds),
           encodedGeometry: Value(geometry),
         ),
