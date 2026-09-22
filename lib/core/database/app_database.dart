@@ -76,7 +76,7 @@ class Waypoints extends Table {
 
 @DriftDatabase(tables: [SavedRoutes, Activities, Waypoints])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase._(QueryExecutor executor) : super(executor);
+  AppDatabase._(super.executor);
 
   factory AppDatabase.open() => AppDatabase._(_openConnection());
 
