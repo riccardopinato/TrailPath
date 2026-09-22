@@ -23,6 +23,7 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
   MapLibreMapController? _mapController;
   bool _styleReady = false;
   bool _navigationStarted = false;
+  ActiveNavigationController? _navigationController;
 
   bool get _runningWidgetTest =>
       Platform.environment['FLUTTER_TEST']?.toLowerCase() == 'true';
@@ -35,17 +36,22 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
     }
     _navigationStarted = true;
     final languageCode = Localizations.localeOf(context).languageCode;
+    final controller = ref.read(activeNavigationProvider.notifier);
+    _navigationController = controller;
     Future<void>.microtask(
-      () => ref.read(activeNavigationProvider.notifier).start(
-            widget.route,
-            languageCode,
-          ),
+      () => controller.start(
+        widget.route,
+        languageCode,
+      ),
     );
   }
 
   @override
   void dispose() {
-    unawaited(ref.read(activeNavigationProvider.notifier).stop());
+    final controller = _navigationController;
+    if (controller != null) {
+      unawaited(controller.stop());
+    }
     _mapController?.dispose();
     super.dispose();
   }
