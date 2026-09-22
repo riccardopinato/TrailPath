@@ -67,7 +67,7 @@ class NominatimPlaceSearchService implements PlaceSearchService {
         );
       }
 
-      final body = await response.transform(utf8.decoder).join();
+      final body = await response.transform(utf8.decoder).join().timeout(timeout);
       final results = decodeNominatimSearchResults(body);
       _cache[cacheKey] = results;
 
