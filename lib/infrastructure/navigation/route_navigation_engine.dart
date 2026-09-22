@@ -26,6 +26,7 @@ class RouteNavigationEngine implements NavigationEngine {
   RoutePlan? _route;
   bool _isOffRoute = false;
   bool _arrived = false;
+  double _maxAcceptedAccuracyMeters = 60;
 
   @override
   Stream<NavigationEvent> get events => _controller.stream;
@@ -43,6 +44,8 @@ class RouteNavigationEngine implements NavigationEngine {
     _route = route;
     _isOffRoute = false;
     _arrived = false;
+    _maxAcceptedAccuracyMeters =
+        batteryModePolicy(mode).maxAcceptedAccuracyMeters;
 
     final enabled = await locationEngine.isServiceEnabled();
     if (!enabled) {
@@ -77,7 +80,8 @@ class RouteNavigationEngine implements NavigationEngine {
 
   void _onPosition(PositionSample sample) {
     final route = _route;
-    if (route == null || sample.accuracyMeters > 60) {
+    if (route == null ||
+        sample.accuracyMeters > _maxAcceptedAccuracyMeters) {
       return;
     }
 
