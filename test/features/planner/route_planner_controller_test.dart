@@ -103,6 +103,49 @@ void main() {
     expect(state.descentMeters, 5);
   });
 
+  test('imports GPX geometry without rerouting and preserves elevation', () {
+    final container = containerWith(const StraightLineRoutingEngine());
+    addTearDown(container.dispose);
+
+    final controller = container.read(routePlannerProvider.notifier);
+    controller.importGpx(
+      const GpxDocument(
+        name: 'Imported trail',
+        points: [
+          GeoPoint(
+            latitude: 45.0,
+            longitude: 11.0,
+            elevationMeters: 100,
+          ),
+          GeoPoint(
+            latitude: 45.01,
+            longitude: 11.01,
+            elevationMeters: 130,
+          ),
+          GeoPoint(
+            latitude: 45.02,
+            longitude: 11.02,
+            elevationMeters: 120,
+          ),
+        ],
+      ),
+    );
+
+    final state = container.read(routePlannerProvider);
+    expect(state.importedName, 'Imported trail');
+    expect(state.geometry, hasLength(3));
+    expect(state.points, hasLength(2));
+    expect(state.routingSource, 'gpx');
+    expect(state.hasElevation, isTrue);
+    expect(state.ascentMeters, 30);
+    expect(state.descentMeters, 10);
+
+    final exported = controller.exportGpx('Exported trail');
+    expect(exported.name, 'Exported trail');
+    expect(exported.points, hasLength(3));
+    expect(exported.points[1].elevationMeters, 130);
+  });
+
   test('distance helper returns zero for fewer than two points', () {
     expect(calculateDistanceMeters(const []), 0);
     expect(
