@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.3.0 - Route Planner
+v0.3.1 - Routing & Snap
 
-TrailPath now supports interactive route creation directly on the map, offline distance/duration metrics, activity profiles, undo/redo and local route persistence.
+TrailPath now routes planner waypoints along the OpenStreetMap foot/bike network through a provider-backed RoutingEngine, while retaining the local straight-line fallback when network routing is unavailable.
 
 ### Included
 
@@ -21,8 +21,10 @@ TrailPath now supports interactive route creation directly on the map, offline d
 - Android/iOS native location permission setup
 - tap-to-add waypoint planning with MapLibre annotations
 - route line, undo/redo and clear controls
-- activity profiles with offline distance and duration estimates
-- local Drift persistence for planned routes and waypoints
+- activity profiles with foot/bike routing profiles
+- asynchronous snap-to-network routing through routing.openstreetmap.de
+- automatic local straight-line fallback when routing is unavailable
+- separate waypoint and snapped-geometry persistence in Drift
 - saved-routes list with delete flow
 - recording shell
 - light and dark outdoor themes
@@ -35,7 +37,7 @@ TrailPath now supports interactive route creation directly on the map, offline d
 
 The CI is pinned to Flutter 3.47.5 / Dart 3.13.4.
 
-Android and iOS platform folders are generated from the current Flutter template during CI until the native configuration becomes customized in v0.2. This avoids committing obsolete Gradle, Kotlin or Xcode templates during the foundation stage.
+Android and iOS platform folders are generated from the current Flutter template during CI. Native permissions are then applied by CI. The current public routing endpoint is suitable for development and validation; the RoutingEngine abstraction is intentionally kept provider-agnostic so a production-grade or self-hosted service can replace it without changing the planner.
 
 ## Bootstrap locally
 
