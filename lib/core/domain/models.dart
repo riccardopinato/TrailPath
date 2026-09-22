@@ -198,12 +198,14 @@ class OfflineRegion {
     required this.name,
     required this.downloadedBytes,
     required this.isComplete,
+    this.progress = 0,
   });
 
   final String id;
   final String name;
   final int downloadedBytes;
   final bool isComplete;
+  final double progress;
 }
 
 class OfflineRegionRequest {
