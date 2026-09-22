@@ -7,13 +7,13 @@ import 'package:trail_path/core/services/service_contracts.dart';
 
 class RouteNavigationEngine implements NavigationEngine {
   RouteNavigationEngine({
-    required LocationEngine locationEngine,
+    required this.locationEngine,
     this.offRouteThresholdMeters = 45,
     this.backOnRouteThresholdMeters = 25,
     this.arrivalThresholdMeters = 25,
-  }) : _locationEngine = locationEngine; // ignore: prefer_initializing_formals
+  });
 
-  final LocationEngine _locationEngine;
+  final LocationEngine locationEngine;
   final double offRouteThresholdMeters;
   final double backOnRouteThresholdMeters;
   final double arrivalThresholdMeters;
@@ -40,14 +40,14 @@ class RouteNavigationEngine implements NavigationEngine {
     _isOffRoute = false;
     _arrived = false;
 
-    final enabled = await _locationEngine.isServiceEnabled();
+    final enabled = await locationEngine.isServiceEnabled();
     if (!enabled) {
       throw StateError('Location services are disabled.');
     }
 
-    var permission = await _locationEngine.hasPermission();
+    var permission = await locationEngine.hasPermission();
     if (!permission) {
-      permission = await _locationEngine.requestPermission();
+      permission = await locationEngine.requestPermission();
     }
     if (!permission) {
       throw StateError('Location permission is not granted.');
@@ -61,7 +61,7 @@ class RouteNavigationEngine implements NavigationEngine {
       ),
     );
 
-    _subscription = _locationEngine.watch().listen(
+    _subscription = locationEngine.watch().listen(
       _onPosition,
       onError: (Object error, StackTrace stackTrace) {
         if (!_controller.isClosed) {
