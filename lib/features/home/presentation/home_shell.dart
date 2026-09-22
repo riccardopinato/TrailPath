@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/features/offline/presentation/offline_screen.dart';
+import 'package:trail_path/features/outdoor/presentation/outdoor_screen.dart';
 import 'package:trail_path/features/planner/presentation/planner_screen.dart';
 import 'package:trail_path/features/recording/presentation/record_screen.dart';
 import 'package:trail_path/features/routes/presentation/routes_screen.dart';
@@ -20,6 +21,7 @@ class _HomeShellState extends State<HomeShell> {
     RecordScreen(),
     RoutesScreen(),
     OfflineScreen(),
+    OutdoorScreen(),
   ];
 
   @override
@@ -53,6 +55,11 @@ class _HomeShellState extends State<HomeShell> {
             icon: const Icon(Icons.cloud_download_outlined),
             selectedIcon: const Icon(Icons.cloud_done_rounded),
             label: strings.offline,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.landscape_outlined),
+            selectedIcon: const Icon(Icons.landscape_rounded),
+            label: strings.outdoor,
           ),
         ],
       ),
