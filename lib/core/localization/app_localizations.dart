@@ -127,6 +127,40 @@ class AppLocalizations {
   String get noOfflineMaps => _value('noOfflineMaps');
   String get noOfflineMapsHint => _value('noOfflineMapsHint');
   String get storageUsed => _value('storageUsed');
+  String get outdoor => _value('outdoor');
+  String get outdoorHint => _value('outdoorHint');
+  String get batteryMode => _value('batteryMode');
+  String get batteryPerformance => _value('batteryPerformance');
+  String get batteryBalanced => _value('batteryBalanced');
+  String get batterySaver => _value('batterySaver');
+  String get batteryPerformanceHint => _value('batteryPerformanceHint');
+  String get batteryBalancedHint => _value('batteryBalancedHint');
+  String get batterySaverHint => _value('batterySaverHint');
+  String get backToCar => _value('backToCar');
+  String get backToCarHint => _value('backToCarHint');
+  String get saveCarHere => _value('saveCarHere');
+  String get updateCarPosition => _value('updateCarPosition');
+  String get carPositionSaved => _value('carPositionSaved');
+  String get carSavedAt => _value('carSavedAt');
+  String get openBackToCar => _value('openBackToCar');
+  String get clearCar => _value('clearCar');
+  String get clearCarHint => _value('clearCarHint');
+  String get safetyCheck => _value('safetyCheck');
+  String get safetyCheckHint => _value('safetyCheckHint');
+  String get refresh => _value('refresh');
+  String get battery => _value('battery');
+  String get systemBatterySaver => _value('systemBatterySaver');
+  String get gpsPermission => _value('gpsPermission');
+  String get locationServices => _value('locationServices');
+  String get offlineMap => _value('offlineMap');
+  String get sharePosition => _value('sharePosition');
+  String get sharePositionHint => _value('sharePositionHint');
+  String get sharedPositionMessage => _value('sharedPositionMessage');
+  String get sharePositionError => _value('sharePositionError');
+  String get distanceToCar => _value('distanceToCar');
+  String get direction => _value('direction');
+  String get waitingForGps => _value('waitingForGps');
+  String get gpsEvery => _value('gpsEvery');
 
   static const Map<String, Map<String, String>> _values = {
     'it': {
@@ -228,6 +262,40 @@ class AppLocalizations {
       'noOfflineMaps': 'Nessuna mappa offline',
       'noOfflineMapsHint': 'Apri Percorsi e scarica la mappa di un itinerario salvato.',
       'storageUsed': 'Spazio usato',
+      'outdoor': 'Outdoor',
+      'outdoorHint': 'Strumenti rapidi per autonomia, rientro e sicurezza sul sentiero.',
+      'batteryMode': 'Modalità batteria',
+      'batteryPerformance': 'Prestazioni',
+      'batteryBalanced': 'Bilanciata',
+      'batterySaver': 'Risparmio',
+      'batteryPerformanceHint': 'GPS più frequente e preciso, ideale per trail e navigazione impegnativa.',
+      'batteryBalancedHint': 'Equilibrio tra precisione GPS e autonomia per la maggior parte delle uscite.',
+      'batterySaverHint': 'Riduce gli aggiornamenti GPS per prolungare l’autonomia.',
+      'backToCar': 'Back to Car',
+      'backToCarHint': 'Salva il punto di parcheggio e ritrovalo anche senza rete.',
+      'saveCarHere': 'Salva auto qui',
+      'updateCarPosition': 'Aggiorna posizione',
+      'carPositionSaved': 'Posizione auto salvata',
+      'carSavedAt': 'Salvata',
+      'openBackToCar': 'Apri Back to Car',
+      'clearCar': 'Rimuovi posizione auto',
+      'clearCarHint': 'Il punto salvato verrà eliminato.',
+      'safetyCheck': 'Safety Check',
+      'safetyCheckHint': 'Controlla batteria, GPS, permessi e mappe offline prima di partire.',
+      'refresh': 'Aggiorna',
+      'battery': 'Batteria',
+      'systemBatterySaver': 'Risparmio sistema',
+      'gpsPermission': 'Permesso GPS',
+      'locationServices': 'Servizi posizione',
+      'offlineMap': 'Mappa offline',
+      'sharePosition': 'Condividi posizione',
+      'sharePositionHint': 'Condividi le coordinate correnti con un contatto.',
+      'sharedPositionMessage': 'La mia posizione da TrailPath',
+      'sharePositionError': 'Impossibile condividere la posizione',
+      'distanceToCar': 'Distanza dall’auto',
+      'direction': 'Direzione',
+      'waitingForGps': 'In attesa del GPS',
+      'gpsEvery': 'Aggiornamento GPS ogni',
     },
     'en': {
       'planner': 'Plan',
@@ -328,6 +396,40 @@ class AppLocalizations {
       'noOfflineMaps': 'No offline maps',
       'noOfflineMapsHint': 'Open Routes and download the map for a saved route.',
       'storageUsed': 'Storage used',
+      'outdoor': 'Outdoor',
+      'outdoorHint': 'Quick tools for battery life, return guidance and trail safety.',
+      'batteryMode': 'Battery mode',
+      'batteryPerformance': 'Performance',
+      'batteryBalanced': 'Balanced',
+      'batterySaver': 'Saver',
+      'batteryPerformanceHint': 'More frequent, precise GPS for demanding trails and navigation.',
+      'batteryBalancedHint': 'Balances GPS precision and battery life for most outings.',
+      'batterySaverHint': 'Reduces GPS updates to extend battery life.',
+      'backToCar': 'Back to Car',
+      'backToCarHint': 'Save your parking point and find it again even without a connection.',
+      'saveCarHere': 'Save car here',
+      'updateCarPosition': 'Update position',
+      'carPositionSaved': 'Car position saved',
+      'carSavedAt': 'Saved',
+      'openBackToCar': 'Open Back to Car',
+      'clearCar': 'Remove car position',
+      'clearCarHint': 'The saved return point will be deleted.',
+      'safetyCheck': 'Safety Check',
+      'safetyCheckHint': 'Check battery, GPS, permissions and offline maps before leaving.',
+      'refresh': 'Refresh',
+      'battery': 'Battery',
+      'systemBatterySaver': 'System saver',
+      'gpsPermission': 'GPS permission',
+      'locationServices': 'Location services',
+      'offlineMap': 'Offline map',
+      'sharePosition': 'Share position',
+      'sharePositionHint': 'Share your current coordinates with a contact.',
+      'sharedPositionMessage': 'My position from TrailPath',
+      'sharePositionError': 'Could not share your position',
+      'distanceToCar': 'Distance to car',
+      'direction': 'Direction',
+      'waitingForGps': 'Waiting for GPS',
+      'gpsEvery': 'GPS update every',
     },
     'es': {
       'planner': 'Planificar',
@@ -428,6 +530,40 @@ class AppLocalizations {
       'noOfflineMaps': 'No hay mapas offline',
       'noOfflineMapsHint': 'Abre Rutas y descarga el mapa de una ruta guardada.',
       'storageUsed': 'Espacio usado',
+      'outdoor': 'Outdoor',
+      'outdoorHint': 'Herramientas rápidas para autonomía, regreso y seguridad en ruta.',
+      'batteryMode': 'Modo de batería',
+      'batteryPerformance': 'Rendimiento',
+      'batteryBalanced': 'Equilibrado',
+      'batterySaver': 'Ahorro',
+      'batteryPerformanceHint': 'GPS más frecuente y preciso para rutas y navegación exigentes.',
+      'batteryBalancedHint': 'Equilibra precisión GPS y autonomía para la mayoría de salidas.',
+      'batterySaverHint': 'Reduce las actualizaciones GPS para alargar la batería.',
+      'backToCar': 'Back to Car',
+      'backToCarHint': 'Guarda el punto de aparcamiento y vuelve incluso sin conexión.',
+      'saveCarHere': 'Guardar coche aquí',
+      'updateCarPosition': 'Actualizar posición',
+      'carPositionSaved': 'Posición del coche guardada',
+      'carSavedAt': 'Guardado',
+      'openBackToCar': 'Abrir Back to Car',
+      'clearCar': 'Eliminar posición del coche',
+      'clearCarHint': 'Se eliminará el punto guardado.',
+      'safetyCheck': 'Safety Check',
+      'safetyCheckHint': 'Comprueba batería, GPS, permisos y mapas offline antes de salir.',
+      'refresh': 'Actualizar',
+      'battery': 'Batería',
+      'systemBatterySaver': 'Ahorro del sistema',
+      'gpsPermission': 'Permiso GPS',
+      'locationServices': 'Servicios de ubicación',
+      'offlineMap': 'Mapa offline',
+      'sharePosition': 'Compartir posición',
+      'sharePositionHint': 'Comparte tus coordenadas actuales con un contacto.',
+      'sharedPositionMessage': 'Mi posición desde TrailPath',
+      'sharePositionError': 'No se pudo compartir la posición',
+      'distanceToCar': 'Distancia al coche',
+      'direction': 'Dirección',
+      'waitingForGps': 'Esperando GPS',
+      'gpsEvery': 'Actualización GPS cada',
     },
     'fr': {
       'planner': 'Planifier',
@@ -528,6 +664,40 @@ class AppLocalizations {
       'noOfflineMaps': 'Aucune carte hors ligne',
       'noOfflineMapsHint': 'Ouvrez Parcours et téléchargez la carte d’un parcours enregistré.',
       'storageUsed': 'Espace utilisé',
+      'outdoor': 'Outdoor',
+      'outdoorHint': 'Outils rapides pour autonomie, retour et sécurité sur le terrain.',
+      'batteryMode': 'Mode batterie',
+      'batteryPerformance': 'Performance',
+      'batteryBalanced': 'Équilibré',
+      'batterySaver': 'Économie',
+      'batteryPerformanceHint': 'GPS plus fréquent et précis pour les parcours exigeants.',
+      'batteryBalancedHint': 'Équilibre précision GPS et autonomie pour la plupart des sorties.',
+      'batterySaverHint': 'Réduit les mises à jour GPS pour prolonger l’autonomie.',
+      'backToCar': 'Back to Car',
+      'backToCarHint': 'Enregistrez votre parking et retrouvez-le même sans réseau.',
+      'saveCarHere': 'Enregistrer la voiture ici',
+      'updateCarPosition': 'Mettre à jour',
+      'carPositionSaved': 'Position de la voiture enregistrée',
+      'carSavedAt': 'Enregistrée',
+      'openBackToCar': 'Ouvrir Back to Car',
+      'clearCar': 'Supprimer la position voiture',
+      'clearCarHint': 'Le point enregistré sera supprimé.',
+      'safetyCheck': 'Safety Check',
+      'safetyCheckHint': 'Vérifiez batterie, GPS, autorisations et cartes hors ligne avant de partir.',
+      'refresh': 'Actualiser',
+      'battery': 'Batterie',
+      'systemBatterySaver': 'Économie système',
+      'gpsPermission': 'Autorisation GPS',
+      'locationServices': 'Services de localisation',
+      'offlineMap': 'Carte hors ligne',
+      'sharePosition': 'Partager la position',
+      'sharePositionHint': 'Partagez vos coordonnées actuelles avec un contact.',
+      'sharedPositionMessage': 'Ma position depuis TrailPath',
+      'sharePositionError': 'Impossible de partager la position',
+      'distanceToCar': 'Distance à la voiture',
+      'direction': 'Direction',
+      'waitingForGps': 'En attente du GPS',
+      'gpsEvery': 'Mise à jour GPS toutes les',
     },
     'pt': {
       'planner': 'Planear',
@@ -628,6 +798,40 @@ class AppLocalizations {
       'noOfflineMaps': 'Nenhum mapa offline',
       'noOfflineMapsHint': 'Abra Percursos e descarregue o mapa de um percurso guardado.',
       'storageUsed': 'Espaço usado',
+      'outdoor': 'Outdoor',
+      'outdoorHint': 'Ferramentas rápidas para autonomia, regresso e segurança no percurso.',
+      'batteryMode': 'Modo de bateria',
+      'batteryPerformance': 'Desempenho',
+      'batteryBalanced': 'Equilibrado',
+      'batterySaver': 'Poupança',
+      'batteryPerformanceHint': 'GPS mais frequente e preciso para percursos exigentes.',
+      'batteryBalancedHint': 'Equilibra precisão GPS e autonomia para a maioria das saídas.',
+      'batterySaverHint': 'Reduz as atualizações GPS para prolongar a bateria.',
+      'backToCar': 'Back to Car',
+      'backToCarHint': 'Guarde o local do estacionamento e volte mesmo sem rede.',
+      'saveCarHere': 'Guardar carro aqui',
+      'updateCarPosition': 'Atualizar posição',
+      'carPositionSaved': 'Posição do carro guardada',
+      'carSavedAt': 'Guardada',
+      'openBackToCar': 'Abrir Back to Car',
+      'clearCar': 'Remover posição do carro',
+      'clearCarHint': 'O ponto guardado será eliminado.',
+      'safetyCheck': 'Safety Check',
+      'safetyCheckHint': 'Verifique bateria, GPS, permissões e mapas offline antes de sair.',
+      'refresh': 'Atualizar',
+      'battery': 'Bateria',
+      'systemBatterySaver': 'Poupança do sistema',
+      'gpsPermission': 'Permissão GPS',
+      'locationServices': 'Serviços de localização',
+      'offlineMap': 'Mapa offline',
+      'sharePosition': 'Partilhar posição',
+      'sharePositionHint': 'Partilhe as coordenadas atuais com um contacto.',
+      'sharedPositionMessage': 'A minha posição no TrailPath',
+      'sharePositionError': 'Não foi possível partilhar a posição',
+      'distanceToCar': 'Distância ao carro',
+      'direction': 'Direção',
+      'waitingForGps': 'A aguardar GPS',
+      'gpsEvery': 'Atualização GPS a cada',
     },
   };
 }
