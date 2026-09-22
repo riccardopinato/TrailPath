@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/maps/map_config.dart';
 import 'package:trail_path/features/navigation/application/active_navigation_controller.dart';
 
 class NavigationScreen extends ConsumerStatefulWidget {
@@ -19,7 +20,7 @@ class NavigationScreen extends ConsumerStatefulWidget {
 }
 
 class _NavigationScreenState extends ConsumerState<NavigationScreen> {
-  static const _styleUrl = 'https://demotiles.maplibre.org/style.json';
+  static const _styleUrl = MapConfig.styleUrl;
   MapLibreMapController? _mapController;
   bool _styleReady = false;
   late final String _languageCode;
