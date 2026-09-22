@@ -6,6 +6,8 @@ import 'package:trail_path/infrastructure/elevation/open_meteo_elevation_engine.
 import 'package:trail_path/infrastructure/gpx/xml_gpx_service.dart';
 import 'package:trail_path/infrastructure/location/geolocator_location_engine.dart';
 import 'package:trail_path/infrastructure/maps/maplibre_map_engine.dart';
+import 'package:trail_path/infrastructure/navigation/flutter_tts_navigation_feedback.dart';
+import 'package:trail_path/infrastructure/navigation/route_navigation_engine.dart';
 import 'package:trail_path/infrastructure/recording/geolocator_track_recorder.dart';
 import 'package:trail_path/infrastructure/routing/openstreetmap_routing_engine.dart';
 
@@ -45,4 +47,23 @@ final trackRecorderProvider = Provider<TrackRecorder>((ref) {
     unawaited(recorder.dispose());
   });
   return recorder;
+});
+
+
+final navigationEngineProvider = Provider<NavigationEngine>((ref) {
+  final engine = RouteNavigationEngine(
+    locationEngine: ref.watch(locationEngineProvider),
+  );
+  ref.onDispose(() {
+    unawaited(engine.dispose());
+  });
+  return engine;
+});
+
+final navigationFeedbackProvider = Provider<NavigationFeedback>((ref) {
+  final feedback = FlutterTtsNavigationFeedback();
+  ref.onDispose(() {
+    unawaited(feedback.stop());
+  });
+  return feedback;
 });
