@@ -6,3 +6,9 @@ final appDatabaseProvider = Provider<AppDatabase>((ref) {
   ref.onDispose(database.close);
   return database;
 });
+
+
+final savedRoutesProvider = StreamProvider<List<SavedRoute>>((ref) {
+  final database = ref.watch(appDatabaseProvider);
+  return database.watchSavedRoutes();
+});
