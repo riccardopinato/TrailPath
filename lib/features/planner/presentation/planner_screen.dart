@@ -266,6 +266,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                       },
                     ),
                   ),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 8, 20, 14),
+                    child: Text(
+                      'Search data © OpenStreetMap contributors',
+                      style: TextStyle(fontSize: 10),
+                    ),
+                  ),
                 ],
               ),
             ),
