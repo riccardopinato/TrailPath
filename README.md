@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.2.0 - Map & Position
+v0.3.0 - Route Planner
 
-TrailPath now renders a live MapLibre map and connects the planner to device location, heading and native permission handling while preserving the v0.1 architecture.
+TrailPath now supports interactive route creation directly on the map, offline distance/duration metrics, activity profiles, undo/redo and local route persistence.
 
 ### Included
 
@@ -19,7 +19,12 @@ TrailPath now renders a live MapLibre map and connects the planner to device loc
 - live GPS position with accuracy and heading
 - user-location compass rendering and recenter control
 - Android/iOS native location permission setup
-- recording and saved-routes shells
+- tap-to-add waypoint planning with MapLibre annotations
+- route line, undo/redo and clear controls
+- activity profiles with offline distance and duration estimates
+- local Drift persistence for planned routes and waypoints
+- saved-routes list with delete flow
+- recording shell
 - light and dark outdoor themes
 - Italian, English, Spanish, French and Portuguese localization foundation
 - structured logging
