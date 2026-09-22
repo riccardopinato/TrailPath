@@ -113,6 +113,20 @@ class AppLocalizations {
   String get routeProgress => _value('routeProgress');
   String get distanceFromRoute => _value('distanceFromRoute');
   String get backToRouteHint => _value('backToRouteHint');
+  String get offline => _value('offline');
+  String get offlineMaps => _value('offlineMaps');
+  String get offlineHint => _value('offlineHint');
+  String get downloadOffline => _value('downloadOffline');
+  String get downloadingOffline => _value('downloadingOffline');
+  String get offlineReady => _value('offlineReady');
+  String get offlineFailed => _value('offlineFailed');
+  String get offlineStorage => _value('offlineStorage');
+  String get clearMapCache => _value('clearMapCache');
+  String get cacheCleared => _value('cacheCleared');
+  String get deleteOfflineMap => _value('deleteOfflineMap');
+  String get noOfflineMaps => _value('noOfflineMaps');
+  String get noOfflineMapsHint => _value('noOfflineMapsHint');
+  String get storageUsed => _value('storageUsed');
 
   static const Map<String, Map<String, String>> _values = {
     'it': {
@@ -200,6 +214,20 @@ class AppLocalizations {
       'routeProgress': 'Progresso',
       'distanceFromRoute': 'Dalla traccia',
       'backToRouteHint': 'Rientra verso la linea del percorso indicata sulla mappa.',
+      'offline': 'Offline',
+      'offlineMaps': 'Mappe offline',
+      'offlineHint': 'Scarica la mappa di un percorso prima di partire: GPS e navigazione restano utilizzabili anche senza rete.',
+      'downloadOffline': 'Scarica mappa',
+      'downloadingOffline': 'Download mappa…',
+      'offlineReady': 'Disponibile offline',
+      'offlineFailed': 'Download offline non riuscito',
+      'offlineStorage': 'Archivio offline',
+      'clearMapCache': 'Svuota cache mappa',
+      'cacheCleared': 'Cache mappa svuotata',
+      'deleteOfflineMap': 'Eliminare la mappa offline?',
+      'noOfflineMaps': 'Nessuna mappa offline',
+      'noOfflineMapsHint': 'Apri Percorsi e scarica la mappa di un itinerario salvato.',
+      'storageUsed': 'Spazio usato',
     },
     'en': {
       'planner': 'Plan',
@@ -286,6 +314,20 @@ class AppLocalizations {
       'routeProgress': 'Progress',
       'distanceFromRoute': 'From route',
       'backToRouteHint': 'Head back toward the route line shown on the map.',
+      'offline': 'Offline',
+      'offlineMaps': 'Offline maps',
+      'offlineHint': 'Download a saved route map before you leave: GPS and navigation keep working without a connection.',
+      'downloadOffline': 'Download map',
+      'downloadingOffline': 'Downloading map…',
+      'offlineReady': 'Available offline',
+      'offlineFailed': 'Offline download failed',
+      'offlineStorage': 'Offline storage',
+      'clearMapCache': 'Clear map cache',
+      'cacheCleared': 'Map cache cleared',
+      'deleteOfflineMap': 'Delete offline map?',
+      'noOfflineMaps': 'No offline maps',
+      'noOfflineMapsHint': 'Open Routes and download the map for a saved route.',
+      'storageUsed': 'Storage used',
     },
     'es': {
       'planner': 'Planificar',
@@ -372,6 +414,20 @@ class AppLocalizations {
       'routeProgress': 'Progreso',
       'distanceFromRoute': 'De la ruta',
       'backToRouteHint': 'Vuelve hacia la línea de ruta mostrada en el mapa.',
+      'offline': 'Offline',
+      'offlineMaps': 'Mapas offline',
+      'offlineHint': 'Descarga el mapa de una ruta antes de salir: el GPS y la navegación siguen funcionando sin conexión.',
+      'downloadOffline': 'Descargar mapa',
+      'downloadingOffline': 'Descargando mapa…',
+      'offlineReady': 'Disponible offline',
+      'offlineFailed': 'Error al descargar el mapa offline',
+      'offlineStorage': 'Almacenamiento offline',
+      'clearMapCache': 'Vaciar caché del mapa',
+      'cacheCleared': 'Caché del mapa vaciada',
+      'deleteOfflineMap': '¿Eliminar mapa offline?',
+      'noOfflineMaps': 'No hay mapas offline',
+      'noOfflineMapsHint': 'Abre Rutas y descarga el mapa de una ruta guardada.',
+      'storageUsed': 'Espacio usado',
     },
     'fr': {
       'planner': 'Planifier',
@@ -458,6 +514,20 @@ class AppLocalizations {
       'routeProgress': 'Progression',
       'distanceFromRoute': 'Du parcours',
       'backToRouteHint': 'Revenez vers la ligne du parcours affichée sur la carte.',
+      'offline': 'Hors ligne',
+      'offlineMaps': 'Cartes hors ligne',
+      'offlineHint': 'Téléchargez la carte d’un parcours avant de partir : le GPS et la navigation restent disponibles sans réseau.',
+      'downloadOffline': 'Télécharger la carte',
+      'downloadingOffline': 'Téléchargement…',
+      'offlineReady': 'Disponible hors ligne',
+      'offlineFailed': 'Échec du téléchargement hors ligne',
+      'offlineStorage': 'Stockage hors ligne',
+      'clearMapCache': 'Vider le cache de la carte',
+      'cacheCleared': 'Cache de la carte vidé',
+      'deleteOfflineMap': 'Supprimer la carte hors ligne ?',
+      'noOfflineMaps': 'Aucune carte hors ligne',
+      'noOfflineMapsHint': 'Ouvrez Parcours et téléchargez la carte d’un parcours enregistré.',
+      'storageUsed': 'Espace utilisé',
     },
     'pt': {
       'planner': 'Planear',
@@ -544,6 +614,20 @@ class AppLocalizations {
       'routeProgress': 'Progresso',
       'distanceFromRoute': 'Do percurso',
       'backToRouteHint': 'Regresse à linha do percurso apresentada no mapa.',
+      'offline': 'Offline',
+      'offlineMaps': 'Mapas offline',
+      'offlineHint': 'Descarregue o mapa de um percurso antes de sair: o GPS e a navegação continuam disponíveis sem rede.',
+      'downloadOffline': 'Descarregar mapa',
+      'downloadingOffline': 'A descarregar mapa…',
+      'offlineReady': 'Disponível offline',
+      'offlineFailed': 'Falha no download offline',
+      'offlineStorage': 'Armazenamento offline',
+      'clearMapCache': 'Limpar cache do mapa',
+      'cacheCleared': 'Cache do mapa limpa',
+      'deleteOfflineMap': 'Eliminar mapa offline?',
+      'noOfflineMaps': 'Nenhum mapa offline',
+      'noOfflineMapsHint': 'Abra Percursos e descarregue o mapa de um percurso guardado.',
+      'storageUsed': 'Espaço usado',
     },
   };
 }
