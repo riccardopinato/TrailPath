@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_providers.dart';
+import 'package:trail_path/features/outdoor/application/battery_mode_controller.dart';
 
 final activeNavigationProvider =
     NotifierProvider<ActiveNavigationController, ActiveNavigationState>(
@@ -87,7 +88,8 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
         },
       );
 
-      await engine.start(route);
+      final batteryMode = await ref.read(batteryModeProvider.future);
+      await engine.start(route, mode: batteryMode);
       state = state.copyWith(isActive: true, clearError: true);
     } on Object catch (error) {
       state = state.copyWith(isActive: false, error: error.toString());
