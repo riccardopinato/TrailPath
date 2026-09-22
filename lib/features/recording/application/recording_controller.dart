@@ -77,7 +77,7 @@ class RecordingController extends Notifier<RecordingState> {
     ref.listen(batteryModeProvider, (previous, next) {
       next.whenData((mode) {
         if (state.isActive) {
-          unawaited(_recorder.setBatteryMode(mode));
+          unawaited(_applyBatteryMode(mode));
         }
       });
     });
@@ -85,6 +85,17 @@ class RecordingController extends Notifier<RecordingState> {
       _subscription?.cancel();
     });
     return const RecordingState();
+  }
+
+  Future<void> _applyBatteryMode(BatteryMode mode) async {
+    final recorder = ref.read(trackRecorderProvider);
+    try {
+      await recorder.setBatteryMode(mode);
+    } on Object catch (error) {
+      if (ref.mounted) {
+        state = state.copyWith(error: error.toString());
+      }
+    }
   }
 
   Future<void> checkRecovery() async {
@@ -252,6 +263,9 @@ class RecordingController extends Notifier<RecordingState> {
     await _subscription?.cancel();
     _subscription = _recorder.snapshots.listen(
       (snapshot) {
+        if (!ref.mounted) {
+          return;
+        }
         state = state.copyWith(
           snapshot: snapshot,
           clearError: true,
@@ -259,7 +273,9 @@ class RecordingController extends Notifier<RecordingState> {
         _scheduleAutosave(snapshot);
       },
       onError: (Object error, StackTrace stackTrace) {
-        state = state.copyWith(error: error.toString());
+        if (ref.mounted) {
+          state = state.copyWith(error: error.toString());
+        }
       },
     );
   }
@@ -287,12 +303,21 @@ class RecordingController extends Notifier<RecordingState> {
     _lastPersistedPointCount = snapshot.points.length;
     _lastPersistedStatus = snapshot.status;
 
-    _persistChain = _persistChain.then(
-      (_) => _database.updateActivityDraft(
-        activityId: activityId,
-        snapshot: snapshot,
-      ),
-    );
+    final database = ref.read(appDatabaseProvider);
+    _persistChain = _persistChain
+        .catchError((Object _) {})
+        .then((_) async {
+      try {
+        await database.updateActivityDraft(
+          activityId: activityId,
+          snapshot: snapshot,
+        );
+      } on Object catch (error) {
+        if (ref.mounted) {
+          state = state.copyWith(error: error.toString());
+        }
+      }
+    });
   }
 
   Future<void> _flushAutosave() async {
@@ -302,12 +327,15 @@ class RecordingController extends Notifier<RecordingState> {
     }
 
     final snapshot = state.snapshot;
-    _persistChain = _persistChain.then(
-      (_) => _database.updateActivityDraft(
+    final database = ref.read(appDatabaseProvider);
+    _persistChain = _persistChain
+        .catchError((Object _) {})
+        .then((_) async {
+      await database.updateActivityDraft(
         activityId: activityId,
         snapshot: snapshot,
-      ),
-    );
+      );
+    });
     await _persistChain;
   }
 
