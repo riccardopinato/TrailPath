@@ -7,6 +7,18 @@ enum RouteProfile {
   dogWalk,
 }
 
+enum LocationPermissionState {
+  denied,
+  deniedForever,
+  whileInUse,
+  always,
+  unavailable;
+
+  bool get isGranted =>
+      this == LocationPermissionState.whileInUse ||
+      this == LocationPermissionState.always;
+}
+
 class GeoPoint {
   const GeoPoint({
     required this.latitude,
