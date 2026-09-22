@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.9.0 - Outdoor Intelligence
+v0.9.1 - Runtime Recovery
 
-TrailPath now adds adaptive GPS battery modes, persistent Back to Car guidance, a device Safety Check and quick location sharing while keeping the existing offline-first route workflow.
+TrailPath v0.9.1 hardens real-device use: production OpenFreeMap rendering, functional place search, safer navigation startup, resilient voice guidance, GPS settings recovery and offline-state reconciliation.
 
 ### Included
 
