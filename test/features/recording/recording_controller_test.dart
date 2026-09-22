@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/database/database_providers.dart';
+import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/core/services/service_providers.dart';
@@ -161,6 +162,13 @@ class _FakeTrackRecorder implements TrackRecorder {
 
   @override
   Stream<TrackRecorderSnapshot> get snapshots => _controller.stream;
+
+  BatteryMode mode = BatteryMode.balanced;
+
+  @override
+  Future<void> setBatteryMode(BatteryMode value) async {
+    mode = value;
+  }
 
   void emit(TrackRecorderSnapshot snapshot) {
     _snapshot = snapshot;
