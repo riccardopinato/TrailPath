@@ -59,6 +59,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     final strings = AppLocalizations.of(context);
     final location = ref.watch(locationControllerProvider);
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final mapRenderingEnabled = ref.watch(mapRenderingEnabledProvider);
 
     ref.listen<LocationUiState>(locationControllerProvider, (previous, next) {
       _pushLocationToMap(next);
@@ -67,7 +68,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     return Stack(
       children: [
         Positioned.fill(
-          child: _supportsInteractiveMap
+          child: mapRenderingEnabled && _supportsInteractiveMap
               ? MapLibreMap(
                   styleString: _mapStyle,
                   initialCameraPosition: _fallbackCamera,
