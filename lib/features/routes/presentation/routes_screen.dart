@@ -9,6 +9,7 @@ import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/navigation/presentation/navigation_screen.dart';
+import 'package:trail_path/features/offline/application/offline_downloads_controller.dart';
 
 class RoutesScreen extends ConsumerWidget {
   const RoutesScreen({super.key});
@@ -288,6 +289,7 @@ class _RouteCard extends StatelessWidget {
           '${_profileName(strings, route.profile)}',
       onPrimary: onNavigate,
       primaryTooltip: strings.navigate,
+      extraAction: _OfflineRouteAction(route: route),
       onShare: onShare,
       onDelete: onDelete,
     );
@@ -332,6 +334,7 @@ class _BaseCard extends StatelessWidget {
     required this.subtitle,
     this.onPrimary,
     this.primaryTooltip,
+    this.extraAction,
     required this.onShare,
     required this.onDelete,
   });
@@ -341,6 +344,7 @@ class _BaseCard extends StatelessWidget {
   final String subtitle;
   final VoidCallback? onPrimary;
   final String? primaryTooltip;
+  final Widget? extraAction;
   final VoidCallback onShare;
   final VoidCallback onDelete;
 
@@ -402,20 +406,118 @@ class _BaseCard extends StatelessWidget {
                 onPressed: onPrimary,
                 icon: const Icon(Icons.navigation_rounded),
               ),
-            IconButton(
-              tooltip: strings.shareGpx,
-              onPressed: onShare,
-              icon: const Icon(Icons.ios_share_rounded),
-            ),
-            IconButton(
-              tooltip: strings.delete,
-              onPressed: onDelete,
-              icon: const Icon(Icons.delete_outline_rounded),
+            ...switch (extraAction) {
+              final Widget action => [action],
+              null => const <Widget>[],
+            },
+            PopupMenuButton<String>(
+              tooltip: strings.routes,
+              onSelected: (value) {
+                if (value == 'share') {
+                  onShare();
+                } else if (value == 'delete') {
+                  onDelete();
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'share',
+                  child: ListTile(
+                    leading: const Icon(Icons.ios_share_rounded),
+                    title: Text(strings.shareGpx),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: ListTile(
+                    leading: const Icon(Icons.delete_outline_rounded),
+                    title: Text(strings.delete),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+class _OfflineRouteAction extends ConsumerWidget {
+  const _OfflineRouteAction({required this.route});
+
+  final SavedRoute route;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    final downloads = ref.watch(offlineDownloadsProvider);
+    final active = downloads.isDownloading(route.id);
+    final progress = downloads.progress(route.id);
+
+    if (active) {
+      return Tooltip(
+        message: strings.downloadingOffline,
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: Padding(
+            padding: const EdgeInsets.all(11),
+            child: CircularProgressIndicator(
+              strokeWidth: 2.4,
+              value: progress > 0 ? progress : null,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (route.isOfflineReady) {
+      return IconButton(
+        tooltip: strings.offlineReady,
+        onPressed: null,
+        icon: const Icon(Icons.offline_pin_rounded),
+      );
+    }
+
+    return IconButton(
+      tooltip: strings.downloadOffline,
+      onPressed: () => _prepare(context, ref),
+      icon: const Icon(Icons.download_for_offline_outlined),
+    );
+  }
+
+  Future<void> _prepare(BuildContext context, WidgetRef ref) async {
+    final strings = AppLocalizations.of(context);
+    final database = ref.read(appDatabaseProvider);
+    try {
+      final plan = database.savedRouteToPlan(route);
+      final success = await ref
+          .read(offlineDownloadsProvider.notifier)
+          .prepareRoute(
+            routeId: route.id,
+            routeName: route.name,
+            geometry: plan.geometry,
+          );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success ? strings.offlineReady : strings.offlineFailed,
+            ),
+          ),
+        );
+      }
+    } on Object {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(strings.offlineFailed)),
+        );
+      }
+    }
   }
 }
 

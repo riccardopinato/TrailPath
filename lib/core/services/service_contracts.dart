@@ -72,6 +72,8 @@ abstract interface class OfflineMapManager {
   Stream<OfflineRegion> download(OfflineRegionRequest request);
 
   Future<void> delete(String regionId);
+
+  Future<void> clearCache();
 }
 
 abstract interface class GpxService {
