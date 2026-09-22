@@ -256,7 +256,6 @@ class _RouteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
-    final scheme = Theme.of(context).colorScheme;
     final duration = Duration(seconds: route.durationSeconds);
 
     return _BaseCard(
