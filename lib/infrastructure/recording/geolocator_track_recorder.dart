@@ -34,11 +34,30 @@ class GeolocatorTrackRecorder implements TrackRecorder {
     if (_batteryMode == mode) {
       return;
     }
+
+    final previousMode = _batteryMode;
     _batteryMode = mode;
-    if (_status == TrackRecorderStatus.recording) {
-      await _positionSubscription?.cancel();
-      _positionSubscription = null;
+
+    if (_status != TrackRecorderStatus.recording) {
+      return;
+    }
+
+    await _positionSubscription?.cancel();
+    _positionSubscription = null;
+
+    try {
       await _startPositionStream();
+    } on Object {
+      // Preserve an active recording even if the platform cannot apply the
+      // new sampling policy. Restore the previous mode and reconnect once.
+      _batteryMode = previousMode;
+      try {
+        await _startPositionStream();
+      } on Object {
+        // The original failure is rethrown below; the controller can surface
+        // it without silently killing the recording session.
+      }
+      rethrow;
     }
   }
 
