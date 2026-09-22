@@ -67,13 +67,13 @@ class RecordingController extends Notifier<RecordingState> {
   int _lastPersistedPointCount = 0;
   TrackRecorderStatus? _lastPersistedStatus;
   bool _recoveryChecked = false;
-
-  TrackRecorder get _recorder => ref.read(trackRecorderProvider);
-
-  AppDatabase get _database => ref.read(appDatabaseProvider);
+  late TrackRecorder _recorder;
+  late AppDatabase _database;
 
   @override
   RecordingState build() {
+    _recorder = ref.read(trackRecorderProvider);
+    _database = ref.read(appDatabaseProvider);
     ref.listen(batteryModeProvider, (previous, next) {
       next.whenData((mode) {
         if (state.isActive) {
@@ -99,6 +99,9 @@ class RecordingController extends Notifier<RecordingState> {
 
     try {
       final activity = await _database.latestRecoverableActivity();
+      if (!ref.mounted) {
+        return;
+      }
       if (activity == null) {
         state = state.copyWith(isCheckingRecovery: false);
         return;
@@ -113,7 +116,13 @@ class RecordingController extends Notifier<RecordingState> {
         elapsed: Duration(seconds: activity.movingSeconds),
       );
       await _recorder.restore(snapshot);
+      if (!ref.mounted) {
+        return;
+      }
       await _bindRecorder();
+      if (!ref.mounted) {
+        return;
+      }
 
       _lastPersistedAt = activity.updatedAt ?? activity.startedAt;
       _lastPersistedPointCount = points.length;
@@ -128,10 +137,12 @@ class RecordingController extends Notifier<RecordingState> {
         clearError: true,
       );
     } on Object catch (error) {
-      state = state.copyWith(
-        isCheckingRecovery: false,
-        error: error.toString(),
-      );
+      if (ref.mounted) {
+        state = state.copyWith(
+          isCheckingRecovery: false,
+          error: error.toString(),
+        );
+      }
     }
   }
 
@@ -147,28 +158,58 @@ class RecordingController extends Notifier<RecordingState> {
       return;
     }
 
+    final profile = state.profile;
+    final permissions = ref.read(runtimePermissionProvider);
+    final batteryModeFuture = ref.read(batteryModeProvider.future);
     String? activityId;
+
     try {
-      activityId = await _database.createActivityDraft(profile: state.profile);
+      activityId = await _database.createActivityDraft(profile: profile);
+      if (!ref.mounted) {
+        await _safeDiscardDraft(activityId);
+        return;
+      }
+
       state = state.copyWith(
         activityId: activityId,
         hasRecoveredDraft: false,
         clearError: true,
       );
 
-      await ref.read(runtimePermissionProvider).prepareRecording();
-      final batteryMode = await ref.read(batteryModeProvider.future);
+      await permissions.prepareRecording();
+      if (!ref.mounted) {
+        await _safeDiscardDraft(activityId);
+        return;
+      }
+
+      final batteryMode = await batteryModeFuture;
+      if (!ref.mounted) {
+        await _safeDiscardDraft(activityId);
+        return;
+      }
+
       await _recorder.setBatteryMode(batteryMode);
+      if (!ref.mounted) {
+        await _safeDiscardDraft(activityId);
+        return;
+      }
+
       await _bindRecorder();
+      if (!ref.mounted) {
+        await _safeDiscardDraft(activityId);
+        return;
+      }
       await _recorder.start();
     } on Object catch (error) {
       if (activityId != null) {
-        await _database.discardActivity(activityId);
+        await _safeDiscardDraft(activityId);
       }
-      state = state.copyWith(
-        clearActivityId: true,
-        error: error.toString(),
-      );
+      if (ref.mounted) {
+        state = state.copyWith(
+          clearActivityId: true,
+          error: error.toString(),
+        );
+      }
     }
   }
 
@@ -177,24 +218,41 @@ class RecordingController extends Notifier<RecordingState> {
       return;
     }
     await _recorder.pause();
-    await _flushAutosave();
+    if (ref.mounted) {
+      await _flushAutosave();
+    }
   }
 
   Future<void> resume() async {
     if (state.snapshot.status != TrackRecorderStatus.paused) {
       return;
     }
+
+    final permissions = ref.read(runtimePermissionProvider);
+    final batteryModeFuture = ref.read(batteryModeProvider.future);
     state = state.copyWith(
       hasRecoveredDraft: false,
       clearError: true,
     );
+
     try {
-      await ref.read(runtimePermissionProvider).prepareRecording();
-      final batteryMode = await ref.read(batteryModeProvider.future);
+      await permissions.prepareRecording();
+      if (!ref.mounted) {
+        return;
+      }
+      final batteryMode = await batteryModeFuture;
+      if (!ref.mounted) {
+        return;
+      }
       await _recorder.setBatteryMode(batteryMode);
+      if (!ref.mounted) {
+        return;
+      }
       await _recorder.resume();
     } on Object catch (error) {
-      state = state.copyWith(error: error.toString());
+      if (ref.mounted) {
+        state = state.copyWith(error: error.toString());
+      }
     }
   }
 
@@ -204,13 +262,17 @@ class RecordingController extends Notifier<RecordingState> {
       return false;
     }
 
+    final profile = state.profile;
     try {
       final completed = await _recorder.stop();
       await _persistChain;
 
       if (completed.points.length < 2) {
         await _database.discardActivity(activityId);
-        state = RecordingState(profile: state.profile);
+        if (ref.mounted) {
+          state = RecordingState(profile: profile);
+          _resetPersistenceState();
+        }
         return false;
       }
 
@@ -220,17 +282,22 @@ class RecordingController extends Notifier<RecordingState> {
         snapshot: completed,
       );
 
-      state = RecordingState(profile: state.profile);
-      _resetPersistenceState();
+      if (ref.mounted) {
+        state = RecordingState(profile: profile);
+        _resetPersistenceState();
+      }
       return true;
     } on Object catch (error) {
-      state = state.copyWith(error: error.toString());
+      if (ref.mounted) {
+        state = state.copyWith(error: error.toString());
+      }
       return false;
     }
   }
 
   Future<void> discard() async {
     final activityId = state.activityId;
+    final profile = state.profile;
     try {
       if (state.isActive) {
         await _recorder.stop();
@@ -244,14 +311,22 @@ class RecordingController extends Notifier<RecordingState> {
       await _database.discardActivity(activityId);
     }
 
-    state = RecordingState(profile: state.profile);
-    _resetPersistenceState();
+    if (ref.mounted) {
+      state = RecordingState(profile: profile);
+      _resetPersistenceState();
+    }
   }
 
   Future<void> _bindRecorder() async {
     await _subscription?.cancel();
+    if (!ref.mounted) {
+      return;
+    }
     _subscription = _recorder.snapshots.listen(
       (snapshot) {
+        if (!ref.mounted) {
+          return;
+        }
         state = state.copyWith(
           snapshot: snapshot,
           clearError: true,
@@ -259,7 +334,9 @@ class RecordingController extends Notifier<RecordingState> {
         _scheduleAutosave(snapshot);
       },
       onError: (Object error, StackTrace stackTrace) {
-        state = state.copyWith(error: error.toString());
+        if (ref.mounted) {
+          state = state.copyWith(error: error.toString());
+        }
       },
     );
   }
@@ -287,11 +364,9 @@ class RecordingController extends Notifier<RecordingState> {
     _lastPersistedPointCount = snapshot.points.length;
     _lastPersistedStatus = snapshot.status;
 
-    _persistChain = _persistChain.then(
-      (_) => _database.updateActivityDraft(
-        activityId: activityId,
-        snapshot: snapshot,
-      ),
+    _queuePersist(
+      activityId: activityId,
+      snapshot: snapshot,
     );
   }
 
@@ -302,13 +377,37 @@ class RecordingController extends Notifier<RecordingState> {
     }
 
     final snapshot = state.snapshot;
-    _persistChain = _persistChain.then(
-      (_) => _database.updateActivityDraft(
-        activityId: activityId,
-        snapshot: snapshot,
-      ),
+    _queuePersist(
+      activityId: activityId,
+      snapshot: snapshot,
     );
     await _persistChain;
+  }
+
+  void _queuePersist({
+    required String activityId,
+    required TrackRecorderSnapshot snapshot,
+  }) {
+    _persistChain = _persistChain
+        .then(
+          (_) => _database.updateActivityDraft(
+            activityId: activityId,
+            snapshot: snapshot,
+          ),
+        )
+        .catchError((Object error, StackTrace stackTrace) {
+          if (ref.mounted) {
+            state = state.copyWith(error: error.toString());
+          }
+        });
+  }
+
+  Future<void> _safeDiscardDraft(String activityId) async {
+    try {
+      await _database.discardActivity(activityId);
+    } on Object {
+      // Best effort cleanup if the owning provider/container is shutting down.
+    }
   }
 
   void _resetPersistenceState() {
