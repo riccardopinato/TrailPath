@@ -27,6 +27,12 @@ class GeolocatorLocationEngine implements LocationEngine {
   }
 
   @override
+  Future<bool> openAppSettings() => Geolocator.openAppSettings();
+
+  @override
+  Future<bool> openLocationSettings() => Geolocator.openLocationSettings();
+
+  @override
   Future<PositionSample?> current() async {
     if (!await isServiceEnabled() || !await hasPermission()) {
       return null;
