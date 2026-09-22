@@ -1,11 +1,161 @@
-import 'dart:math' as math;
+import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:trail_path/app/theme/app_theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/services/service_contracts.dart';
+import 'package:trail_path/core/services/service_providers.dart';
 
-class PlannerScreen extends StatelessWidget {
+class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
+
+  @override
+  ConsumerState<PlannerScreen> createState() => _PlannerScreenState();
+}
+
+class _PlannerScreenState extends ConsumerState<PlannerScreen> {
+  static const _styleUrl = 'https://demotiles.maplibre.org/style.json';
+  static const _fallbackCenter = LatLng(45.232, 11.750);
+
+  MapLibreMapController? _mapController;
+  StreamSubscription<PositionSample>? _positionSubscription;
+  PositionSample? _position;
+  bool _permissionGranted = false;
+  bool _locationServiceEnabled = true;
+  bool _locationBusy = true;
+  String? _locationError;
+
+  LocationEngine get _locationEngine => ref.read(locationEngineProvider);
+
+  bool get _runningWidgetTest =>
+      Platform.environment['FLUTTER_TEST']?.toLowerCase() == 'true';
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.microtask(_initializeLocation);
+  }
+
+  @override
+  void dispose() {
+    _positionSubscription?.cancel();
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeLocation() async {
+    if (_runningWidgetTest) {
+      if (mounted) {
+        setState(() => _locationBusy = false);
+      }
+      return;
+    }
+
+    try {
+      final serviceEnabled = await _locationEngine.isServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          setState(() {
+            _locationServiceEnabled = false;
+            _locationBusy = false;
+          });
+        }
+        return;
+      }
+
+      var permission = await _locationEngine.hasPermission();
+      if (!permission) {
+        permission = await _locationEngine.requestPermission();
+      }
+
+      if (!permission) {
+        if (mounted) {
+          setState(() {
+            _permissionGranted = false;
+            _locationBusy = false;
+          });
+        }
+        return;
+      }
+
+      final current = await _locationEngine.current();
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _permissionGranted = true;
+        _locationBusy = false;
+        _position = current;
+        _locationError = null;
+      });
+
+      if (current != null) {
+        await _focusPosition(current, zoom: 15.5);
+      }
+
+      await _positionSubscription?.cancel();
+      _positionSubscription = _locationEngine.watch().listen(
+        (sample) {
+          if (!mounted) {
+            return;
+          }
+          setState(() => _position = sample);
+        },
+        onError: (Object error, StackTrace stackTrace) {
+          if (mounted) {
+            setState(() => _locationError = error.toString());
+          }
+        },
+      );
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _locationBusy = false;
+          _locationError = error.toString();
+        });
+      }
+    }
+  }
+
+  Future<void> _focusPosition(
+    PositionSample sample, {
+    double zoom = 16,
+  }) async {
+    final controller = _mapController;
+    if (controller == null) {
+      return;
+    }
+    await controller.animateCamera(
+      CameraUpdate.newLatLngZoom(
+        LatLng(sample.point.latitude, sample.point.longitude),
+        zoom,
+      ),
+    );
+  }
+
+  Future<void> _centerOnUser() async {
+    if (_locationBusy) {
+      return;
+    }
+
+    if (!_locationServiceEnabled || !_permissionGranted) {
+      await _initializeLocation();
+      return;
+    }
+
+    var sample = _position;
+    sample ??= await _locationEngine.current();
+    if (sample != null) {
+      if (mounted) {
+        setState(() => _position = sample);
+      }
+      await _focusPosition(sample);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,30 +165,34 @@ class PlannerScreen extends StatelessWidget {
     return Stack(
       children: [
         Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: dark
-                    ? const [
-                        Color(0xFF17261D),
-                        Color(0xFF1C3325),
-                        Color(0xFF15241C),
-                      ]
-                    : const [
-                        Color(0xFFE8F0E3),
-                        Color(0xFFD9E6D4),
-                        Color(0xFFEDE9D7),
-                      ],
-              ),
-            ),
-          ),
-        ),
-        Positioned.fill(
-          child: IgnorePointer(
-            child: CustomPaint(painter: _TerrainPainter(dark: dark)),
-          ),
+          child: _runningWidgetTest
+              ? _MapTestFallback(dark: dark)
+              : MapLibreMap(
+                  styleString: _styleUrl,
+                  initialCameraPosition: const CameraPosition(
+                    target: _fallbackCenter,
+                    zoom: 6.8,
+                  ),
+                  onMapCreated: (controller) {
+                    _mapController = controller;
+                    final sample = _position;
+                    if (sample != null) {
+                      unawaited(_focusPosition(sample, zoom: 15.5));
+                    }
+                  },
+                  compassEnabled: true,
+                  compassViewPosition: CompassViewPosition.topRight,
+                  myLocationEnabled: _permissionGranted,
+                  myLocationRenderMode: _permissionGranted
+                      ? MyLocationRenderMode.compass
+                      : MyLocationRenderMode.normal,
+                  rotateGesturesEnabled: true,
+                  tiltGesturesEnabled: true,
+                  trackCameraPosition: true,
+                  logoEnabled: false,
+                  attributionButtonPosition:
+                      AttributionButtonPosition.bottomRight,
+                ),
         ),
         SafeArea(
           child: Padding(
@@ -57,6 +211,12 @@ class PlannerScreen extends StatelessWidget {
                             ? const Color(0xD91A241E)
                             : const Color(0xEFFFFFFF),
                         borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 18,
+                            color: Colors.black.withValues(alpha: 0.08),
+                          ),
+                        ],
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
@@ -74,9 +234,20 @@ class PlannerScreen extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    _MapActionButton(icon: Icons.layers_outlined, dark: dark),
+                    _MapActionButton(
+                      icon: Icons.layers_outlined,
+                      dark: dark,
+                      tooltip: strings.mapLayers,
+                    ),
                     const SizedBox(width: 8),
-                    _MapActionButton(icon: Icons.my_location, dark: dark),
+                    _MapActionButton(
+                      icon: _locationBusy
+                          ? Icons.hourglass_top_rounded
+                          : Icons.my_location,
+                      dark: dark,
+                      tooltip: strings.centerLocation,
+                      onTap: _centerOnUser,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -114,6 +285,19 @@ class PlannerScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: 10),
+                if (!_locationServiceEnabled ||
+                    (!_permissionGranted && !_locationBusy) ||
+                    _locationError != null)
+                  _LocationStatusChip(
+                    message: !_locationServiceEnabled
+                        ? strings.locationServiceOff
+                        : _locationError != null
+                            ? strings.locationUnavailable
+                            : strings.locationPermissionNeeded,
+                    dark: dark,
+                    onTap: _initializeLocation,
+                  ),
               ],
             ),
           ),
@@ -123,7 +307,12 @@ class PlannerScreen extends StatelessWidget {
           child: SafeArea(
             top: false,
             minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            child: _PlannerCard(strings: strings),
+            child: _PlannerCard(
+              strings: strings,
+              position: _position,
+              locationReady:
+                  _permissionGranted && _locationServiceEnabled && _locationError == null,
+            ),
           ),
         ),
       ],
@@ -132,13 +321,21 @@ class PlannerScreen extends StatelessWidget {
 }
 
 class _PlannerCard extends StatelessWidget {
-  const _PlannerCard({required this.strings});
+  const _PlannerCard({
+    required this.strings,
+    required this.position,
+    required this.locationReady,
+  });
 
   final AppLocalizations strings;
+  final PositionSample? position;
+  final bool locationReady;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final heading = position?.headingDegrees;
+    final accuracy = position?.accuracyMeters;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 17, 18, 16),
@@ -175,7 +372,7 @@ class _PlannerCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'v0.1',
+                  'v0.2',
                   style: TextStyle(
                     color: scheme.onPrimaryContainer,
                     fontSize: 11,
@@ -193,7 +390,7 @@ class _PlannerCard extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 15),
           Row(
             children: [
               Expanded(
@@ -207,14 +404,20 @@ class _PlannerCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 13),
           Row(
             children: [
-              Icon(Icons.check_circle_outline, size: 17, color: scheme.primary),
+              Icon(
+                locationReady ? Icons.gps_fixed : Icons.gps_not_fixed,
+                size: 17,
+                color: locationReady ? scheme.primary : scheme.onSurfaceVariant,
+              ),
               const SizedBox(width: 7),
               Expanded(
                 child: Text(
-                  strings.foundationReady,
+                  locationReady
+                      ? strings.locationReady
+                      : strings.locationWaiting,
                   style: TextStyle(
                     color: scheme.onSurfaceVariant,
                     fontSize: 12,
@@ -222,6 +425,26 @@ class _PlannerCard extends StatelessWidget {
                   ),
                 ),
               ),
+              if (accuracy != null)
+                Text(
+                  '±${accuracy.round()} m',
+                  style: TextStyle(
+                    color: scheme.onSurfaceVariant,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              if (heading != null) ...[
+                const SizedBox(width: 9),
+                Transform.rotate(
+                  angle: heading * 3.141592653589793 / 180,
+                  child: Icon(
+                    Icons.navigation_rounded,
+                    size: 17,
+                    color: scheme.primary,
+                  ),
+                ),
+              ],
             ],
           ),
         ],
@@ -260,83 +483,97 @@ class _Metric extends StatelessWidget {
 }
 
 class _MapActionButton extends StatelessWidget {
-  const _MapActionButton({required this.icon, required this.dark});
+  const _MapActionButton({
+    required this.icon,
+    required this.dark,
+    required this.tooltip,
+    this.onTap,
+  });
 
   final IconData icon;
   final bool dark;
+  final String tooltip;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 42,
-      height: 42,
-      decoration: BoxDecoration(
+    return Tooltip(
+      message: tooltip,
+      child: Material(
         color: dark ? const Color(0xD91A241E) : const Color(0xEFFFFFFF),
-        shape: BoxShape.circle,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: SizedBox(
+            width: 42,
+            height: 42,
+            child: Icon(icon, size: 20),
+          ),
+        ),
       ),
-      child: Icon(icon, size: 20),
     );
   }
 }
 
-class _TerrainPainter extends CustomPainter {
-  const _TerrainPainter({required this.dark});
+class _LocationStatusChip extends StatelessWidget {
+  const _LocationStatusChip({
+    required this.message,
+    required this.dark,
+    required this.onTap,
+  });
+
+  final String message;
+  final bool dark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Material(
+        color: dark ? const Color(0xE6222A24) : const Color(0xF7FFFFFF),
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.location_off_outlined, size: 17),
+                const SizedBox(width: 7),
+                Flexible(
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MapTestFallback extends StatelessWidget {
+  const _MapTestFallback({required this.dark});
 
   final bool dark;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final contourPaint = Paint()
-      ..color = (dark ? Colors.white : AppTheme.forest).withValues(
-        alpha: dark ? 0.055 : 0.08,
-      )
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    for (var index = 0; index < 9; index++) {
-      final y = size.height * (0.1 + index * 0.105);
-      final amplitude = 18.0 + index * 2.3;
-      final path = Path()..moveTo(-20, y);
-
-      for (double x = -20; x <= size.width + 20; x += 24) {
-        final wave = math.sin((x / 72) + index * 0.65) * amplitude;
-        path.lineTo(x, y + wave);
-      }
-      canvas.drawPath(path, contourPaint);
-    }
-
-    final trailPaint = Paint()
-      ..color = (dark ? const Color(0xFF91C89E) : AppTheme.forest).withValues(
-        alpha: 0.42,
-      )
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4
-      ..strokeCap = StrokeCap.round;
-
-    final trail = Path()
-      ..moveTo(size.width * 0.16, size.height * 0.66)
-      ..cubicTo(
-        size.width * 0.28,
-        size.height * 0.54,
-        size.width * 0.43,
-        size.height * 0.63,
-        size.width * 0.51,
-        size.height * 0.47,
-      )
-      ..cubicTo(
-        size.width * 0.62,
-        size.height * 0.28,
-        size.width * 0.76,
-        size.height * 0.43,
-        size.width * 0.85,
-        size.height * 0.25,
-      );
-
-    canvas.drawPath(trail, trailPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _TerrainPainter oldDelegate) {
-    return oldDelegate.dark != dark;
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: dark ? const Color(0xFF17261D) : const Color(0xFFDDE8D9),
+      child: const Center(
+        child: Icon(Icons.map_outlined, size: 54),
+      ),
+    );
   }
 }
