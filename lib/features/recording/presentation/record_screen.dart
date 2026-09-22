@@ -101,7 +101,6 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
 
   Future<void> _finishRecording() async {
     final strings = AppLocalizations.of(context);
-    final state = ref.read(recordingControllerProvider);
     final now = DateTime.now();
     final defaultName =
         '${strings.record} ${now.day}/${now.month} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
