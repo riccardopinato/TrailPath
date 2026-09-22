@@ -56,6 +56,8 @@ class RoutePlan {
     required this.descentMeters,
     required this.estimatedDuration,
     required this.profile,
+    this.isSnapped = false,
+    this.routingSource = 'local',
   });
 
   final List<GeoPoint> geometry;
@@ -64,6 +66,8 @@ class RoutePlan {
   final double descentMeters;
   final Duration estimatedDuration;
   final RouteProfile profile;
+  final bool isSnapped;
+  final String routingSource;
 }
 
 class ElevationProfile {
@@ -184,4 +188,14 @@ class SafetySnapshot {
   final bool hasLocationPermission;
   final bool locationServiceEnabled;
   final bool isOfflineMapAvailable;
+}
+
+
+class RoutingException implements Exception {
+  const RoutingException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => 'RoutingException: $message';
 }
