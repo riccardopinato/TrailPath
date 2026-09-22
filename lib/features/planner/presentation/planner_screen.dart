@@ -219,6 +219,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
   Future<void> _shareCurrentGpx() async {
     final strings = AppLocalizations.of(context);
+    final renderBox = context.findRenderObject() as RenderBox?;
     try {
       final planner = ref.read(routePlannerProvider);
       if (!planner.canSave) {
@@ -233,7 +234,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       final xml = await ref.read(gpxServiceProvider).export(document);
       final fileName = _safeGpxFileName(name);
 
-      final renderBox = context.findRenderObject() as RenderBox?;
       await SharePlus.instance.share(
         ShareParams(
           files: [
