@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
@@ -176,7 +175,6 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
         lineColor: '#2F6F45',
         lineWidth: 4,
         lineOpacity: 0.92,
-        lineDasharray: const [1.5, 1.2],
       ),
     );
 
