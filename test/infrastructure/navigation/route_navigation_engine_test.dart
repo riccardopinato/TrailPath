@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/infrastructure/navigation/route_navigation_engine.dart';
@@ -107,5 +108,8 @@ class _FakeLocationEngine implements LocationEngine {
   Future<PositionSample?> current() async => null;
 
   @override
-  Stream<PositionSample> watch() => _controller.stream;
+  Stream<PositionSample> watch({
+    BatteryMode mode = BatteryMode.balanced,
+  }) =>
+      _controller.stream;
 }
