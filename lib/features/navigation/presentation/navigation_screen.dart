@@ -22,6 +22,7 @@ class NavigationScreen extends ConsumerStatefulWidget {
 class _NavigationScreenState extends ConsumerState<NavigationScreen> {
   static const _styleUrl = MapConfig.styleUrl;
   MapLibreMapController? _mapController;
+  ActiveNavigationController? _navigationController;
   bool _styleReady = false;
   bool _navigationStarted = false;
 
@@ -36,17 +37,23 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
     }
     _navigationStarted = true;
     final languageCode = Localizations.localeOf(context).languageCode;
+    final navigationController =
+        ref.read(activeNavigationProvider.notifier);
+    _navigationController = navigationController;
     Future<void>.microtask(
-      () => ref.read(activeNavigationProvider.notifier).start(
-            widget.route,
-            languageCode,
-          ),
+      () => navigationController.start(
+        widget.route,
+        languageCode,
+      ),
     );
   }
 
   @override
   void dispose() {
-    unawaited(ref.read(activeNavigationProvider.notifier).stop());
+    final navigationController = _navigationController;
+    if (navigationController != null) {
+      unawaited(navigationController.stop());
+    }
     _mapController?.dispose();
     super.dispose();
   }
