@@ -96,7 +96,7 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v6
         with:
-          name: TrailPath-v0.9.1-debug
+          name: TrailPath-v0.9.2-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
 
@@ -110,7 +110,7 @@ jobs:
       - name: Download debug APK
         uses: actions/download-artifact@v6
         with:
-          name: TrailPath-v0.9.1-debug
+          name: TrailPath-v0.9.2-debug
           path: apk
 
       - name: Enable KVM
