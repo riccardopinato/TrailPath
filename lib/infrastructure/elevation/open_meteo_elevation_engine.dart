@@ -47,7 +47,7 @@ class OpenMeteoElevationEngine implements ElevationEngine {
 
     final client = HttpClient()
       ..connectionTimeout = timeout
-      ..userAgent = 'TrailPath/0.4.0';
+      ..userAgent = 'TrailPath/0.9.2 (+https://github.com/riccardopinato/TrailPath)';
 
     try {
       final request = await client.getUrl(uri).timeout(timeout);
@@ -60,7 +60,7 @@ class OpenMeteoElevationEngine implements ElevationEngine {
         );
       }
 
-      final body = await response.transform(utf8.decoder).join();
+      final body = await response.transform(utf8.decoder).join().timeout(timeout);
       final payload = jsonDecode(body);
       if (payload is! Map<String, dynamic>) {
         throw const ElevationException('Invalid elevation response.');
