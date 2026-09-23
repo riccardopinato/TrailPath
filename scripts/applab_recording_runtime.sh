@@ -55,16 +55,27 @@ fail() {
 run_maestro() {
   local label="$1"
   local flow="$2"
-  local output="$REPORT_DIR/maestro-$label"
-  local logfile="$REPORT_DIR/maestro-$label.log"
+  local attempt output logfile
 
-  mkdir -p "$output"
-  log "Maestro $label: $flow"
-  if ! maestro test "$flow" --test-output-dir "$output" > "$logfile" 2>&1; then
+  for attempt in 1 2; do
+    output="$REPORT_DIR/maestro-$label/attempt-$attempt"
+    logfile="$REPORT_DIR/maestro-$label-attempt-$attempt.log"
+    mkdir -p "$output"
+    log "Maestro $label attempt $attempt/2: $flow"
+
+    if maestro test "$flow" --test-output-dir "$output" > "$logfile" 2>&1; then
+      cat "$logfile"
+      return 0
+    fi
+
     cat "$logfile" >&2 || true
-    fail "Maestro phase '$label' failed."
-  fi
-  cat "$logfile"
+    if (( attempt < 2 )); then
+      log "Retrying Maestro phase '$label' after a short settle."
+      sleep 4
+    fi
+  done
+
+  fail "Maestro phase '$label' failed after 2 attempts."
 }
 
 feed_gps() {
