@@ -35,97 +35,53 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Generate current Android and iOS scaffolding
-        run: flutter create --platforms=android,ios --org com.riccardopinato --project-name trail_path .
+      - name: Resolve locked dependencies
+        run: |
+          flutter pub get
+          git diff --exit-code -- pubspec.lock
 
-      - name: Configure native location permissions
+      - name: Validate committed native configuration
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import plistlib
+          import xml.etree.ElementTree as ET
+
           manifest = Path("android/app/src/main/AndroidManifest.xml")
-          text = manifest.read_text()
-          marker = '<manifest xmlns:android="http://schemas.android.com/apk/res/android">'
-          permissions = '''<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <uses-permission android:name="android.permission.INTERNET" />
-              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-              <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-              <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
-              <uses-permission android:name="android.permission.WAKE_LOCK" />
-              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />'''
-          if "ACCESS_FINE_LOCATION" not in text:
-              text = text.replace(marker, permissions)
-              manifest.write_text(text)
+          root = ET.parse(manifest).getroot()
+          android = "{http://schemas.android.com/apk/res/android}"
+          permissions = {
+              node.attrib.get(android + "name")
+              for node in root.findall("uses-permission")
+          }
+          required = {
+              "android.permission.INTERNET",
+              "android.permission.ACCESS_FINE_LOCATION",
+              "android.permission.ACCESS_COARSE_LOCATION",
+              "android.permission.FOREGROUND_SERVICE",
+              "android.permission.FOREGROUND_SERVICE_LOCATION",
+              "android.permission.WAKE_LOCK",
+              "android.permission.POST_NOTIFICATIONS",
+          }
+          missing = required - permissions
+          if missing:
+              raise RuntimeError(f"Missing Android permissions: {sorted(missing)}")
+          if "android.permission.ACCESS_BACKGROUND_LOCATION" in permissions:
+              raise RuntimeError("ACCESS_BACKGROUND_LOCATION must not be declared.")
 
-          plist = Path("ios/Runner/Info.plist")
-          text = plist.read_text()
-          if "NSLocationWhenInUseUsageDescription" not in text:
-              text = text.replace(
-                  "</dict>",
-                  "  <key>NSLocationWhenInUseUsageDescription</key>\n"
-                  "  <string>TrailPath uses your location to show your position, follow outdoor routes and record tracks.</string>\n"
-                  "  <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>\n"
-                  "  <string>TrailPath uses background location only while you are recording an outdoor activity.</string>\n"
-                  "  <key>UIBackgroundModes</key>\n"
-                  "  <array>\n"
-                  "    <string>location</string>\n"
-                  "  </array>\n"
-                  "</dict>",
-              )
-              plist.write_text(text)
+          with Path("ios/Runner/Info.plist").open("rb") as handle:
+              plist = plistlib.load(handle)
+          for key in (
+              "NSLocationWhenInUseUsageDescription",
+              "NSLocationAlwaysAndWhenInUseUsageDescription",
+              "UIBackgroundModes",
+          ):
+              if key not in plist:
+                  raise RuntimeError(f"Missing iOS plist key: {key}")
+          if "location" not in plist["UIBackgroundModes"]:
+              raise RuntimeError("iOS background location mode is missing.")
+          print("Native configuration validation passed.")
           PY
-
-      - name: Resolve dependencies
-        run: flutter pub get
-
-      - name: Upload generated native scaffolding snapshot
-        uses: actions/upload-artifact@v6
-        with:
-          name: TrailPath-v0.9.3-native-scaffolding
-          path: |
-            android/
-            ios/
-            pubspec.lock
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Persist native scaffolding on v0.9.3 branch
-        if: github.event_name == 'pull_request' && github.head_ref == 'feature/v0.9.3-outdoor-release'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          tmp_dir="$(mktemp -d)"
-          git clone --depth 1 --branch "$GITHUB_HEAD_REF" \
-            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
-            "$tmp_dir/repo"
-
-          rsync -a --delete \
-            --exclude '.gradle/' \
-            --exclude 'local.properties' \
-            --exclude '*.iml' \
-            android/ "$tmp_dir/repo/android/"
-
-          rsync -a --delete \
-            --exclude 'Pods/' \
-            --exclude '.symlinks/' \
-            --exclude 'Flutter/ephemeral/' \
-            --exclude 'Flutter/Generated.xcconfig' \
-            --exclude 'Flutter/flutter_export_environment.sh' \
-            ios/ "$tmp_dir/repo/ios/"
-
-          cp pubspec.lock "$tmp_dir/repo/pubspec.lock"
-          cd "$tmp_dir/repo"
-          git add android ios pubspec.lock
-
-          if git diff --cached --quiet; then
-            echo "Native scaffolding is already versioned."
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "build: version Flutter native scaffolding"
-          git push origin "HEAD:$GITHUB_HEAD_REF"
 
       - name: Generate Drift code
         run: dart run build_runner build
