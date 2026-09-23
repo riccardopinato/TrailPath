@@ -1,0 +1,30 @@
+# TrailPath v0.9.3 — resume from background, pause/resume and save
+appId: com.riccardopinato.trail_path
+---
+- tapOn:
+    text: 'Record\s*Tab 2 of 5'
+
+- assertVisible: "Recording in progress"
+
+- tapOn: "Pause"
+- assertVisible: "Recording paused"
+- assertVisible: "Resume"
+
+- tapOn: "Resume"
+- assertVisible: "Recording in progress"
+
+- tapOn: "Finish"
+- assertVisible: "Activity name"
+
+- eraseText
+- inputText: "AppLab GPS Test"
+
+- tapOn: "Save"
+
+- assertVisible: "Start recording"
+
+- tapOn:
+    text: 'Routes\s*Tab 3 of 5'
+
+- assertVisible: "Routes"
+- assertVisible: "AppLab GPS Test"
