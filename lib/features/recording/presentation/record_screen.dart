@@ -21,6 +21,12 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
 
   MapLibreMapController? _mapController;
   bool _styleReady = false;
+  Line? _trackLine;
+  Circle? _startCircle;
+  Circle? _endCircle;
+  DateTime? _lastCameraFollowAt;
+  Future<void> _mapRenderChain = Future<void>.value();
+  int _trackRenderGeneration = 0;
 
   bool get _runningWidgetTest =>
       Platform.environment['FLUTTER_TEST']?.toLowerCase() == 'true';
@@ -35,6 +41,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
 
   @override
   void dispose() {
+    _trackRenderGeneration++;
     _mapController?.dispose();
     super.dispose();
   }
@@ -42,6 +49,27 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
   Future<void> _syncTrack(
     TrackRecorderSnapshot snapshot, {
     bool follow = true,
+  }) {
+    final generation = ++_trackRenderGeneration;
+    final previous = _mapRenderChain;
+    final next = () async {
+      try {
+        await previous;
+      } on Object {
+        // A stale rendering failure must not block the latest GPS snapshot.
+      }
+      if (generation != _trackRenderGeneration) {
+        return;
+      }
+      await _renderTrack(snapshot, follow: follow);
+    }();
+    _mapRenderChain = next;
+    return next;
+  }
+
+  Future<void> _renderTrack(
+    TrackRecorderSnapshot snapshot, {
+    required bool follow,
   }) async {
     if (_runningWidgetTest || !_styleReady) {
       return;
@@ -56,44 +84,79 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
         .map((point) => LatLng(point.latitude, point.longitude))
         .toList(growable: false);
 
-    await controller.clearLines();
-    await controller.clearCircles();
-
     if (geometry.length >= 2) {
-      await controller.addLine(
-        LineOptions(
-          geometry: geometry,
-          lineColor: '#E86A45',
-          lineWidth: 5.5,
-          lineOpacity: 0.96,
-          lineJoin: 'round',
-        ),
+      final options = LineOptions(
+        geometry: geometry,
+        lineColor: '#E86A45',
+        lineWidth: 5.5,
+        lineOpacity: 0.96,
+        lineJoin: 'round',
       );
+      final line = _trackLine;
+      if (line == null) {
+        _trackLine = await controller.addLine(options);
+      } else {
+        await controller.updateLine(line, options);
+      }
+    } else {
+      final line = _trackLine;
+      if (line != null) {
+        await controller.removeLine(line);
+        _trackLine = null;
+      }
     }
 
-    if (geometry.isNotEmpty) {
-      await controller.addCircles(
-        [
-          CircleOptions(
-            geometry: geometry.first,
-            circleRadius: 6,
-            circleColor: '#2F6F45',
-            circleStrokeColor: '#FFFFFF',
-            circleStrokeWidth: 2.2,
-          ),
-          CircleOptions(
-            geometry: geometry.last,
-            circleRadius: 7,
-            circleColor: '#E86A45',
-            circleStrokeColor: '#FFFFFF',
-            circleStrokeWidth: 2.4,
-          ),
-        ],
-      );
+    if (geometry.isEmpty) {
+      final start = _startCircle;
+      final end = _endCircle;
+      if (start != null) {
+        await controller.removeCircle(start);
+        _startCircle = null;
+      }
+      if (end != null) {
+        await controller.removeCircle(end);
+        _endCircle = null;
+      }
+      return;
+    }
 
-      if (follow) {
+    final startOptions = CircleOptions(
+      geometry: geometry.first,
+      circleRadius: 6,
+      circleColor: '#2F6F45',
+      circleStrokeColor: '#FFFFFF',
+      circleStrokeWidth: 2.2,
+    );
+    final start = _startCircle;
+    if (start == null) {
+      _startCircle = await controller.addCircle(startOptions);
+    } else {
+      await controller.updateCircle(start, startOptions);
+    }
+
+    final endOptions = CircleOptions(
+      geometry: geometry.last,
+      circleRadius: 7,
+      circleColor: '#E86A45',
+      circleStrokeColor: '#FFFFFF',
+      circleStrokeWidth: 2.4,
+    );
+    final end = _endCircle;
+    if (end == null) {
+      _endCircle = await controller.addCircle(endOptions);
+    } else {
+      await controller.updateCircle(end, endOptions);
+    }
+
+    if (follow) {
+      final now = DateTime.now();
+      final lastFollow = _lastCameraFollowAt;
+      if (lastFollow == null ||
+          now.difference(lastFollow) >= const Duration(milliseconds: 850)) {
+        _lastCameraFollowAt = now;
         await controller.animateCamera(
           CameraUpdate.newLatLngZoom(geometry.last, 16.2),
+          duration: const Duration(milliseconds: 350),
         );
       }
     }
@@ -238,6 +301,9 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                   },
                   onStyleLoadedCallback: () {
                     _styleReady = true;
+                    _trackLine = null;
+                    _startCircle = null;
+                    _endCircle = null;
                     unawaited(_syncTrack(snapshot));
                   },
                   compassEnabled: true,
