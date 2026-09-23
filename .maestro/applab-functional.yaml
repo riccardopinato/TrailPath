@@ -4,7 +4,7 @@
 appId: com.riccardopinato.trail_path
 ---
 - launchApp:
-    clearState: true
+    clearState: false
 
 - assertVisible: "Search place or trail"
 
