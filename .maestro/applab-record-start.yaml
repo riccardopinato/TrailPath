@@ -1,0 +1,16 @@
+# TrailPath v0.9.3 — start a real GPS recording
+appId: com.riccardopinato.trail_path
+---
+- launchApp:
+    clearState: false
+
+- tapOn:
+    text: 'Record\s*Tab 2 of 5'
+
+- assertVisible: "Start recording"
+
+- tapOn: "Start recording"
+
+- assertVisible: "Recording in progress"
+- assertVisible: "Pause"
+- assertVisible: "Finish"
