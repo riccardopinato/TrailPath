@@ -826,7 +826,7 @@ class _PlannerCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'v0.6.0',
+                  'v0.9.1',
                   style: TextStyle(
                     color: scheme.onPrimaryContainer,
                     fontSize: 11,
