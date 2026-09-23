@@ -103,6 +103,25 @@ void main() {
     expect(state.descentMeters, 5);
   });
 
+  test('routing failure is explicit and cannot be saved', () async {
+    final container = containerWith(const _FailingRoutingEngine());
+    addTearDown(container.dispose);
+
+    final controller = container.read(routePlannerProvider.notifier);
+    controller
+      ..addPoint(const GeoPoint(latitude: 45.0, longitude: 11.0))
+      ..addPoint(const GeoPoint(latitude: 45.01, longitude: 11.01));
+
+    await Future<void>.delayed(Duration.zero);
+
+    final state = container.read(routePlannerProvider);
+    expect(state.isRouting, isFalse);
+    expect(state.isSnapped, isFalse);
+    expect(state.routingSource, 'routing-error');
+    expect(state.routingError, isNotNull);
+    expect(state.canSave, isFalse);
+  });
+
   test('imports GPX geometry without rerouting and preserves elevation', () {
     final container = containerWith(const StraightLineRoutingEngine());
     addTearDown(container.dispose);
@@ -201,5 +220,17 @@ class _FakeElevationEngine implements ElevationEngine {
       source: engineId,
       noiseThresholdMeters: 0,
     );
+  }
+}
+
+class _FailingRoutingEngine implements RoutingEngine {
+  const _FailingRoutingEngine();
+
+  @override
+  String get engineId => 'failing';
+
+  @override
+  Future<RoutePlan> calculate(RouteRequest request) {
+    throw const RoutingException('routing unavailable');
   }
 }

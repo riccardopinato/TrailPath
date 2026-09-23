@@ -25,10 +25,7 @@ final locationEngineProvider = Provider<LocationEngine>(
 
 
 final routingEngineProvider = Provider<RoutingEngine>(
-  (ref) => const FallbackRoutingEngine(
-    primary: OpenStreetMapRoutingEngine(),
-    fallback: StraightLineRoutingEngine(),
-  ),
+  (ref) => const OpenStreetMapRoutingEngine(),
 );
 
 
