@@ -58,6 +58,73 @@ void main() {
     expect(simplified.last, points.last);
   });
 
+  test('simplifyTraceForRouting preserves corners and caps waypoints', () {
+    final trace = <GeoPoint>[
+      for (var index = 0; index <= 30; index++)
+        GeoPoint(latitude: 45.0, longitude: 11.0 + index * 0.0001),
+      for (var index = 1; index <= 30; index++)
+        GeoPoint(latitude: 45.0 + index * 0.0001, longitude: 11.003),
+    ];
+
+    final simplified = simplifyTraceForRouting(
+      trace,
+      minSpacingMeters: 0,
+      toleranceMeters: 2,
+      maxWaypoints: 12,
+    );
+
+    expect(simplified.length, lessThanOrEqualTo(12));
+    expect(simplified.first, trace.first);
+    expect(simplified.last, trace.last);
+    expect(
+      simplified.any(
+        (point) =>
+            (point.latitude - 45.0).abs() < 0.000001 &&
+            (point.longitude - 11.003).abs() < 0.000001,
+      ),
+      isTrue,
+    );
+  });
+
+  test('simplifyTraceForRouting drops dense near-duplicate samples', () {
+    final trace = [
+      for (var index = 0; index <= 100; index++)
+        GeoPoint(latitude: 45.0, longitude: 11.0 + index * 0.000001),
+    ];
+
+    final simplified = simplifyTraceForRouting(
+      trace,
+      minSpacingMeters: 8,
+      toleranceMeters: 1,
+    );
+
+    expect(simplified.length, lessThan(10));
+    expect(simplified.first, trace.first);
+    expect(simplified.last, trace.last);
+  });
+
+  test('chunkRouteWaypoints overlaps seams without dropping points', () {
+    final points = [
+      for (var index = 0; index < 47; index++)
+        GeoPoint(latitude: 45.0, longitude: 11.0 + index * 0.001),
+    ];
+
+    final chunks = chunkRouteWaypoints(points, maxPointsPerChunk: 20);
+
+    expect(chunks, hasLength(3));
+    expect(chunks[0], hasLength(20));
+    expect(chunks[1], hasLength(20));
+    expect(chunks[2], hasLength(9));
+    expect(chunks[0].last, same(chunks[1].first));
+    expect(chunks[1].last, same(chunks[2].first));
+
+    final reconstructed = <GeoPoint>[
+      ...chunks.first,
+      for (final chunk in chunks.skip(1)) ...chunk.skip(1),
+    ];
+    expect(reconstructed, points);
+  });
+
   test('distanceToPolylineMeters rejects presses far from route', () {
     const line = [
       GeoPoint(latitude: 45.0, longitude: 11.0),
