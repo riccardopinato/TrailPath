@@ -39,6 +39,11 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   int? _selectedWaypointIndex;
   bool _routeSelected = false;
   bool _draggingFeature = false;
+  bool _traceMode = false;
+  bool _traceDrawing = false;
+  bool _traceProcessing = false;
+  int? _tracePointerId;
+  List<Offset> _traceScreenPoints = const [];
   bool _annotationSyncRunning = false;
   bool _annotationSyncQueued = false;
   List<Line> _routeLines = const [];
@@ -381,6 +386,164 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }
     unawaited(HapticFeedback.selectionClick());
     ref.read(routePlannerProvider.notifier).insertPointNearRoute(candidate);
+  }
+
+  void _toggleTraceMode() {
+    if (_traceProcessing) {
+      return;
+    }
+    setState(() {
+      _traceMode = !_traceMode;
+      _traceDrawing = false;
+      _tracePointerId = null;
+      _traceScreenPoints = const [];
+      _selectedWaypointIndex = null;
+      if (_traceMode) {
+        _routeSelected = false;
+      }
+    });
+    unawaited(
+      _traceMode
+          ? HapticFeedback.selectionClick()
+          : HapticFeedback.lightImpact(),
+    );
+  }
+
+  void _onTracePointerDown(PointerDownEvent event) {
+    if (!_traceMode ||
+        _traceProcessing ||
+        _tracePointerId != null ||
+        ref.read(routePlannerProvider).isRouting) {
+      return;
+    }
+    _tracePointerId = event.pointer;
+    setState(() {
+      _traceDrawing = true;
+      _traceScreenPoints = [event.localPosition];
+    });
+    unawaited(HapticFeedback.selectionClick());
+  }
+
+  void _onTracePointerMove(PointerMoveEvent event) {
+    if (!_traceMode ||
+        !_traceDrawing ||
+        _tracePointerId != event.pointer ||
+        _traceScreenPoints.isEmpty) {
+      return;
+    }
+    if ((event.localPosition - _traceScreenPoints.last).distance < 5) {
+      return;
+    }
+    setState(() {
+      _traceScreenPoints = [
+        ..._traceScreenPoints,
+        event.localPosition,
+      ];
+    });
+  }
+
+  void _onTracePointerUp(PointerUpEvent event) {
+    if (_tracePointerId != event.pointer) {
+      return;
+    }
+    final points = List<Offset>.of(_traceScreenPoints);
+    if (points.isEmpty ||
+        (event.localPosition - points.last).distance >= 2) {
+      points.add(event.localPosition);
+    }
+    _tracePointerId = null;
+    setState(() {
+      _traceDrawing = false;
+      _traceScreenPoints = const [];
+    });
+    unawaited(_commitTrace(points));
+  }
+
+  void _onTracePointerCancel(PointerCancelEvent event) {
+    if (_tracePointerId != event.pointer) {
+      return;
+    }
+    _tracePointerId = null;
+    if (mounted) {
+      setState(() {
+        _traceDrawing = false;
+        _traceScreenPoints = const [];
+      });
+    }
+  }
+
+  Future<void> _commitTrace(List<Offset> screenPoints) async {
+    final controller = _mapController;
+    if (controller == null || screenPoints.length < 2 || _traceProcessing) {
+      return;
+    }
+
+    final sampled = _sampleTraceOffsets(screenPoints, maxPoints: 56);
+    if (sampled.length < 2) {
+      return;
+    }
+
+    setState(() => _traceProcessing = true);
+    try {
+      final geoPoints = <GeoPoint>[];
+      for (final offset in sampled) {
+        final coordinates = await controller.toLatLng(
+          math.Point<double>(offset.dx, offset.dy),
+        );
+        geoPoints.add(
+          GeoPoint(
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude,
+          ),
+        );
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      final accepted =
+          ref.read(routePlannerProvider.notifier).addTrace(geoPoints);
+      if (!accepted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).traceTooShort)),
+        );
+        return;
+      }
+
+      setState(() {
+        _routeSelected = true;
+        _selectedWaypointIndex = null;
+      });
+      unawaited(HapticFeedback.mediumImpact());
+    } on Object {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).traceFailed)),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _traceProcessing = false);
+      }
+    }
+  }
+
+  List<Offset> _sampleTraceOffsets(
+    List<Offset> points, {
+    required int maxPoints,
+  }) {
+    if (points.length <= maxPoints) {
+      return List<Offset>.unmodifiable(points);
+    }
+
+    final sampled = <Offset>[points.first];
+    final stride = (points.length - 1) / (maxPoints - 1);
+    for (var index = 1; index < maxPoints - 1; index++) {
+      sampled.add(points[(index * stride).round()]);
+    }
+    sampled.add(points.last);
+    return List<Offset>.unmodifiable(sampled);
   }
 
   void _undo() {
@@ -1017,10 +1180,14 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     unawaited(_syncPlannerAnnotations());
                   },
                   onMapClick: (point, coordinates) {
-                    _addWaypoint(coordinates);
+                    if (!_traceMode) {
+                      _addWaypoint(coordinates);
+                    }
                   },
                   onMapLongClick: (point, coordinates) {
-                    unawaited(_insertWaypoint(coordinates));
+                    if (!_traceMode) {
+                      unawaited(_insertWaypoint(coordinates));
+                    }
                   },
                   annotationOrder: const [
                     AnnotationType.line,
@@ -1086,6 +1253,14 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                       ),
                     ),
                     const Spacer(),
+                    _MapActionButton(
+                      icon: Icons.draw_rounded,
+                      dark: dark,
+                      tooltip: strings.traceMode,
+                      active: _traceMode,
+                      onTap: planner.isRouting ? null : _toggleTraceMode,
+                    ),
+                    const SizedBox(width: 8),
                     _MapActionButton(
                       icon: Icons.undo_rounded,
                       dark: dark,
@@ -1171,10 +1346,38 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     dark: dark,
                     onTap: _resolveLocationIssue,
                   ),
+                if (_traceMode) ...[
+                  const SizedBox(height: 8),
+                  _TraceStatusChip(
+                    message: _traceProcessing
+                        ? strings.traceProcessing
+                        : _traceDrawing
+                            ? strings.traceDrawing
+                            : strings.traceHint,
+                    dark: dark,
+                    busy: _traceProcessing,
+                  ),
+                ],
               ],
             ),
           ),
         ),
+        if (_traceMode)
+          Positioned.fill(
+            child: Listener(
+              behavior: HitTestBehavior.opaque,
+              onPointerDown: _onTracePointerDown,
+              onPointerMove: _onTracePointerMove,
+              onPointerUp: _onTracePointerUp,
+              onPointerCancel: _onTracePointerCancel,
+              child: CustomPaint(
+                painter: _TracePainter(
+                  points: _traceScreenPoints,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+          ),
         Align(
           alignment: Alignment.bottomCenter,
           child: SafeArea(
@@ -1289,7 +1492,7 @@ class _PlannerCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'v0.9.6',
+                  'v0.9.7',
                   style: TextStyle(
                     color: scheme.onPrimaryContainer,
                     fontSize: 11,
