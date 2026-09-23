@@ -471,45 +471,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }
 
     final kind = annotation.data?['kind'];
-    if (kind == 'midpoint') {
-      final rawLegIndex = annotation.data?['legIndex'];
-      final legIndex = rawLegIndex is int
-          ? rawLegIndex
-          : rawLegIndex is num
-              ? rawLegIndex.toInt()
-              : null;
-      if (legIndex == null) {
-        return;
-      }
-
-      if (eventType == DragEventType.start && mounted) {
-        setState(() {
-          _routeSelected = true;
-          _selectedWaypointIndex = null;
-        });
-        return;
-      }
-
-      if (eventType == DragEventType.end) {
-        final insertedIndex = legIndex + 1;
-        if (mounted) {
-          setState(() {
-            _routeSelected = true;
-            _selectedWaypointIndex = insertedIndex;
-          });
-        }
-        ref.read(routePlannerProvider.notifier).insertPointAt(
-              insertedIndex,
-              GeoPoint(
-                latitude: current.latitude,
-                longitude: current.longitude,
-              ),
-            );
-      }
-      return;
-    }
-
-    final rawIndex = annotation.data?['waypointIndex'];
+    final rawIndex = kind == 'midpoint'
+        ? annotation.data?['legIndex']
+        : annotation.data?['waypointIndex'];
     final index = rawIndex is int
         ? rawIndex
         : rawIndex is num
@@ -519,30 +483,135 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       return;
     }
 
-    if (eventType == DragEventType.start && mounted) {
-      setState(() {
-        _selectedWaypointIndex = index;
-        _routeSelected = true;
-      });
+    if (eventType == DragEventType.start) {
+      if (mounted) {
+        setState(() {
+          _draggingFeature = true;
+          _routeSelected = true;
+          _selectedWaypointIndex = kind == 'midpoint' ? null : index;
+        });
+      }
+      unawaited(HapticFeedback.selectionClick());
+      unawaited(_updateDragPreview(kind, index, current));
       return;
     }
 
-    if (eventType == DragEventType.end) {
+    if (eventType == DragEventType.drag) {
+      unawaited(_updateDragPreview(kind, index, current));
+      return;
+    }
+
+    if (eventType != DragEventType.end) {
+      return;
+    }
+
+    unawaited(_clearDragPreview());
+    unawaited(HapticFeedback.lightImpact());
+
+    if (kind == 'midpoint') {
+      final insertedIndex = index + 1;
       if (mounted) {
         setState(() {
-          _selectedWaypointIndex = index;
+          _draggingFeature = false;
           _routeSelected = true;
+          _selectedWaypointIndex = insertedIndex;
         });
       }
-      ref.read(routePlannerProvider.notifier).movePoint(
-            index,
+      ref.read(routePlannerProvider.notifier).insertPointAt(
+            insertedIndex,
             GeoPoint(
               latitude: current.latitude,
               longitude: current.longitude,
             ),
           );
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _draggingFeature = false;
+        _selectedWaypointIndex = index;
+        _routeSelected = true;
+      });
+    }
+    ref.read(routePlannerProvider.notifier).movePoint(
+          index,
+          GeoPoint(
+            latitude: current.latitude,
+            longitude: current.longitude,
+          ),
+        );
+  }
+
+  Future<void> _updateDragPreview(
+    String kind,
+    int index,
+    LatLng current,
+  ) async {
+    final controller = _mapController;
+    if (controller == null || !_styleReady) {
+      return;
+    }
+
+    final planner = ref.read(routePlannerProvider);
+    final preview = <LatLng>[];
+    if (kind == 'midpoint') {
+      if (index < 0 || index + 1 >= planner.points.length) {
+        return;
+      }
+      preview
+        ..add(_latLng(planner.points[index]))
+        ..add(current)
+        ..add(_latLng(planner.points[index + 1]));
+    } else {
+      if (index < 0 || index >= planner.points.length) {
+        return;
+      }
+      if (index > 0) {
+        preview.add(_latLng(planner.points[index - 1]));
+      }
+      preview.add(current);
+      if (index + 1 < planner.points.length) {
+        preview.add(_latLng(planner.points[index + 1]));
+      }
+    }
+
+    if (preview.length < 2) {
+      return;
+    }
+
+    final options = LineOptions(
+      geometry: preview,
+      lineColor: '#1976D2',
+      lineWidth: 4.5,
+      lineOpacity: 0.82,
+      lineJoin: 'round',
+    );
+    final existing = _dragPreviewLine;
+    if (existing != null && controller.lines.contains(existing)) {
+      await controller.updateLine(existing, options);
+      return;
+    }
+
+    _dragPreviewLine = await controller.addLine(
+      options,
+      <String, dynamic>{'kind': 'dragPreview'},
+    );
+  }
+
+  Future<void> _clearDragPreview() async {
+    final controller = _mapController;
+    final preview = _dragPreviewLine;
+    _dragPreviewLine = null;
+    if (controller != null &&
+        preview != null &&
+        controller.lines.contains(preview)) {
+      await controller.removeLine(preview);
     }
   }
+
+  LatLng _latLng(GeoPoint point) =>
+      LatLng(point.latitude, point.longitude);
 
   Future<void> _importGpx() async {
     final strings = AppLocalizations.of(context);
