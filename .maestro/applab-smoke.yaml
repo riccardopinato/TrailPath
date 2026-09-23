@@ -20,7 +20,8 @@ appId: com.riccardopinato.trail_path
 
 - tapOn:
     text: 'Outdoor\s*Tab 5 of 5'
-- assertVisible: "Battery mode"
+- assertVisible: "Outdoor"
+- assertVisible: "Balanced"
 
 - tapOn:
     text: 'Plan\s*Tab 1 of 5'
