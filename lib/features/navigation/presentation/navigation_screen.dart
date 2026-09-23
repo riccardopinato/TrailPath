@@ -7,8 +7,8 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
-import 'package:trail_path/infrastructure/maps/outdoor_map_style.dart';
 import 'package:trail_path/features/navigation/application/active_navigation_controller.dart';
+import 'package:trail_path/infrastructure/maps/outdoor_map_style.dart';
 
 class NavigationScreen extends ConsumerStatefulWidget {
   const NavigationScreen({super.key, required this.routeName, required this.route});
@@ -190,7 +190,7 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
                       _routeLine = null;
                       _returnLine = null;
                       _currentCircle = null;
-                      unawaited(OutdoorMapStyle.enhance(controller));
+                      unawaited(OutdoorMapStyle.enhance(_mapController));
                       unawaited(_drawRoute(event));
                     },
                     compassEnabled: true,

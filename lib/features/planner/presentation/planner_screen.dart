@@ -763,7 +763,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   },
                   onStyleLoadedCallback: () {
                     _styleReady = true;
-                    unawaited(OutdoorMapStyle.enhance(controller));
+                    unawaited(OutdoorMapStyle.enhance(_mapController));
                     unawaited(_syncPlannerAnnotations());
                   },
                   onMapClick: (point, coordinates) {

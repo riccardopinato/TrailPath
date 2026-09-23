@@ -10,8 +10,8 @@ import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/services/service_providers.dart';
-import 'package:trail_path/infrastructure/maps/outdoor_map_style.dart';
 import 'package:trail_path/features/outdoor/application/battery_mode_controller.dart';
+import 'package:trail_path/infrastructure/maps/outdoor_map_style.dart';
 
 class BackToCarScreen extends ConsumerStatefulWidget {
   const BackToCarScreen({
@@ -268,7 +268,7 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
                       _carCircle = null;
                       _currentCircle = null;
                       _returnLine = null;
-                      unawaited(OutdoorMapStyle.enhance(controller));
+                      unawaited(OutdoorMapStyle.enhance(_mapController));
                       unawaited(_draw());
                     },
                     compassEnabled: true,
