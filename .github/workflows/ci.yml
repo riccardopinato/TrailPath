@@ -89,6 +89,44 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      - name: Persist native scaffolding on v0.9.3 branch
+        if: github.event_name == 'pull_request' && github.head_ref == 'feature/v0.9.3-outdoor-release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tmp_dir="$(mktemp -d)"
+          git clone --depth 1 --branch "$GITHUB_HEAD_REF" \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "$tmp_dir/repo"
+
+          rsync -a --delete \
+            --exclude '.gradle/' \
+            --exclude 'local.properties' \
+            --exclude '*.iml' \
+            android/ "$tmp_dir/repo/android/"
+
+          rsync -a --delete \
+            --exclude 'Pods/' \
+            --exclude '.symlinks/' \
+            --exclude 'Flutter/ephemeral/' \
+            --exclude 'Flutter/Generated.xcconfig' \
+            --exclude 'Flutter/flutter_export_environment.sh' \
+            ios/ "$tmp_dir/repo/ios/"
+
+          cp pubspec.lock "$tmp_dir/repo/pubspec.lock"
+          cd "$tmp_dir/repo"
+          git add android ios pubspec.lock
+
+          if git diff --cached --quiet; then
+            echo "Native scaffolding is already versioned."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "build: version Flutter native scaffolding"
+          git push origin "HEAD:$GITHUB_HEAD_REF"
+
       - name: Generate Drift code
         run: dart run build_runner build
 
