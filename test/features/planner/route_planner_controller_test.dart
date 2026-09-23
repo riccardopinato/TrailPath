@@ -114,7 +114,7 @@ void main() {
 
     await Future<void>.delayed(Duration.zero);
 
-    final state = container.read(routePlannerProvider);
+    var state = container.read(routePlannerProvider);
     expect(state.isRouting, isFalse);
     expect(state.isSnapped, isFalse);
     expect(state.routingSource, 'routing-error');

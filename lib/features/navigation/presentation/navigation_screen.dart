@@ -86,8 +86,7 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
     final controller = _mapController;
     if (controller == null) return;
 
-    if (_routeLine == null) {
-      _routeLine = await controller.addLine(
+    _routeLine ??= await controller.addLine(
         LineOptions(
           geometry: widget.route.geometry
               .map((p) => LatLng(p.latitude, p.longitude))
@@ -98,7 +97,6 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
           lineJoin: 'round',
         ),
       );
-    }
 
     final current = event?.currentPoint;
     final nearest = event?.nearestRoutePoint;
