@@ -146,32 +146,6 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
   }
 }
 
-class FallbackRoutingEngine implements RoutingEngine {
-  const FallbackRoutingEngine({
-    required this.primary,
-    required this.fallback,
-  });
-
-  final RoutingEngine primary;
-  final RoutingEngine fallback;
-
-  @override
-  String get engineId => '${primary.engineId}+${fallback.engineId}';
-
-  @override
-  Future<RoutePlan> calculate(RouteRequest request) async {
-    if (!request.snapToNetwork) {
-      return fallback.calculate(request);
-    }
-
-    try {
-      return await primary.calculate(request);
-    } on Object {
-      return fallback.calculate(request);
-    }
-  }
-}
-
 class StraightLineRoutingEngine implements RoutingEngine {
   const StraightLineRoutingEngine();
 
