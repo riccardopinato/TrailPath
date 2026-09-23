@@ -1,0 +1,8 @@
+# TrailPath v0.9.3 — verify the completed activity after a cold process restart
+appId: com.riccardopinato.trail_path
+---
+- tapOn:
+    text: 'Routes\s*Tab 3 of 5'
+
+- assertVisible: "Routes"
+- assertVisible: "AppLab GPS Test"
