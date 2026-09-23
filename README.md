@@ -1,86 +1,69 @@
 # TrailPath
 
-TrailPath is an outdoor route utility focused on fast planning, reliable track recording and navigation that remains useful when connectivity disappears.
+TrailPath is a Flutter outdoor route utility focused on planning, track recording, route following and offline preparedness.
 
 ## Current version
 
-v0.9.1 - Runtime Recovery
+**v0.9.3 — Outdoor Map, Footpath Routing & Release Hardening**
 
-TrailPath v0.9.1 hardens real-device use: production OpenFreeMap rendering, functional place search, safer navigation startup, resilient voice guidance, GPS settings recovery and offline-state reconciliation.
+### Current capabilities
 
-### Included
+- production OpenFreeMap/MapLibre map on Planner, Recorder, Navigation and Back to Car;
+- outdoor path emphasis for visible path/pedestrian/track layers;
+- user-triggered place/trail search;
+- tap-to-add route waypoints;
+- **Select trail** mode that queries rendered MapLibre features and snaps a waypoint onto the selected footpath/trail/track;
+- OSM foot routing for hiking/walking/trail-running/dog-walk profiles and bike routing for cycling/MTB;
+- routing failures are explicit and cannot silently become a saveable straight line;
+- interactive elevation profile with ascent/descent and grade;
+- GPX import/export/share;
+- saved routes and activities in Drift;
+- foreground/background GPS track recording with pause/resume, autosave and recovery;
+- seven-day stale-draft cleanup;
+- route-following navigation with progress, remaining distance and off-route/back-on-route detection;
+- localized TTS/haptic alerts;
+- MapLibre offline-region download, progress, storage and reconciliation;
+- Performance / Balanced / Saver GPS modes;
+- persistent Back to Car;
+- Safety Check and current-position sharing;
+- Italian, English, Spanish, French and Portuguese localization.
 
-- Flutter Android + iOS codebase
-- Riverpod dependency injection and state foundation
-- GoRouter navigation foundation
-- Drift local database schema v3 with recoverable activity drafts, return points and app settings
-- Map, routing, elevation, location, recording, navigation, offline, GPX and safety contracts
-- live MapLibre map in the planner
-- live GPS position with accuracy and heading
-- user-location compass rendering and recenter control
-- Android/iOS native location permission setup
-- tap-to-add waypoint planning with MapLibre annotations
-- route line, undo/redo and clear controls
-- activity profiles with foot/bike routing profiles
-- asynchronous snap-to-network routing through routing.openstreetmap.de
-- automatic local straight-line fallback when routing is unavailable
-- Open-Meteo/Copernicus terrain elevation sampling up to 100 points
-- ascent/descent and segment grade calculation with DEM noise filtering
-- interactive elevation profile with drag inspection
-- GPX 1.1 parser/exporter with track, route and waypoint fallback
-- native .gpx file import through the platform file picker
-- elevation/time preservation on GPX round-trip
-- GPX sharing from both planner and saved routes
-- separate waypoint and snapped-geometry persistence in Drift
-- saved-routes list with delete flow
-- live map-first track recorder with distance, ascent, pace and GPS accuracy\n- foreground/background GPS recording on Android and iOS\n- pause/resume, 5-second/point-based autosave and crash recovery\n- completed activity history with GPX sharing and deletion
-- saved-route navigation with live progress and remaining distance
-- off-route / back-on-route hysteresis and arrival detection
-- visual back-to-route connector on the map
-- localized TTS and haptic navigation alerts
-- per-route MapLibre offline map preparation
-- adaptive offline-region bounds and zoom levels to control storage size
-- live offline download progress and persistent route readiness
-- offline map library with storage usage, deletion and ambient-cache controls
-- Performance / Balanced / Saver GPS battery modes that alter real sampling behavior
-- persistent Back to Car parking point with local distance and bearing guidance
-- dedicated Back to Car map with live return line and heading-aware direction arrow
-- device Safety Check for battery, system battery saver, GPS permissions/services and offline-map readiness
-- quick current-position sharing through the native share sheet
-- production OpenFreeMap Liberty basemap shared by planner, recorder, navigation, Back to Car and offline downloads
-- user-triggered place/trail search with cached, rate-limited geocoding
-- navigation startup moved to a safe localization lifecycle
-- TTS/haptic feedback isolated so voice failures cannot stop GPS navigation
-- live battery-mode reconfiguration for active recording and navigation
-- GPS permission/service recovery through Android/iOS system settings
-- Android runtime notification/location permission preparation before recording
-- battery policies now drive native Android GPS sampling intervals during navigation and Back to Car
-- navigation lifecycle regression test covering the previous localization startup crash
-- offline readiness reconciled against actual native MapLibre regions
-- native Android emulator smoke test in GitHub Actions
-- light and dark outdoor themes
-- Italian, English, Spanish, French and Portuguese localization foundation
-- structured logging
-- tests
-- GitHub Actions for format, analyze, test and debug APK build
+## Runtime and map performance
+
+Recorder, Navigation and Back to Car keep MapLibre annotations alive and update them in place instead of clearing/recreating all overlays for every GPS fix. Camera following is throttled to reduce platform-channel work and visible micro-jank.
+
+## Native/release reproducibility
+
+Android and iOS projects plus `pubspec.lock` are committed. CI validates the committed native permissions/configuration.
+
+CI produces:
+
+- debug APK for AppLab;
+- release APKs split by ABI;
+- arm64 release APK artifact;
+- release AAB;
+- split debug-info symbols;
+- a release-size budget check.
+
+Android intentionally does **not** request `ACCESS_BACKGROUND_LOCATION`; active recording/navigation use foreground location-service behavior.
 
 ## Toolchain
 
-The CI is pinned to Flutter 3.47.5 / Dart 3.13.4.
+CI is pinned to Flutter 3.47.5 / Dart 3.13.4.
 
-Android and iOS platform folders are generated from the current Flutter template during CI. Native permissions are then applied by CI. The current public routing endpoint is suitable for development and validation; the RoutingEngine abstraction is intentionally kept provider-agnostic so a production-grade or self-hosted service can replace it without changing the planner.
+## Local validation
 
-## Bootstrap locally
-
-1. Install Flutter 3.47.5 or a compatible stable version.
-2. Run: flutter create --platforms=android,ios --org com.riccardopinato --project-name trail_path .
-3. Run: flutter pub get
-4. Run: dart run build_runner build --delete-conflicting-outputs
-5. Run: flutter test
-6. Run: flutter run
+```bash
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+dart format lib test
+flutter analyze
+flutter test
+flutter build apk --release --split-per-abi
+```
 
 ## Product principle
 
-Open the app, create or select a route, and go. TrailPath is designed as a tool first, not a social network.
+Open the app, create or select a route, and go. TrailPath is a utility first, not a social network.
 
-See docs/ARCHITECTURE.md and docs/ROADMAP.md.
+See `docs/ARCHITECTURE.md` and `docs/ROADMAP.md`.

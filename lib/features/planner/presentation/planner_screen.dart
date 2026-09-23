@@ -12,9 +12,11 @@ import 'package:share_plus/share_plus.dart';
 import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/core/domain/navigation_math.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/planner/application/route_planner_controller.dart';
+import 'package:trail_path/infrastructure/maps/outdoor_map_style.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
@@ -457,53 +459,25 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     if (geometry.isEmpty) {
       return null;
     }
-
-    var best = geometry.first;
-    var bestSquaredDistance = double.infinity;
-    for (final candidate in geometry) {
-      final dLat = candidate.latitude - tap.latitude;
-      final dLon = candidate.longitude - tap.longitude;
-      final squaredDistance = dLat * dLat + dLon * dLon;
-      if (squaredDistance < bestSquaredDistance) {
-        bestSquaredDistance = squaredDistance;
-        best = candidate;
-      }
-    }
-    return best;
-  }
-
-  Future<void> _enhanceOutdoorStyle() async {
-    final controller = _mapController;
-    if (controller == null || !_styleReady) {
-      return;
+    if (geometry.length == 1) {
+      return geometry.first;
     }
 
-    try {
-      final layerIds = await controller.getLayerIds();
-      for (final rawId in layerIds) {
-        final id = rawId.toString();
-        final lower = id.toLowerCase();
-        if (!lower.contains('path') &&
-            !lower.contains('pedestrian') &&
-            !lower.contains('track')) {
-          continue;
-        }
-        try {
-          await controller.setLayerProperties(
-            id,
-            const LineLayerProperties(
-              lineColor: '#9A6A3A',
-              lineWidth: 2.8,
-              lineOpacity: 0.96,
+    final projection = projectPointOnRoute(
+      GeoPoint(latitude: tap.latitude, longitude: tap.longitude),
+      geometry
+          .map(
+            (point) => GeoPoint(
+              latitude: point.latitude,
+              longitude: point.longitude,
             ),
-          );
-        } on Object {
-          // Some matching style layers are symbols rather than line layers.
-        }
-      }
-    } on Object {
-      // The base map stays usable even if a provider changes its layer ids.
-    }
+          )
+          .toList(growable: false),
+    );
+    return LatLng(
+      projection.nearestPoint.latitude,
+      projection.nearestPoint.longitude,
+    );
   }
 
   Future<void> _undo() async {
@@ -789,7 +763,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   },
                   onStyleLoadedCallback: () {
                     _styleReady = true;
-                    unawaited(_enhanceOutdoorStyle());
+                    unawaited(OutdoorMapStyle.enhance(controller));
                     unawaited(_syncPlannerAnnotations());
                   },
                   onMapClick: (point, coordinates) {

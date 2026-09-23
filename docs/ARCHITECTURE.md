@@ -2,25 +2,24 @@
 
 ## Goals
 
-TrailPath is local-first and engine-agnostic. UI and stored user data must not depend directly on a single routing, map or elevation provider.
+TrailPath is a local-first Flutter outdoor utility. User data and core route logic are independent from the concrete map, routing and elevation providers.
 
 ## Layers
 
 ### App
-Application bootstrap, router, theme and global composition.
+Application bootstrap, theme and the five-tab shell. The project no longer carries a routing package for a single root route.
 
 ### Core
-Stable domain models, persistence, localization, logging and service contracts.
+Domain models, geodesic/navigation math, Drift persistence, localization, logging and service contracts.
 
 ### Features
-Feature-first presentation and use cases. The initial feature boundaries are planner, recording and routes.
+Planner, recording, saved routes, offline maps, navigation and outdoor/safety tools.
 
 ### Infrastructure
-Provider-specific implementations. MapLibre, routing providers and future offline engines live behind contracts.
+Provider-specific implementations: MapLibre/OpenFreeMap rendering and offline regions, OSM foot/bike routing, Open-Meteo elevation, Geolocator, TTS, GPX and device safety.
 
 ## Engine boundaries
 
-- MapEngine
 - RoutingEngine
 - ElevationEngine
 - LocationEngine
@@ -28,19 +27,27 @@ Provider-specific implementations. MapLibre, routing providers and future offlin
 - NavigationEngine
 - OfflineMapManager
 - GpxService
+- PlaceSearchService
 - SafetyService
 
-A future BRouter or other offline router can replace an online implementation without changing planner screens or stored route entities.
+MapLibre is a presentation/native-map dependency rather than a placeholder MapEngine abstraction. A future BRouter, Valhalla or self-hosted OSRM engine can replace online routing without changing stored route entities.
 
 ## Data
 
-Drift schema v3 stores saved routes, recorded activities, waypoints, persistent return points and lightweight app settings. Geometry is deliberately represented independently from the map renderer.
+Drift schema v3 stores saved routes, recorded activities, waypoints, persistent return points and app settings. Route geometry is stored independently from MapLibre.
+
+## Native configuration
+
+Android and iOS project directories and `pubspec.lock` are committed. CI validates them rather than regenerating platform projects. Android uses a location foreground service permission model without `ACCESS_BACKGROUND_LOCATION`.
+
+## Outdoor map
+
+OpenFreeMap Liberty is the shared production basemap. TrailPath applies a lightweight outdoor emphasis to existing path/pedestrian/track layers on planner, recorder, navigation and Back to Car. Planner can query rendered MapLibre features and snap a waypoint to a selected trail geometry.
 
 ## Offline direction
 
-v1 must allow an already saved route, downloaded map region, GPS recording and route-following navigation to remain functional without connectivity. Full offline route calculation is a later engine replacement, not a prerequisite for the first usable releases.
+Prepared MapLibre regions, saved route geometry, GPS recording and route-following navigation remain useful without connectivity. Full offline route calculation remains a future routing-engine replacement.
 
+## Runtime policy
 
-## Outdoor intelligence
-
-Battery modes are domain policies, not UI-only preferences. Recording and navigation resolve the selected policy into native GPS accuracy, distance filters and sampling intervals. Back to Car stores its return point in Drift and computes distance/bearing locally so guidance remains useful without connectivity.
+Battery modes are domain policies that alter native GPS accuracy, distance filters, intervals and wake-lock behavior. Recording drafts autosave serially and stale interrupted drafts older than seven days are discarded during recovery.

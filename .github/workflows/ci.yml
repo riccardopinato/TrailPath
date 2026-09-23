@@ -106,10 +106,23 @@ jobs:
           if-no-files-found: error
 
       - name: Build release APKs by ABI
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release --split-per-abi --split-debug-info=build/debug-info/apk
 
       - name: Build release App Bundle
-        run: flutter build appbundle --release
+        run: flutter build appbundle --release --split-debug-info=build/debug-info/aab
+
+      - name: Enforce arm64 release size budget
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          apk = Path("build/app/outputs/flutter-apk/app-arm64-v8a-release.apk")
+          size = apk.stat().st_size
+          budget = 38 * 1024 * 1024
+          print(f"arm64 APK: {size / 1024 / 1024:.2f} MiB")
+          print(f"budget: {budget / 1024 / 1024:.0f} MiB")
+          if size > budget:
+              raise SystemExit("arm64 release APK exceeded the 38 MiB budget")
+          PY
 
       - name: Report release sizes
         run: |
@@ -128,6 +141,13 @@ jobs:
         with:
           name: TrailPath-v0.9.3-aab
           path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+
+      - name: Upload release symbols
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-v0.9.3-symbols
+          path: build/debug-info/
           if-no-files-found: error
 
   applab-android:
