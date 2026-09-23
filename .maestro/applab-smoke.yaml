@@ -1,4 +1,4 @@
-# TrailPath AppLab v0.9.2 smoke gate
+# TrailPath AppLab v0.9.2 smoke gate — validated on PR
 appId: com.riccardopinato.trail_path
 ---
 - launchApp:
