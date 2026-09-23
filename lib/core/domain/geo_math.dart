@@ -133,6 +133,98 @@ double distanceToPolylineMeters(
   return best;
 }
 
+List<GeoPoint> simplifyTraceForRouting(
+  List<GeoPoint> points, {
+  double minSpacingMeters = 12,
+  double toleranceMeters = 10,
+  int maxWaypoints = 40,
+}) {
+  if (points.length <= 2) {
+    return List<GeoPoint>.unmodifiable(points);
+  }
+  if (minSpacingMeters < 0) {
+    throw ArgumentError.value(
+      minSpacingMeters,
+      'minSpacingMeters',
+      'Must not be negative.',
+    );
+  }
+  if (toleranceMeters <= 0) {
+    throw ArgumentError.value(
+      toleranceMeters,
+      'toleranceMeters',
+      'Must be greater than zero.',
+    );
+  }
+  if (maxWaypoints < 2) {
+    throw ArgumentError.value(maxWaypoints, 'maxWaypoints', 'Must be at least 2.');
+  }
+
+  final spaced = <GeoPoint>[points.first];
+  for (final point in points.skip(1).take(points.length - 2)) {
+    if (haversineMeters(spaced.last, point) >= minSpacingMeters) {
+      spaced.add(point);
+    }
+  }
+  if (haversineMeters(spaced.last, points.last) > 0.5) {
+    spaced.add(points.last);
+  } else {
+    spaced[spaced.length - 1] = points.last;
+  }
+
+  if (spaced.length <= 2) {
+    return List<GeoPoint>.unmodifiable(spaced);
+  }
+
+  var tolerance = toleranceMeters;
+  var simplified = _douglasPeucker(spaced, tolerance);
+  for (var attempt = 0;
+      simplified.length > maxWaypoints && attempt < 8;
+      attempt++) {
+    tolerance *= 1.55;
+    simplified = _douglasPeucker(spaced, tolerance);
+  }
+
+  if (simplified.length <= maxWaypoints) {
+    return List<GeoPoint>.unmodifiable(simplified);
+  }
+
+  final capped = <GeoPoint>[simplified.first];
+  final stride = (simplified.length - 1) / (maxWaypoints - 1);
+  for (var index = 1; index < maxWaypoints - 1; index++) {
+    capped.add(simplified[(index * stride).round()]);
+  }
+  capped.add(simplified.last);
+  return List<GeoPoint>.unmodifiable(capped);
+}
+
+List<List<GeoPoint>> chunkRouteWaypoints(
+  List<GeoPoint> points, {
+  int maxPointsPerChunk = 20,
+}) {
+  if (maxPointsPerChunk < 2) {
+    throw ArgumentError.value(
+      maxPointsPerChunk,
+      'maxPointsPerChunk',
+      'Must be at least 2.',
+    );
+  }
+  if (points.length <= maxPointsPerChunk) {
+    return [List<GeoPoint>.unmodifiable(points)];
+  }
+
+  final chunks = <List<GeoPoint>>[];
+  var start = 0;
+  while (start < points.length - 1) {
+    final end = math.min(start + maxPointsPerChunk - 1, points.length - 1);
+    chunks.add(
+      List<GeoPoint>.unmodifiable(points.sublist(start, end + 1)),
+    );
+    start = end;
+  }
+  return List<List<GeoPoint>>.unmodifiable(chunks);
+}
+
 List<GeoPoint> simplifyPolylineForDisplay(
   List<GeoPoint> points, {
   double toleranceMeters = 1.5,
