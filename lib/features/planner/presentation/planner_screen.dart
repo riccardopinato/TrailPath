@@ -1213,6 +1213,22 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                       AttributionButtonPosition.bottomRight,
                 ),
         ),
+        if (_traceMode)
+          Positioned.fill(
+            child: Listener(
+              behavior: HitTestBehavior.opaque,
+              onPointerDown: _onTracePointerDown,
+              onPointerMove: _onTracePointerMove,
+              onPointerUp: _onTracePointerUp,
+              onPointerCancel: _onTracePointerCancel,
+              child: CustomPaint(
+                painter: _TracePainter(
+                  points: _traceScreenPoints,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+          ),
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -1362,22 +1378,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
             ),
           ),
         ),
-        if (_traceMode)
-          Positioned.fill(
-            child: Listener(
-              behavior: HitTestBehavior.opaque,
-              onPointerDown: _onTracePointerDown,
-              onPointerMove: _onTracePointerMove,
-              onPointerUp: _onTracePointerUp,
-              onPointerCancel: _onTracePointerCancel,
-              child: CustomPaint(
-                painter: _TracePainter(
-                  points: _traceScreenPoints,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ),
-          ),
         Align(
           alignment: Alignment.bottomCenter,
           child: SafeArea(
@@ -2146,12 +2146,14 @@ class _MapActionButton extends StatelessWidget {
     required this.icon,
     required this.dark,
     required this.tooltip,
+    this.active = false,
     this.onTap,
   });
 
   final IconData icon;
   final bool dark;
   final String tooltip;
+  final bool active;
   final VoidCallback? onTap;
 
   @override
@@ -2159,7 +2161,11 @@ class _MapActionButton extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       child: Material(
-        color: dark ? const Color(0xD91A241E) : const Color(0xEFFFFFFF),
+        color: active
+            ? Theme.of(context).colorScheme.primaryContainer
+            : dark
+                ? const Color(0xD91A241E)
+                : const Color(0xEFFFFFFF),
         shape: const CircleBorder(),
         child: InkWell(
           customBorder: const CircleBorder(),
@@ -2169,9 +2175,68 @@ class _MapActionButton extends StatelessWidget {
             child: SizedBox(
               width: 42,
               height: 42,
-              child: Icon(icon, size: 20),
+              child: Icon(
+                icon,
+                size: 20,
+                color: active
+                    ? Theme.of(context).colorScheme.onPrimaryContainer
+                    : null,
+              ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TraceStatusChip extends StatelessWidget {
+  const _TraceStatusChip({
+    required this.message,
+    required this.dark,
+    required this.busy,
+  });
+
+  final String message;
+  final bool dark;
+  final bool busy;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: dark ? const Color(0xE6222A24) : const Color(0xF7FFFFFF),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: scheme.primary.withValues(alpha: 0.32),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (busy)
+              const SizedBox(
+                width: 15,
+                height: 15,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else
+              Icon(Icons.draw_rounded, size: 17, color: scheme.primary),
+            const SizedBox(width: 7),
+            Flexible(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -2222,6 +2287,51 @@ class _LocationStatusChip extends StatelessWidget {
       ),
     );
   }
+}
+
+class _TracePainter extends CustomPainter {
+  const _TracePainter({
+    required this.points,
+    required this.color,
+  });
+
+  final List<Offset> points;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (points.length < 2) {
+      return;
+    }
+
+    final path = Path()..moveTo(points.first.dx, points.first.dy);
+    for (final point in points.skip(1)) {
+      path.lineTo(point.dx, point.dy);
+    }
+
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.92)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 9
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = color.withValues(alpha: 0.92)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _TracePainter oldDelegate) =>
+      oldDelegate.points != points || oldDelegate.color != color;
 }
 
 class _MapTestFallback extends StatelessWidget {
