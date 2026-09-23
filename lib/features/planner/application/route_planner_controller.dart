@@ -317,7 +317,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       );
 
       unawaited(_refreshElevation(generation, plan.geometry));
-    } on Object {
+    } on Object catch (error) {
       if (!ref.mounted || generation != _routingGeneration) {
         return;
       }
