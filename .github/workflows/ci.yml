@@ -154,28 +154,9 @@ jobs:
             adb shell pm grant com.riccardopinato.trail_path android.permission.ACCESS_FINE_LOCATION || true
             adb shell pm grant com.riccardopinato.trail_path android.permission.ACCESS_COARSE_LOCATION || true
 
-            # Deterministic emulator GPS path around the default TrailPath area.
-            # The movement is injected while Maestro drives Record -> Pause -> Resume -> Finish.
-            (
-              sleep 8
-              for point in \
-                "11.7500 45.2320" \
-                "11.7502 45.2322" \
-                "11.7505 45.2325" \
-                "11.7508 45.2328" \
-                "11.7511 45.2331" \
-                "11.7514 45.2334" \
-                "11.7517 45.2337" \
-                "11.7520 45.2340"
-              do
-                adb emu geo fix $point || true
-                sleep 2
-              done
-            ) &
-            GPS_FEED_PID=$!
-
+            nohup bash "$GITHUB_WORKSPACE/.github/scripts/feed_emulator_gps.sh" >"$RUNNER_TEMP/trailpath-gps.log" 2>&1 &
             RUN_MAESTRO=true MAESTRO_FLOW="$GITHUB_WORKSPACE/.maestro/applab-functional.yaml" REPORT_DIR="$GITHUB_WORKSPACE/applab-report" .applab/scripts/verify_apk.sh "$GITHUB_WORKSPACE/apk/app-debug.apk" "com.riccardopinato.trail_path"
-            wait "$GPS_FEED_PID" || true
+            cp "$RUNNER_TEMP/trailpath-gps.log" "$GITHUB_WORKSPACE/applab-report/gps-feed.log" || true
 
             grep -Fq -- "- Result: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
             grep -Fq -- "- Maestro: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
