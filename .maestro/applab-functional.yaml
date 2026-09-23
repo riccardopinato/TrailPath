@@ -11,6 +11,11 @@ appId: com.riccardopinato.trail_path
 - assertVisible: "Start recording"
 
 - tapOn: "Start recording"
+
+- tapOn:
+    text: "Allow"
+    optional: true
+
 - assertVisible: "Pause"
 - assertVisible: "Finish"
 
