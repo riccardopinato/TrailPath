@@ -77,6 +77,11 @@ class AppLocalizations {
   String get routingCalculating => _value('routingCalculating');
   String get routeSnapped => _value('routeSnapped');
   String get routeLocalFallback => _value('routeLocalFallback');
+  String get routingUnavailable => _value('routingUnavailable');
+  String get footpathMode => _value('footpathMode');
+  String get footpathModeHint => _value('footpathModeHint');
+  String get footpathSelected => _value('footpathSelected');
+  String get noFootpathFound => _value('noFootpathFound');
   String get elevationProfile => _value('elevationProfile');
   String get elevation => _value('elevation');
   String get descent => _value('descent');
@@ -214,6 +219,11 @@ class AppLocalizations {
       'routingCalculating': 'Calcolo percorso su sentieri e strade…',
       'routeSnapped': 'Percorso agganciato alla rete OSM',
       'routeLocalFallback': 'Modalità locale: linea diretta',
+      'routingUnavailable': 'Routing non disponibile: riprova o modifica i punti',
+      'footpathMode': 'Seleziona sentiero',
+      'footpathModeHint': 'Aggancia i tocchi ai sentieri, footpath e track visibili sulla mappa',
+      'footpathSelected': 'Sentiero selezionato',
+      'noFootpathFound': 'Nessun sentiero selezionabile in quel punto',
       'elevationProfile': 'Profilo altimetrico',
       'elevation': 'Quota',
       'descent': 'Discesa',
@@ -350,6 +360,11 @@ class AppLocalizations {
       'routingCalculating': 'Routing along paths and roads…',
       'routeSnapped': 'Route snapped to the OSM network',
       'routeLocalFallback': 'Local mode: direct line',
+      'routingUnavailable': 'Routing unavailable: retry or adjust the points',
+      'footpathMode': 'Select trail',
+      'footpathModeHint': 'Snap taps to visible trails, footpaths and tracks',
+      'footpathSelected': 'Trail selected',
+      'noFootpathFound': 'No selectable trail at that point',
       'elevationProfile': 'Elevation profile',
       'elevation': 'Elevation',
       'descent': 'Descent',
@@ -486,6 +501,11 @@ class AppLocalizations {
       'routingCalculating': 'Calculando por caminos y carreteras…',
       'routeSnapped': 'Ruta ajustada a la red OSM',
       'routeLocalFallback': 'Modo local: línea directa',
+      'routingUnavailable': 'Routing no disponible: reintenta o ajusta los puntos',
+      'footpathMode': 'Seleccionar sendero',
+      'footpathModeHint': 'Ajusta los toques a senderos y pistas visibles',
+      'footpathSelected': 'Sendero seleccionado',
+      'noFootpathFound': 'No hay un sendero seleccionable en ese punto',
       'elevationProfile': 'Perfil de elevación',
       'elevation': 'Altitud',
       'descent': 'Descenso',
@@ -622,6 +642,11 @@ class AppLocalizations {
       'routingCalculating': 'Calcul sur chemins et routes…',
       'routeSnapped': 'Parcours calé sur le réseau OSM',
       'routeLocalFallback': 'Mode local : ligne directe',
+      'routingUnavailable': 'Routage indisponible : réessayez ou déplacez les points',
+      'footpathMode': 'Sélectionner sentier',
+      'footpathModeHint': 'Accroche les touches aux sentiers et pistes visibles',
+      'footpathSelected': 'Sentier sélectionné',
+      'noFootpathFound': 'Aucun sentier sélectionnable à cet endroit',
       'elevationProfile': 'Profil altimétrique',
       'elevation': 'Altitude',
       'descent': 'Descente',
@@ -758,6 +783,11 @@ class AppLocalizations {
       'routingCalculating': 'A calcular por trilhos e estradas…',
       'routeSnapped': 'Percurso ajustado à rede OSM',
       'routeLocalFallback': 'Modo local: linha direta',
+      'routingUnavailable': 'Roteamento indisponível: tente novamente ou ajuste os pontos',
+      'footpathMode': 'Selecionar trilho',
+      'footpathModeHint': 'Ajusta os toques a trilhos e caminhos visíveis',
+      'footpathSelected': 'Trilho selecionado',
+      'noFootpathFound': 'Nenhum trilho selecionável nesse ponto',
       'elevationProfile': 'Perfil de elevação',
       'elevation': 'Altitude',
       'descent': 'Descida',

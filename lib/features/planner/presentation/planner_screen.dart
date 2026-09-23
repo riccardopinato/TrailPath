@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -33,6 +34,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   bool _locationBusy = true;
   bool _styleReady = false;
   bool _searchBusy = false;
+  bool _trailSnapEnabled = false;
+  List<LatLng> _selectedTrailGeometry = const [];
   PlaceSearchResult? _searchResult;
   String? _locationError;
   final TextEditingController _searchController = TextEditingController();
@@ -324,6 +327,185 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     await _syncPlannerAnnotations();
   }
 
+  Future<void> _handleMapTap(
+    math.Point<double> screenPoint,
+    LatLng coordinates,
+  ) async {
+    if (!_trailSnapEnabled) {
+      await _addWaypoint(coordinates);
+      return;
+    }
+
+    final controller = _mapController;
+    if (controller == null || !_styleReady) {
+      return;
+    }
+
+    final strings = AppLocalizations.of(context);
+    try {
+      final features = await controller.queryRenderedFeatures(
+        screenPoint,
+        const <String>[],
+        null,
+      );
+      final feature = _firstTrailFeature(features);
+      if (feature == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(strings.noFootpathFound)),
+          );
+        }
+        return;
+      }
+
+      final geometry = _trailGeometry(feature);
+      final snapped = _nearestTrailPoint(geometry, coordinates);
+      if (snapped == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(strings.noFootpathFound)),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        setState(() => _selectedTrailGeometry = geometry);
+      }
+      await _addWaypoint(snapped);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(strings.footpathSelected)),
+        );
+      }
+    } on Object {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(strings.noFootpathFound)),
+        );
+      }
+    }
+  }
+
+  Map<String, dynamic>? _firstTrailFeature(List<dynamic> features) {
+    for (final raw in features) {
+      if (raw is! Map) {
+        continue;
+      }
+      final feature = Map<String, dynamic>.from(raw);
+      final properties = feature['properties'];
+      final layer = feature['layer'];
+      final tokens = <String>[
+        if (layer is Map && layer['id'] != null)
+          layer['id'].toString().toLowerCase(),
+        if (properties is Map && properties['class'] != null)
+          properties['class'].toString().toLowerCase(),
+        if (properties is Map && properties['subclass'] != null)
+          properties['subclass'].toString().toLowerCase(),
+        if (properties is Map && properties['type'] != null)
+          properties['type'].toString().toLowerCase(),
+      ].join(' ');
+
+      const trailTokens = <String>[
+        'path',
+        'footway',
+        'pedestrian',
+        'track',
+        'bridleway',
+        'steps',
+        'hiking',
+        'trail',
+      ];
+      if (trailTokens.any(tokens.contains)) {
+        return feature;
+      }
+    }
+    return null;
+  }
+
+  List<LatLng> _trailGeometry(Map<String, dynamic> feature) {
+    final geometry = feature['geometry'];
+    if (geometry is! Map) {
+      return const [];
+    }
+
+    final result = <LatLng>[];
+    void collect(Object? value) {
+      if (value is! List) {
+        return;
+      }
+      if (value.length >= 2 && value[0] is num && value[1] is num) {
+        result.add(
+          LatLng(
+            (value[1] as num).toDouble(),
+            (value[0] as num).toDouble(),
+          ),
+        );
+        return;
+      }
+      for (final child in value) {
+        collect(child);
+      }
+    }
+
+    collect(geometry['coordinates']);
+    return List<LatLng>.unmodifiable(result);
+  }
+
+  LatLng? _nearestTrailPoint(List<LatLng> geometry, LatLng tap) {
+    if (geometry.isEmpty) {
+      return null;
+    }
+
+    var best = geometry.first;
+    var bestSquaredDistance = double.infinity;
+    for (final candidate in geometry) {
+      final dLat = candidate.latitude - tap.latitude;
+      final dLon = candidate.longitude - tap.longitude;
+      final squaredDistance = dLat * dLat + dLon * dLon;
+      if (squaredDistance < bestSquaredDistance) {
+        bestSquaredDistance = squaredDistance;
+        best = candidate;
+      }
+    }
+    return best;
+  }
+
+  Future<void> _enhanceOutdoorStyle() async {
+    final controller = _mapController;
+    if (controller == null || !_styleReady) {
+      return;
+    }
+
+    try {
+      final layerIds = await controller.getLayerIds();
+      for (final rawId in layerIds) {
+        final id = rawId.toString();
+        final lower = id.toLowerCase();
+        if (!lower.contains('path') &&
+            !lower.contains('pedestrian') &&
+            !lower.contains('track')) {
+          continue;
+        }
+        try {
+          await controller.setLayerProperties(
+            id,
+            const LineLayerProperties(
+              lineColor: '#9A6A3A',
+              lineWidth: 2.8,
+              lineOpacity: 0.96,
+            ),
+          );
+        } on Object {
+          // Some matching style layers are symbols rather than line layers.
+        }
+      }
+    } on Object {
+      // The base map stays usable even if a provider changes its layer ids.
+    }
+  }
+
   Future<void> _undo() async {
     ref.read(routePlannerProvider.notifier).undo();
     await _syncPlannerAnnotations();
@@ -336,6 +518,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
   Future<void> _clearRoute() async {
     ref.read(routePlannerProvider.notifier).clear();
+    if (mounted) {
+      setState(() => _selectedTrailGeometry = const []);
+    }
     await _syncPlannerAnnotations();
   }
 
@@ -436,6 +621,18 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
     await controller.clearLines();
     await controller.clearCircles();
+
+    if (_selectedTrailGeometry.length >= 2) {
+      await controller.addLine(
+        LineOptions(
+          geometry: _selectedTrailGeometry,
+          lineColor: '#F2A93B',
+          lineWidth: 8,
+          lineOpacity: 0.42,
+          lineJoin: 'round',
+        ),
+      );
+    }
 
     if (routeGeometry.length >= 2) {
       await controller.addLine(
@@ -587,10 +784,11 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   },
                   onStyleLoadedCallback: () {
                     _styleReady = true;
+                    unawaited(_enhanceOutdoorStyle());
                     unawaited(_syncPlannerAnnotations());
                   },
                   onMapClick: (point, coordinates) {
-                    unawaited(_addWaypoint(coordinates));
+                    unawaited(_handleMapTap(point, coordinates));
                   },
                   compassEnabled: true,
                   compassViewPosition: CompassViewPosition.topRight,
@@ -718,7 +916,28 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Tooltip(
+                    message: strings.footpathModeHint,
+                    child: FilterChip(
+                      avatar: const Icon(Icons.route_rounded, size: 18),
+                      label: Text(strings.footpathMode),
+                      selected: _trailSnapEnabled,
+                      onSelected: (selected) {
+                        setState(() {
+                          _trailSnapEnabled = selected;
+                          if (!selected) {
+                            _selectedTrailGeometry = const [];
+                          }
+                        });
+                        unawaited(_syncPlannerAnnotations());
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
                 if (!_locationServiceEnabled ||
                     (!_permissionGranted && !_locationBusy) ||
                     _locationError != null)
@@ -1358,13 +1577,15 @@ class _RoutingStatus extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    final (icon, label) = planner.points.length < 2
-        ? (Icons.alt_route_rounded, strings.routingReady)
-        : planner.isRouting
-            ? (Icons.sync_rounded, strings.routingCalculating)
-            : planner.isSnapped
-                ? (Icons.route_rounded, strings.routeSnapped)
-                : (Icons.cloud_off_rounded, strings.routeLocalFallback);
+    final (icon, label) = planner.routingError != null
+        ? (Icons.error_outline_rounded, strings.routingUnavailable)
+        : planner.points.length < 2
+            ? (Icons.alt_route_rounded, strings.routingReady)
+            : planner.isRouting
+                ? (Icons.sync_rounded, strings.routingCalculating)
+                : planner.isSnapped
+                    ? (Icons.route_rounded, strings.routeSnapped)
+                    : (Icons.route_outlined, strings.routingReady);
 
     return Row(
       children: [
