@@ -61,6 +61,7 @@ class RecordingState {
 }
 
 class RecordingController extends Notifier<RecordingState> {
+  static const Duration _maxRecoveryAge = Duration(days: 7);
   StreamSubscription<TrackRecorderSnapshot>? _subscription;
   Future<void> _persistChain = Future<void>.value();
   DateTime? _lastPersistedAt;
@@ -104,6 +105,15 @@ class RecordingController extends Notifier<RecordingState> {
       }
       if (activity == null) {
         state = state.copyWith(isCheckingRecovery: false);
+        return;
+      }
+
+      final recoveryTimestamp = activity.updatedAt ?? activity.startedAt;
+      if (DateTime.now().difference(recoveryTimestamp) > _maxRecoveryAge) {
+        await _safeDiscardDraft(activity.id);
+        if (ref.mounted) {
+          state = state.copyWith(isCheckingRecovery: false);
+        }
         return;
       }
 
@@ -164,6 +174,21 @@ class RecordingController extends Notifier<RecordingState> {
     String? activityId;
 
     try {
+      await permissions.prepareRecording();
+      if (!ref.mounted) {
+        return;
+      }
+
+      final batteryMode = await batteryModeFuture;
+      if (!ref.mounted) {
+        return;
+      }
+
+      await _recorder.setBatteryMode(batteryMode);
+      if (!ref.mounted) {
+        return;
+      }
+
       activityId = await _database.createActivityDraft(profile: profile);
       if (!ref.mounted) {
         await _safeDiscardDraft(activityId);
@@ -175,24 +200,6 @@ class RecordingController extends Notifier<RecordingState> {
         hasRecoveredDraft: false,
         clearError: true,
       );
-
-      await permissions.prepareRecording();
-      if (!ref.mounted) {
-        await _safeDiscardDraft(activityId);
-        return;
-      }
-
-      final batteryMode = await batteryModeFuture;
-      if (!ref.mounted) {
-        await _safeDiscardDraft(activityId);
-        return;
-      }
-
-      await _recorder.setBatteryMode(batteryMode);
-      if (!ref.mounted) {
-        await _safeDiscardDraft(activityId);
-        return;
-      }
 
       await _bindRecorder();
       if (!ref.mounted) {
