@@ -153,12 +153,7 @@ jobs:
             adb shell pm grant com.riccardopinato.trail_path android.permission.ACCESS_FINE_LOCATION || true
             adb shell pm grant com.riccardopinato.trail_path android.permission.ACCESS_COARSE_LOCATION || true
 
-            RUN_MAESTRO=true \
-            MAESTRO_FLOW="$GITHUB_WORKSPACE/.maestro/applab-smoke.yaml" \
-            REPORT_DIR="$GITHUB_WORKSPACE/applab-report" \
-              .applab/scripts/verify_apk.sh \
-              "$GITHUB_WORKSPACE/apk/app-debug.apk" \
-              "com.riccardopinato.trail_path"
+            RUN_MAESTRO=true MAESTRO_FLOW="$GITHUB_WORKSPACE/.maestro/applab-smoke.yaml" REPORT_DIR="$GITHUB_WORKSPACE/applab-report" .applab/scripts/verify_apk.sh "$GITHUB_WORKSPACE/apk/app-debug.apk" "com.riccardopinato.trail_path"
 
             grep -Fq -- "- Result: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
             grep -Fq -- "- Maestro: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
