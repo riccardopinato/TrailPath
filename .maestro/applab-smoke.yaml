@@ -2,21 +2,25 @@ appId: com.riccardopinato.trail_path
 ---
 - launchApp:
     clearState: false
-- assertVisible: "Plan"
+
 - assertVisible: "Search place or trail"
 
-- tapOn: "Record"
+- tapOn:
+    text: 'Record\s*Tab 2 of 5'
 - assertVisible: "Ready to record"
 
-- tapOn: "Routes"
+- tapOn:
+    text: 'Routes\s*Tab 3 of 5'
 - assertVisible: "Your routes"
 
-- tapOn: "Offline"
+- tapOn:
+    text: 'Offline\s*Tab 4 of 5'
 - assertVisible: "Offline maps"
 
-- tapOn: "Outdoor"
-- assertVisible: "Outdoor"
+- tapOn:
+    text: 'Outdoor\s*Tab 5 of 5'
 - assertVisible: "Battery mode"
 
-- tapOn: "Plan"
+- tapOn:
+    text: 'Plan\s*Tab 1 of 5'
 - assertVisible: "Search place or trail"
