@@ -695,58 +695,85 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   }
 
   Future<void> _syncPlannerAnnotations() async {
+    _annotationSyncQueued = true;
+    if (_annotationSyncRunning) {
+      return;
+    }
+
+    _annotationSyncRunning = true;
+    try {
+      while (_annotationSyncQueued && mounted) {
+        _annotationSyncQueued = false;
+        await _performPlannerAnnotationSync();
+      }
+    } finally {
+      _annotationSyncRunning = false;
+    }
+  }
+
+  Future<void> _performPlannerAnnotationSync() async {
     if (_runningWidgetTest || !_styleReady) {
       return;
     }
 
     final controller = _mapController;
-    if (controller == null) {
+    if (controller == null || controller.isDisposed) {
       return;
     }
 
     final planner = ref.read(routePlannerProvider);
-    final routeGeometry = planner.geometry
-        .map((point) => LatLng(point.latitude, point.longitude))
-        .toList(growable: false);
-    final waypoints = planner.points
-        .map((point) => LatLng(point.latitude, point.longitude))
-        .toList(growable: false);
+    final displayGeometry = simplifyPolylineForDisplay(
+      planner.geometry,
+      toleranceMeters: 1.5,
+      maxPoints: 2200,
+    );
+    final routeGeometry =
+        displayGeometry.map(_latLng).toList(growable: false);
+    final waypoints = planner.points.map(_latLng).toList(growable: false);
 
-    await controller.clearLines();
-    await controller.clearCircles();
+    final routeOptions = routeGeometry.length >= 2
+        ? <LineOptions>[
+            LineOptions(
+              geometry: routeGeometry,
+              lineColor: _routeSelected ? '#1976D2' : '#FFFFFF',
+              lineWidth: _routeSelected ? 10.0 : 8.0,
+              lineOpacity: _routeSelected ? 0.82 : 0.88,
+              lineJoin: 'round',
+            ),
+            LineOptions(
+              geometry: routeGeometry,
+              lineColor: '#21633C',
+              lineWidth: 5.0,
+              lineOpacity: 0.98,
+              lineJoin: 'round',
+            ),
+          ]
+        : const <LineOptions>[];
 
-    if (routeGeometry.length >= 2) {
-      await controller.addLine(
-        LineOptions(
-          geometry: routeGeometry,
-          lineColor: _routeSelected ? '#1976D2' : '#FFFFFF',
-          lineWidth: _routeSelected ? 10.0 : 8.0,
-          lineOpacity: _routeSelected ? 0.82 : 0.88,
-          lineJoin: 'round',
-        ),
-        <String, dynamic>{'kind': 'route', 'role': 'casing'},
-      );
-      await controller.addLine(
-        LineOptions(
-          geometry: routeGeometry,
-          lineColor: '#21633C',
-          lineWidth: 5.0,
-          lineOpacity: 0.98,
-          lineJoin: 'round',
-        ),
-        <String, dynamic>{'kind': 'route', 'role': 'route'},
-      );
+    final routeLinesCurrent = _routeLines.length == routeOptions.length &&
+        _routeLines.every(controller.lines.contains);
+    if (routeLinesCurrent) {
+      for (var index = 0; index < _routeLines.length; index++) {
+        await controller.updateLine(_routeLines[index], routeOptions[index]);
+      }
+    } else {
+      final stale =
+          _routeLines.where(controller.lines.contains).toList(growable: false);
+      if (stale.isNotEmpty) {
+        await controller.removeLines(stale);
+      }
+      _routeLines = routeOptions.isEmpty
+          ? const []
+          : await controller.addLines(
+              routeOptions,
+              const [
+                <String, dynamic>{'kind': 'route', 'role': 'casing'},
+                <String, dynamic>{'kind': 'route', 'role': 'route'},
+              ],
+            );
     }
 
-    final searchResult = _searchResult;
-    final editHandles = planner.editHandles
-        .map((point) => LatLng(point.latitude, point.longitude))
-        .toList(growable: false);
-    final showHandles = _routeSelected &&
-        !planner.isRouting &&
-        planner.isSnapped &&
-        editHandles.length == waypoints.length - 1;
-    final circles = <CircleOptions>[
+    final waypointOptions = <CircleOptions>[
       for (var index = 0; index < waypoints.length; index++)
         CircleOptions(
           geometry: waypoints[index],
@@ -767,48 +794,114 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           circleStrokeWidth: _selectedWaypointIndex == index ? 3.5 : 2.5,
           draggable: true,
         ),
-      if (showHandles)
-        for (var index = 0; index < editHandles.length; index++)
-          CircleOptions(
-            geometry: editHandles[index],
-            circleRadius: 6.5,
-            circleColor: '#FFFFFF',
-            circleStrokeColor: '#1976D2',
-            circleStrokeWidth: 2.5,
-            draggable: true,
-          ),
-      if (searchResult != null)
-        CircleOptions(
-          geometry: LatLng(
-            searchResult.point.latitude,
-            searchResult.point.longitude,
-          ),
-          circleRadius: 8,
-          circleColor: '#1565C0',
-          circleStrokeColor: '#FFFFFF',
-          circleStrokeWidth: 2.5,
-          draggable: false,
-        ),
     ];
-    final circleData = <Map<String, dynamic>>[
-      for (var index = 0; index < waypoints.length; index++)
-        <String, dynamic>{
-          'kind': 'waypoint',
-          'waypointIndex': index,
-        },
-      if (showHandles)
-        for (var index = 0; index < editHandles.length; index++)
-          <String, dynamic>{
-            'kind': 'midpoint',
-            'legIndex': index,
-          },
-      if (searchResult != null)
-        <String, dynamic>{
-          'kind': 'search',
-        },
-    ];
-    if (circles.isNotEmpty) {
-      await controller.addCircles(circles, circleData);
+    final waypointCirclesCurrent =
+        _waypointCircles.length == waypointOptions.length &&
+            _waypointCircles.every(controller.circles.contains);
+    if (waypointCirclesCurrent) {
+      for (var index = 0; index < _waypointCircles.length; index++) {
+        await controller.updateCircle(
+          _waypointCircles[index],
+          waypointOptions[index],
+        );
+      }
+    } else {
+      final stale = _waypointCircles
+          .where(controller.circles.contains)
+          .toList(growable: false);
+      if (stale.isNotEmpty) {
+        await controller.removeCircles(stale);
+      }
+      _waypointCircles = waypointOptions.isEmpty
+          ? const []
+          : await controller.addCircles(
+              waypointOptions,
+              [
+                for (var index = 0; index < waypointOptions.length; index++)
+                  <String, dynamic>{
+                    'kind': 'waypoint',
+                    'waypointIndex': index,
+                  },
+              ],
+            );
+    }
+
+    final editHandles =
+        planner.editHandles.map(_latLng).toList(growable: false);
+    final showHandles = _routeSelected &&
+        !_draggingFeature &&
+        !planner.isRouting &&
+        planner.isSnapped &&
+        editHandles.length == waypoints.length - 1;
+    final midpointOptions = showHandles
+        ? <CircleOptions>[
+            for (final handle in editHandles)
+              CircleOptions(
+                geometry: handle,
+                circleRadius: 7.5,
+                circleColor: '#FFFFFF',
+                circleStrokeColor: '#1976D2',
+                circleStrokeWidth: 2.75,
+                draggable: true,
+              ),
+          ]
+        : const <CircleOptions>[];
+    final midpointCirclesCurrent =
+        _midpointCircles.length == midpointOptions.length &&
+            _midpointCircles.every(controller.circles.contains);
+    if (midpointCirclesCurrent) {
+      for (var index = 0; index < _midpointCircles.length; index++) {
+        await controller.updateCircle(
+          _midpointCircles[index],
+          midpointOptions[index],
+        );
+      }
+    } else {
+      final stale = _midpointCircles
+          .where(controller.circles.contains)
+          .toList(growable: false);
+      if (stale.isNotEmpty) {
+        await controller.removeCircles(stale);
+      }
+      _midpointCircles = midpointOptions.isEmpty
+          ? const []
+          : await controller.addCircles(
+              midpointOptions,
+              [
+                for (var index = 0; index < midpointOptions.length; index++)
+                  <String, dynamic>{
+                    'kind': 'midpoint',
+                    'legIndex': index,
+                  },
+              ],
+            );
+    }
+
+    final searchResult = _searchResult;
+    if (searchResult == null) {
+      final stale = _searchCircle;
+      _searchCircle = null;
+      if (stale != null && controller.circles.contains(stale)) {
+        await controller.removeCircle(stale);
+      }
+    } else {
+      final options = CircleOptions(
+        geometry: _latLng(searchResult.point),
+        circleRadius: 8,
+        circleColor: '#1565C0',
+        circleStrokeColor: '#FFFFFF',
+        circleStrokeWidth: 2.5,
+        draggable: false,
+      );
+      final current = _searchCircle;
+      if (current != null && controller.circles.contains(current)) {
+        await controller.updateCircle(current, options);
+      } else {
+        _searchCircle = await controller.addCircle(
+          options,
+          <String, dynamic>{'kind': 'search'},
+        );
+      }
     }
   }
 
