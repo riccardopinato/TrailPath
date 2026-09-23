@@ -51,7 +51,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
 
     final client = HttpClient()
       ..connectionTimeout = timeout
-      ..userAgent = 'TrailPath/0.3.1';
+      ..userAgent = 'TrailPath/0.9.2 (+https://github.com/riccardopinato/TrailPath)';
 
     try {
       final requestHttp = await client.getUrl(uri).timeout(timeout);
@@ -64,7 +64,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         );
       }
 
-      final body = await response.transform(utf8.decoder).join();
+      final body = await response.transform(utf8.decoder).join().timeout(timeout);
       final payload = jsonDecode(body);
       if (payload is! Map<String, dynamic>) {
         throw const RoutingException('Invalid routing response.');

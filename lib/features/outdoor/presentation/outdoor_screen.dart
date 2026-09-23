@@ -52,6 +52,7 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
       return;
     }
     final strings = AppLocalizations.of(context);
+    final database = ref.read(appDatabaseProvider);
 
     setState(() => _locationActionBusy = true);
     try {
@@ -65,7 +66,7 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
         return;
       }
 
-      await ref.read(appDatabaseProvider).saveReturnPoint(
+      await database.saveReturnPoint(
             point: current.point,
             accuracyMeters: current.accuracyMeters,
           );
@@ -90,6 +91,7 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
 
   Future<void> _clearCar() async {
     final strings = AppLocalizations.of(context);
+    final database = ref.read(appDatabaseProvider);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -109,7 +111,7 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
     );
 
     if (confirmed == true) {
-      await ref.read(appDatabaseProvider).clearReturnPoint();
+      await database.clearReturnPoint();
     }
   }
 
@@ -199,11 +201,13 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
               mode: mode,
               loading: modeAsync.isLoading,
               onChanged: (selected) async {
-                await ref
-                    .read(batteryModeProvider.notifier)
-                    .setMode(selected);
-                await ref.read(trackRecorderProvider).setBatteryMode(selected);
-                await ref.read(navigationEngineProvider).setBatteryMode(selected);
+                final batteryController =
+                    ref.read(batteryModeProvider.notifier);
+                final recorder = ref.read(trackRecorderProvider);
+                final navigation = ref.read(navigationEngineProvider);
+                await batteryController.setMode(selected);
+                await recorder.setBatteryMode(selected);
+                await navigation.setBatteryMode(selected);
               },
             ),
             const SizedBox(height: 14),
@@ -271,8 +275,11 @@ class _BatteryModeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SegmentedButton<BatteryMode>(
-            segments: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SegmentedButton<BatteryMode>(
+              showSelectedIcon: false,
+              segments: [
               ButtonSegment(
                 value: BatteryMode.performance,
                 icon: const Icon(Icons.speed_rounded),
@@ -290,13 +297,14 @@ class _BatteryModeCard extends StatelessWidget {
               ),
             ],
             selected: {mode},
-            onSelectionChanged: loading
-                ? null
-                : (selection) {
-                    if (selection.isNotEmpty) {
-                      onChanged(selection.first);
-                    }
-                  },
+              onSelectionChanged: loading
+                  ? null
+                  : (selection) {
+                      if (selection.isNotEmpty) {
+                        onChanged(selection.first);
+                      }
+                    },
+            ),
           ),
           const SizedBox(height: 9),
           Row(

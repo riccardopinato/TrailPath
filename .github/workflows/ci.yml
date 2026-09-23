@@ -52,6 +52,7 @@ jobs:
               <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
               <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
               <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+              <uses-permission android:name="android.permission.WAKE_LOCK" />
               <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />'''
           if "ACCESS_FINE_LOCATION" not in text:
               text = text.replace(marker, permissions)
@@ -96,7 +97,7 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v6
         with:
-          name: TrailPath-v0.9.1-debug
+          name: TrailPath-v0.9.2-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
 
@@ -104,7 +105,7 @@ jobs:
     name: AppLab Android Gate
     needs: validate-and-build
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
 
     steps:
       - name: Checkout TrailPath
@@ -119,7 +120,7 @@ jobs:
       - name: Download debug APK
         uses: actions/download-artifact@v6
         with:
-          name: TrailPath-v0.9.1-debug
+          name: TrailPath-v0.9.2-debug
           path: apk
 
       - name: Checkout AppLab

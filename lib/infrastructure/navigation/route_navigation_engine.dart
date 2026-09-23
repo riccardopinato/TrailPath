@@ -28,6 +28,9 @@ class RouteNavigationEngine implements NavigationEngine {
   bool _arrived = false;
   BatteryMode _batteryMode = BatteryMode.balanced;
   double _maxAcceptedAccuracyMeters = 60;
+  bool _disposed = false;
+  int _session = 0;
+  Future<void> _batteryReconfigureChain = Future<void>.value();
 
   @override
   Stream<NavigationEvent> get events => _controller.stream;
@@ -37,11 +40,18 @@ class RouteNavigationEngine implements NavigationEngine {
     RoutePlan route, {
     BatteryMode mode = BatteryMode.balanced,
   }) async {
+    if (_disposed) {
+      throw StateError('Navigation engine has been disposed.');
+    }
     if (route.geometry.length < 2) {
       throw ArgumentError('Navigation requires a route with at least two points.');
     }
 
     await stop();
+    if (_disposed) {
+      return;
+    }
+    final session = ++_session;
     _route = route;
     _isOffRoute = false;
     _arrived = false;
@@ -50,30 +60,53 @@ class RouteNavigationEngine implements NavigationEngine {
         batteryModePolicy(mode).maxAcceptedAccuracyMeters;
 
     final enabled = await locationEngine.isServiceEnabled();
+    if (!_isCurrent(session)) {
+      return;
+    }
     if (!enabled) {
       throw StateError('Location services are disabled.');
     }
 
     var permission = await locationEngine.hasPermission();
+    if (!_isCurrent(session)) {
+      return;
+    }
     if (!permission) {
       permission = await locationEngine.requestPermission();
+    }
+    if (!_isCurrent(session)) {
+      return;
     }
     if (!permission) {
       throw StateError('Location permission is not granted.');
     }
 
-    _controller.add(
-      NavigationEvent(
+    if (!_controller.isClosed) {
+      _controller.add(
+        NavigationEvent(
         type: NavigationEventType.started,
         routeDistanceMeters: _routeDistance(route),
-        remainingMeters: _routeDistance(route),
-      ),
-    );
+          remainingMeters: _routeDistance(route),
+        ),
+      );
+    }
 
-    _subscription = locationEngine.watch(mode: mode).listen(
-      _onPosition,
+    if (!_isCurrent(session)) {
+      return;
+    }
+    _subscription = locationEngine
+        .watch(
+          mode: mode,
+          keepAliveInBackground: true,
+        )
+        .listen(
+      (sample) {
+        if (_isCurrent(session)) {
+          _onPosition(sample);
+        }
+      },
       onError: (Object error, StackTrace stackTrace) {
-        if (!_controller.isClosed) {
+        if (_isCurrent(session) && !_controller.isClosed) {
           _controller.addError(error, stackTrace);
         }
       },
@@ -81,23 +114,56 @@ class RouteNavigationEngine implements NavigationEngine {
   }
 
   @override
-  Future<void> setBatteryMode(BatteryMode mode) async {
-    if (_batteryMode == mode) {
-      return;
+  Future<void> setBatteryMode(BatteryMode mode) {
+    if (_disposed || _batteryMode == mode) {
+      return Future<void>.value();
     }
+
     _batteryMode = mode;
     _maxAcceptedAccuracyMeters =
         batteryModePolicy(mode).maxAcceptedAccuracyMeters;
 
-    if (_route == null || _subscription == null) {
+    final previous = _batteryReconfigureChain;
+    final next = () async {
+      try {
+        await previous;
+      } on Object {
+        // A failed older reconfiguration must not block a newer mode.
+      }
+      await _restartLocationStreamForBatteryMode();
+    }();
+    _batteryReconfigureChain = next;
+    return next;
+  }
+
+  Future<void> _restartLocationStreamForBatteryMode() async {
+    if (_disposed || _route == null || _subscription == null) {
       return;
     }
 
-    await _subscription?.cancel();
-    _subscription = locationEngine.watch(mode: mode).listen(
-      _onPosition,
+    final session = _session;
+    final previous = _subscription;
+    _subscription = null;
+    await previous?.cancel();
+
+    if (!_isCurrent(session) || _route == null) {
+      return;
+    }
+
+    final mode = _batteryMode;
+    _subscription = locationEngine
+        .watch(
+          mode: mode,
+          keepAliveInBackground: true,
+        )
+        .listen(
+      (sample) {
+        if (_isCurrent(session)) {
+          _onPosition(sample);
+        }
+      },
       onError: (Object error, StackTrace stackTrace) {
-        if (!_controller.isClosed) {
+        if (_isCurrent(session) && !_controller.isClosed) {
           _controller.addError(error, stackTrace);
         }
       },
@@ -105,6 +171,9 @@ class RouteNavigationEngine implements NavigationEngine {
   }
 
   void _onPosition(PositionSample sample) {
+    if (_disposed || _controller.isClosed) {
+      return;
+    }
     final route = _route;
     if (route == null ||
         sample.accuracyMeters > _maxAcceptedAccuracyMeters) {
@@ -135,6 +204,9 @@ class RouteNavigationEngine implements NavigationEngine {
       }
     }
 
+    if (_controller.isClosed) {
+      return;
+    }
     _controller.add(
       NavigationEvent(
         type: type,
@@ -162,10 +234,12 @@ class RouteNavigationEngine implements NavigationEngine {
 
   @override
   Future<void> stop() async {
-    await _subscription?.cancel();
+    _session++;
+    final subscription = _subscription;
     _subscription = null;
+    await subscription?.cancel();
 
-    if (_route != null && !_controller.isClosed) {
+    if (!_disposed && _route != null && !_controller.isClosed) {
       _controller.add(
         const NavigationEvent(type: NavigationEventType.stopped),
       );
@@ -177,7 +251,21 @@ class RouteNavigationEngine implements NavigationEngine {
 
   @override
   Future<void> dispose() async {
-    await stop();
-    await _controller.close();
+    if (_disposed) {
+      return;
+    }
+    _disposed = true;
+    _session++;
+    final subscription = _subscription;
+    _subscription = null;
+    await subscription?.cancel();
+    _route = null;
+    _isOffRoute = false;
+    _arrived = false;
+    if (!_controller.isClosed) {
+      await _controller.close();
+    }
   }
+
+  bool _isCurrent(int session) => !_disposed && session == _session;
 }

@@ -22,7 +22,8 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
   }
 
   Future<List<OfflineRegion>> _loadRegions() async {
-    final regions = await ref.read(offlineMapManagerProvider).listRegions();
+    final manager = ref.read(offlineMapManagerProvider);
+    final regions = await manager.listRegions();
     final completeIds = regions
         .where((region) => region.isComplete)
         .map((region) => region.id)
@@ -51,6 +52,8 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
 
   Future<void> _deleteRegion(OfflineRegion region) async {
     final strings = AppLocalizations.of(context);
+    final manager = ref.read(offlineMapManagerProvider);
+    final database = ref.read(appDatabaseProvider);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -73,10 +76,8 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
       return;
     }
 
-    await ref.read(offlineMapManagerProvider).delete(region.id);
-    await ref
-        .read(appDatabaseProvider)
-        .setSavedRouteOfflineReady(region.id, isReady: false);
+    await manager.delete(region.id);
+    await database.setSavedRouteOfflineReady(region.id, isReady: false);
     await _refresh();
   }
 

@@ -59,6 +59,7 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
 
     try {
       final engine = ref.read(locationEngineProvider);
+      final batteryModeFuture = ref.read(batteryModeProvider.future);
       if (!await engine.isServiceEnabled()) {
         if (mounted) {
           setState(() {
@@ -83,7 +84,7 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
         return;
       }
 
-      final mode = await ref.read(batteryModeProvider.future);
+      final mode = await batteryModeFuture;
       final current = await engine.current();
       if (!mounted) {
         return;

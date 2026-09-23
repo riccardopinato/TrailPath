@@ -51,14 +51,21 @@ class GeolocatorLocationEngine implements LocationEngine {
   @override
   Stream<PositionSample> watch({
     BatteryMode mode = BatteryMode.balanced,
+    bool keepAliveInBackground = false,
   }) {
     final policy = batteryModePolicy(mode);
     return Geolocator.getPositionStream(
-      locationSettings: _watchSettings(policy),
+      locationSettings: _watchSettings(
+        policy,
+        keepAliveInBackground: keepAliveInBackground,
+      ),
     ).map(_toSample);
   }
 
-  LocationSettings _watchSettings(BatteryModePolicy policy) {
+  LocationSettings _watchSettings(
+    BatteryModePolicy policy, {
+    required bool keepAliveInBackground,
+  }) {
     final accuracy = _accuracy(policy.accuracy);
 
     if (defaultTargetPlatform == TargetPlatform.android) {
@@ -66,6 +73,15 @@ class GeolocatorLocationEngine implements LocationEngine {
         accuracy: accuracy,
         distanceFilter: policy.distanceFilterMeters,
         intervalDuration: policy.interval,
+        foregroundNotificationConfig: keepAliveInBackground
+            ? ForegroundNotificationConfig(
+                notificationTitle: 'TrailPath · navigazione attiva',
+                notificationText:
+                    'La navigazione GPS continua anche con TrailPath in background.',
+                enableWakeLock: policy.keepCpuAwake,
+                setOngoing: true,
+              )
+            : null,
       );
     }
 
@@ -75,7 +91,9 @@ class GeolocatorLocationEngine implements LocationEngine {
         accuracy: accuracy,
         distanceFilter: policy.distanceFilterMeters,
         activityType: ActivityType.fitness,
-        pauseLocationUpdatesAutomatically: true,
+        pauseLocationUpdatesAutomatically: !keepAliveInBackground,
+        showBackgroundLocationIndicator: keepAliveInBackground,
+        allowBackgroundLocationUpdates: keepAliveInBackground,
       );
     }
 

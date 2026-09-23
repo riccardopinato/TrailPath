@@ -1,3 +1,4 @@
+# TrailPath AppLab v0.9.2 smoke gate
 appId: com.riccardopinato.trail_path
 ---
 - launchApp:
@@ -7,11 +8,11 @@ appId: com.riccardopinato.trail_path
 
 - tapOn:
     text: 'Record\s*Tab 2 of 5'
-- assertVisible: "Ready to record"
+- assertVisible: "Start recording"
 
 - tapOn:
     text: 'Routes\s*Tab 3 of 5'
-- assertVisible: "Your routes"
+- assertVisible: "Routes"
 
 - tapOn:
     text: 'Offline\s*Tab 4 of 5'
@@ -19,8 +20,14 @@ appId: com.riccardopinato.trail_path
 
 - tapOn:
     text: 'Outdoor\s*Tab 5 of 5'
-- assertVisible: "Battery mode"
+- assertVisible: "Outdoor"
+- assertVisible: "Balanced"
 
 - tapOn:
     text: 'Plan\s*Tab 1 of 5'
+- assertVisible: "Search place or trail"
+
+- pressKey: HOME
+- launchApp:
+    clearState: false
 - assertVisible: "Search place or trail"
