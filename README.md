@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.9.6 - Map & Routing UX Hardening
+v0.9.7 - Trace Mode
 
-TrailPath v0.9.6 hardens the planner interaction loop: MapLibre engine pre-warming, faster single taps, zoom-aware long-press precision, live drag previews with haptics, coalesced incremental annotation updates and display-only route simplification for long geometries.
+TrailPath v0.9.7 adds Footpath-style freehand route drawing: draw directly over the map, simplify the gesture into meaningful waypoints and snap the result to the real OSM foot/bike network as one undoable planner operation.
 
 ### Included
 
@@ -31,6 +31,12 @@ TrailPath v0.9.6 hardens the planner interaction loop: MapLibre engine pre-warmi
 - display-only long-route simplification while preserving full routing/GPX geometry
 - MapLibre engine pre-warming and planner-only line/circle annotation managers
 - faster planner taps with double-click zoom disabled
+- freehand Trace Mode with live on-screen route sketching
+- gesture sampling, geographic simplification and waypoint-density control
+- one trace gesture maps to one planner Undo operation
+- existing snapped routes can be extended by tracing with partial rerouting
+- long waypoint sets are split into overlapping routing chunks before OSM requests
+- chunk failures remain explicit; no silent straight-line replacement
 - route line, undo/redo and clear controls
 - activity profiles with foot/bike routing profiles
 - asynchronous snap-to-network routing through routing.openstreetmap.de
