@@ -25,13 +25,18 @@ class BackToCarScreen extends ConsumerStatefulWidget {
 }
 
 class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
-
   MapLibreMapController? _mapController;
   StreamSubscription<PositionSample>? _positionSubscription;
   PositionSample? _position;
   String? _error;
   bool _styleReady = false;
   bool _loading = true;
+  Circle? _carCircle;
+  Circle? _currentCircle;
+  Line? _returnLine;
+  Future<void> _mapRenderChain = Future<void>.value();
+  int _renderGeneration = 0;
+  DateTime? _lastCameraFollowAt;
 
   bool get _runningWidgetTest =>
       Platform.environment['FLUTTER_TEST']?.toLowerCase() == 'true';
@@ -44,6 +49,7 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
 
   @override
   void dispose() {
+    _renderGeneration++;
     _positionSubscription?.cancel();
     _mapController?.dispose();
     super.dispose();
@@ -125,7 +131,25 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
     }
   }
 
-  Future<void> _draw() async {
+  Future<void> _draw() {
+    final generation = ++_renderGeneration;
+    final previous = _mapRenderChain;
+    final next = () async {
+      try {
+        await previous;
+      } on Object {
+        // Keep the latest GPS render independent from stale map updates.
+      }
+      if (generation != _renderGeneration) {
+        return;
+      }
+      await _renderReturnPath();
+    }();
+    _mapRenderChain = next;
+    return next;
+  }
+
+  Future<void> _renderReturnPath() async {
     if (_runningWidgetTest || !_styleReady) {
       return;
     }
@@ -135,58 +159,74 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
       return;
     }
 
-    await controller.clearLines();
-    await controller.clearCircles();
-
     final car = widget.returnPoint.point;
-    await controller.addCircle(
-      CircleOptions(
-        geometry: LatLng(car.latitude, car.longitude),
-        circleRadius: 9,
-        circleColor: '#D84315',
-        circleStrokeColor: '#FFFFFF',
-        circleStrokeWidth: 2.5,
-      ),
+    final carOptions = CircleOptions(
+      geometry: LatLng(car.latitude, car.longitude),
+      circleRadius: 9,
+      circleColor: '#D84315',
+      circleStrokeColor: '#FFFFFF',
+      circleStrokeWidth: 2.5,
     );
+    final carCircle = _carCircle;
+    if (carCircle == null) {
+      _carCircle = await controller.addCircle(carOptions);
+    } else {
+      await controller.updateCircle(carCircle, carOptions);
+    }
 
     final current = _position;
     if (current == null) {
       return;
     }
 
-    await controller.addCircle(
-      CircleOptions(
-        geometry: LatLng(
-          current.point.latitude,
-          current.point.longitude,
-        ),
-        circleRadius: 8,
-        circleColor: '#1565C0',
-        circleStrokeColor: '#FFFFFF',
-        circleStrokeWidth: 2.5,
+    final currentOptions = CircleOptions(
+      geometry: LatLng(
+        current.point.latitude,
+        current.point.longitude,
       ),
+      circleRadius: 8,
+      circleColor: '#1565C0',
+      circleStrokeColor: '#FFFFFF',
+      circleStrokeWidth: 2.5,
     );
+    final currentCircle = _currentCircle;
+    if (currentCircle == null) {
+      _currentCircle = await controller.addCircle(currentOptions);
+    } else {
+      await controller.updateCircle(currentCircle, currentOptions);
+    }
 
-    await controller.addLine(
-      LineOptions(
-        geometry: [
-          LatLng(current.point.latitude, current.point.longitude),
-          LatLng(car.latitude, car.longitude),
-        ],
-        lineColor: '#2F6F45',
-        lineWidth: 4,
-        lineOpacity: 0.92,
-      ),
-    );
-
-    await controller.animateCamera(
-      CameraUpdate.newLatLngZoom(
+    final returnOptions = LineOptions(
+      geometry: [
         LatLng(current.point.latitude, current.point.longitude),
-        _cameraZoomForDistance(
-          haversineMeters(current.point, car),
-        ),
-      ),
+        LatLng(car.latitude, car.longitude),
+      ],
+      lineColor: '#2F6F45',
+      lineWidth: 4,
+      lineOpacity: 0.92,
     );
+    final returnLine = _returnLine;
+    if (returnLine == null) {
+      _returnLine = await controller.addLine(returnOptions);
+    } else {
+      await controller.updateLine(returnLine, returnOptions);
+    }
+
+    final now = DateTime.now();
+    final lastFollow = _lastCameraFollowAt;
+    if (lastFollow == null ||
+        now.difference(lastFollow) >= const Duration(milliseconds: 850)) {
+      _lastCameraFollowAt = now;
+      await controller.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          LatLng(current.point.latitude, current.point.longitude),
+          _cameraZoomForDistance(
+            haversineMeters(current.point, car),
+          ),
+        ),
+        duration: const Duration(milliseconds: 350),
+      );
+    }
   }
 
   Future<void> _shareCarPosition() async {
@@ -224,6 +264,9 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
                     onMapCreated: (controller) => _mapController = controller,
                     onStyleLoadedCallback: () {
                       _styleReady = true;
+                      _carCircle = null;
+                      _currentCircle = null;
+                      _returnLine = null;
                       unawaited(_draw());
                     },
                     compassEnabled: true,

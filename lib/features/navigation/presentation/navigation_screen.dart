@@ -24,6 +24,12 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
   bool _styleReady = false;
   bool _navigationStarted = false;
   ActiveNavigationController? _navigationController;
+  Line? _routeLine;
+  Line? _returnLine;
+  Circle? _currentCircle;
+  Future<void> _mapRenderChain = Future<void>.value();
+  int _renderGeneration = 0;
+  DateTime? _lastCameraFollowAt;
 
   bool get _runningWidgetTest =>
       Platform.environment['FLUTTER_TEST']?.toLowerCase() == 'true';
@@ -48,6 +54,7 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
 
   @override
   void dispose() {
+    _renderGeneration++;
     final controller = _navigationController;
     if (controller != null) {
       unawaited(controller.stop());
@@ -56,58 +63,97 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
     super.dispose();
   }
 
-  Future<void> _drawRoute(NavigationEvent? event) async {
+  Future<void> _drawRoute(NavigationEvent? event) {
+    final generation = ++_renderGeneration;
+    final previous = _mapRenderChain;
+    final next = () async {
+      try {
+        await previous;
+      } on Object {
+        // Never let an old map update block the latest navigation fix.
+      }
+      if (generation != _renderGeneration) {
+        return;
+      }
+      await _renderRoute(event);
+    }();
+    _mapRenderChain = next;
+    return next;
+  }
+
+  Future<void> _renderRoute(NavigationEvent? event) async {
     if (_runningWidgetTest || !_styleReady) return;
     final controller = _mapController;
     if (controller == null) return;
 
-    await controller.clearLines();
-    await controller.clearCircles();
-
-    await controller.addLine(
-      LineOptions(
-        geometry: widget.route.geometry
-            .map((p) => LatLng(p.latitude, p.longitude))
-            .toList(growable: false),
-        lineColor: '#2F6F45',
-        lineWidth: 5.5,
-        lineOpacity: 0.95,
-        lineJoin: 'round',
-      ),
-    );
-
-    final current = event?.currentPoint;
-    final nearest = event?.nearestRoutePoint;
-    if (current != null) {
-      await controller.addCircle(
-        CircleOptions(
-          geometry: LatLng(current.latitude, current.longitude),
-          circleRadius: 8,
-          circleColor: event?.isOffRoute == true ? '#D84315' : '#1565C0',
-          circleStrokeColor: '#FFFFFF',
-          circleStrokeWidth: 2.5,
-        ),
-      );
-      await controller.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          LatLng(current.latitude, current.longitude),
-          16.5,
+    if (_routeLine == null) {
+      _routeLine = await controller.addLine(
+        LineOptions(
+          geometry: widget.route.geometry
+              .map((p) => LatLng(p.latitude, p.longitude))
+              .toList(growable: false),
+          lineColor: '#2F6F45',
+          lineWidth: 5.5,
+          lineOpacity: 0.95,
+          lineJoin: 'round',
         ),
       );
     }
 
-    if (event?.isOffRoute == true && current != null && nearest != null) {
-      await controller.addLine(
-        LineOptions(
-          geometry: [
-            LatLng(current.latitude, current.longitude),
-            LatLng(nearest.latitude, nearest.longitude),
-          ],
-          lineColor: '#D84315',
-          lineWidth: 3.5,
-          lineOpacity: 0.9,
-        ),
+    final current = event?.currentPoint;
+    final nearest = event?.nearestRoutePoint;
+    if (current != null) {
+      final currentOptions = CircleOptions(
+        geometry: LatLng(current.latitude, current.longitude),
+        circleRadius: 8,
+        circleColor: event?.isOffRoute == true ? '#D84315' : '#1565C0',
+        circleStrokeColor: '#FFFFFF',
+        circleStrokeWidth: 2.5,
       );
+      final currentCircle = _currentCircle;
+      if (currentCircle == null) {
+        _currentCircle = await controller.addCircle(currentOptions);
+      } else {
+        await controller.updateCircle(currentCircle, currentOptions);
+      }
+
+      final now = DateTime.now();
+      final lastFollow = _lastCameraFollowAt;
+      if (lastFollow == null ||
+          now.difference(lastFollow) >= const Duration(milliseconds: 850)) {
+        _lastCameraFollowAt = now;
+        await controller.animateCamera(
+          CameraUpdate.newLatLngZoom(
+            LatLng(current.latitude, current.longitude),
+            16.5,
+          ),
+          duration: const Duration(milliseconds: 350),
+        );
+      }
+    }
+
+    if (event?.isOffRoute == true && current != null && nearest != null) {
+      final returnOptions = LineOptions(
+        geometry: [
+          LatLng(current.latitude, current.longitude),
+          LatLng(nearest.latitude, nearest.longitude),
+        ],
+        lineColor: '#D84315',
+        lineWidth: 3.5,
+        lineOpacity: 0.9,
+      );
+      final returnLine = _returnLine;
+      if (returnLine == null) {
+        _returnLine = await controller.addLine(returnOptions);
+      } else {
+        await controller.updateLine(returnLine, returnOptions);
+      }
+    } else {
+      final returnLine = _returnLine;
+      if (returnLine != null) {
+        await controller.removeLine(returnLine);
+        _returnLine = null;
+      }
     }
   }
 
@@ -142,6 +188,9 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
                     onMapCreated: (controller) => _mapController = controller,
                     onStyleLoadedCallback: () {
                       _styleReady = true;
+                      _routeLine = null;
+                      _returnLine = null;
+                      _currentCircle = null;
                       unawaited(_drawRoute(event));
                     },
                     compassEnabled: true,
@@ -259,7 +308,7 @@ class _NavigationPanel extends StatelessWidget {
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                 ),
               ),
-              const Text('v0.9', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+              const Text('v0.9.3', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
             ],
           ),
           const SizedBox(height: 14),
