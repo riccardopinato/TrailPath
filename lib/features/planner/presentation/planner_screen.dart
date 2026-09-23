@@ -6,6 +6,7 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:share_plus/share_plus.dart';
@@ -38,6 +39,14 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   PlaceSearchResult? _searchResult;
   int? _selectedWaypointIndex;
   bool _routeSelected = false;
+  bool _draggingFeature = false;
+  bool _annotationSyncRunning = false;
+  bool _annotationSyncQueued = false;
+  List<Line> _routeLines = const [];
+  List<Circle> _waypointCircles = const [];
+  List<Circle> _midpointCircles = const [];
+  Circle? _searchCircle;
+  Line? _dragPreviewLine;
   String? _locationError;
   final TextEditingController _searchController = TextEditingController();
 
@@ -330,7 +339,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         );
   }
 
-  void _insertWaypoint(LatLng coordinates) {
+  Future<void> _insertWaypoint(LatLng coordinates) async {
     final planner = ref.read(routePlannerProvider);
     final candidate = GeoPoint(
       latitude: coordinates.latitude,
@@ -338,8 +347,26 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     );
 
     if (planner.geometry.length >= 2) {
+      var toleranceMeters = 60.0;
+      final controller = _mapController;
+      if (controller != null) {
+        try {
+          final metersPerPixel =
+              await controller.getMetersPerPixelAtLatitude(candidate.latitude);
+          toleranceMeters = (metersPerPixel * 28).clamp(12.0, 80.0);
+        } on Object {
+          // Keep the conservative geographic fallback when projection data is
+          // temporarily unavailable.
+        }
+      }
+
+      if (!mounted) {
+        return;
+      }
+
       final distance = distanceToPolylineMeters(candidate, planner.geometry);
-      if (distance > 60) {
+      if (distance > toleranceMeters) {
+        unawaited(HapticFeedback.warningNotification());
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context).routePressTooFar)),
         );
@@ -353,6 +380,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         _routeSelected = true;
       });
     }
+    unawaited(HapticFeedback.selectionClick());
     ref.read(routePlannerProvider.notifier).insertPointNearRoute(candidate);
   }
 
@@ -831,8 +859,17 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     _addWaypoint(coordinates);
                   },
                   onMapLongClick: (point, coordinates) {
-                    _insertWaypoint(coordinates);
+                    unawaited(_insertWaypoint(coordinates));
                   },
+                  annotationOrder: const [
+                    AnnotationType.line,
+                    AnnotationType.circle,
+                  ],
+                  annotationConsumeTapEvents: const [
+                    AnnotationType.line,
+                    AnnotationType.circle,
+                  ],
+                  doubleClickZoomEnabled: false,
                   dragEnabled: true,
                   compassEnabled: true,
                   compassViewPosition: CompassViewPosition.topRight,
@@ -995,6 +1032,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
               },
               selectedWaypointIndex: _selectedWaypointIndex,
               routeSelected: _routeSelected,
+              draggingFeature: _draggingFeature,
               onRemoveWaypoint:
                   _selectedWaypointIndex == null ? null : _removeSelectedWaypoint,
               onClear: planner.points.isEmpty ? null : _clearRoute,
@@ -1018,6 +1056,7 @@ class _PlannerCard extends StatelessWidget {
     required this.onProfileChanged,
     required this.selectedWaypointIndex,
     required this.routeSelected,
+    required this.draggingFeature,
     required this.onRemoveWaypoint,
     required this.onClear,
     required this.onImport,
@@ -1032,6 +1071,7 @@ class _PlannerCard extends StatelessWidget {
   final ValueChanged<RouteProfile> onProfileChanged;
   final int? selectedWaypointIndex;
   final bool routeSelected;
+  final bool draggingFeature;
   final VoidCallback? onRemoveWaypoint;
   final VoidCallback? onClear;
   final VoidCallback onImport;
@@ -1088,7 +1128,7 @@ class _PlannerCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'v0.9.5',
+                  'v0.9.6',
                   style: TextStyle(
                     color: scheme.onPrimaryContainer,
                     fontSize: 11,
@@ -1118,7 +1158,11 @@ class _PlannerCard extends StatelessWidget {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    routeSelected ? strings.routeEditActive : strings.routeEditHint,
+                    draggingFeature
+                        ? strings.routeDragActive
+                        : routeSelected
+                            ? strings.routeEditActive
+                            : strings.routeEditHint,
                     style: TextStyle(
                       color: routeSelected ? scheme.primary : scheme.onSurfaceVariant,
                       fontSize: 11,
