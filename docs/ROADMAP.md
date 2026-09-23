@@ -45,5 +45,8 @@ Selectable route annotations, edit-mode highlighting, draggable midpoint handles
 ## v0.9.6 - Map & Routing UX Hardening
 MapLibre engine pre-warming, faster planner taps, zoom-aware route hit tolerance, live drag preview with haptics, incremental/coalesced annotation updates and display-only simplification for long route geometries.
 
+## v0.9.7 - Trace Mode
+Freehand map drawing with live preview, gesture sampling and simplification, OSM network snapping, atomic undo, partial extension rerouting and chunked requests for long waypoint sets.
+
 ## v1.0 - Release
 Onboarding, Premium foundation, optional backup/sync, accessibility, performance and store QA.

@@ -247,6 +247,77 @@ void main() {
     expect(container.read(routePlannerProvider).canUndo, isTrue);
   });
 
+  test('trace becomes one undoable snapped planner operation', () async {
+    final engine = _RecordingSnappedRoutingEngine();
+    final container = containerWith(engine);
+    addTearDown(container.dispose);
+
+    final controller = container.read(routePlannerProvider.notifier);
+    final accepted = controller.addTrace([
+      for (var index = 0; index <= 30; index++)
+        GeoPoint(
+          latitude: 45.0 + index * 0.00002,
+          longitude: 11.0 + index * 0.00008,
+        ),
+    ]);
+    await _flushAsync();
+
+    final routed = container.read(routePlannerProvider);
+    expect(accepted, isTrue);
+    expect(routed.isSnapped, isTrue);
+    expect(routed.points.length, greaterThanOrEqualTo(2));
+    expect(routed.points.length, lessThan(31));
+    expect(routed.canUndo, isTrue);
+    expect(engine.requests, hasLength(1));
+
+    controller.undo();
+    await _flushAsync();
+
+    expect(container.read(routePlannerProvider).points, isEmpty);
+  });
+
+  test('trace extension reroutes only the appended span', () async {
+    final engine = _RecordingSnappedRoutingEngine();
+    final container = containerWith(engine);
+    addTearDown(container.dispose);
+
+    final controller = container.read(routePlannerProvider.notifier);
+    controller
+      ..addPoint(const GeoPoint(latitude: 45.0, longitude: 11.0))
+      ..addPoint(const GeoPoint(latitude: 45.01, longitude: 11.01));
+    await _flushAsync();
+    final previous = container.read(routePlannerProvider).points;
+    engine.requests.clear();
+
+    final accepted = controller.addTrace([
+      previous.last,
+      const GeoPoint(latitude: 45.015, longitude: 11.016),
+      const GeoPoint(latitude: 45.02, longitude: 11.022),
+    ]);
+    await _flushAsync();
+
+    expect(accepted, isTrue);
+    expect(engine.requests, hasLength(1));
+    expect(engine.requests.single.points.first, previous.last);
+    expect(container.read(routePlannerProvider).points.length, greaterThan(2));
+    expect(container.read(routePlannerProvider).isSnapped, isTrue);
+  });
+
+  test('trace with fewer than two samples is rejected without history', () {
+    final engine = _RecordingSnappedRoutingEngine();
+    final container = containerWith(engine);
+    addTearDown(container.dispose);
+
+    final accepted = container.read(routePlannerProvider.notifier).addTrace(
+      const [GeoPoint(latitude: 45.0, longitude: 11.0)],
+    );
+
+    expect(accepted, isFalse);
+    expect(container.read(routePlannerProvider).points, isEmpty);
+    expect(container.read(routePlannerProvider).canUndo, isFalse);
+    expect(engine.requests, isEmpty);
+  });
+
   test('distance helper returns zero for fewer than two points', () {
     expect(calculateDistanceMeters(const []), 0);
     expect(

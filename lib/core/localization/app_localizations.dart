@@ -81,6 +81,12 @@ class AppLocalizations {
   String get routeEditHint => _value('routeEditHint');
   String get routeEditActive => _value('routeEditActive');
   String get routeDragActive => _value('routeDragActive');
+  String get traceMode => _value('traceMode');
+  String get traceHint => _value('traceHint');
+  String get traceDrawing => _value('traceDrawing');
+  String get traceProcessing => _value('traceProcessing');
+  String get traceTooShort => _value('traceTooShort');
+  String get traceFailed => _value('traceFailed');
   String get routePressTooFar => _value('routePressTooFar');
   String get waypointSelected => _value('waypointSelected');
   String get removeWaypoint => _value('removeWaypoint');
@@ -225,6 +231,12 @@ class AppLocalizations {
       'routeEditHint': 'Tocca la linea per modificarla; trascina i punti per spostarli.',
       'routeEditActive': 'Modifica attiva: trascina i punti bianchi tra le tappe per inserirne di nuovi.',
       'routeDragActive': 'Spostamento in corso: rilascia per ricalcolare solo il tratto modificato.',
+      'traceMode': 'Disegna percorso',
+      'traceHint': 'Modalità Disegna: trascina il dito sulla mappa per seguire il sentiero desiderato.',
+      'traceDrawing': 'Continua a disegnare; al rilascio TrailPath aggancerà il tratto alla rete OSM.',
+      'traceProcessing': 'Conversione del gesto in percorso reale…',
+      'traceTooShort': 'Disegna un tratto un po’ più lungo.',
+      'traceFailed': 'Impossibile convertire il gesto in un percorso.',
       'routePressTooFar': 'Tieni premuto più vicino alla linea del percorso.',
       'waypointSelected': 'Punto selezionato',
       'removeWaypoint': 'Rimuovi',
@@ -368,6 +380,12 @@ class AppLocalizations {
       'routeEditHint': 'Tap the route line to edit it; drag points to move them.',
       'routeEditActive': 'Edit mode: drag the white points between waypoints to insert new ones.',
       'routeDragActive': 'Dragging: release to recalculate only the edited span.',
+      'traceMode': 'Draw route',
+      'traceHint': 'Draw mode: drag your finger over the map along the path you want to follow.',
+      'traceDrawing': 'Keep drawing; on release TrailPath will snap the trace to the OSM network.',
+      'traceProcessing': 'Turning your gesture into a real route…',
+      'traceTooShort': 'Draw a slightly longer segment.',
+      'traceFailed': 'Could not turn the gesture into a route.',
       'routePressTooFar': 'Long-press closer to the route line.',
       'waypointSelected': 'Selected point',
       'removeWaypoint': 'Remove',
@@ -511,6 +529,12 @@ class AppLocalizations {
       'routeEditHint': 'Toca la línea del recorrido para editarla; arrastra los puntos para moverlos.',
       'routeEditActive': 'Edición activa: arrastra los puntos blancos entre etapas para insertar nuevos.',
       'routeDragActive': 'Arrastrando: suelta para recalcular solo el tramo modificado.',
+      'traceMode': 'Dibujar ruta',
+      'traceHint': 'Modo dibujo: arrastra el dedo por el mapa siguiendo el camino deseado.',
+      'traceDrawing': 'Sigue dibujando; al soltar TrailPath ajustará el trazo a la red OSM.',
+      'traceProcessing': 'Convirtiendo el gesto en una ruta real…',
+      'traceTooShort': 'Dibuja un tramo un poco más largo.',
+      'traceFailed': 'No se pudo convertir el gesto en una ruta.',
       'routePressTooFar': 'Mantén pulsado más cerca de la línea del recorrido.',
       'waypointSelected': 'Punto seleccionado',
       'removeWaypoint': 'Quitar',
@@ -654,6 +678,12 @@ class AppLocalizations {
       'routeEditHint': 'Touchez la ligne du parcours pour la modifier ; faites glisser les points pour les déplacer.',
       'routeEditActive': 'Modification active : faites glisser les points blancs entre les étapes pour en insérer.',
       'routeDragActive': 'Déplacement en cours : relâchez pour recalculer uniquement le tronçon modifié.',
+      'traceMode': 'Dessiner l’itinéraire',
+      'traceHint': 'Mode dessin : faites glisser votre doigt sur la carte le long du chemin souhaité.',
+      'traceDrawing': 'Continuez à dessiner ; au relâchement TrailPath accrochera le tracé au réseau OSM.',
+      'traceProcessing': 'Conversion du geste en itinéraire réel…',
+      'traceTooShort': 'Dessinez un tronçon un peu plus long.',
+      'traceFailed': 'Impossible de convertir le geste en itinéraire.',
       'routePressTooFar': 'Effectuez un appui long plus près de la ligne du parcours.',
       'waypointSelected': 'Point sélectionné',
       'removeWaypoint': 'Retirer',
@@ -797,6 +827,12 @@ class AppLocalizations {
       'routeEditHint': 'Toque na linha do percurso para editar; arraste os pontos para os mover.',
       'routeEditActive': 'Edição ativa: arraste os pontos brancos entre etapas para inserir novos.',
       'routeDragActive': 'A arrastar: solte para recalcular apenas o troço alterado.',
+      'traceMode': 'Desenhar rota',
+      'traceHint': 'Modo desenho: arraste o dedo pelo mapa seguindo o caminho pretendido.',
+      'traceDrawing': 'Continue a desenhar; ao soltar, o TrailPath ajustará o traço à rede OSM.',
+      'traceProcessing': 'A converter o gesto numa rota real…',
+      'traceTooShort': 'Desenhe um troço um pouco mais longo.',
+      'traceFailed': 'Não foi possível converter o gesto numa rota.',
       'routePressTooFar': 'Mantenha premido mais perto da linha do percurso.',
       'waypointSelected': 'Ponto selecionado',
       'removeWaypoint': 'Remover',
