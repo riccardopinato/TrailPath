@@ -93,7 +93,13 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
   int _elevationGeneration = 0;
 
   @override
-  RoutePlannerState build() => const RoutePlannerState();
+  RoutePlannerState build() {
+    ref.onDispose(() {
+      _routingGeneration++;
+      _elevationGeneration++;
+    });
+    return const RoutePlannerState();
+  }
 
   void addPoint(GeoPoint point) {
     _pushUndo();
@@ -210,7 +216,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     final generation = ++_elevationGeneration;
     try {
       final profile = await ref.read(elevationEngineProvider).resolve(geometry);
-      if (generation != _elevationGeneration) {
+      if (!ref.mounted || generation != _elevationGeneration) {
         return;
       }
       state = state.copyWith(
@@ -218,7 +224,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         isElevationLoading: false,
       );
     } on Object {
-      if (generation != _elevationGeneration) {
+      if (!ref.mounted || generation != _elevationGeneration) {
         return;
       }
       state = state.copyWith(
@@ -286,7 +292,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
             ),
           );
 
-      if (generation != _routingGeneration) {
+      if (!ref.mounted || generation != _routingGeneration) {
         return;
       }
 
@@ -303,7 +309,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
 
       unawaited(_refreshElevation(generation, plan.geometry));
     } on Object {
-      if (generation != _routingGeneration) {
+      if (!ref.mounted || generation != _routingGeneration) {
         return;
       }
 
@@ -332,7 +338,8 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     try {
       final profile = await ref.read(elevationEngineProvider).resolve(geometry);
 
-      if (routingGeneration != _routingGeneration ||
+      if (!ref.mounted ||
+          routingGeneration != _routingGeneration ||
           elevationGeneration != _elevationGeneration) {
         return;
       }
@@ -342,7 +349,8 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         isElevationLoading: false,
       );
     } on Object {
-      if (routingGeneration != _routingGeneration ||
+      if (!ref.mounted ||
+          routingGeneration != _routingGeneration ||
           elevationGeneration != _elevationGeneration) {
         return;
       }
