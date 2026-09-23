@@ -45,13 +45,14 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
       queryParameters: const {
         'overview': 'full',
         'geometries': 'geojson',
-        'steps': 'false',
+        'steps': 'true',
+        'alternatives': 'true',
       },
     );
 
     final client = HttpClient()
       ..connectionTimeout = timeout
-      ..userAgent = 'TrailPath/0.9.2 (+https://github.com/riccardopinato/TrailPath)';
+      ..userAgent = 'TrailPath/0.9.3 (+https://github.com/riccardopinato/TrailPath)';
 
     try {
       final requestHttp = await client.getUrl(uri).timeout(timeout);

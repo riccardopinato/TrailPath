@@ -23,6 +23,7 @@ class RoutePlannerState {
     this.isRouting = false,
     this.isSnapped = false,
     this.routingSource = 'local',
+    this.routingError,
     this.elevationProfile = const ElevationProfile.unavailable(),
     this.isElevationLoading = false,
     this.importedName,
@@ -38,6 +39,7 @@ class RoutePlannerState {
   final bool isRouting;
   final bool isSnapped;
   final String routingSource;
+  final String? routingError;
   final ElevationProfile elevationProfile;
   final bool isElevationLoading;
   final String? importedName;
@@ -62,6 +64,8 @@ class RoutePlannerState {
     bool? isRouting,
     bool? isSnapped,
     String? routingSource,
+    String? routingError,
+    bool clearRoutingError = false,
     ElevationProfile? elevationProfile,
     bool? isElevationLoading,
     String? importedName,
@@ -78,6 +82,7 @@ class RoutePlannerState {
       isRouting: isRouting ?? this.isRouting,
       isSnapped: isSnapped ?? this.isSnapped,
       routingSource: routingSource ?? this.routingSource,
+      routingError: clearRoutingError ? null : routingError ?? this.routingError,
       elevationProfile: elevationProfile ?? this.elevationProfile,
       isElevationLoading: isElevationLoading ?? this.isElevationLoading,
       importedName:
@@ -144,6 +149,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       profile: profile,
       isSnapped: false,
       routingSource: 'local',
+      clearRoutingError: true,
       estimatedDuration: _estimateDuration(state.distanceMeters, profile),
       elevationProfile: const ElevationProfile.unavailable(),
       isElevationLoading: false,
@@ -223,7 +229,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         elevationProfile: profile,
         isElevationLoading: false,
       );
-    } on Object {
+    } on Object catch (error) {
       if (!ref.mounted || generation != _elevationGeneration) {
         return;
       }
@@ -256,6 +262,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       isRouting: immutable.length >= 2,
       isSnapped: false,
       routingSource: 'local',
+      clearRoutingError: true,
       elevationProfile: const ElevationProfile.unavailable(),
       isElevationLoading: false,
       clearImportedName: true,
@@ -275,13 +282,14 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         isRouting: false,
         isSnapped: false,
         routingSource: 'local',
+        clearRoutingError: true,
         elevationProfile: const ElevationProfile.unavailable(),
         isElevationLoading: false,
       );
       return;
     }
 
-    state = state.copyWith(isRouting: true);
+    state = state.copyWith(isRouting: true, clearRoutingError: true);
 
     try {
       final plan = await ref.read(routingEngineProvider).calculate(
@@ -303,6 +311,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         isRouting: false,
         isSnapped: plan.isSnapped,
         routingSource: plan.routingSource,
+        clearRoutingError: true,
         elevationProfile: const ElevationProfile.unavailable(),
         isElevationLoading: true,
       );
@@ -320,9 +329,10 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         estimatedDuration: _estimateDuration(distance, profile),
         isRouting: false,
         isSnapped: false,
-        routingSource: 'local',
+        routingSource: 'routing-error',
+        routingError: error.toString(),
         elevationProfile: const ElevationProfile.unavailable(),
-        isElevationLoading: true,
+        isElevationLoading: false,
       );
 
       unawaited(_refreshElevation(generation, waypoints));
