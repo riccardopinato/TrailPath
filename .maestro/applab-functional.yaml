@@ -1,0 +1,63 @@
+# TrailPath v0.9.3 functional runtime gate.
+# The CI job injects a deterministic emulator GPS path while this flow drives
+# the complete recording lifecycle and verifies persistence after relaunch.
+appId: com.riccardopinato.trail_path
+---
+- launchApp:
+    clearState: true
+
+- assertVisible: "Search place or trail"
+
+- tapOn:
+    text: 'Record\s*Tab 2 of 5'
+- assertVisible: "Start recording"
+
+- tapOn: "Start recording"
+- assertVisible: "Pause"
+- assertVisible: "Finish"
+
+- waitForAnimationToEnd
+
+- tapOn: "Pause"
+- assertVisible: "Resume"
+
+- tapOn: "Resume"
+- assertVisible: "Pause"
+
+- waitForAnimationToEnd
+
+- tapOn: "Finish"
+- assertVisible: "Activity name"
+- eraseText
+- inputText: "AppLab GPS Activity"
+- tapOn: "Save"
+
+- assertVisible:
+    text: "Activity saved"
+    optional: true
+
+- tapOn:
+    text: 'Routes\s*Tab 3 of 5'
+- assertVisible: "Routes"
+- assertVisible: "AppLab GPS Activity"
+
+- pressKey: HOME
+- launchApp:
+    clearState: false
+
+- tapOn:
+    text: 'Routes\s*Tab 3 of 5'
+- assertVisible: "AppLab GPS Activity"
+
+- tapOn:
+    text: 'Offline\s*Tab 4 of 5'
+- assertVisible: "Offline maps"
+
+- tapOn:
+    text: 'Outdoor\s*Tab 5 of 5'
+- assertVisible: "Outdoor"
+- assertVisible: "Balanced"
+
+- tapOn:
+    text: 'Plan\s*Tab 1 of 5'
+- assertVisible: "Search place or trail"
