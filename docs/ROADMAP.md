@@ -36,5 +36,8 @@ Production basemap, functional place search, real-device navigation lifecycle fi
 ## v0.9.3 - Trail-first Routing & Planner Hardening
 Explicit routing failures, no fake straight-line fallback, snapped OSM foot/bike waypoints, outdoor planner styling, clearer route casing, fewer redundant MapLibre annotation redraws and expanded routing regression tests.
 
+## v0.9.4 - Footpath-style Route Editing
+Draggable waypoint annotations, point selection/removal, long-press insertion into the nearest route leg, cached per-leg geometry and partial rerouting of only the affected span with full-route fallback when the cache is not valid.
+
 ## v1.0 - Release
 Onboarding, Premium foundation, optional backup/sync, accessibility, performance and store QA.

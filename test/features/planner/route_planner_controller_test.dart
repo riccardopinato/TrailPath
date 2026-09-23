@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trail_path/core/domain/elevation_math.dart';
+import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/core/services/service_providers.dart';
@@ -169,6 +170,80 @@ void main() {
     expect(state.routingSource, 'unavailable');
   });
 
+  test('moving a waypoint reroutes only its neighboring span', () async {
+    final engine = _RecordingSnappedRoutingEngine();
+    final container = containerWith(engine);
+    addTearDown(container.dispose);
+
+    final controller = container.read(routePlannerProvider.notifier);
+    controller
+      ..addPoint(const GeoPoint(latitude: 45.00, longitude: 11.00))
+      ..addPoint(const GeoPoint(latitude: 45.01, longitude: 11.01))
+      ..addPoint(const GeoPoint(latitude: 45.02, longitude: 11.02))
+      ..addPoint(const GeoPoint(latitude: 45.03, longitude: 11.03));
+    await _flushAsync();
+
+    expect(container.read(routePlannerProvider).isSnapped, isTrue);
+    engine.requests.clear();
+
+    controller.movePoint(
+      1,
+      const GeoPoint(latitude: 45.012, longitude: 11.008),
+    );
+    await _flushAsync();
+
+    expect(engine.requests, hasLength(1));
+    expect(engine.requests.single.points, hasLength(3));
+    expect(container.read(routePlannerProvider).points, hasLength(4));
+    expect(container.read(routePlannerProvider).canSave, isTrue);
+  });
+
+  test('inserting a point near the route reroutes only one old leg', () async {
+    final engine = _RecordingSnappedRoutingEngine();
+    final container = containerWith(engine);
+    addTearDown(container.dispose);
+
+    final controller = container.read(routePlannerProvider.notifier);
+    controller
+      ..addPoint(const GeoPoint(latitude: 45.00, longitude: 11.00))
+      ..addPoint(const GeoPoint(latitude: 45.01, longitude: 11.01))
+      ..addPoint(const GeoPoint(latitude: 45.02, longitude: 11.02));
+    await _flushAsync();
+    engine.requests.clear();
+
+    controller.insertPointNearRoute(
+      const GeoPoint(latitude: 45.005, longitude: 11.006),
+    );
+    await _flushAsync();
+
+    expect(engine.requests, hasLength(1));
+    expect(engine.requests.single.points, hasLength(3));
+    expect(container.read(routePlannerProvider).points, hasLength(4));
+    expect(container.read(routePlannerProvider).isSnapped, isTrue);
+  });
+
+  test('removing an endpoint reuses unaffected cached route legs', () async {
+    final engine = _RecordingSnappedRoutingEngine();
+    final container = containerWith(engine);
+    addTearDown(container.dispose);
+
+    final controller = container.read(routePlannerProvider.notifier);
+    controller
+      ..addPoint(const GeoPoint(latitude: 45.00, longitude: 11.00))
+      ..addPoint(const GeoPoint(latitude: 45.01, longitude: 11.01))
+      ..addPoint(const GeoPoint(latitude: 45.02, longitude: 11.02));
+    await _flushAsync();
+    engine.requests.clear();
+
+    controller.removePoint(0);
+    await _flushAsync();
+
+    expect(engine.requests, isEmpty);
+    expect(container.read(routePlannerProvider).points, hasLength(2));
+    expect(container.read(routePlannerProvider).geometry.length, greaterThan(1));
+    expect(container.read(routePlannerProvider).canUndo, isTrue);
+  });
+
   test('distance helper returns zero for fewer than two points', () {
     expect(calculateDistanceMeters(const []), 0);
     expect(
@@ -241,5 +316,54 @@ class _FailingRoutingEngine implements RoutingEngine {
   @override
   Future<RoutePlan> calculate(RouteRequest request) {
     throw const RoutingException('network unavailable');
+  }
+}
+
+
+Future<void> _flushAsync() async {
+  for (var index = 0; index < 5; index++) {
+    await Future<void>.delayed(Duration.zero);
+  }
+}
+
+class _RecordingSnappedRoutingEngine implements RoutingEngine {
+  final List<RouteRequest> requests = [];
+
+  @override
+  String get engineId => 'recording-snap';
+
+  @override
+  Future<RoutePlan> calculate(RouteRequest request) async {
+    requests.add(request);
+    final geometry = <GeoPoint>[];
+    for (var index = 0; index < request.points.length; index++) {
+      final current = request.points[index];
+      if (index == 0) {
+        geometry.add(current);
+        continue;
+      }
+      final previous = request.points[index - 1];
+      geometry
+        ..add(
+          GeoPoint(
+            latitude: (previous.latitude + current.latitude) / 2,
+            longitude: (previous.longitude + current.longitude) / 2,
+          ),
+        )
+        ..add(current);
+    }
+
+    final distance = calculateRouteDistanceMeters(geometry);
+    return RoutePlan(
+      geometry: List<GeoPoint>.unmodifiable(geometry),
+      distanceMeters: distance,
+      ascentMeters: 0,
+      descentMeters: 0,
+      estimatedDuration: Duration(seconds: distance.round()),
+      profile: request.profile,
+      isSnapped: true,
+      routingSource: engineId,
+      snappedWaypoints: List<GeoPoint>.unmodifiable(request.points),
+    );
   }
 }

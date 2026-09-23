@@ -47,6 +47,7 @@ class RoutePlannerState {
   bool get hasRoutingError => routingError != null;
 
   bool get canSave =>
+      !isRouting &&
       routingError == null &&
       points.length >= 2 &&
       geometry.length >= 2 &&
@@ -100,6 +101,7 @@ class RoutePlannerState {
 class RoutePlannerController extends Notifier<RoutePlannerState> {
   final List<List<GeoPoint>> _undoStack = [];
   final List<List<GeoPoint>> _redoStack = [];
+  List<List<GeoPoint>> _legGeometries = const [];
   int _routingGeneration = 0;
   int _elevationGeneration = 0;
 
@@ -113,9 +115,152 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
   }
 
   void addPoint(GeoPoint point) {
+    final previousPoints = List<GeoPoint>.unmodifiable(state.points);
+    final previousLegs = _copyLegCache();
+    final canPatch = _hasLegCacheFor(previousPoints);
+
     _pushUndo();
     _redoStack.clear();
-    _applyPoints([...state.points, point]);
+
+    final next = List<GeoPoint>.unmodifiable([...previousPoints, point]);
+    if (canPatch) {
+      _startRouteEdit(next);
+      unawaited(
+        _rerouteSpan(
+          nextPoints: next,
+          previousLegs: previousLegs,
+          startWaypoint: previousPoints.length - 1,
+          endWaypoint: previousPoints.length,
+          oldLegStart: previousLegs.length,
+          oldLegRemoveCount: 0,
+        ),
+      );
+      return;
+    }
+
+    _applyPoints(next);
+  }
+
+  void movePoint(int index, GeoPoint point) {
+    if (index < 0 || index >= state.points.length) {
+      return;
+    }
+
+    final previousPoints = List<GeoPoint>.unmodifiable(state.points);
+    final previousLegs = _copyLegCache();
+    final canPatch = _hasLegCacheFor(previousPoints);
+    final next = [...previousPoints];
+    next[index] = point;
+
+    _pushUndo();
+    _redoStack.clear();
+
+    if (canPatch && next.length >= 2) {
+      final startWaypoint = index == 0 ? 0 : index - 1;
+      final endWaypoint =
+          index == next.length - 1 ? next.length - 1 : index + 1;
+      _startRouteEdit(next);
+      unawaited(
+        _rerouteSpan(
+          nextPoints: next,
+          previousLegs: previousLegs,
+          startWaypoint: startWaypoint,
+          endWaypoint: endWaypoint,
+          oldLegStart: startWaypoint,
+          oldLegRemoveCount: endWaypoint - startWaypoint,
+        ),
+      );
+      return;
+    }
+
+    _applyPoints(next);
+  }
+
+  void insertPointAt(int index, GeoPoint point) {
+    if (index < 0 || index > state.points.length) {
+      return;
+    }
+
+    final previousPoints = List<GeoPoint>.unmodifiable(state.points);
+    final previousLegs = _copyLegCache();
+    final canPatch = _hasLegCacheFor(previousPoints);
+    final next = [...previousPoints]..insert(index, point);
+
+    _pushUndo();
+    _redoStack.clear();
+
+    if (canPatch &&
+        previousPoints.length >= 2 &&
+        index > 0 &&
+        index < previousPoints.length) {
+      _startRouteEdit(next);
+      unawaited(
+        _rerouteSpan(
+          nextPoints: next,
+          previousLegs: previousLegs,
+          startWaypoint: index - 1,
+          endWaypoint: index + 1,
+          oldLegStart: index - 1,
+          oldLegRemoveCount: 1,
+        ),
+      );
+      return;
+    }
+
+    _applyPoints(next);
+  }
+
+  void insertPointNearRoute(GeoPoint point) {
+    if (state.points.length < 2) {
+      addPoint(point);
+      return;
+    }
+
+    final legIndex = _nearestLegIndex(point);
+    if (legIndex < 0) {
+      addPoint(point);
+      return;
+    }
+    insertPointAt(legIndex + 1, point);
+  }
+
+  void removePoint(int index) {
+    if (index < 0 || index >= state.points.length) {
+      return;
+    }
+
+    final previousPoints = List<GeoPoint>.unmodifiable(state.points);
+    final previousLegs = _copyLegCache();
+    final canPatch = _hasLegCacheFor(previousPoints);
+    final next = [...previousPoints]..removeAt(index);
+
+    _pushUndo();
+    _redoStack.clear();
+
+    if (next.length < 2 || !canPatch) {
+      _applyPoints(next);
+      return;
+    }
+
+    if (index == 0 || index == previousPoints.length - 1) {
+      final remainingLegs = index == 0
+          ? previousLegs.skip(1).toList(growable: false)
+          : previousLegs.take(previousLegs.length - 1).toList(growable: false);
+      _applyCachedRoute(next, remainingLegs);
+      return;
+    }
+
+    _startRouteEdit(next);
+    unawaited(
+      _rerouteSpan(
+        nextPoints: next,
+        previousLegs: previousLegs,
+        startWaypoint: index - 1,
+        endWaypoint: index,
+        oldLegStart: index - 1,
+        oldLegRemoveCount: 2,
+      ),
+    );
   }
 
   void undo() {
@@ -169,6 +314,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     _elevationGeneration++;
     _undoStack.clear();
     _redoStack.clear();
+    _legGeometries = const [];
     state = RoutePlannerState(profile: state.profile);
   }
 
@@ -177,6 +323,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     _elevationGeneration++;
     _undoStack.clear();
     _redoStack.clear();
+    _legGeometries = const [];
 
     final geometry = List<GeoPoint>.unmodifiable(document.points);
     final distance = calculateRouteDistanceMeters(geometry);
@@ -254,6 +401,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
   }
 
   void _applyPoints(List<GeoPoint> points) {
+    _legGeometries = const [];
     _elevationGeneration++;
     final immutable = List<GeoPoint>.unmodifiable(points);
     final distance = calculateRouteDistanceMeters(immutable);
@@ -314,6 +462,12 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
           plan.snappedWaypoints.length == waypoints.length
               ? List<GeoPoint>.unmodifiable(plan.snappedWaypoints)
               : waypoints;
+      _legGeometries = plan.isSnapped
+          ? _splitGeometryIntoLegs(plan.geometry, snappedWaypoints)
+          : const [];
+      if (_legGeometries.length != snappedWaypoints.length - 1) {
+        _legGeometries = const [];
+      }
 
       state = state.copyWith(
         points: snappedWaypoints,
@@ -334,6 +488,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         return;
       }
 
+      _legGeometries = const [];
       state = state.copyWith(
         geometry: const [],
         distanceMeters: 0,
@@ -346,6 +501,286 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         routingError: error.toString(),
       );
     }
+  }
+
+  List<List<GeoPoint>> _copyLegCache() {
+    return [
+      for (final leg in _legGeometries)
+        List<GeoPoint>.unmodifiable(leg),
+    ];
+  }
+
+  bool _hasLegCacheFor(List<GeoPoint> points) {
+    return state.isSnapped &&
+        !state.isRouting &&
+        !state.hasRoutingError &&
+        points.length >= 2 &&
+        _legGeometries.length == points.length - 1 &&
+        _legGeometries.every((leg) => leg.length >= 2);
+  }
+
+  void _startRouteEdit(List<GeoPoint> points) {
+    _elevationGeneration++;
+    state = state.copyWith(
+      points: List<GeoPoint>.unmodifiable(points),
+      canUndo: _undoStack.isNotEmpty,
+      canRedo: _redoStack.isNotEmpty,
+      isRouting: true,
+      elevationProfile: const ElevationProfile.unavailable(),
+      isElevationLoading: false,
+      clearImportedName: true,
+      clearRoutingError: true,
+    );
+  }
+
+  Future<void> _rerouteSpan({
+    required List<GeoPoint> nextPoints,
+    required List<List<GeoPoint>> previousLegs,
+    required int startWaypoint,
+    required int endWaypoint,
+    required int oldLegStart,
+    required int oldLegRemoveCount,
+  }) async {
+    final generation = ++_routingGeneration;
+    final profile = state.profile;
+    final spanPoints = List<GeoPoint>.unmodifiable(
+      nextPoints.sublist(startWaypoint, endWaypoint + 1),
+    );
+
+    try {
+      final plan = await ref.read(routingEngineProvider).calculate(
+            RouteRequest(
+              points: spanPoints,
+              profile: profile,
+              snapToNetwork: true,
+            ),
+          );
+
+      if (!ref.mounted || generation != _routingGeneration) {
+        return;
+      }
+
+      final snappedSpan =
+          plan.snappedWaypoints.length == spanPoints.length
+              ? List<GeoPoint>.unmodifiable(plan.snappedWaypoints)
+              : spanPoints;
+      final replacementLegs =
+          _splitGeometryIntoLegs(plan.geometry, snappedSpan);
+
+      if (!plan.isSnapped ||
+          replacementLegs.length != snappedSpan.length - 1) {
+        _legGeometries = const [];
+        state = state.copyWith(
+          points: List<GeoPoint>.unmodifiable(nextPoints),
+          isRouting: true,
+        );
+        await _refreshRoute();
+        return;
+      }
+
+      final snappedPoints = [...nextPoints];
+      for (var offset = 0; offset < snappedSpan.length; offset++) {
+        snappedPoints[startWaypoint + offset] = snappedSpan[offset];
+      }
+
+      final mergedLegs = <List<GeoPoint>>[
+        ...previousLegs.take(oldLegStart),
+        ...replacementLegs,
+        ...previousLegs.skip(oldLegStart + oldLegRemoveCount),
+      ];
+      _legGeometries = [
+        for (final leg in mergedLegs)
+          List<GeoPoint>.unmodifiable(leg),
+      ];
+
+      if (_legGeometries.length != snappedPoints.length - 1) {
+        _legGeometries = const [];
+        state = state.copyWith(
+          points: List<GeoPoint>.unmodifiable(snappedPoints),
+          isRouting: true,
+        );
+        await _refreshRoute();
+        return;
+      }
+
+      final geometry = _mergeLegs(_legGeometries);
+      final distance = calculateRouteDistanceMeters(geometry);
+      state = state.copyWith(
+        points: List<GeoPoint>.unmodifiable(snappedPoints),
+        geometry: geometry,
+        distanceMeters: distance,
+        estimatedDuration: _estimateDuration(distance, profile),
+        isRouting: false,
+        isSnapped: true,
+        routingSource: plan.routingSource,
+        elevationProfile: const ElevationProfile.unavailable(),
+        isElevationLoading: true,
+        clearRoutingError: true,
+      );
+
+      unawaited(_refreshElevation(generation, geometry));
+    } on Object catch (error) {
+      if (!ref.mounted || generation != _routingGeneration) {
+        return;
+      }
+
+      _legGeometries = const [];
+      state = state.copyWith(
+        geometry: const [],
+        distanceMeters: 0,
+        estimatedDuration: Duration.zero,
+        isRouting: false,
+        isSnapped: false,
+        routingSource: 'unavailable',
+        elevationProfile: const ElevationProfile.unavailable(),
+        isElevationLoading: false,
+        routingError: error.toString(),
+      );
+    }
+  }
+
+  void _applyCachedRoute(
+    List<GeoPoint> points,
+    List<List<GeoPoint>> legs,
+  ) {
+    final generation = ++_routingGeneration;
+    _elevationGeneration++;
+    _legGeometries = [
+      for (final leg in legs) List<GeoPoint>.unmodifiable(leg),
+    ];
+    final geometry = _mergeLegs(_legGeometries);
+    final distance = calculateRouteDistanceMeters(geometry);
+
+    state = state.copyWith(
+      points: List<GeoPoint>.unmodifiable(points),
+      geometry: geometry,
+      distanceMeters: distance,
+      estimatedDuration: _estimateDuration(distance, state.profile),
+      canUndo: _undoStack.isNotEmpty,
+      canRedo: _redoStack.isNotEmpty,
+      isRouting: false,
+      isSnapped: true,
+      elevationProfile: const ElevationProfile.unavailable(),
+      isElevationLoading: geometry.length >= 2,
+      clearImportedName: true,
+      clearRoutingError: true,
+    );
+
+    if (geometry.length >= 2) {
+      unawaited(_refreshElevation(generation, geometry));
+    }
+  }
+
+  int _nearestLegIndex(GeoPoint point) {
+    if (_legGeometries.length == state.points.length - 1) {
+      var bestLeg = -1;
+      var bestDistance = double.infinity;
+      for (var legIndex = 0;
+          legIndex < _legGeometries.length;
+          legIndex++) {
+        for (final routePoint in _legGeometries[legIndex]) {
+          final distance = haversineMeters(point, routePoint);
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            bestLeg = legIndex;
+          }
+        }
+      }
+      if (bestLeg >= 0) {
+        return bestLeg;
+      }
+    }
+
+    if (state.points.length < 2) {
+      return -1;
+    }
+
+    var bestLeg = 0;
+    var bestDistance = double.infinity;
+    for (var index = 0; index < state.points.length - 1; index++) {
+      final distance = haversineMeters(point, state.points[index]) +
+          haversineMeters(point, state.points[index + 1]);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestLeg = index;
+      }
+    }
+    return bestLeg;
+  }
+
+  List<List<GeoPoint>> _splitGeometryIntoLegs(
+    List<GeoPoint> geometry,
+    List<GeoPoint> waypoints,
+  ) {
+    if (waypoints.length < 2 ||
+        geometry.length < 2 ||
+        geometry.length < waypoints.length) {
+      return const [];
+    }
+
+    if (waypoints.length == 2) {
+      return [List<GeoPoint>.unmodifiable(geometry)];
+    }
+
+    final cuts = <int>[0];
+    var previousCut = 0;
+
+    for (var waypointIndex = 1;
+        waypointIndex < waypoints.length - 1;
+        waypointIndex++) {
+      final minIndex = previousCut + 1;
+      final remainingWaypoints = waypoints.length - waypointIndex - 1;
+      final maxIndex = geometry.length - remainingWaypoints - 1;
+      if (minIndex > maxIndex) {
+        return const [];
+      }
+
+      var bestIndex = minIndex;
+      var bestDistance = double.infinity;
+      for (var geometryIndex = minIndex;
+          geometryIndex <= maxIndex;
+          geometryIndex++) {
+        final distance = haversineMeters(
+          waypoints[waypointIndex],
+          geometry[geometryIndex],
+        );
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestIndex = geometryIndex;
+        }
+      }
+
+      cuts.add(bestIndex);
+      previousCut = bestIndex;
+    }
+
+    cuts.add(geometry.length - 1);
+    return [
+      for (var index = 0; index < cuts.length - 1; index++)
+        List<GeoPoint>.unmodifiable(
+          geometry.sublist(cuts[index], cuts[index + 1] + 1),
+        ),
+    ];
+  }
+
+  List<GeoPoint> _mergeLegs(List<List<GeoPoint>> legs) {
+    if (legs.isEmpty) {
+      return const [];
+    }
+
+    final merged = <GeoPoint>[];
+    for (var index = 0; index < legs.length; index++) {
+      final leg = legs[index];
+      if (leg.isEmpty) {
+        continue;
+      }
+      if (index == 0 || merged.isEmpty) {
+        merged.addAll(leg);
+      } else {
+        merged.addAll(leg.skip(1));
+      }
+    }
+    return List<GeoPoint>.unmodifiable(merged);
   }
 
   Future<void> _refreshElevation(

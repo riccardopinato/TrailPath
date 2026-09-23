@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -34,6 +35,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   bool _styleReady = false;
   bool _searchBusy = false;
   PlaceSearchResult? _searchResult;
+  int? _selectedWaypointIndex;
   String? _locationError;
   final TextEditingController _searchController = TextEditingController();
 
@@ -315,6 +317,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   }
 
   void _addWaypoint(LatLng coordinates) {
+    if (_selectedWaypointIndex != null && mounted) {
+      setState(() => _selectedWaypointIndex = null);
+    }
     ref.read(routePlannerProvider.notifier).addPoint(
           GeoPoint(
             latitude: coordinates.latitude,
@@ -323,16 +328,103 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         );
   }
 
+  void _insertWaypoint(LatLng coordinates) {
+    if (_selectedWaypointIndex != null && mounted) {
+      setState(() => _selectedWaypointIndex = null);
+    }
+    ref.read(routePlannerProvider.notifier).insertPointNearRoute(
+          GeoPoint(
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude,
+          ),
+        );
+  }
+
   void _undo() {
+    if (_selectedWaypointIndex != null && mounted) {
+      setState(() => _selectedWaypointIndex = null);
+    }
     ref.read(routePlannerProvider.notifier).undo();
   }
 
   void _redo() {
+    if (_selectedWaypointIndex != null && mounted) {
+      setState(() => _selectedWaypointIndex = null);
+    }
     ref.read(routePlannerProvider.notifier).redo();
   }
 
   void _clearRoute() {
+    if (_selectedWaypointIndex != null && mounted) {
+      setState(() => _selectedWaypointIndex = null);
+    }
     ref.read(routePlannerProvider.notifier).clear();
+  }
+
+  void _removeSelectedWaypoint() {
+    final index = _selectedWaypointIndex;
+    if (index == null) {
+      return;
+    }
+    setState(() => _selectedWaypointIndex = null);
+    ref.read(routePlannerProvider.notifier).removePoint(index);
+  }
+
+  void _onCircleTapped(Circle circle) {
+    final rawIndex = circle.data?['waypointIndex'];
+    final index = rawIndex is int
+        ? rawIndex
+        : rawIndex is num
+            ? rawIndex.toInt()
+            : null;
+    if (index == null) {
+      return;
+    }
+
+    setState(() => _selectedWaypointIndex = index);
+    unawaited(_syncPlannerAnnotations());
+  }
+
+  void _onFeatureDrag(
+    math.Point<double> point,
+    LatLng origin,
+    LatLng current,
+    LatLng delta,
+    String id,
+    Annotation? annotation,
+    DragEventType eventType,
+  ) {
+    if (annotation is! Circle) {
+      return;
+    }
+
+    final rawIndex = annotation.data?['waypointIndex'];
+    final index = rawIndex is int
+        ? rawIndex
+        : rawIndex is num
+            ? rawIndex.toInt()
+            : null;
+    if (index == null) {
+      return;
+    }
+
+    if (eventType == DragEventType.start && mounted) {
+      setState(() => _selectedWaypointIndex = index);
+      return;
+    }
+
+    if (eventType == DragEventType.end) {
+      if (mounted) {
+        setState(() => _selectedWaypointIndex = index);
+      }
+      ref.read(routePlannerProvider.notifier).movePoint(
+            index,
+            GeoPoint(
+              latitude: current.latitude,
+              longitude: current.longitude,
+            ),
+          );
+    }
   }
 
   Future<void> _importGpx() async {
@@ -353,6 +445,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       final document = await gpxService.parse(xml);
       if (!mounted) {
         return;
+      }
+      if (_selectedWaypointIndex != null) {
+        setState(() => _selectedWaypointIndex = null);
       }
       plannerController.importGpx(document);
       await _syncPlannerAnnotations();
@@ -459,14 +554,22 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       for (var index = 0; index < waypoints.length; index++)
         CircleOptions(
           geometry: waypoints[index],
-          circleRadius: index == 0 || index == waypoints.length - 1 ? 7 : 5,
-          circleColor: index == 0
-              ? '#205B38'
-              : index == waypoints.length - 1
-                  ? '#E86A45'
-                  : '#FFFFFF',
-          circleStrokeColor: '#2F6F45',
-          circleStrokeWidth: 2.5,
+          circleRadius: _selectedWaypointIndex == index
+              ? 9
+              : index == 0 || index == waypoints.length - 1
+                  ? 7
+                  : 5.5,
+          circleColor: _selectedWaypointIndex == index
+              ? '#1976D2'
+              : index == 0
+                  ? '#205B38'
+                  : index == waypoints.length - 1
+                      ? '#E86A45'
+                      : '#FFFFFF',
+          circleStrokeColor:
+              _selectedWaypointIndex == index ? '#FFFFFF' : '#2F6F45',
+          circleStrokeWidth: _selectedWaypointIndex == index ? 3.5 : 2.5,
+          draggable: true,
         ),
       if (searchResult != null)
         CircleOptions(
@@ -478,10 +581,22 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           circleColor: '#1565C0',
           circleStrokeColor: '#FFFFFF',
           circleStrokeWidth: 2.5,
+          draggable: false,
         ),
     ];
+    final circleData = <Map<String, dynamic>>[
+      for (var index = 0; index < waypoints.length; index++)
+        <String, dynamic>{
+          'kind': 'waypoint',
+          'waypointIndex': index,
+        },
+      if (searchResult != null)
+        <String, dynamic>{
+          'kind': 'search',
+        },
+    ];
     if (circles.isNotEmpty) {
-      await controller.addCircles(circles);
+      await controller.addCircles(circles, circleData);
     }
   }
 
@@ -585,6 +700,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   ),
                   onMapCreated: (controller) {
                     _mapController = controller;
+                    controller.onCircleTapped.add(_onCircleTapped);
+                    controller.onFeatureDrag.add(_onFeatureDrag);
                     final sample = _position;
                     if (sample != null) {
                       unawaited(_focusPosition(sample, zoom: 15.5));
@@ -597,6 +714,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   onMapClick: (point, coordinates) {
                     _addWaypoint(coordinates);
                   },
+                  onMapLongClick: (point, coordinates) {
+                    _insertWaypoint(coordinates);
+                  },
+                  dragEnabled: true,
                   compassEnabled: true,
                   compassViewPosition: CompassViewPosition.topRight,
                   myLocationEnabled: _permissionGranted,
@@ -756,6 +877,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
               onProfileChanged: (profile) {
                 ref.read(routePlannerProvider.notifier).setProfile(profile);
               },
+              selectedWaypointIndex: _selectedWaypointIndex,
+              onRemoveWaypoint:
+                  _selectedWaypointIndex == null ? null : _removeSelectedWaypoint,
               onClear: planner.points.isEmpty ? null : _clearRoute,
               onImport: _importGpx,
               onShare: planner.canSave ? _shareCurrentGpx : null,
@@ -775,6 +899,8 @@ class _PlannerCard extends StatelessWidget {
     required this.position,
     required this.locationReady,
     required this.onProfileChanged,
+    required this.selectedWaypointIndex,
+    required this.onRemoveWaypoint,
     required this.onClear,
     required this.onImport,
     required this.onShare,
@@ -786,6 +912,8 @@ class _PlannerCard extends StatelessWidget {
   final PositionSample? position;
   final bool locationReady;
   final ValueChanged<RouteProfile> onProfileChanged;
+  final int? selectedWaypointIndex;
+  final VoidCallback? onRemoveWaypoint;
   final VoidCallback? onClear;
   final VoidCallback onImport;
   final VoidCallback? onShare;
@@ -841,7 +969,7 @@ class _PlannerCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'v0.9.3',
+                  'v0.9.4',
                   style: TextStyle(
                     color: scheme.onPrimaryContainer,
                     fontSize: 11,
@@ -859,6 +987,64 @@ class _PlannerCard extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
+          if (planner.points.length >= 2) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Icon(
+                  Icons.gesture_rounded,
+                  size: 15,
+                  color: scheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    strings.routeEditHint,
+                    style: TextStyle(
+                      color: scheme.onSurfaceVariant,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (selectedWaypointIndex != null) ...[
+            const SizedBox(height: 9),
+            Container(
+              padding: const EdgeInsets.fromLTRB(11, 7, 7, 7),
+              decoration: BoxDecoration(
+                color: scheme.primaryContainer.withValues(alpha: 0.72),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.place_rounded,
+                    size: 17,
+                    color: scheme.onPrimaryContainer,
+                  ),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(
+                      '${strings.waypointSelected} #${selectedWaypointIndex! + 1}',
+                      style: TextStyle(
+                        color: scheme.onPrimaryContainer,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: onRemoveWaypoint,
+                    icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                    label: Text(strings.removeWaypoint),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           SizedBox(
             height: 38,
