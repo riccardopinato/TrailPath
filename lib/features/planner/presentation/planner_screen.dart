@@ -353,7 +353,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         try {
           final metersPerPixel =
               await controller.getMetersPerPixelAtLatitude(candidate.latitude);
-          toleranceMeters = (metersPerPixel * 28).clamp(12.0, 80.0);
+          toleranceMeters = (metersPerPixel * 28).clamp(12.0, 80.0).toDouble();
         } on Object {
           // Keep the conservative geographic fallback when projection data is
           // temporarily unavailable.
