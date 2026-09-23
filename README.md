@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.9.4 - Footpath-style Route Editing
+v0.9.5 - Advanced Trail Editing
 
-TrailPath v0.9.4 adds direct route editing: draggable MapLibre waypoints, waypoint selection/removal, long-press insertion on the nearest route leg and cached per-leg geometry so edits reroute only the affected span whenever possible.
+TrailPath v0.9.5 adds advanced trail editing: selectable route lines, draggable midpoint handles for inserting waypoints, distance-guarded long-press insertion and per-leg midpoint placement computed along the real routed geometry.
 
 ### Included
 
@@ -23,6 +23,9 @@ TrailPath v0.9.4 adds direct route editing: draggable MapLibre waypoints, waypoi
 - draggable waypoint editing with tap selection and removal
 - long-press insertion into the nearest route leg
 - per-leg route geometry cache for partial rerouting after edits
+- selectable route line with visible edit mode
+- draggable midpoint handles placed halfway along each routed leg
+- guarded long-press insertion rejected when too far from the route
 - route line, undo/redo and clear controls
 - activity profiles with foot/bike routing profiles
 - asynchronous snap-to-network routing through routing.openstreetmap.de

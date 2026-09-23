@@ -27,6 +27,7 @@ class RoutePlannerState {
     this.isElevationLoading = false,
     this.importedName,
     this.routingError,
+    this.editHandles = const [],
   });
 
   final List<GeoPoint> points;
@@ -43,6 +44,7 @@ class RoutePlannerState {
   final bool isElevationLoading;
   final String? importedName;
   final String? routingError;
+  final List<GeoPoint> editHandles;
 
   bool get hasRoutingError => routingError != null;
 
@@ -76,6 +78,7 @@ class RoutePlannerState {
     bool clearImportedName = false,
     String? routingError,
     bool clearRoutingError = false,
+    List<GeoPoint>? editHandles,
   }) {
     return RoutePlannerState(
       points: points ?? this.points,
@@ -94,6 +97,7 @@ class RoutePlannerState {
           clearImportedName ? null : importedName ?? this.importedName,
       routingError:
           clearRoutingError ? null : routingError ?? this.routingError,
+      editHandles: editHandles ?? this.editHandles,
     );
   }
 }
@@ -303,6 +307,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       estimatedDuration: _estimateDuration(state.distanceMeters, profile),
       elevationProfile: const ElevationProfile.unavailable(),
       isElevationLoading: false,
+      editHandles: const [],
       clearImportedName: true,
       clearRoutingError: true,
     );
@@ -418,6 +423,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       routingSource: 'local',
       elevationProfile: const ElevationProfile.unavailable(),
       isElevationLoading: false,
+      editHandles: const [],
       clearImportedName: true,
       clearRoutingError: true,
     );
@@ -438,6 +444,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         routingSource: 'local',
         elevationProfile: const ElevationProfile.unavailable(),
         isElevationLoading: false,
+        editHandles: const [],
         clearRoutingError: true,
       );
       return;
@@ -479,6 +486,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         routingSource: plan.routingSource,
         elevationProfile: const ElevationProfile.unavailable(),
         isElevationLoading: true,
+        editHandles: _buildEditHandles(_legGeometries),
         clearRoutingError: true,
       );
 
@@ -498,6 +506,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         routingSource: 'unavailable',
         elevationProfile: const ElevationProfile.unavailable(),
         isElevationLoading: false,
+        editHandles: const [],
         routingError: error.toString(),
       );
     }
@@ -528,6 +537,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       isRouting: true,
       elevationProfile: const ElevationProfile.unavailable(),
       isElevationLoading: false,
+      editHandles: const [],
       clearImportedName: true,
       clearRoutingError: true,
     );
@@ -573,6 +583,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         state = state.copyWith(
           points: List<GeoPoint>.unmodifiable(nextPoints),
           isRouting: true,
+          editHandles: const [],
         );
         await _refreshRoute();
         return;
@@ -598,6 +609,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         state = state.copyWith(
           points: List<GeoPoint>.unmodifiable(snappedPoints),
           isRouting: true,
+          editHandles: const [],
         );
         await _refreshRoute();
         return;
@@ -615,6 +627,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         routingSource: plan.routingSource,
         elevationProfile: const ElevationProfile.unavailable(),
         isElevationLoading: true,
+        editHandles: _buildEditHandles(_legGeometries),
         clearRoutingError: true,
       );
 
@@ -634,6 +647,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         routingSource: 'unavailable',
         elevationProfile: const ElevationProfile.unavailable(),
         isElevationLoading: false,
+        editHandles: const [],
         routingError: error.toString(),
       );
     }
@@ -662,6 +676,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       isSnapped: true,
       elevationProfile: const ElevationProfile.unavailable(),
       isElevationLoading: geometry.length >= 2,
+      editHandles: _buildEditHandles(_legGeometries),
       clearImportedName: true,
       clearRoutingError: true,
     );
@@ -761,6 +776,13 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
           geometry.sublist(cuts[index], cuts[index + 1] + 1),
         ),
     ];
+  }
+
+  List<GeoPoint> _buildEditHandles(List<List<GeoPoint>> legs) {
+    return List<GeoPoint>.unmodifiable([
+      for (final leg in legs)
+        if (leg.length >= 2) pointAlongPolyline(leg),
+    ]);
   }
 
   List<GeoPoint> _mergeLegs(List<List<GeoPoint>> legs) {

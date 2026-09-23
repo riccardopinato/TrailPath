@@ -39,5 +39,8 @@ Explicit routing failures, no fake straight-line fallback, snapped OSM foot/bike
 ## v0.9.4 - Footpath-style Route Editing
 Draggable waypoint annotations, point selection/removal, long-press insertion into the nearest route leg, cached per-leg geometry and partial rerouting of only the affected span with full-route fallback when the cache is not valid.
 
+## v0.9.5 - Advanced Trail Editing
+Selectable route annotations, edit-mode highlighting, draggable midpoint handles placed along real routed leg geometry, midpoint-to-waypoint promotion with partial rerouting, and a 60 m safety guard for long-press insertion.
+
 ## v1.0 - Release
 Onboarding, Premium foundation, optional backup/sync, accessibility, performance and store QA.

@@ -79,6 +79,8 @@ class AppLocalizations {
   String get routeUnavailable => _value('routeUnavailable');
   String get routeLocalFallback => _value('routeLocalFallback');
   String get routeEditHint => _value('routeEditHint');
+  String get routeEditActive => _value('routeEditActive');
+  String get routePressTooFar => _value('routePressTooFar');
   String get waypointSelected => _value('waypointSelected');
   String get removeWaypoint => _value('removeWaypoint');
   String get elevationProfile => _value('elevationProfile');
@@ -219,7 +221,9 @@ class AppLocalizations {
       'routeSnapped': 'Percorso agganciato alla rete OSM',
       'routeUnavailable': 'Routing non disponibile: modifica i punti o riprova',
       'routeLocalFallback': 'Percorso locale o GPX non agganciato alla rete',
-      'routeEditHint': 'Trascina un punto per spostarlo; tieni premuto sul percorso per inserirne uno.',
+      'routeEditHint': 'Tocca la linea per modificarla; trascina i punti per spostarli.',
+      'routeEditActive': 'Modifica attiva: trascina i punti bianchi tra le tappe per inserirne di nuovi.',
+      'routePressTooFar': 'Tieni premuto più vicino alla linea del percorso.',
       'waypointSelected': 'Punto selezionato',
       'removeWaypoint': 'Rimuovi',
       'elevationProfile': 'Profilo altimetrico',
@@ -359,7 +363,9 @@ class AppLocalizations {
       'routeSnapped': 'Route snapped to the OSM network',
       'routeUnavailable': 'Routing unavailable: adjust the points or try again',
       'routeLocalFallback': 'Local or GPX route not snapped to the network',
-      'routeEditHint': 'Drag a point to move it; long-press the route to insert one.',
+      'routeEditHint': 'Tap the route line to edit it; drag points to move them.',
+      'routeEditActive': 'Edit mode: drag the white points between waypoints to insert new ones.',
+      'routePressTooFar': 'Long-press closer to the route line.',
       'waypointSelected': 'Selected point',
       'removeWaypoint': 'Remove',
       'elevationProfile': 'Elevation profile',
@@ -499,7 +505,9 @@ class AppLocalizations {
       'routeSnapped': 'Ruta ajustada a la red OSM',
       'routeUnavailable': 'Routing no disponible: ajusta los puntos o inténtalo de nuevo',
       'routeLocalFallback': 'Ruta local o GPX sin ajustar a la red',
-      'routeEditHint': 'Arrastra un punto para moverlo; mantén pulsada la ruta para insertar uno.',
+      'routeEditHint': 'Toca la línea del recorrido para editarla; arrastra los puntos para moverlos.',
+      'routeEditActive': 'Edición activa: arrastra los puntos blancos entre etapas para insertar nuevos.',
+      'routePressTooFar': 'Mantén pulsado más cerca de la línea del recorrido.',
       'waypointSelected': 'Punto seleccionado',
       'removeWaypoint': 'Quitar',
       'elevationProfile': 'Perfil de elevación',
@@ -639,7 +647,9 @@ class AppLocalizations {
       'routeSnapped': 'Parcours calé sur le réseau OSM',
       'routeUnavailable': 'Itinéraire indisponible : modifiez les points ou réessayez',
       'routeLocalFallback': 'Itinéraire local ou GPX non accroché au réseau',
-      'routeEditHint': 'Faites glisser un point pour le déplacer ; appui long sur le tracé pour en insérer un.',
+      'routeEditHint': 'Touchez la ligne du parcours pour la modifier ; faites glisser les points pour les déplacer.',
+      'routeEditActive': 'Modification active : faites glisser les points blancs entre les étapes pour en insérer.',
+      'routePressTooFar': 'Effectuez un appui long plus près de la ligne du parcours.',
       'waypointSelected': 'Point sélectionné',
       'removeWaypoint': 'Retirer',
       'elevationProfile': 'Profil altimétrique',
@@ -779,7 +789,9 @@ class AppLocalizations {
       'routeSnapped': 'Percurso ajustado à rede OSM',
       'routeUnavailable': 'Roteamento indisponível: ajuste os pontos ou tente novamente',
       'routeLocalFallback': 'Rota local ou GPX não ajustada à rede',
-      'routeEditHint': 'Arraste um ponto para o mover; mantenha premido o percurso para inserir um.',
+      'routeEditHint': 'Toque na linha do percurso para editar; arraste os pontos para os mover.',
+      'routeEditActive': 'Edição ativa: arraste os pontos brancos entre etapas para inserir novos.',
+      'routePressTooFar': 'Mantenha premido mais perto da linha do percurso.',
       'waypointSelected': 'Ponto selecionado',
       'removeWaypoint': 'Remover',
       'elevationProfile': 'Perfil de elevação',

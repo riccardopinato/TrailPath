@@ -99,6 +99,7 @@ void main() {
     expect(state.geometry, hasLength(3));
     expect(state.distanceMeters, 1500);
     expect(state.routingSource, 'test-snap');
+    expect(state.editHandles, hasLength(1));
     expect(state.points.first.latitude, closeTo(45.0002, 0.000001));
     expect(state.points.last.longitude, closeTo(11.0098, 0.000001));
     expect(state.hasElevation, isTrue);
@@ -195,6 +196,7 @@ void main() {
     expect(engine.requests, hasLength(1));
     expect(engine.requests.single.points, hasLength(3));
     expect(container.read(routePlannerProvider).points, hasLength(4));
+    expect(container.read(routePlannerProvider).editHandles, hasLength(3));
     expect(container.read(routePlannerProvider).canSave, isTrue);
   });
 
@@ -219,6 +221,7 @@ void main() {
     expect(engine.requests, hasLength(1));
     expect(engine.requests.single.points, hasLength(3));
     expect(container.read(routePlannerProvider).points, hasLength(4));
+    expect(container.read(routePlannerProvider).editHandles, hasLength(3));
     expect(container.read(routePlannerProvider).isSnapped, isTrue);
   });
 
