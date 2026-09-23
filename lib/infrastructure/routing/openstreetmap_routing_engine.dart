@@ -51,7 +51,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
 
     final client = HttpClient()
       ..connectionTimeout = timeout
-      ..userAgent = 'TrailPath/0.9.3 (+https://github.com/riccardopinato/TrailPath)';
+      ..userAgent = 'TrailPath/0.9.6 (+https://github.com/riccardopinato/TrailPath)';
 
     try {
       final requestHttp = await client.getUrl(uri).timeout(timeout);

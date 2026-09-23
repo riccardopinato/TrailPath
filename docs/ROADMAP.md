@@ -42,5 +42,8 @@ Draggable waypoint annotations, point selection/removal, long-press insertion in
 ## v0.9.5 - Advanced Trail Editing
 Selectable route annotations, edit-mode highlighting, draggable midpoint handles placed along real routed leg geometry, midpoint-to-waypoint promotion with partial rerouting, and a 60 m safety guard for long-press insertion.
 
+## v0.9.6 - Map & Routing UX Hardening
+MapLibre engine pre-warming, faster planner taps, zoom-aware route hit tolerance, live drag preview with haptics, incremental/coalesced annotation updates and display-only simplification for long route geometries.
+
 ## v1.0 - Release
 Onboarding, Premium foundation, optional backup/sync, accessibility, performance and store QA.

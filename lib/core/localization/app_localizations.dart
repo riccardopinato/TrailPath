@@ -80,6 +80,7 @@ class AppLocalizations {
   String get routeLocalFallback => _value('routeLocalFallback');
   String get routeEditHint => _value('routeEditHint');
   String get routeEditActive => _value('routeEditActive');
+  String get routeDragActive => _value('routeDragActive');
   String get routePressTooFar => _value('routePressTooFar');
   String get waypointSelected => _value('waypointSelected');
   String get removeWaypoint => _value('removeWaypoint');
@@ -223,6 +224,7 @@ class AppLocalizations {
       'routeLocalFallback': 'Percorso locale o GPX non agganciato alla rete',
       'routeEditHint': 'Tocca la linea per modificarla; trascina i punti per spostarli.',
       'routeEditActive': 'Modifica attiva: trascina i punti bianchi tra le tappe per inserirne di nuovi.',
+      'routeDragActive': 'Spostamento in corso: rilascia per ricalcolare solo il tratto modificato.',
       'routePressTooFar': 'Tieni premuto più vicino alla linea del percorso.',
       'waypointSelected': 'Punto selezionato',
       'removeWaypoint': 'Rimuovi',
@@ -365,6 +367,7 @@ class AppLocalizations {
       'routeLocalFallback': 'Local or GPX route not snapped to the network',
       'routeEditHint': 'Tap the route line to edit it; drag points to move them.',
       'routeEditActive': 'Edit mode: drag the white points between waypoints to insert new ones.',
+      'routeDragActive': 'Dragging: release to recalculate only the edited span.',
       'routePressTooFar': 'Long-press closer to the route line.',
       'waypointSelected': 'Selected point',
       'removeWaypoint': 'Remove',
@@ -507,6 +510,7 @@ class AppLocalizations {
       'routeLocalFallback': 'Ruta local o GPX sin ajustar a la red',
       'routeEditHint': 'Toca la línea del recorrido para editarla; arrastra los puntos para moverlos.',
       'routeEditActive': 'Edición activa: arrastra los puntos blancos entre etapas para insertar nuevos.',
+      'routeDragActive': 'Arrastrando: suelta para recalcular solo el tramo modificado.',
       'routePressTooFar': 'Mantén pulsado más cerca de la línea del recorrido.',
       'waypointSelected': 'Punto seleccionado',
       'removeWaypoint': 'Quitar',
@@ -649,6 +653,7 @@ class AppLocalizations {
       'routeLocalFallback': 'Itinéraire local ou GPX non accroché au réseau',
       'routeEditHint': 'Touchez la ligne du parcours pour la modifier ; faites glisser les points pour les déplacer.',
       'routeEditActive': 'Modification active : faites glisser les points blancs entre les étapes pour en insérer.',
+      'routeDragActive': 'Déplacement en cours : relâchez pour recalculer uniquement le tronçon modifié.',
       'routePressTooFar': 'Effectuez un appui long plus près de la ligne du parcours.',
       'waypointSelected': 'Point sélectionné',
       'removeWaypoint': 'Retirer',
@@ -791,6 +796,7 @@ class AppLocalizations {
       'routeLocalFallback': 'Rota local ou GPX não ajustada à rede',
       'routeEditHint': 'Toque na linha do percurso para editar; arraste os pontos para os mover.',
       'routeEditActive': 'Edição ativa: arraste os pontos brancos entre etapas para inserir novos.',
+      'routeDragActive': 'A arrastar: solte para recalcular apenas o troço alterado.',
       'routePressTooFar': 'Mantenha premido mais perto da linha do percurso.',
       'waypointSelected': 'Ponto selecionado',
       'removeWaypoint': 'Remover',
