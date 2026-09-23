@@ -12,7 +12,7 @@ appId: com.riccardopinato.trail_path
 
 - tapOn:
     text: 'Routes\s*Tab 3 of 5'
-- assertVisible: "Your routes"
+- assertVisible: "No saved routes"
 
 - tapOn:
     text: 'Offline\s*Tab 4 of 5'
