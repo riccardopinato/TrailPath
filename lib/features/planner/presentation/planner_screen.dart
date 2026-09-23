@@ -970,6 +970,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
               onProfileChanged: (profile) {
                 ref.read(routePlannerProvider.notifier).setProfile(profile);
               },
+              onUseDirectLine: planner.routingError == null
+                  ? null
+                  : ref.read(routePlannerProvider.notifier).useDirectLine,
               onClear: planner.points.isEmpty ? null : _clearRoute,
               onImport: _importGpx,
               onShare: planner.canSave ? _shareCurrentGpx : null,
@@ -989,6 +992,7 @@ class _PlannerCard extends StatelessWidget {
     required this.position,
     required this.locationReady,
     required this.onProfileChanged,
+    required this.onUseDirectLine,
     required this.onClear,
     required this.onImport,
     required this.onShare,
@@ -1000,6 +1004,7 @@ class _PlannerCard extends StatelessWidget {
   final PositionSample? position;
   final bool locationReady;
   final ValueChanged<RouteProfile> onProfileChanged;
+  final VoidCallback? onUseDirectLine;
   final VoidCallback? onClear;
   final VoidCallback onImport;
   final VoidCallback? onShare;
@@ -1119,6 +1124,7 @@ class _PlannerCard extends StatelessWidget {
           _RoutingStatus(
             strings: strings,
             planner: planner,
+            onUseDirectLine: onUseDirectLine,
           ),
           if (planner.points.length >= 2) ...[
             const SizedBox(height: 12),
@@ -1568,10 +1574,12 @@ class _RoutingStatus extends StatelessWidget {
   const _RoutingStatus({
     required this.strings,
     required this.planner,
+    required this.onUseDirectLine,
   });
 
   final AppLocalizations strings;
   final RoutePlannerState planner;
+  final VoidCallback? onUseDirectLine;
 
   @override
   Widget build(BuildContext context) {
@@ -1587,27 +1595,51 @@ class _RoutingStatus extends StatelessWidget {
                     ? (Icons.route_rounded, strings.routeSnapped)
                     : (Icons.route_outlined, strings.routingReady);
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (planner.isRouting)
-          const SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          )
-        else
-          Icon(icon, size: 17, color: scheme.primary),
-        const SizedBox(width: 7),
-        Expanded(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: scheme.onSurfaceVariant,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
+        Row(
+          children: [
+            if (planner.isRouting)
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else
+              Icon(
+                icon,
+                size: 17,
+                color: planner.routingError == null
+                    ? scheme.primary
+                    : scheme.error,
+              ),
+            const SizedBox(width: 7),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: planner.routingError == null
+                      ? scheme.onSurfaceVariant
+                      : scheme.error,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (onUseDirectLine != null) ...[
+          const SizedBox(height: 6),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: onUseDirectLine,
+              icon: const Icon(Icons.straighten_rounded, size: 17),
+              label: Text(strings.useDirectLine),
             ),
           ),
-        ),
+        ],
       ],
     );
   }

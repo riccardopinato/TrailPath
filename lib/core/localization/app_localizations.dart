@@ -82,6 +82,7 @@ class AppLocalizations {
   String get footpathModeHint => _value('footpathModeHint');
   String get footpathSelected => _value('footpathSelected');
   String get noFootpathFound => _value('noFootpathFound');
+  String get useDirectLine => _value('useDirectLine');
   String get elevationProfile => _value('elevationProfile');
   String get elevation => _value('elevation');
   String get descent => _value('descent');
@@ -224,6 +225,7 @@ class AppLocalizations {
       'footpathModeHint': 'Aggancia i tocchi ai sentieri, footpath e track visibili sulla mappa',
       'footpathSelected': 'Sentiero selezionato',
       'noFootpathFound': 'Nessun sentiero selezionabile in quel punto',
+      'useDirectLine': 'Usa linea diretta',
       'elevationProfile': 'Profilo altimetrico',
       'elevation': 'Quota',
       'descent': 'Discesa',
@@ -365,6 +367,7 @@ class AppLocalizations {
       'footpathModeHint': 'Snap taps to visible trails, footpaths and tracks',
       'footpathSelected': 'Trail selected',
       'noFootpathFound': 'No selectable trail at that point',
+      'useDirectLine': 'Use direct line',
       'elevationProfile': 'Elevation profile',
       'elevation': 'Elevation',
       'descent': 'Descent',
@@ -506,6 +509,7 @@ class AppLocalizations {
       'footpathModeHint': 'Ajusta los toques a senderos y pistas visibles',
       'footpathSelected': 'Sendero seleccionado',
       'noFootpathFound': 'No hay un sendero seleccionable en ese punto',
+      'useDirectLine': 'Usar línea directa',
       'elevationProfile': 'Perfil de elevación',
       'elevation': 'Altitud',
       'descent': 'Descenso',
@@ -647,6 +651,7 @@ class AppLocalizations {
       'footpathModeHint': 'Accroche les touches aux sentiers et pistes visibles',
       'footpathSelected': 'Sentier sélectionné',
       'noFootpathFound': 'Aucun sentier sélectionnable à cet endroit',
+      'useDirectLine': 'Utiliser ligne directe',
       'elevationProfile': 'Profil altimétrique',
       'elevation': 'Altitude',
       'descent': 'Descente',
@@ -788,6 +793,7 @@ class AppLocalizations {
       'footpathModeHint': 'Ajusta os toques a trilhos e caminhos visíveis',
       'footpathSelected': 'Trilho selecionado',
       'noFootpathFound': 'Nenhum trilho selecionável nesse ponto',
+      'useDirectLine': 'Usar linha direta',
       'elevationProfile': 'Perfil de elevação',
       'elevation': 'Altitude',
       'descent': 'Descida',

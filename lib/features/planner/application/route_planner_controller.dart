@@ -162,6 +162,31 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     unawaited(_refreshRoute());
   }
 
+  void useDirectLine() {
+    if (state.points.length < 2) {
+      return;
+    }
+
+    final generation = ++_routingGeneration;
+    _elevationGeneration++;
+    final geometry = List<GeoPoint>.unmodifiable(state.points);
+    final distance = calculateRouteDistanceMeters(geometry);
+
+    state = state.copyWith(
+      geometry: geometry,
+      distanceMeters: distance,
+      estimatedDuration: _estimateDuration(distance, state.profile),
+      isRouting: false,
+      isSnapped: false,
+      routingSource: 'straight-line-manual',
+      elevationProfile: const ElevationProfile.unavailable(),
+      isElevationLoading: true,
+      clearRoutingError: true,
+    );
+
+    unawaited(_refreshElevation(generation, geometry));
+  }
+
   void resetAfterSave() {
     _routingGeneration++;
     _elevationGeneration++;
