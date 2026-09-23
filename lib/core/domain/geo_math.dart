@@ -133,4 +133,85 @@ double distanceToPolylineMeters(
   return best;
 }
 
+List<GeoPoint> simplifyPolylineForDisplay(
+  List<GeoPoint> points, {
+  double toleranceMeters = 1.5,
+  int maxPoints = 2200,
+}) {
+  if (points.length <= 2) {
+    return List<GeoPoint>.unmodifiable(points);
+  }
+  if (toleranceMeters <= 0) {
+    throw ArgumentError.value(
+      toleranceMeters,
+      'toleranceMeters',
+      'Must be greater than zero.',
+    );
+  }
+  if (maxPoints < 2) {
+    throw ArgumentError.value(maxPoints, 'maxPoints', 'Must be at least 2.');
+  }
+
+  var tolerance = toleranceMeters;
+  var simplified = _douglasPeucker(points, tolerance);
+  for (var attempt = 0;
+      simplified.length > maxPoints && attempt < 8;
+      attempt++) {
+    tolerance *= 1.8;
+    simplified = _douglasPeucker(points, tolerance);
+  }
+
+  if (simplified.length <= maxPoints) {
+    return List<GeoPoint>.unmodifiable(simplified);
+  }
+
+  final capped = <GeoPoint>[simplified.first];
+  final stride = (simplified.length - 1) / (maxPoints - 1);
+  for (var index = 1; index < maxPoints - 1; index++) {
+    capped.add(simplified[(index * stride).round()]);
+  }
+  capped.add(simplified.last);
+  return List<GeoPoint>.unmodifiable(capped);
+}
+
+List<GeoPoint> _douglasPeucker(
+  List<GeoPoint> points,
+  double toleranceMeters,
+) {
+  final keep = List<bool>.filled(points.length, false)
+    ..first = true
+    ..last = true;
+  final stack = <(int, int)>[(0, points.length - 1)];
+
+  while (stack.isNotEmpty) {
+    final (start, end) = stack.removeLast();
+    if (end - start <= 1) {
+      continue;
+    }
+
+    var bestIndex = -1;
+    var bestDistance = 0.0;
+    final segment = [points[start], points[end]];
+    for (var index = start + 1; index < end; index++) {
+      final distance = distanceToPolylineMeters(points[index], segment);
+      if (distance > bestDistance) {
+        bestDistance = distance;
+        bestIndex = index;
+      }
+    }
+
+    if (bestIndex >= 0 && bestDistance > toleranceMeters) {
+      keep[bestIndex] = true;
+      stack
+        ..add((start, bestIndex))
+        ..add((bestIndex, end));
+    }
+  }
+
+  return [
+    for (var index = 0; index < points.length; index++)
+      if (keep[index]) points[index],
+  ];
+}
+
 double _degreesToRadians(double degrees) => degrees * math.pi / 180;
