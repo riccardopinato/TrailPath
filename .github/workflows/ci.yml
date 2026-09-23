@@ -78,6 +78,17 @@ jobs:
       - name: Resolve dependencies
         run: flutter pub get
 
+      - name: Upload generated native scaffolding snapshot
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-v0.9.3-native-scaffolding
+          path: |
+            android/
+            ios/
+            pubspec.lock
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Generate Drift code
         run: dart run build_runner build
 
