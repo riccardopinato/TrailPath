@@ -314,29 +314,25 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     );
   }
 
-  Future<void> _addWaypoint(LatLng coordinates) async {
+  void _addWaypoint(LatLng coordinates) {
     ref.read(routePlannerProvider.notifier).addPoint(
           GeoPoint(
             latitude: coordinates.latitude,
             longitude: coordinates.longitude,
           ),
         );
-    await _syncPlannerAnnotations();
   }
 
-  Future<void> _undo() async {
+  void _undo() {
     ref.read(routePlannerProvider.notifier).undo();
-    await _syncPlannerAnnotations();
   }
 
-  Future<void> _redo() async {
+  void _redo() {
     ref.read(routePlannerProvider.notifier).redo();
-    await _syncPlannerAnnotations();
   }
 
-  Future<void> _clearRoute() async {
+  void _clearRoute() {
     ref.read(routePlannerProvider.notifier).clear();
-    await _syncPlannerAnnotations();
   }
 
   Future<void> _importGpx() async {
@@ -441,9 +437,18 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       await controller.addLine(
         LineOptions(
           geometry: routeGeometry,
-          lineColor: '#2F6F45',
-          lineWidth: 5.5,
-          lineOpacity: 0.96,
+          lineColor: '#FFFFFF',
+          lineWidth: 8.0,
+          lineOpacity: 0.88,
+          lineJoin: 'round',
+        ),
+      );
+      await controller.addLine(
+        LineOptions(
+          geometry: routeGeometry,
+          lineColor: '#21633C',
+          lineWidth: 5.0,
+          lineOpacity: 0.98,
           lineJoin: 'round',
         ),
       );
@@ -573,7 +578,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           child: _runningWidgetTest
               ? _MapTestFallback(dark: dark)
               : MapLibreMap(
-                  styleString: MapConfig.styleUrl,
+                  styleString: MapConfig.plannerStyleUrl,
                   initialCameraPosition: const CameraPosition(
                     target: _fallbackCenter,
                     zoom: 6.8,
@@ -590,7 +595,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     unawaited(_syncPlannerAnnotations());
                   },
                   onMapClick: (point, coordinates) {
-                    unawaited(_addWaypoint(coordinates));
+                    _addWaypoint(coordinates);
                   },
                   compassEnabled: true,
                   compassViewPosition: CompassViewPosition.topRight,
@@ -600,7 +605,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                       : MyLocationRenderMode.normal,
                   rotateGesturesEnabled: true,
                   tiltGesturesEnabled: true,
-                  trackCameraPosition: true,
+                  trackCameraPosition: false,
                   logoEnabled: false,
                   attributionButtonPosition:
                       AttributionButtonPosition.bottomRight,
@@ -836,7 +841,7 @@ class _PlannerCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'v0.9.2',
+                  'v0.9.3',
                   style: TextStyle(
                     color: scheme.onPrimaryContainer,
                     fontSize: 11,
@@ -1362,9 +1367,11 @@ class _RoutingStatus extends StatelessWidget {
         ? (Icons.alt_route_rounded, strings.routingReady)
         : planner.isRouting
             ? (Icons.sync_rounded, strings.routingCalculating)
-            : planner.isSnapped
-                ? (Icons.route_rounded, strings.routeSnapped)
-                : (Icons.cloud_off_rounded, strings.routeLocalFallback);
+            : planner.hasRoutingError
+                ? (Icons.cloud_off_rounded, strings.routeUnavailable)
+                : planner.isSnapped
+                    ? (Icons.route_rounded, strings.routeSnapped)
+                    : (Icons.alt_route_rounded, strings.routeLocalFallback);
 
     return Row(
       children: [

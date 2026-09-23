@@ -58,6 +58,7 @@ class RoutePlan {
     required this.profile,
     this.isSnapped = false,
     this.routingSource = 'local',
+    this.snappedWaypoints = const [],
   });
 
   final List<GeoPoint> geometry;
@@ -68,6 +69,7 @@ class RoutePlan {
   final RouteProfile profile;
   final bool isSnapped;
   final String routingSource;
+  final List<GeoPoint> snappedWaypoints;
 }
 
 class ElevationSample {

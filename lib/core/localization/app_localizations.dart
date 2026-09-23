@@ -76,6 +76,7 @@ class AppLocalizations {
   String get routingReady => _value('routingReady');
   String get routingCalculating => _value('routingCalculating');
   String get routeSnapped => _value('routeSnapped');
+  String get routeUnavailable => _value('routeUnavailable');
   String get routeLocalFallback => _value('routeLocalFallback');
   String get elevationProfile => _value('elevationProfile');
   String get elevation => _value('elevation');
@@ -213,7 +214,8 @@ class AppLocalizations {
       'routingReady': 'Routing pronto',
       'routingCalculating': 'Calcolo percorso su sentieri e strade…',
       'routeSnapped': 'Percorso agganciato alla rete OSM',
-      'routeLocalFallback': 'Modalità locale: linea diretta',
+      'routeUnavailable': 'Routing non disponibile: modifica i punti o riprova',
+      'routeLocalFallback': 'Percorso locale o GPX non agganciato alla rete',
       'elevationProfile': 'Profilo altimetrico',
       'elevation': 'Quota',
       'descent': 'Discesa',
@@ -349,7 +351,8 @@ class AppLocalizations {
       'routingReady': 'Routing ready',
       'routingCalculating': 'Routing along paths and roads…',
       'routeSnapped': 'Route snapped to the OSM network',
-      'routeLocalFallback': 'Local mode: direct line',
+      'routeUnavailable': 'Routing unavailable: adjust the points or try again',
+      'routeLocalFallback': 'Local or GPX route not snapped to the network',
       'elevationProfile': 'Elevation profile',
       'elevation': 'Elevation',
       'descent': 'Descent',
@@ -485,7 +488,8 @@ class AppLocalizations {
       'routingReady': 'Routing listo',
       'routingCalculating': 'Calculando por caminos y carreteras…',
       'routeSnapped': 'Ruta ajustada a la red OSM',
-      'routeLocalFallback': 'Modo local: línea directa',
+      'routeUnavailable': 'Routing no disponible: ajusta los puntos o inténtalo de nuevo',
+      'routeLocalFallback': 'Ruta local o GPX sin ajustar a la red',
       'elevationProfile': 'Perfil de elevación',
       'elevation': 'Altitud',
       'descent': 'Descenso',
@@ -621,7 +625,8 @@ class AppLocalizations {
       'routingReady': 'Routage prêt',
       'routingCalculating': 'Calcul sur chemins et routes…',
       'routeSnapped': 'Parcours calé sur le réseau OSM',
-      'routeLocalFallback': 'Mode local : ligne directe',
+      'routeUnavailable': 'Itinéraire indisponible : modifiez les points ou réessayez',
+      'routeLocalFallback': 'Itinéraire local ou GPX non accroché au réseau',
       'elevationProfile': 'Profil altimétrique',
       'elevation': 'Altitude',
       'descent': 'Descente',
@@ -757,7 +762,8 @@ class AppLocalizations {
       'routingReady': 'Roteamento pronto',
       'routingCalculating': 'A calcular por trilhos e estradas…',
       'routeSnapped': 'Percurso ajustado à rede OSM',
-      'routeLocalFallback': 'Modo local: linha direta',
+      'routeUnavailable': 'Roteamento indisponível: ajuste os pontos ou tente novamente',
+      'routeLocalFallback': 'Rota local ou GPX não ajustada à rede',
       'elevationProfile': 'Perfil de elevação',
       'elevation': 'Altitude',
       'descent': 'Descida',

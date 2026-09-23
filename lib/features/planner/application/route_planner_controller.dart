@@ -26,6 +26,7 @@ class RoutePlannerState {
     this.elevationProfile = const ElevationProfile.unavailable(),
     this.isElevationLoading = false,
     this.importedName,
+    this.routingError,
   });
 
   final List<GeoPoint> points;
@@ -41,9 +42,15 @@ class RoutePlannerState {
   final ElevationProfile elevationProfile;
   final bool isElevationLoading;
   final String? importedName;
+  final String? routingError;
+
+  bool get hasRoutingError => routingError != null;
 
   bool get canSave =>
-      points.length >= 2 && geometry.length >= 2 && distanceMeters > 0;
+      routingError == null &&
+      points.length >= 2 &&
+      geometry.length >= 2 &&
+      distanceMeters > 0;
 
   bool get hasElevation => elevationProfile.isAvailable;
 
@@ -66,6 +73,8 @@ class RoutePlannerState {
     bool? isElevationLoading,
     String? importedName,
     bool clearImportedName = false,
+    String? routingError,
+    bool clearRoutingError = false,
   }) {
     return RoutePlannerState(
       points: points ?? this.points,
@@ -82,6 +91,8 @@ class RoutePlannerState {
       isElevationLoading: isElevationLoading ?? this.isElevationLoading,
       importedName:
           clearImportedName ? null : importedName ?? this.importedName,
+      routingError:
+          clearRoutingError ? null : routingError ?? this.routingError,
     );
   }
 }
@@ -148,6 +159,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       elevationProfile: const ElevationProfile.unavailable(),
       isElevationLoading: false,
       clearImportedName: true,
+      clearRoutingError: true,
     );
     unawaited(_refreshRoute());
   }
@@ -259,6 +271,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       elevationProfile: const ElevationProfile.unavailable(),
       isElevationLoading: false,
       clearImportedName: true,
+      clearRoutingError: true,
     );
 
     unawaited(_refreshRoute());
@@ -277,6 +290,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         routingSource: 'local',
         elevationProfile: const ElevationProfile.unavailable(),
         isElevationLoading: false,
+        clearRoutingError: true,
       );
       return;
     }
@@ -296,7 +310,13 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         return;
       }
 
+      final snappedWaypoints =
+          plan.snappedWaypoints.length == waypoints.length
+              ? List<GeoPoint>.unmodifiable(plan.snappedWaypoints)
+              : waypoints;
+
       state = state.copyWith(
+        points: snappedWaypoints,
         geometry: plan.geometry,
         distanceMeters: plan.distanceMeters,
         estimatedDuration: plan.estimatedDuration,
@@ -305,27 +325,26 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         routingSource: plan.routingSource,
         elevationProfile: const ElevationProfile.unavailable(),
         isElevationLoading: true,
+        clearRoutingError: true,
       );
 
       unawaited(_refreshElevation(generation, plan.geometry));
-    } on Object {
+    } on Object catch (error) {
       if (!ref.mounted || generation != _routingGeneration) {
         return;
       }
 
-      final distance = calculateRouteDistanceMeters(waypoints);
       state = state.copyWith(
-        geometry: waypoints,
-        distanceMeters: distance,
-        estimatedDuration: _estimateDuration(distance, profile),
+        geometry: const [],
+        distanceMeters: 0,
+        estimatedDuration: Duration.zero,
         isRouting: false,
         isSnapped: false,
-        routingSource: 'local',
+        routingSource: 'unavailable',
         elevationProfile: const ElevationProfile.unavailable(),
-        isElevationLoading: true,
+        isElevationLoading: false,
+        routingError: error.toString(),
       );
-
-      unawaited(_refreshElevation(generation, waypoints));
     }
   }
 

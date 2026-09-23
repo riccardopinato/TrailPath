@@ -98,6 +98,8 @@ void main() {
     expect(state.geometry, hasLength(3));
     expect(state.distanceMeters, 1500);
     expect(state.routingSource, 'test-snap');
+    expect(state.points.first.latitude, closeTo(45.0002, 0.000001));
+    expect(state.points.last.longitude, closeTo(11.0098, 0.000001));
     expect(state.hasElevation, isTrue);
     expect(state.ascentMeters, 25);
     expect(state.descentMeters, 5);
@@ -146,6 +148,27 @@ void main() {
     expect(exported.points[1].elevationMeters, 130);
   });
 
+  test('routing failure never leaves a fake straight-line route', () async {
+    final container = containerWith(const _FailingRoutingEngine());
+    addTearDown(container.dispose);
+
+    final controller = container.read(routePlannerProvider.notifier);
+    controller
+      ..addPoint(const GeoPoint(latitude: 45.0, longitude: 11.0))
+      ..addPoint(const GeoPoint(latitude: 45.01, longitude: 11.01));
+
+    await Future<void>.delayed(Duration.zero);
+
+    final state = container.read(routePlannerProvider);
+    expect(state.hasRoutingError, isTrue);
+    expect(state.geometry, isEmpty);
+    expect(state.distanceMeters, 0);
+    expect(state.estimatedDuration, Duration.zero);
+    expect(state.isSnapped, isFalse);
+    expect(state.canSave, isFalse);
+    expect(state.routingSource, 'unavailable');
+  });
+
   test('distance helper returns zero for fewer than two points', () {
     expect(calculateDistanceMeters(const []), 0);
     expect(
@@ -178,6 +201,10 @@ class _SnappedRoutingEngine implements RoutingEngine {
       profile: request.profile,
       isSnapped: true,
       routingSource: engineId,
+      snappedWaypoints: const [
+        GeoPoint(latitude: 45.0002, longitude: 11.0002),
+        GeoPoint(latitude: 45.0098, longitude: 11.0098),
+      ],
     );
   }
 }
@@ -201,5 +228,18 @@ class _FakeElevationEngine implements ElevationEngine {
       source: engineId,
       noiseThresholdMeters: 0,
     );
+  }
+}
+
+
+class _FailingRoutingEngine implements RoutingEngine {
+  const _FailingRoutingEngine();
+
+  @override
+  String get engineId => 'test-failure';
+
+  @override
+  Future<RoutePlan> calculate(RouteRequest request) {
+    throw const RoutingException('network unavailable');
   }
 }

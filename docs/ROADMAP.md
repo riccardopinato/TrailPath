@@ -33,5 +33,8 @@ Activity profiles, adaptive GPS battery modes, persistent Back to Car guidance, 
 ## v0.9.1 - Runtime Recovery
 Production basemap, functional place search, real-device navigation lifecycle fixes, resilient TTS, GPS settings recovery, offline-state reconciliation and Android emulator smoke testing.
 
+## v0.9.3 - Trail-first Routing & Planner Hardening
+Explicit routing failures, no fake straight-line fallback, snapped OSM foot/bike waypoints, outdoor planner styling, clearer route casing, fewer redundant MapLibre annotation redraws and expanded routing regression tests.
+
 ## v1.0 - Release
 Onboarding, Premium foundation, optional backup/sync, accessibility, performance and store QA.

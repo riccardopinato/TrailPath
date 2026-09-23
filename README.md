@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.9.1 - Runtime Recovery
+v0.9.3 - Trail-first Routing & Planner Hardening
 
-TrailPath v0.9.1 hardens real-device use: production OpenFreeMap rendering, functional place search, safer navigation startup, resilient voice guidance, GPS settings recovery and offline-state reconciliation.
+TrailPath v0.9.3 hardens outdoor planning: foot/bike routes fail explicitly instead of becoming fake straight lines, OSRM-snapped waypoints are preserved, the planner uses an outdoor-focused OpenFreeMap style, route rendering is clearer and duplicate annotation redraws are reduced.
 
 ### Included
 
@@ -23,7 +23,7 @@ TrailPath v0.9.1 hardens real-device use: production OpenFreeMap rendering, func
 - route line, undo/redo and clear controls
 - activity profiles with foot/bike routing profiles
 - asynchronous snap-to-network routing through routing.openstreetmap.de
-- automatic local straight-line fallback when routing is unavailable
+- explicit routing failure state when network routing is unavailable; no silent straight-line route can be saved
 - Open-Meteo/Copernicus terrain elevation sampling up to 100 points
 - ascent/descent and segment grade calculation with DEM noise filtering
 - interactive elevation profile with drag inspection
@@ -47,7 +47,7 @@ TrailPath v0.9.1 hardens real-device use: production OpenFreeMap rendering, func
 - dedicated Back to Car map with live return line and heading-aware direction arrow
 - device Safety Check for battery, system battery saver, GPS permissions/services and offline-map readiness
 - quick current-position sharing through the native share sheet
-- production OpenFreeMap Liberty basemap shared by planner, recorder, navigation, Back to Car and offline downloads
+- OpenFreeMap Liberty basemap for navigation/offline screens plus Fiord outdoor styling in the planner
 - user-triggered place/trail search with cached, rate-limited geocoding
 - navigation startup moved to a safe localization lifecycle
 - TTS/haptic feedback isolated so voice failures cannot stop GPS navigation

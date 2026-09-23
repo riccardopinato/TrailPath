@@ -51,7 +51,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
 
     final client = HttpClient()
       ..connectionTimeout = timeout
-      ..userAgent = 'TrailPath/0.9.2 (+https://github.com/riccardopinato/TrailPath)';
+      ..userAgent = 'TrailPath/0.9.3 (+https://github.com/riccardopinato/TrailPath)';
 
     try {
       final requestHttp = await client.getUrl(uri).timeout(timeout);
@@ -116,6 +116,30 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         throw const RoutingException('Route geometry could not be decoded.');
       }
 
+      final snappedWaypoints = <GeoPoint>[];
+      final waypointsJson = payload['waypoints'];
+      if (waypointsJson is List) {
+        for (final waypoint in waypointsJson) {
+          if (waypoint is! Map<String, dynamic>) {
+            continue;
+          }
+          final location = waypoint['location'];
+          if (location is! List || location.length < 2) {
+            continue;
+          }
+          final longitude = location[0];
+          final latitude = location[1];
+          if (longitude is num && latitude is num) {
+            snappedWaypoints.add(
+              GeoPoint(
+                latitude: latitude.toDouble(),
+                longitude: longitude.toDouble(),
+              ),
+            );
+          }
+        }
+      }
+
       final distance = (route['distance'] as num?)?.toDouble() ?? 0;
       final seconds = (route['duration'] as num?)?.round() ?? 0;
 
@@ -128,6 +152,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         profile: request.profile,
         isSnapped: true,
         routingSource: engineId,
+        snappedWaypoints: List<GeoPoint>.unmodifiable(snappedWaypoints),
       );
     } finally {
       client.close(force: true);
@@ -163,11 +188,9 @@ class FallbackRoutingEngine implements RoutingEngine {
       return fallback.calculate(request);
     }
 
-    try {
-      return await primary.calculate(request);
-    } on Object {
-      return fallback.calculate(request);
-    }
+    // A snapped outdoor route must be real or fail explicitly.
+    // Never turn a provider failure into a fake straight-line route.
+    return primary.calculate(request);
   }
 }
 
