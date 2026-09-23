@@ -45,6 +45,7 @@ class RoutePlannerState {
   final String? importedName;
 
   bool get canSave =>
+      !isRouting &&
       routingError == null &&
       points.length >= 2 &&
       geometry.length >= 2 &&

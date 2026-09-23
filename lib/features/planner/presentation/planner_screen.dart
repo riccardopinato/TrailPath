@@ -722,17 +722,22 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       return;
     }
 
+    final latestPlanner = ref.read(routePlannerProvider);
+    if (!latestPlanner.canSave) {
+      return;
+    }
+
     await database.savePlannedRoute(
           name: name.trim(),
-          profile: planner.profile.name,
-          waypointsData: planner.points,
-          geometryData: planner.elevationProfile.isAvailable
-              ? planner.elevationProfile.points
-              : planner.geometry,
-          distanceMeters: planner.distanceMeters,
-          ascentMeters: planner.ascentMeters,
-          descentMeters: planner.descentMeters,
-          estimatedDuration: planner.estimatedDuration,
+          profile: latestPlanner.profile.name,
+          waypointsData: latestPlanner.points,
+          geometryData: latestPlanner.elevationProfile.isAvailable
+              ? latestPlanner.elevationProfile.points
+              : latestPlanner.geometry,
+          distanceMeters: latestPlanner.distanceMeters,
+          ascentMeters: latestPlanner.ascentMeters,
+          descentMeters: latestPlanner.descentMeters,
+          estimatedDuration: latestPlanner.estimatedDuration,
         );
 
     if (!mounted) {
@@ -1060,7 +1065,7 @@ class _PlannerCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'v0.9.2',
+                  'v0.9.3',
                   style: TextStyle(
                     color: scheme.onPrimaryContainer,
                     fontSize: 11,
