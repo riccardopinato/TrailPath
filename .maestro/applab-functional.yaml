@@ -3,9 +3,7 @@
 # the complete recording lifecycle and verifies persistence after relaunch.
 appId: com.riccardopinato.trail_path
 ---
-- launchApp:
-    clearState: false
-
+# AppLab has already cold-launched the APK and captured launch evidence.
 - assertVisible: "Search place or trail"
 
 - tapOn:
