@@ -810,7 +810,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                           ),
                         ],
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
@@ -822,8 +822,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                                 ? strings.mapReady
                                 : strings.mapLoading,
                           ),
-                          SizedBox(width: 8),
-                          Text(
+                          const SizedBox(width: 8),
+                          const Text(
                             'TrailPath',
                             style: TextStyle(
                               fontWeight: FontWeight.w900,
