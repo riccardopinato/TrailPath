@@ -6,5 +6,5 @@ abstract final class MapConfig {
       'https://nominatim.openstreetmap.org/search';
 
   static const String userAgent =
-      'TrailPath/0.9.1 (+https://github.com/riccardopinato/TrailPath)';
+      'TrailPath/0.9.2 (+https://github.com/riccardopinato/TrailPath)';
 }
