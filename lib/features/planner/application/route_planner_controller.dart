@@ -145,6 +145,52 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     _applyPoints(next);
   }
 
+  bool addTrace(List<GeoPoint> rawTrace) {
+    final trace = simplifyTraceForRouting(rawTrace);
+    if (trace.length < 2) {
+      return false;
+    }
+
+    final previousPoints = List<GeoPoint>.unmodifiable(state.points);
+    final previousLegs = _copyLegCache();
+    final canPatch = _hasLegCacheFor(previousPoints);
+
+    var append = List<GeoPoint>.of(trace);
+    if (previousPoints.isNotEmpty &&
+        haversineMeters(previousPoints.last, append.first) <= 30) {
+      append = append.skip(1).toList(growable: false);
+    }
+    if (append.isEmpty) {
+      return false;
+    }
+
+    final next = List<GeoPoint>.unmodifiable([
+      ...previousPoints,
+      ...append,
+    ]);
+
+    _pushUndo();
+    _redoStack.clear();
+
+    if (canPatch && previousPoints.length >= 2) {
+      _startRouteEdit(next);
+      unawaited(
+        _rerouteSpan(
+          nextPoints: next,
+          previousLegs: previousLegs,
+          startWaypoint: previousPoints.length - 1,
+          endWaypoint: next.length - 1,
+          oldLegStart: previousLegs.length,
+          oldLegRemoveCount: 0,
+        ),
+      );
+      return true;
+    }
+
+    _applyPoints(next);
+    return true;
+  }
+
   void movePoint(int index, GeoPoint point) {
     if (index < 0 || index >= state.points.length) {
       return;
