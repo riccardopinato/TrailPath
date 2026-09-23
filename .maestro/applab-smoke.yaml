@@ -6,6 +6,7 @@ appId: com.riccardopinato.trail_path
 
 - assertVisible: "Search place or trail"
 - assertVisible: "Select trail"
+- assertVisible: "Map ready"
 
 - tapOn:
     text: 'Record\s*Tab 2 of 5'

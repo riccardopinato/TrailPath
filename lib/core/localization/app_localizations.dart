@@ -47,6 +47,8 @@ class AppLocalizations {
   String get noRoutesHint => _value('noRoutesHint');
   String get foundationReady => _value('foundationReady');
   String get mapLayers => _value('mapLayers');
+  String get mapReady => _value('mapReady');
+  String get mapLoading => _value('mapLoading');
   String get centerLocation => _value('centerLocation');
   String get locationServiceOff => _value('locationServiceOff');
   String get locationUnavailable => _value('locationUnavailable');
@@ -190,6 +192,8 @@ class AppLocalizations {
       'noRoutesHint': 'I percorsi pianificati compariranno qui.',
       'foundationReady': 'Mappa e posizione attive',
       'mapLayers': 'Livelli mappa',
+      'mapReady': 'Mappa pronta',
+      'mapLoading': 'Caricamento mappa',
       'centerLocation': 'Centra sulla mia posizione',
       'locationServiceOff': 'Attiva i servizi di localizzazione',
       'locationUnavailable': 'Posizione temporaneamente non disponibile',
@@ -332,6 +336,8 @@ class AppLocalizations {
       'noRoutesHint': 'Routes you plan will appear here.',
       'foundationReady': 'Map and location active',
       'mapLayers': 'Map layers',
+      'mapReady': 'Map ready',
+      'mapLoading': 'Loading map',
       'centerLocation': 'Center on my location',
       'locationServiceOff': 'Turn on location services',
       'locationUnavailable': 'Location temporarily unavailable',
@@ -474,6 +480,8 @@ class AppLocalizations {
       'noRoutesHint': 'Las rutas planificadas aparecerán aquí.',
       'foundationReady': 'Mapa y ubicación activos',
       'mapLayers': 'Capas del mapa',
+      'mapReady': 'Mapa listo',
+      'mapLoading': 'Cargando mapa',
       'centerLocation': 'Centrar en mi ubicación',
       'locationServiceOff': 'Activa los servicios de ubicación',
       'locationUnavailable': 'Ubicación temporalmente no disponible',
@@ -616,6 +624,8 @@ class AppLocalizations {
       'noRoutesHint': 'Vos parcours planifiés apparaîtront ici.',
       'foundationReady': 'Carte et position actives',
       'mapLayers': 'Couches de carte',
+      'mapReady': 'Carte prête',
+      'mapLoading': 'Chargement de la carte',
       'centerLocation': 'Centrer sur ma position',
       'locationServiceOff': 'Activez les services de localisation',
       'locationUnavailable': 'Position temporairement indisponible',
@@ -758,6 +768,8 @@ class AppLocalizations {
       'noRoutesHint': 'Os percursos planeados aparecerão aqui.',
       'foundationReady': 'Mapa e localização ativos',
       'mapLayers': 'Camadas do mapa',
+      'mapReady': 'Mapa pronto',
+      'mapLoading': 'A carregar mapa',
       'centerLocation': 'Centrar na minha localização',
       'locationServiceOff': 'Ative os serviços de localização',
       'locationUnavailable': 'Localização temporariamente indisponível',

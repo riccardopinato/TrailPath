@@ -761,7 +761,11 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     }
                   },
                   onStyleLoadedCallback: () {
-                    _styleReady = true;
+                    if (mounted) {
+                      setState(() => _styleReady = true);
+                    } else {
+                      _styleReady = true;
+                    }
                     unawaited(OutdoorMapStyle.enhance(_mapController));
                     unawaited(_syncPlannerAnnotations());
                   },
@@ -809,7 +813,15 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.terrain, size: 20),
+                          Icon(
+                            _styleReady
+                                ? Icons.terrain
+                                : Icons.hourglass_top_rounded,
+                            size: 20,
+                            semanticLabel: _styleReady
+                                ? strings.mapReady
+                                : strings.mapLoading,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             'TrailPath',
