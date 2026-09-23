@@ -90,6 +90,32 @@ void main() {
 
     expect(events.any((e) => e.type == NavigationEventType.arrived), isTrue);
   });
+  test('rapid battery-mode changes keep the latest GPS mode', () async {
+    final location = _FakeLocationEngine();
+    final engine = RouteNavigationEngine(locationEngine: location);
+    addTearDown(engine.dispose);
+
+    const route = RoutePlan(
+      geometry: [
+        GeoPoint(latitude: 45.0, longitude: 11.0),
+        GeoPoint(latitude: 45.0, longitude: 11.01),
+      ],
+      distanceMeters: 786,
+      ascentMeters: 0,
+      descentMeters: 0,
+      estimatedDuration: Duration(minutes: 10),
+      profile: RouteProfile.hiking,
+    );
+
+    await engine.start(route, mode: BatteryMode.balanced);
+
+    final first = engine.setBatteryMode(BatteryMode.performance);
+    final second = engine.setBatteryMode(BatteryMode.saver);
+    await Future.wait([first, second]);
+
+    expect(location.watchModes.last, BatteryMode.saver);
+  });
+
   test('dispose during pending start never creates a GPS stream', () async {
     final location = _FakeLocationEngine()
       ..serviceEnabledCompleter = Completer<bool>();
@@ -124,6 +150,7 @@ class _FakeLocationEngine implements LocationEngine {
 
   bool lastKeepAliveInBackground = false;
   int watchCalls = 0;
+  final List<BatteryMode> watchModes = [];
   Completer<bool>? serviceEnabledCompleter;
 
   void add(PositionSample sample) => _controller.add(sample);
@@ -153,6 +180,7 @@ class _FakeLocationEngine implements LocationEngine {
     bool keepAliveInBackground = false,
   }) {
     watchCalls++;
+    watchModes.add(mode);
     lastKeepAliveInBackground = keepAliveInBackground;
     return _controller.stream;
   }

@@ -30,6 +30,7 @@ class RouteNavigationEngine implements NavigationEngine {
   double _maxAcceptedAccuracyMeters = 60;
   bool _disposed = false;
   int _session = 0;
+  Future<void> _batteryReconfigureChain = Future<void>.value();
 
   @override
   Stream<NavigationEvent> get events => _controller.stream;
@@ -113,15 +114,30 @@ class RouteNavigationEngine implements NavigationEngine {
   }
 
   @override
-  Future<void> setBatteryMode(BatteryMode mode) async {
+  Future<void> setBatteryMode(BatteryMode mode) {
     if (_disposed || _batteryMode == mode) {
-      return;
+      return Future<void>.value();
     }
+
     _batteryMode = mode;
     _maxAcceptedAccuracyMeters =
         batteryModePolicy(mode).maxAcceptedAccuracyMeters;
 
-    if (_route == null || _subscription == null) {
+    final previous = _batteryReconfigureChain;
+    final next = () async {
+      try {
+        await previous;
+      } on Object {
+        // A failed older reconfiguration must not block a newer mode.
+      }
+      await _restartLocationStreamForBatteryMode();
+    }();
+    _batteryReconfigureChain = next;
+    return next;
+  }
+
+  Future<void> _restartLocationStreamForBatteryMode() async {
+    if (_disposed || _route == null || _subscription == null) {
       return;
     }
 
@@ -129,9 +145,12 @@ class RouteNavigationEngine implements NavigationEngine {
     final previous = _subscription;
     _subscription = null;
     await previous?.cancel();
+
     if (!_isCurrent(session) || _route == null) {
       return;
     }
+
+    final mode = _batteryMode;
     _subscription = locationEngine
         .watch(
           mode: mode,
