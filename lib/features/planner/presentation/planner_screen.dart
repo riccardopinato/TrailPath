@@ -27,6 +27,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
   MapLibreMapController? _mapController;
   StreamSubscription<PositionSample>? _positionSubscription;
+  int _locationGeneration = 0;
+  bool _disposing = false;
   PositionSample? _position;
   bool _permissionGranted = false;
   bool _locationServiceEnabled = true;
@@ -48,22 +50,44 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
   @override
   void dispose() {
-    _positionSubscription?.cancel();
+    _disposing = true;
+    _locationGeneration++;
+
+    final subscription = _positionSubscription;
+    _positionSubscription = null;
+    if (subscription != null) {
+      unawaited(subscription.cancel());
+    }
+
     _searchController.dispose();
-    _mapController?.dispose();
+
+    final mapController = _mapController;
+    _mapController = null;
+    _styleReady = false;
+    mapController?.dispose();
+
     super.dispose();
   }
 
+  bool _locationRequestActive(int generation) {
+    return !_disposing &&
+        mounted &&
+        generation == _locationGeneration;
+  }
+
   Future<void> _initializeLocation() async {
-    if (mounted) {
-      setState(() {
-        _locationBusy = true;
-        _locationError = null;
-      });
+    final generation = ++_locationGeneration;
+    if (!_locationRequestActive(generation)) {
+      return;
     }
 
+    setState(() {
+      _locationBusy = true;
+      _locationError = null;
+    });
+
     if (_runningWidgetTest) {
-      if (mounted) {
+      if (_locationRequestActive(generation)) {
         setState(() => _locationBusy = false);
       }
       return;
@@ -71,34 +95,40 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
     try {
       final engine = ref.read(locationEngineProvider);
+
       final serviceEnabled = await engine.isServiceEnabled();
+      if (!_locationRequestActive(generation)) {
+        return;
+      }
       if (!serviceEnabled) {
-        if (mounted) {
-          setState(() {
-            _locationServiceEnabled = false;
-            _locationBusy = false;
-          });
-        }
+        setState(() {
+          _locationServiceEnabled = false;
+          _locationBusy = false;
+        });
         return;
       }
 
       var permission = await engine.hasPermission();
+      if (!_locationRequestActive(generation)) {
+        return;
+      }
       if (!permission) {
         permission = await engine.requestPermission();
+        if (!_locationRequestActive(generation)) {
+          return;
+        }
       }
 
       if (!permission) {
-        if (mounted) {
-          setState(() {
-            _permissionGranted = false;
-            _locationBusy = false;
-          });
-        }
+        setState(() {
+          _permissionGranted = false;
+          _locationBusy = false;
+        });
         return;
       }
 
       final current = await engine.current();
-      if (!mounted) {
+      if (!_locationRequestActive(generation)) {
         return;
       }
 
@@ -112,24 +142,33 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
       if (current != null) {
         await _focusPosition(current, zoom: 15.5);
+        if (!_locationRequestActive(generation)) {
+          return;
+        }
       }
 
-      await _positionSubscription?.cancel();
+      final previousSubscription = _positionSubscription;
+      _positionSubscription = null;
+      await previousSubscription?.cancel();
+      if (!_locationRequestActive(generation)) {
+        return;
+      }
+
       _positionSubscription = engine.watch().listen(
         (sample) {
-          if (!mounted) {
+          if (!_locationRequestActive(generation)) {
             return;
           }
           setState(() => _position = sample);
         },
         onError: (Object error, StackTrace stackTrace) {
-          if (mounted) {
+          if (_locationRequestActive(generation)) {
             setState(() => _locationError = error.toString());
           }
         },
       );
     } catch (error) {
-      if (mounted) {
+      if (_locationRequestActive(generation)) {
         setState(() {
           _locationBusy = false;
           _locationError = error.toString();
