@@ -6,7 +6,10 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 /// change. We only strengthen rendered path/pedestrian/track line layers that
 /// already exist in the style.
 abstract final class OutdoorMapStyle {
-  static Future<void> enhance(MapLibreMapController controller) async {
+  static Future<void> enhance(MapLibreMapController? controller) async {
+    if (controller == null) {
+      return;
+    }
     try {
       final layerIds = await controller.getLayerIds();
       for (final rawId in layerIds) {
