@@ -166,7 +166,8 @@ List<GeoPoint> simplifyTraceForRouting(
       spaced.add(point);
     }
   }
-  if (haversineMeters(spaced.last, points.last) > 0.5) {
+  if (spaced.length == 1 ||
+      haversineMeters(spaced.last, points.last) > 0.5) {
     spaced.add(points.last);
   } else {
     spaced[spaced.length - 1] = points.last;
