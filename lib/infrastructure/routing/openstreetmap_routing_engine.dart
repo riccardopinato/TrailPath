@@ -8,9 +8,11 @@ import 'package:trail_path/core/services/service_contracts.dart';
 class OpenStreetMapRoutingEngine implements RoutingEngine {
   const OpenStreetMapRoutingEngine({
     this.timeout = const Duration(seconds: 12),
-  });
+    this.maxWaypointsPerRequest = 20,
+  }) : assert(maxWaypointsPerRequest >= 2);
 
   final Duration timeout;
+  final int maxWaypointsPerRequest;
 
   @override
   String get engineId => 'routing.openstreetmap.de';
@@ -30,6 +32,91 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
       );
     }
 
+    final chunks = chunkRouteWaypoints(
+      request.points,
+      maxPointsPerChunk: maxWaypointsPerRequest,
+    );
+    if (chunks.length == 1) {
+      return _calculateSingle(
+        RouteRequest(
+          points: chunks.single,
+          profile: request.profile,
+          snapToNetwork: request.snapToNetwork,
+        ),
+      );
+    }
+
+    final plans = <RoutePlan>[];
+    for (final chunk in chunks) {
+      plans.add(
+        await _calculateSingle(
+          RouteRequest(
+            points: chunk,
+            profile: request.profile,
+            snapToNetwork: request.snapToNetwork,
+          ),
+        ),
+      );
+    }
+
+    if (plans.any((plan) => !plan.isSnapped)) {
+      throw const RoutingException(
+        'A routing chunk could not be snapped to the network.',
+      );
+    }
+
+    final geometry = <GeoPoint>[];
+    final snappedWaypoints = <GeoPoint>[];
+    var distanceMeters = 0.0;
+    var durationSeconds = 0;
+
+    for (var index = 0; index < plans.length; index++) {
+      final plan = plans[index];
+      distanceMeters += plan.distanceMeters;
+      durationSeconds += plan.estimatedDuration.inSeconds;
+
+      if (index == 0) {
+        geometry.addAll(plan.geometry);
+        snappedWaypoints.addAll(plan.snappedWaypoints);
+        continue;
+      }
+
+      if (plan.geometry.isNotEmpty) {
+        final seamDistance = geometry.isEmpty
+            ? double.infinity
+            : haversineMeters(geometry.last, plan.geometry.first);
+        geometry.addAll(
+          seamDistance <= 2 ? plan.geometry.skip(1) : plan.geometry,
+        );
+      }
+      snappedWaypoints.addAll(
+        plan.snappedWaypoints.isEmpty
+            ? const <GeoPoint>[]
+            : plan.snappedWaypoints.skip(1),
+      );
+    }
+
+    if (geometry.length < 2 ||
+        snappedWaypoints.length != request.points.length) {
+      throw const RoutingException(
+        'Chunked routing returned incomplete geometry.',
+      );
+    }
+
+    return RoutePlan(
+      geometry: List<GeoPoint>.unmodifiable(geometry),
+      distanceMeters: distanceMeters,
+      ascentMeters: 0,
+      descentMeters: 0,
+      estimatedDuration: Duration(seconds: durationSeconds),
+      profile: request.profile,
+      isSnapped: true,
+      routingSource: engineId,
+      snappedWaypoints: List<GeoPoint>.unmodifiable(snappedWaypoints),
+    );
+  }
+
+  Future<RoutePlan> _calculateSingle(RouteRequest request) async {
     final service = _serviceFor(request.profile);
     final coordinates = request.points
         .map(
@@ -51,7 +138,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
 
     final client = HttpClient()
       ..connectionTimeout = timeout
-      ..userAgent = 'TrailPath/0.9.6 (+https://github.com/riccardopinato/TrailPath)';
+      ..userAgent = 'TrailPath/0.9.7 (+https://github.com/riccardopinato/TrailPath)';
 
     try {
       final requestHttp = await client.getUrl(uri).timeout(timeout);
