@@ -8,7 +8,7 @@ appId: com.riccardopinato.trail_path
 
 - tapOn:
     text: 'Record\s*Tab 2 of 5'
-- assertVisible: "Ready to record"
+- assertVisible: "Start recording"
 
 - tapOn:
     text: 'Routes\s*Tab 3 of 5'
