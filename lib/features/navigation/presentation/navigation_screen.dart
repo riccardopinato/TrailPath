@@ -60,7 +60,6 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
     if (controller != null) {
       unawaited(controller.stop());
     }
-    _mapController?.dispose();
     super.dispose();
   }
 

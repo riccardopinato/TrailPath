@@ -43,7 +43,6 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
   @override
   void dispose() {
     _trackRenderGeneration++;
-    _mapController?.dispose();
     super.dispose();
   }
 

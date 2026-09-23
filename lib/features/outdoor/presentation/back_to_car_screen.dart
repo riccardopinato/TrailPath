@@ -52,7 +52,6 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
   void dispose() {
     _renderGeneration++;
     _positionSubscription?.cancel();
-    _mapController?.dispose();
     super.dispose();
   }
 

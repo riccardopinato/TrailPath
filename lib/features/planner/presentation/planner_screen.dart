@@ -55,7 +55,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   void dispose() {
     _positionSubscription?.cancel();
     _searchController.dispose();
-    _mapController?.dispose();
     super.dispose();
   }
 
