@@ -71,11 +71,14 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
         completed = snapshot.isComplete;
       }
 
-      if (completed) {
-        await database.setSavedRouteOfflineReady(routeId, isReady: true);
-      }
+      await database.setSavedRouteOfflineReady(routeId, isReady: completed);
       return completed;
     } on Object {
+      try {
+        await database.setSavedRouteOfflineReady(routeId, isReady: false);
+      } on Object {
+        // Preserve the original download failure if reconciliation also fails.
+      }
       return false;
     } finally {
       if (ref.mounted) {

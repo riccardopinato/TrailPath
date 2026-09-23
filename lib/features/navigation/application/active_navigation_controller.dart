@@ -75,7 +75,10 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
 
   Future<void> _applyBatteryMode(BatteryMode mode) async {
     try {
-      await ref.read(navigationEngineProvider).setBatteryMode(mode);
+      final engine = _engine;
+      if (engine != null) {
+        await engine.setBatteryMode(mode);
+      }
     } on Object {
       // Keep navigation alive if a platform stream cannot be reconfigured
       // while the activity is running.
