@@ -1,12 +1,6 @@
 import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/models.dart';
 
-abstract interface class MapEngine {
-  String get engineId;
-
-  Future<void> warmUp();
-}
-
 abstract interface class RoutingEngine {
   String get engineId;
 
