@@ -4,13 +4,13 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.9.7 - Trace Mode
+v0.9.8 - Release Hardening
 
-TrailPath v0.9.7 adds Footpath-style freehand route drawing: draw directly over the map, simplify the gesture into meaningful waypoints and snap the result to the real OSM foot/bike network as one undoable planner operation.
+TrailPath v0.9.8 hardens Android delivery: the native Android project is now versioned instead of regenerated in CI, release builds enable shrinking/minification and CI produces ABI-split optimized APKs alongside the AppLab-tested debug build.
 
 ### Included
 
-- Flutter Android + iOS codebase
+- Flutter Android codebase with versioned native Android scaffold (iOS release scaffold remains a v1.0 task)
 - Riverpod dependency injection and state foundation
 - GoRouter navigation foundation
 - Drift local database schema v3 with recoverable activity drafts, return points and app settings
@@ -75,6 +75,9 @@ TrailPath v0.9.7 adds Footpath-style freehand route drawing: draw directly over 
 - navigation lifecycle regression test covering the previous localization startup crash
 - offline readiness reconciled against actual native MapLibre regions
 - native Android emulator smoke test in GitHub Actions
+- committed Android Gradle/manifest scaffold for reproducible builds
+- R8/resource shrinking in release builds
+- ABI-split release APK artifacts for lower install size
 - light and dark outdoor themes
 - Italian, English, Spanish, French and Portuguese localization foundation
 - structured logging

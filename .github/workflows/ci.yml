@@ -35,46 +35,11 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Generate current Android and iOS scaffolding
-        run: flutter create --platforms=android,ios --org com.riccardopinato --project-name trail_path .
-
-      - name: Configure native location permissions
+      - name: Verify committed Android scaffold
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          manifest = Path("android/app/src/main/AndroidManifest.xml")
-          text = manifest.read_text()
-          marker = '<manifest xmlns:android="http://schemas.android.com/apk/res/android">'
-          permissions = '''<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <uses-permission android:name="android.permission.INTERNET" />
-              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-              <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-              <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-              <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
-              <uses-permission android:name="android.permission.WAKE_LOCK" />
-              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />'''
-          if "ACCESS_FINE_LOCATION" not in text:
-              text = text.replace(marker, permissions)
-              manifest.write_text(text)
-
-          plist = Path("ios/Runner/Info.plist")
-          text = plist.read_text()
-          if "NSLocationWhenInUseUsageDescription" not in text:
-              text = text.replace(
-                  "</dict>",
-                  "  <key>NSLocationWhenInUseUsageDescription</key>\n"
-                  "  <string>TrailPath uses your location to show your position, follow outdoor routes and record tracks.</string>\n"
-                  "  <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>\n"
-                  "  <string>TrailPath uses background location only while you are recording an outdoor activity.</string>\n"
-                  "  <key>UIBackgroundModes</key>\n"
-                  "  <array>\n"
-                  "    <string>location</string>\n"
-                  "  </array>\n"
-                  "</dict>",
-              )
-              plist.write_text(text)
-          PY
+          test -f android/app/build.gradle.kts
+          test -f android/app/src/main/AndroidManifest.xml
+          test -f android/app/src/main/kotlin/com/riccardopinato/trail_path/MainActivity.kt
 
       - name: Resolve dependencies
         run: flutter pub get
@@ -94,11 +59,26 @@ jobs:
       - name: Build debug APK
         run: flutter build apk --debug
 
+      - name: Build optimized release APKs
+        run: flutter build apk --release --split-per-abi
+
+      - name: Report APK sizes
+        run: |
+          ls -lh build/app/outputs/flutter-apk/*.apk
+          du -b build/app/outputs/flutter-apk/*.apk | sort -n
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v6
         with:
-          name: TrailPath-v0.9.7-debug
+          name: TrailPath-v0.9.8-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
+
+      - name: Upload optimized release APKs
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-v0.9.8-release-split
+          path: build/app/outputs/flutter-apk/app-*-release.apk
           if-no-files-found: error
 
   applab-android:
@@ -120,7 +100,7 @@ jobs:
       - name: Download debug APK
         uses: actions/download-artifact@v6
         with:
-          name: TrailPath-v0.9.7-debug
+          name: TrailPath-v0.9.8-debug
           path: apk
 
       - name: Checkout AppLab

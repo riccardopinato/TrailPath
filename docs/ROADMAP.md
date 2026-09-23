@@ -48,5 +48,8 @@ MapLibre engine pre-warming, faster planner taps, zoom-aware route hit tolerance
 ## v0.9.7 - Trace Mode
 Freehand map drawing with live preview, gesture sampling and simplification, OSM network snapping, atomic undo, partial extension rerouting and chunked requests for long waypoint sets.
 
+## v0.9.8 - Release Hardening
+Versioned Android native scaffold, deterministic CI builds, R8/resource shrinking, ABI-split release APKs and release artifact size reporting.
+
 ## v1.0 - Release
 Onboarding, Premium foundation, optional backup/sync, accessibility, performance and store QA.
