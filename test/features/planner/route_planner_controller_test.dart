@@ -120,6 +120,14 @@ void main() {
     expect(state.routingSource, 'routing-error');
     expect(state.routingError, isNotNull);
     expect(state.canSave, isFalse);
+
+    controller.useDirectLine();
+    await Future<void>.delayed(Duration.zero);
+
+    state = container.read(routePlannerProvider);
+    expect(state.routingSource, 'straight-line-manual');
+    expect(state.routingError, isNull);
+    expect(state.canSave, isTrue);
   });
 
   test('imports GPX geometry without rerouting and preserves elevation', () {
