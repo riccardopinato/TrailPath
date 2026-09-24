@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.9.8 - Release Hardening
+v0.10.0 - Footpath-like Planner Core
 
-TrailPath v0.9.8 hardens Android delivery: the native Android project is now versioned instead of regenerated in CI, release builds enable shrinking/minification and CI produces ABI-split optimized APKs alongside the AppLab-tested debug build.
+TrailPath v0.10.0 brings the browser planner much closer to the Android planner: real OSM foot/bike routing, draggable waypoints, midpoint insertion, long-press route editing, undo/redo and Nominatim place search, while retaining the hardened Android release pipeline.
 
 ### Included
 
@@ -82,22 +82,21 @@ TrailPath v0.9.8 hardens Android delivery: the native Android project is now ver
 - Italian, English, Spanish, French and Portuguese localization foundation
 - structured logging
 - tests
-- GitHub Actions for format, analyze, test and debug APK build
+- GitHub Actions for format, analyze, test, AppLab, optimized APK artifacts and GitHub Pages Web Preview
 
 ## Toolchain
 
 The CI is pinned to Flutter 3.47.5 / Dart 3.13.4.
 
-Android and iOS platform folders are generated from the current Flutter template during CI. Native permissions are then applied by CI. The current public routing endpoint is suitable for development and validation; the RoutingEngine abstraction is intentionally kept provider-agnostic so a production-grade or self-hosted service can replace it without changing the planner.
+The Android scaffold is versioned in the repository for reproducible builds. The Web Preview is built separately and deployed through GitHub Pages. The current public routing endpoint is suitable for development and validation; the RoutingEngine abstraction is intentionally kept provider-agnostic so a production-grade or self-hosted service can replace it without changing the planner.
 
 ## Bootstrap locally
 
 1. Install Flutter 3.47.5 or a compatible stable version.
-2. Run: flutter create --platforms=android,ios --org com.riccardopinato --project-name trail_path .
-3. Run: flutter pub get
-4. Run: dart run build_runner build --delete-conflicting-outputs
-5. Run: flutter test
-6. Run: flutter run
+2. Run: flutter pub get
+3. Run: dart run build_runner build --delete-conflicting-outputs
+4. Run: flutter test
+5. Run: flutter run
 
 ## Product principle
 
