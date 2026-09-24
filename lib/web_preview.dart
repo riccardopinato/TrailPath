@@ -1,5 +1,5 @@
-import 'dart:math' as math;
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
