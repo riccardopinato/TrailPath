@@ -164,6 +164,19 @@ class RecordingController extends Notifier<RecordingState> {
     String? activityId;
 
     try {
+      // Ask for runtime access before creating a recoverable database draft.
+      // This prevents an empty "recovered activity" if Android kills the
+      // process while a permission dialog is open.
+      await permissions.prepareRecording();
+      if (!ref.mounted) {
+        return;
+      }
+
+      final batteryMode = await batteryModeFuture;
+      if (!ref.mounted) {
+        return;
+      }
+
       activityId = await _database.createActivityDraft(profile: profile);
       if (!ref.mounted) {
         await _safeDiscardDraft(activityId);
@@ -175,18 +188,6 @@ class RecordingController extends Notifier<RecordingState> {
         hasRecoveredDraft: false,
         clearError: true,
       );
-
-      await permissions.prepareRecording();
-      if (!ref.mounted) {
-        await _safeDiscardDraft(activityId);
-        return;
-      }
-
-      final batteryMode = await batteryModeFuture;
-      if (!ref.mounted) {
-        await _safeDiscardDraft(activityId);
-        return;
-      }
 
       await _recorder.setBatteryMode(batteryMode);
       if (!ref.mounted) {
