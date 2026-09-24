@@ -57,6 +57,13 @@ jobs:
       - name: Test
         run: flutter test
 
+      - name: Create pinned web shell
+        run: |
+          rm -rf /tmp/trailpath_web
+          flutter create --platforms=web --org com.riccardopinato --project-name trail_path --no-pub /tmp/trailpath_web
+          rm -rf web
+          cp -R /tmp/trailpath_web/web ./web
+
       - name: Build web preview
         run: flutter build web --release --target lib/web_preview.dart --base-href "/TrailPath/"
 
