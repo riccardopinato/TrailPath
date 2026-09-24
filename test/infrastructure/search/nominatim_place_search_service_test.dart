@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:trail_path/infrastructure/search/nominatim_place_search_service.dart';
 
 void main() {
@@ -41,4 +43,61 @@ void main() {
 
     expect(decodeNominatimSearchResults(body), isEmpty);
   });
+
+  test('reuses cached results without issuing a second HTTP request', () async {
+    var requests = 0;
+    final service = NominatimPlaceSearchService(
+      client: MockClient((request) async {
+        requests++;
+        return http.Response(_validBody, 200);
+      }),
+      minimumRequestGap: Duration.zero,
+    );
+    addTearDown(service.dispose);
+
+    final first = await service.search('Monselice', languageCode: 'it');
+    final second = await service.search('Monselice', languageCode: 'it');
+
+    expect(first, hasLength(1));
+    expect(second, same(first));
+    expect(requests, 1);
+  });
+
+  test('serializes uncached searches and enforces the request gap', () async {
+    var now = DateTime.utc(2026, 9, 24, 12);
+    final delays = <Duration>[];
+    final requestedQueries = <String>[];
+
+    final service = NominatimPlaceSearchService(
+      client: MockClient((request) async {
+        requestedQueries.add(request.url.queryParameters['q'] ?? '');
+        return http.Response(_validBody, 200);
+      }),
+      delay: (duration) async {
+        delays.add(duration);
+        now = now.add(duration);
+      },
+      clock: () => now,
+    );
+    addTearDown(service.dispose);
+
+    await Future.wait([
+      service.search('Monselice', languageCode: 'it'),
+      service.search('Padova', languageCode: 'it'),
+    ]);
+
+    expect(requestedQueries, ['Monselice', 'Padova']);
+    expect(delays, [const Duration(seconds: 1)]);
+  });
 }
+
+const _validBody = '''
+[
+  {
+    "lat": "45.2320",
+    "lon": "11.7500",
+    "name": "Monselice",
+    "display_name": "Monselice, Padova, Veneto, Italia"
+  }
+]
+''';
