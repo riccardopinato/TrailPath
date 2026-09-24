@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:trail_path/core/config/map_config.dart';
+import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/features/navigation/application/active_navigation_controller.dart';
@@ -23,6 +24,13 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
   MapLibreMapController? _mapController;
   bool _styleReady = false;
   bool _navigationStarted = false;
+  bool _followUser = true;
+  bool _drawRunning = false;
+  bool _drawQueued = false;
+  NavigationEvent? _queuedEvent;
+  Line? _routeLine;
+  Circle? _currentCircle;
+  Line? _offRouteLine;
   ActiveNavigationController? _navigationController;
 
   bool get _runningWidgetTest =>
@@ -57,57 +65,110 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
   }
 
   Future<void> _drawRoute(NavigationEvent? event) async {
-    if (_runningWidgetTest || !_styleReady) return;
+    _queuedEvent = event;
+    _drawQueued = true;
+    if (_drawRunning) {
+      return;
+    }
+
+    _drawRunning = true;
+    try {
+      while (_drawQueued && mounted) {
+        _drawQueued = false;
+        final next = _queuedEvent;
+        await _performDrawRoute(next);
+      }
+    } finally {
+      _drawRunning = false;
+    }
+  }
+
+  Future<void> _performDrawRoute(NavigationEvent? event) async {
+    if (_runningWidgetTest || !_styleReady) {
+      return;
+    }
     final controller = _mapController;
-    if (controller == null) return;
+    if (controller == null || controller.isDisposed) {
+      return;
+    }
 
-    await controller.clearLines();
-    await controller.clearCircles();
+    final routeGeometry = simplifyPolylineForDisplay(
+      widget.route.geometry,
+      toleranceMeters: 1.5,
+      maxPoints: 2500,
+    ).map((p) => LatLng(p.latitude, p.longitude)).toList(growable: false);
 
-    await controller.addLine(
-      LineOptions(
-        geometry: widget.route.geometry
-            .map((p) => LatLng(p.latitude, p.longitude))
-            .toList(growable: false),
-        lineColor: '#2F6F45',
-        lineWidth: 5.5,
-        lineOpacity: 0.95,
-        lineJoin: 'round',
-      ),
-    );
+    final currentRouteLine = _routeLine;
+    if (routeGeometry.length >= 2 &&
+        (currentRouteLine == null ||
+            !controller.lines.contains(currentRouteLine))) {
+      _routeLine = await controller.addLine(
+        LineOptions(
+          geometry: routeGeometry,
+          lineColor: '#2F6F45',
+          lineWidth: 5.5,
+          lineOpacity: 0.95,
+          lineJoin: 'round',
+        ),
+        const <String, dynamic>{'kind': 'navigationRoute'},
+      );
+    }
 
     final current = event?.currentPoint;
     final nearest = event?.nearestRoutePoint;
     if (current != null) {
-      await controller.addCircle(
-        CircleOptions(
-          geometry: LatLng(current.latitude, current.longitude),
-          circleRadius: 8,
-          circleColor: event?.isOffRoute == true ? '#D84315' : '#1565C0',
-          circleStrokeColor: '#FFFFFF',
-          circleStrokeWidth: 2.5,
-        ),
+      final currentOptions = CircleOptions(
+        geometry: LatLng(current.latitude, current.longitude),
+        circleRadius: 8,
+        circleColor: event?.isOffRoute == true ? '#D84315' : '#1565C0',
+        circleStrokeColor: '#FFFFFF',
+        circleStrokeWidth: 2.5,
       );
-      await controller.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          LatLng(current.latitude, current.longitude),
-          16.5,
-        ),
-      );
+      final marker = _currentCircle;
+      if (marker != null && controller.circles.contains(marker)) {
+        await controller.updateCircle(marker, currentOptions);
+      } else {
+        _currentCircle = await controller.addCircle(
+          currentOptions,
+          const <String, dynamic>{'kind': 'navigationPosition'},
+        );
+      }
+
+      if (_followUser) {
+        await controller.animateCamera(
+          CameraUpdate.newLatLngZoom(
+            LatLng(current.latitude, current.longitude),
+            16.5,
+          ),
+        );
+      }
     }
 
     if (event?.isOffRoute == true && current != null && nearest != null) {
-      await controller.addLine(
-        LineOptions(
-          geometry: [
-            LatLng(current.latitude, current.longitude),
-            LatLng(nearest.latitude, nearest.longitude),
-          ],
-          lineColor: '#D84315',
-          lineWidth: 3.5,
-          lineOpacity: 0.9,
-        ),
+      final connectorOptions = LineOptions(
+        geometry: [
+          LatLng(current.latitude, current.longitude),
+          LatLng(nearest.latitude, nearest.longitude),
+        ],
+        lineColor: '#D84315',
+        lineWidth: 3.5,
+        lineOpacity: 0.9,
       );
+      final connector = _offRouteLine;
+      if (connector != null && controller.lines.contains(connector)) {
+        await controller.updateLine(connector, connectorOptions);
+      } else {
+        _offRouteLine = await controller.addLine(
+          connectorOptions,
+          const <String, dynamic>{'kind': 'offRouteConnector'},
+        );
+      }
+    } else {
+      final connector = _offRouteLine;
+      _offRouteLine = null;
+      if (connector != null && controller.lines.contains(connector)) {
+        await controller.removeLine(connector);
+      }
     }
   }
 
@@ -143,6 +204,11 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
                     onStyleLoadedCallback: () {
                       _styleReady = true;
                       unawaited(_drawRoute(event));
+                    },
+                    onMapClick: (point, coordinates) {
+                      if (_followUser && mounted) {
+                        setState(() => _followUser = false);
+                      }
                     },
                     compassEnabled: true,
                     rotateGesturesEnabled: true,
@@ -187,6 +253,28 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Material(
+                    shape: const CircleBorder(),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surface
+                        .withValues(alpha: 0.96),
+                    child: IconButton(
+                      tooltip: strings.centerLocation,
+                      onPressed: () {
+                        setState(() => _followUser = !_followUser);
+                        if (_followUser) {
+                          unawaited(_drawRoute(event));
+                        }
+                      },
+                      icon: Icon(
+                        _followUser
+                            ? Icons.gps_fixed_rounded
+                            : Icons.gps_not_fixed_rounded,
                       ),
                     ),
                   ),
@@ -259,7 +347,7 @@ class _NavigationPanel extends StatelessWidget {
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                 ),
               ),
-              const Text('v0.9', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+              Text('v${MapConfig.appVersion}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
             ],
           ),
           const SizedBox(height: 14),
