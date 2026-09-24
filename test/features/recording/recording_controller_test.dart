@@ -49,6 +49,12 @@ void main() {
     expect(draft!.distanceMeters, 140);
     expect(draft.ascentMeters, 10);
 
+    await controller.pause();
+    final pausedDraft = await database.latestRecoverableActivity();
+    expect(pausedDraft, isNotNull);
+    expect(pausedDraft!.isPaused, isTrue);
+    expect(pausedDraft.distanceMeters, 140);
+
     final saved = await controller.finish('Morning trail');
     expect(saved, isTrue);
     expect(await database.latestRecoverableActivity(), isNull);
