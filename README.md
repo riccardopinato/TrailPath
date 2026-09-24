@@ -4,7 +4,7 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.9.13 - Production Hardening & Release Consolidation
+v0.9.13 - Production Hardening & Release Consolidation (build 25)
 
 TrailPath v0.9.13 hardens the production path: the release build is exercised by AppLab E2E, recording/navigation MapLibre rendering is incremental, Nominatim inherits bounded retry/backoff, Android backup of GPS data is explicitly disabled, and CI publishes a single ARM64 release artifact.
 
@@ -93,7 +93,7 @@ TrailPath v0.9.13 hardens the production path: the release build is exercised by
 - Italian, English, Spanish, French and Portuguese localization foundation
 - structured logging
 - tests
-- GitHub Actions for format, analyze, test and debug APK build
+- GitHub Actions for format, analyze, test, ARM64 release build and release-mode AppLab E2E
 
 ## Toolchain
 
