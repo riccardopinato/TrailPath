@@ -10,7 +10,7 @@ appId: com.riccardopinato.trail_path
 
 # Recording lifecycle + process recovery.
 - tapOn:
-    text: 'Record\\s*Tab 2 of 5'
+    text: 'Record\s*Tab 2 of 5'
 - assertVisible: "Start recording"
 - setLocation:
     latitude: 45.232000
@@ -35,7 +35,7 @@ appId: com.riccardopinato.trail_path
 - launchApp:
     clearState: false
 - tapOn:
-    text: 'Record\\s*Tab 2 of 5'
+    text: 'Record\s*Tab 2 of 5'
 - extendedWaitUntil:
     visible: "Recovered recording"
     timeout: 15000
@@ -62,14 +62,14 @@ appId: com.riccardopinato.trail_path
 - launchApp:
     clearState: false
 - tapOn:
-    text: 'Routes\\s*Tab 3 of 5'
+    text: 'Routes\s*Tab 3 of 5'
 - extendedWaitUntil:
     visible: "TrailPath E2E Activity"
     timeout: 15000
 
 # Planner: center on injected GPS, create a short real routed trail and save it.
 - tapOn:
-    text: 'Plan\\s*Tab 1 of 5'
+    text: 'Plan\s*Tab 1 of 5'
 - assertVisible: "Search place or trail"
 - tapOn: "Center on my location"
 - waitForAnimationToEnd
@@ -90,7 +90,7 @@ appId: com.riccardopinato.trail_path
 
 # Saved route can open real navigation on the release/R8 build.
 - tapOn:
-    text: 'Routes\\s*Tab 3 of 5'
+    text: 'Routes\s*Tab 3 of 5'
 - extendedWaitUntil:
     visible: "TrailPath E2E Route"
     timeout: 15000
@@ -108,14 +108,14 @@ appId: com.riccardopinato.trail_path
     timeout: 20000
 
 - tapOn:
-    text: 'Offline\\s*Tab 4 of 5'
+    text: 'Offline\s*Tab 4 of 5'
 - assertVisible: "Offline maps"
 
 - tapOn:
-    text: 'Outdoor\\s*Tab 5 of 5'
+    text: 'Outdoor\s*Tab 5 of 5'
 - assertVisible: "Outdoor"
 - assertVisible: "Balanced"
 
 - tapOn:
-    text: 'Plan\\s*Tab 1 of 5'
+    text: 'Plan\s*Tab 1 of 5'
 - assertVisible: "Search place or trail"
