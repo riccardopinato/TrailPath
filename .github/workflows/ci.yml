@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: trailpath-${{ github.workflow }}-${{ github.ref }}
@@ -16,7 +16,7 @@ concurrency:
 jobs:
   validate-and-build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     outputs:
       app_version: ${{ steps.app-version.outputs.app_version }}
 
@@ -29,6 +29,11 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+
+      - name: Install Gradle 9.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.1.0"
 
       - name: Install Flutter
         uses: subosito/flutter-action@v2
@@ -43,6 +48,7 @@ jobs:
           test -f android/app/src/main/AndroidManifest.xml
           test -f android/app/src/main/kotlin/com/riccardopinato/trail_path/MainActivity.kt
           test -f android/app/src/main/res/drawable/ic_launcher.xml
+          grep -Fq 'android:allowBackup="false"' android/app/src/main/AndroidManifest.xml
 
       - name: Read app version
         id: app-version
@@ -55,10 +61,10 @@ jobs:
         run: flutter pub get
 
       - name: Generate Drift code
-        run: dart run build_runner build
+        run: dart run build_runner build --delete-conflicting-outputs
 
-      - name: Format Dart sources
-        run: dart format lib test
+      - name: Verify Dart formatting
+        run: dart format --output=none --set-exit-if-changed lib test
 
       - name: Analyze
         run: flutter analyze
@@ -66,36 +72,37 @@ jobs:
       - name: Test
         run: flutter test
 
-      - name: Build debug APK
-        run: flutter build apk --debug
+      - name: Build ARM64 optimized release
+        run: flutter build apk --release --target-platform android-arm64 --split-per-abi
 
-      - name: Build optimized release APKs
-        run: flutter build apk --release --split-per-abi
+      - name: Build x86_64 optimized release runtime gate
+        run: flutter build apk --release --target-platform android-x64 --split-per-abi
 
-      - name: Report APK sizes
+      - name: Report release APK sizes
         run: |
-          ls -lh build/app/outputs/flutter-apk/*.apk
-          du -b build/app/outputs/flutter-apk/*.apk | sort -n
+          ls -lh build/app/outputs/flutter-apk/*-release.apk
+          du -b build/app/outputs/flutter-apk/*-release.apk | sort -n
 
-      - name: Upload debug APK
+      - name: Upload ARM64 release APK
         uses: actions/upload-artifact@v6
         with:
-          name: TrailPath-v${{ steps.app-version.outputs.app_version }}-debug
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: TrailPath-v${{ steps.app-version.outputs.app_version }}-arm64-release
+          path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
           if-no-files-found: error
 
-      - name: Upload optimized release APKs
+      - name: Upload x86_64 release runtime APK
         uses: actions/upload-artifact@v6
         with:
-          name: TrailPath-v${{ steps.app-version.outputs.app_version }}-release-split
-          path: build/app/outputs/flutter-apk/app-*-release.apk
+          name: TrailPath-v${{ steps.app-version.outputs.app_version }}-ci-x86_64
+          path: build/app/outputs/flutter-apk/app-x86_64-release.apk
           if-no-files-found: error
+          retention-days: 1
 
   applab-android:
-    name: AppLab Android Gate
+    name: AppLab Android E2E Gate
     needs: validate-and-build
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
 
     steps:
       - name: Checkout TrailPath
@@ -107,10 +114,10 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Download debug APK
+      - name: Download x86_64 release APK
         uses: actions/download-artifact@v6
         with:
-          name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-debug
+          name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-ci-x86_64
           path: apk
 
       - name: Checkout AppLab
@@ -131,7 +138,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Run TrailPath through AppLab
+      - name: Run TrailPath release through AppLab
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -140,17 +147,20 @@ jobs:
           profile: pixel_7_pro
           disable-animations: true
           script: |
-            adb install -r apk/app-debug.apk
+            adb install -r apk/app-x86_64-release.apk
             adb shell pm grant com.riccardopinato.trail_path android.permission.ACCESS_FINE_LOCATION || true
             adb shell pm grant com.riccardopinato.trail_path android.permission.ACCESS_COARSE_LOCATION || true
+            adb shell pm grant com.riccardopinato.trail_path android.permission.POST_NOTIFICATIONS || true
+            adb emu geo fix 11.7500 45.2320 100 || true
 
-            RUN_MAESTRO=true MAESTRO_FLOW="$GITHUB_WORKSPACE/.maestro/applab-smoke.yaml" REPORT_DIR="$GITHUB_WORKSPACE/applab-report" .applab/scripts/verify_apk.sh "$GITHUB_WORKSPACE/apk/app-debug.apk" "com.riccardopinato.trail_path"
+            RUN_MAESTRO=true MAESTRO_FLOW="$GITHUB_WORKSPACE/.maestro/applab-e2e.yaml" REPORT_DIR="$GITHUB_WORKSPACE/applab-report" .applab/scripts/verify_apk.sh "$GITHUB_WORKSPACE/apk/app-x86_64-release.apk" "com.riccardopinato.trail_path"
 
             grep -Fq -- "- Result: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
             grep -Fq -- "- Maestro: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
             test -s "$GITHUB_WORKSPACE/applab-report/launch.png"
             test -s "$GITHUB_WORKSPACE/applab-report/post-maestro.png"
             test -s "$GITHUB_WORKSPACE/applab-report/logcat.txt"
+            ! grep -Eq "ANR in com\\.riccardopinato\\.trail_path|Process: com\\.riccardopinato\\.trail_path.*FATAL" "$GITHUB_WORKSPACE/applab-report/logcat.txt"
 
       - name: Upload AppLab report
         if: always()
