@@ -1,22 +1,44 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/elevation_math.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
+import 'package:trail_path/infrastructure/network/http_retry.dart';
 
 class OpenMeteoElevationEngine implements ElevationEngine {
-  const OpenMeteoElevationEngine({
+  OpenMeteoElevationEngine({
+    http.Client? client,
     this.timeout = const Duration(seconds: 12),
     this.maxSamples = 100,
-  });
+    this.maxRetries = 2,
+    this.retryBaseDelay = const Duration(milliseconds: 350),
+    this.maxRetryDelay = const Duration(seconds: 4),
+    NetworkDelay? delay,
+    NetworkClock? clock,
+  })  : assert(maxSamples >= 2),
+        assert(maxRetries >= 0),
+        _client = client ?? http.Client(),
+        _delay = delay ?? defaultNetworkDelay,
+        _clock = clock ?? DateTime.now;
 
+  final http.Client _client;
+  final NetworkDelay _delay;
+  final NetworkClock _clock;
   final Duration timeout;
   final int maxSamples;
+  final int maxRetries;
+  final Duration retryBaseDelay;
+  final Duration maxRetryDelay;
 
   @override
   String get engineId => 'open-meteo-elevation';
+
+  void dispose() => _client.close();
 
   @override
   Future<ElevationProfile> resolve(List<GeoPoint> points) async {
@@ -45,50 +67,99 @@ class OpenMeteoElevationEngine implements ElevationEngine {
       },
     );
 
-    final client = HttpClient()
-      ..connectionTimeout = timeout
-      ..userAgent = 'TrailPath/0.9.2 (+https://github.com/riccardopinato/TrailPath)';
-
-    try {
-      final request = await client.getUrl(uri).timeout(timeout);
-      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
-      final response = await request.close().timeout(timeout);
-
-      if (response.statusCode != HttpStatus.ok) {
-        throw ElevationException(
-          'Elevation service returned HTTP ${response.statusCode}.',
-        );
-      }
-
-      final body = await response.transform(utf8.decoder).join().timeout(timeout);
-      final payload = jsonDecode(body);
-      if (payload is! Map<String, dynamic>) {
-        throw const ElevationException('Invalid elevation response.');
-      }
-
-      final rawElevations = payload['elevation'];
-      if (rawElevations is! List || rawElevations.length != sampled.length) {
-        throw const ElevationException('Elevation payload size mismatch.');
-      }
-
-      final elevated = <GeoPoint>[];
-      for (var index = 0; index < sampled.length; index++) {
-        final value = rawElevations[index];
-        if (value is! num) {
-          throw const ElevationException('Elevation value is invalid.');
-        }
-        elevated.add(
-          sampled[index].copyWith(elevationMeters: value.toDouble()),
-        );
-      }
-
-      return buildElevationProfile(
-        elevated,
-        source: engineId,
-      );
-    } finally {
-      client.close(force: true);
+    final response = await _request(uri);
+    final payload = jsonDecode(response.body);
+    if (payload is! Map<String, dynamic>) {
+      throw const ElevationException('Invalid elevation response.');
     }
+
+    final rawElevations = payload['elevation'];
+    if (rawElevations is! List || rawElevations.length != sampled.length) {
+      throw const ElevationException('Elevation payload size mismatch.');
+    }
+
+    final elevated = <GeoPoint>[];
+    for (var index = 0; index < sampled.length; index++) {
+      final value = rawElevations[index];
+      if (value is! num) {
+        throw const ElevationException('Elevation value is invalid.');
+      }
+      elevated.add(
+        sampled[index].copyWith(elevationMeters: value.toDouble()),
+      );
+    }
+
+    return buildElevationProfile(
+      elevated,
+      source: engineId,
+    );
+  }
+
+  Future<http.Response> _request(Uri uri) async {
+    Object? lastNetworkError;
+
+    for (var attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        final response = await _client
+            .get(
+              uri,
+              headers: {
+                'Accept': 'application/json',
+                if (!kIsWeb) 'User-Agent': MapConfig.userAgent,
+              },
+            )
+            .timeout(timeout);
+
+        if (response.statusCode == 200) {
+          return response;
+        }
+
+        if (!isTransientHttpStatus(response.statusCode) ||
+            attempt == maxRetries) {
+          throw ElevationException(
+            'Elevation service returned HTTP ${response.statusCode}.',
+          );
+        }
+
+        await _delay(_retryDelay(response, attempt));
+      } on TimeoutException catch (error) {
+        lastNetworkError = error;
+        if (attempt == maxRetries) {
+          throw ElevationException(
+            'Elevation request timed out after ${maxRetries + 1} attempts.',
+          );
+        }
+        await _delay(_retryDelay(null, attempt));
+      } on http.ClientException catch (error) {
+        lastNetworkError = error;
+        if (attempt == maxRetries) {
+          throw ElevationException(
+            'Elevation network request failed after ${maxRetries + 1} attempts: '
+            '${error.message}',
+          );
+        }
+        await _delay(_retryDelay(null, attempt));
+      }
+    }
+
+    throw ElevationException('Elevation request failed: $lastNetworkError');
+  }
+
+  Duration _retryDelay(http.Response? response, int attempt) {
+    final retryAfter = retryAfterDelay(
+      response?.headers['retry-after'],
+      now: _clock(),
+      maxDelay: maxRetryDelay,
+    );
+    if (retryAfter != null) {
+      return retryAfter;
+    }
+
+    return exponentialBackoff(
+      attempt: attempt,
+      baseDelay: retryBaseDelay,
+      maxDelay: maxRetryDelay,
+    );
   }
 }
 
