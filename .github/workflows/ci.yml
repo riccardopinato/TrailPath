@@ -40,6 +40,7 @@ jobs:
           test -f android/app/build.gradle.kts
           test -f android/app/src/main/AndroidManifest.xml
           test -f android/app/src/main/kotlin/com/riccardopinato/trail_path/MainActivity.kt
+          test -f android/app/src/main/res/drawable/ic_launcher.xml
 
       - name: Resolve dependencies
         run: flutter pub get
@@ -70,14 +71,14 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v6
         with:
-          name: TrailPath-v0.9.8-debug
+          name: TrailPath-v0.9.8.1-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
 
       - name: Upload optimized release APKs
         uses: actions/upload-artifact@v6
         with:
-          name: TrailPath-v0.9.8-release-split
+          name: TrailPath-v0.9.8.1-release-split
           path: build/app/outputs/flutter-apk/app-*-release.apk
           if-no-files-found: error
 
@@ -100,7 +101,7 @@ jobs:
       - name: Download debug APK
         uses: actions/download-artifact@v6
         with:
-          name: TrailPath-v0.9.8-debug
+          name: TrailPath-v0.9.8.1-debug
           path: apk
 
       - name: Checkout AppLab
