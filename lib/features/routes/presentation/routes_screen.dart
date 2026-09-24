@@ -474,7 +474,7 @@ class _OfflineRouteAction extends ConsumerWidget {
       );
     }
 
-    if (route.isOfflineReady) {
+    if (route.isOfflineReady || downloads.isReady(route.id)) {
       return IconButton(
         tooltip: strings.offlineReady,
         onPressed: null,

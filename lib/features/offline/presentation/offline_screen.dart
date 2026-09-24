@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/services/service_providers.dart';
+import 'package:trail_path/features/offline/application/offline_downloads_controller.dart';
 
 class OfflineScreen extends ConsumerStatefulWidget {
   const OfflineScreen({super.key});
@@ -22,25 +22,17 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
   }
 
   Future<List<OfflineRegion>> _loadRegions() async {
-    final manager = ref.read(offlineMapManagerProvider);
-    final regions = await manager.listRegions();
-    final completeIds = regions
-        .where((region) => region.isComplete)
-        .map((region) => region.id)
-        .toSet();
-    final database = ref.read(appDatabaseProvider);
-    final routes = await database.listSavedRoutes();
-
-    for (final route in routes) {
-      final actualReady = completeIds.contains(route.id);
-      if (route.isOfflineReady != actualReady) {
-        await database.setSavedRouteOfflineReady(
-          route.id,
-          isReady: actualReady,
-        );
-      }
-    }
-
+    await ref
+        .read(offlineDownloadsProvider.notifier)
+        .reconcileNativeState();
+    final regions = ref
+        .read(offlineDownloadsProvider)
+        .snapshots
+        .values
+        .toList(growable: false);
+    regions.sort(
+      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+    );
     return regions;
   }
 
@@ -52,8 +44,7 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
 
   Future<void> _deleteRegion(OfflineRegion region) async {
     final strings = AppLocalizations.of(context);
-    final manager = ref.read(offlineMapManagerProvider);
-    final database = ref.read(appDatabaseProvider);
+    final downloads = ref.read(offlineDownloadsProvider.notifier);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -76,9 +67,10 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
       return;
     }
 
-    await manager.delete(region.id);
-    await database.setSavedRouteOfflineReady(region.id, isReady: false);
-    await _refresh();
+    final deleted = await downloads.deleteRegion(region.id);
+    if (deleted) {
+      await _refresh();
+    }
   }
 
   Future<void> _clearCache() async {
@@ -95,6 +87,7 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final liveDownloads = ref.watch(offlineDownloadsProvider);
 
     return SafeArea(
       child: Padding(
@@ -133,7 +126,16 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
                     );
                   }
 
-                  final regions = snapshot.data ?? const <OfflineRegion>[];
+                  final restored = snapshot.data ?? const <OfflineRegion>[];
+                  final merged = <String, OfflineRegion>{
+                    for (final region in restored) region.id: region,
+                    ...liveDownloads.snapshots,
+                  };
+                  final regions = merged.values.toList(growable: false)
+                    ..sort(
+                      (a, b) =>
+                          a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+                    );
                   final usedBytes = regions.fold<int>(
                     0,
                     (total, region) => total + region.downloadedBytes,
