@@ -44,13 +44,14 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
   @override
   void initState() {
     super.initState();
-    _displayRouteGeometry = simplifyPolylineForDisplay(
-      widget.route.geometry,
-      toleranceMeters: 1.5,
-      maxPoints: 2500,
-    ).map((point) => LatLng(point.latitude, point.longitude)).toList(
-          growable: false,
-        );
+    _displayRouteGeometry =
+        simplifyPolylineForDisplay(
+              widget.route.geometry,
+              toleranceMeters: 1.5,
+              maxPoints: 2500,
+            )
+            .map((point) => LatLng(point.latitude, point.longitude))
+            .toList(growable: false);
   }
 
   @override
