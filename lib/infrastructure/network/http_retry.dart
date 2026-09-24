@@ -75,9 +75,9 @@ DateTime? tryParseHttpDate(String value) {
   }
 
   final match = RegExp(
-    r'^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\\s*(\\d{2})\\s+'
-    r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\s+'
-    r'(\\d{4})\\s+(\\d{2}):(\\d{2}):(\\d{2})\\s+GMT$',
+    r'^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s*(\d{2})\s+'
+    r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+'
+    r'(\d{4})\s+(\d{2}):(\d{2}):(\d{2})\s+GMT$',
     caseSensitive: false,
   ).firstMatch(value.trim());
 
