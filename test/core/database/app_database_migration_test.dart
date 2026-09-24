@@ -15,6 +15,13 @@ void main() {
           await database.customSelect('PRAGMA user_version').getSingle();
       expect(versionRow.read<int>('user_version'), 3);
 
+      final completed = await database.watchCompletedActivities().first;
+      expect(completed, hasLength(1));
+      expect(completed.single.id, 'legacy-activity');
+      expect(completed.single.name, 'Legacy activity');
+      expect(completed.single.distanceMeters, 42);
+      expect(completed.single.ascentMeters, 3);
+
       final activityId = await database.createActivityDraft(
         profile: RouteProfile.hiking,
       );
@@ -94,6 +101,13 @@ CREATE TABLE waypoints (
   name TEXT
 );
 ''');
+
+      raw.execute(
+        "INSERT INTO activities "
+        "(id, name, started_at, ended_at, distance_meters, ascent_meters, "
+        "moving_seconds) "
+        "VALUES ('legacy-activity', 'Legacy activity', 0, 60, 42, 3, 60);",
+      );
 
       raw.execute('PRAGMA user_version = $version;');
     },
