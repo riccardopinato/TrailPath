@@ -38,7 +38,7 @@ void main() {
     expect(plan.distanceMeters, 1250);
   });
 
-  test('honors Retry-After for rate limiting before retrying', () async {
+  test('honors numeric Retry-After for rate limiting before retrying', () async {
     var requests = 0;
     final delays = <Duration>[];
     final client = MockClient((request) async {
@@ -57,6 +57,35 @@ void main() {
       maxRetries: 1,
       maxRetryDelay: const Duration(seconds: 4),
       delay: (duration) async => delays.add(duration),
+    );
+    addTearDown(engine.dispose);
+
+    await engine.calculate(_request());
+
+    expect(requests, 2);
+    expect(delays, [const Duration(seconds: 2)]);
+  });
+
+  test('honors HTTP-date Retry-After before retrying', () async {
+    var requests = 0;
+    final delays = <Duration>[];
+    final client = MockClient((request) async {
+      requests++;
+      if (requests == 1) {
+        return http.Response(
+          'rate limited',
+          429,
+          headers: {'retry-after': 'Thu, 24 Sep 2026 14:00:00 GMT'},
+        );
+      }
+      return http.Response(jsonEncode(_successPayload()), 200);
+    });
+    final engine = OpenStreetMapRoutingEngine(
+      client: client,
+      maxRetries: 1,
+      maxRetryDelay: const Duration(seconds: 4),
+      delay: (duration) async => delays.add(duration),
+      clock: () => DateTime.utc(2026, 9, 24, 13, 59, 58),
     );
     addTearDown(engine.dispose);
 
