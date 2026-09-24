@@ -7,11 +7,7 @@ import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
-
-typedef RoutingDelay = Future<void> Function(Duration duration);
-
-Future<void> _defaultRoutingDelay(Duration duration) =>
-    Future<void>.delayed(duration);
+import 'package:trail_path/infrastructure/network/http_retry.dart';
 
 class OpenStreetMapRoutingEngine implements RoutingEngine {
   OpenStreetMapRoutingEngine({
@@ -21,14 +17,17 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
     this.maxRetries = 2,
     this.retryBaseDelay = const Duration(milliseconds: 350),
     this.maxRetryDelay = const Duration(seconds: 4),
-    RoutingDelay? delay,
+    NetworkDelay? delay,
+    NetworkClock? clock,
   })  : assert(maxWaypointsPerRequest >= 2),
         assert(maxRetries >= 0),
         _client = client ?? http.Client(),
-        _delay = delay ?? _defaultRoutingDelay;
+        _delay = delay ?? defaultNetworkDelay,
+        _clock = clock ?? DateTime.now;
 
   final http.Client _client;
-  final RoutingDelay _delay;
+  final NetworkDelay _delay;
+  final NetworkClock _clock;
   final Duration timeout;
   final int maxWaypointsPerRequest;
   final int maxRetries;
@@ -266,7 +265,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
           return response;
         }
 
-        if (!_isRetryableStatus(response.statusCode) ||
+        if (!isTransientHttpStatus(response.statusCode) ||
             attempt == maxRetries) {
           throw RoutingException(
             'Routing service returned HTTP ${response.statusCode}.',
@@ -304,46 +303,21 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
     };
   }
 
-  bool _isRetryableStatus(int statusCode) {
-    return statusCode == 408 ||
-        statusCode == 425 ||
-        statusCode == 429 ||
-        statusCode == 500 ||
-        statusCode == 502 ||
-        statusCode == 503 ||
-        statusCode == 504;
-  }
-
   Duration _retryDelay(http.Response? response, int attempt) {
-    final retryAfter = response?.headers['retry-after'];
-    if (retryAfter != null) {
-      final seconds = int.tryParse(retryAfter.trim());
-      if (seconds != null && seconds >= 0) {
-        return _capRetryDelay(Duration(seconds: seconds));
-      }
-
-      final date = DateTime.tryParse(retryAfter);
-      if (date != null) {
-        final remaining = date.toUtc().difference(DateTime.now().toUtc());
-        if (!remaining.isNegative) {
-          return _capRetryDelay(remaining);
-        }
-      }
-    }
-
-    final multiplier = 1 << attempt.clamp(0, 8);
-    return _capRetryDelay(
-      Duration(
-        milliseconds: retryBaseDelay.inMilliseconds * multiplier,
-      ),
+    final retryAfter = retryAfterDelay(
+      response?.headers['retry-after'],
+      now: _clock(),
+      maxDelay: maxRetryDelay,
     );
-  }
-
-  Duration _capRetryDelay(Duration value) {
-    if (value > maxRetryDelay) {
-      return maxRetryDelay;
+    if (retryAfter != null) {
+      return retryAfter;
     }
-    return value;
+
+    return exponentialBackoff(
+      attempt: attempt,
+      baseDelay: retryBaseDelay,
+      maxDelay: maxRetryDelay,
+    );
   }
 
   String _serviceFor(RouteProfile profile) {

@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:trail_path/core/domain/elevation_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/infrastructure/elevation/open_meteo_elevation_engine.dart';
@@ -78,5 +82,64 @@ void main() {
     expect(sampled, hasLength(100));
     expect(sampled.first.latitude, points.first.latitude);
     expect(sampled.last.latitude, closeTo(points.last.latitude, 0.000001));
+  });
+
+  test('elevation engine retries transient failures and returns a profile',
+      () async {
+    var requests = 0;
+    final engine = OpenMeteoElevationEngine(
+      client: MockClient((request) async {
+        requests++;
+        if (requests == 1) {
+          return http.Response('busy', 503);
+        }
+        return http.Response(
+          jsonEncode({
+            'elevation': [100.0, 125.0],
+          }),
+          200,
+        );
+      }),
+      maxRetries: 1,
+      retryBaseDelay: Duration.zero,
+      delay: (_) async {},
+    );
+    addTearDown(engine.dispose);
+
+    final profile = await engine.resolve(
+      const [
+        GeoPoint(latitude: 45.0, longitude: 11.0),
+        GeoPoint(latitude: 45.01, longitude: 11.01),
+      ],
+    );
+
+    expect(requests, 2);
+    expect(profile.isAvailable, isTrue);
+    expect(profile.samples, hasLength(2));
+    expect(profile.samples.last.point.elevationMeters, 125);
+  });
+
+  test('elevation engine does not retry permanent HTTP failures', () async {
+    var requests = 0;
+    final engine = OpenMeteoElevationEngine(
+      client: MockClient((request) async {
+        requests++;
+        return http.Response('bad request', 400);
+      }),
+      maxRetries: 2,
+      delay: (_) async {},
+    );
+    addTearDown(engine.dispose);
+
+    await expectLater(
+      engine.resolve(
+        const [
+          GeoPoint(latitude: 45.0, longitude: 11.0),
+          GeoPoint(latitude: 45.01, longitude: 11.01),
+        ],
+      ),
+      throwsA(isA<ElevationException>()),
+    );
+    expect(requests, 1);
   });
 }

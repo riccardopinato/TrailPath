@@ -23,7 +23,6 @@ final locationEngineProvider = Provider<LocationEngine>(
   (ref) => const GeolocatorLocationEngine(),
 );
 
-
 final routingEngineProvider = Provider<RoutingEngine>((ref) {
   final primary = OpenStreetMapRoutingEngine();
   ref.onDispose(primary.dispose);
@@ -33,19 +32,18 @@ final routingEngineProvider = Provider<RoutingEngine>((ref) {
   );
 });
 
-
-final elevationEngineProvider = Provider<ElevationEngine>(
-  (ref) => const FallbackElevationEngine(
-    primary: OpenMeteoElevationEngine(),
-    fallback: UnavailableElevationEngine(),
-  ),
-);
-
+final elevationEngineProvider = Provider<ElevationEngine>((ref) {
+  final primary = OpenMeteoElevationEngine();
+  ref.onDispose(primary.dispose);
+  return FallbackElevationEngine(
+    primary: primary,
+    fallback: const UnavailableElevationEngine(),
+  );
+});
 
 final gpxServiceProvider = Provider<GpxService>(
   (ref) => const XmlGpxService(),
 );
-
 
 final runtimePermissionProvider = Provider<RuntimePermissionService>(
   (ref) => const RuntimePermissionService(),
@@ -58,7 +56,6 @@ final trackRecorderProvider = Provider<TrackRecorder>((ref) {
   });
   return recorder;
 });
-
 
 final navigationEngineProvider = Provider<NavigationEngine>((ref) {
   final engine = RouteNavigationEngine(
@@ -82,9 +79,11 @@ final offlineMapManagerProvider = Provider<OfflineMapManager>(
   (ref) => const MapLibreOfflineMapManager(),
 );
 
-final placeSearchServiceProvider = Provider<PlaceSearchService>(
-  (ref) => NominatimPlaceSearchService(),
-);
+final placeSearchServiceProvider = Provider<PlaceSearchService>((ref) {
+  final service = NominatimPlaceSearchService();
+  ref.onDispose(service.dispose);
+  return service;
+});
 
 final safetyServiceProvider = Provider<SafetyService>(
   (ref) => DeviceSafetyService(
