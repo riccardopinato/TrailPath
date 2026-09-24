@@ -89,6 +89,53 @@ void main() {
     expect(requestedQueries, ['Monselice', 'Padova']);
     expect(delays, [const Duration(seconds: 1)]);
   });
+  test('retries transient search failures and then succeeds', () async {
+    var requests = 0;
+    final delays = <Duration>[];
+    final service = NominatimPlaceSearchService(
+      client: MockClient((request) async {
+        requests++;
+        if (requests < 3) {
+          return http.Response('busy', 503);
+        }
+        return http.Response(_validBody, 200);
+      }),
+      minimumRequestGap: Duration.zero,
+      retryBaseDelay: const Duration(milliseconds: 10),
+      maxRetryDelay: const Duration(milliseconds: 40),
+      delay: (duration) async => delays.add(duration),
+    );
+    addTearDown(service.dispose);
+
+    final results = await service.search('Monselice', languageCode: 'it');
+
+    expect(results, hasLength(1));
+    expect(requests, 3);
+    expect(delays, [
+      const Duration(milliseconds: 10),
+      const Duration(milliseconds: 20),
+    ]);
+  });
+
+  test('does not retry permanent search failures', () async {
+    var requests = 0;
+    final service = NominatimPlaceSearchService(
+      client: MockClient((request) async {
+        requests++;
+        return http.Response('bad request', 400);
+      }),
+      minimumRequestGap: Duration.zero,
+      delay: (_) async {},
+    );
+    addTearDown(service.dispose);
+
+    await expectLater(
+      service.search('Monselice', languageCode: 'it'),
+      throwsA(isA<PlaceSearchException>()),
+    );
+    expect(requests, 1);
+  });
+
 }
 
 const _validBody = '''
