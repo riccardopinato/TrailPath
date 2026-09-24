@@ -11,8 +11,8 @@ void main() {
       addTearDown(database.close);
 
       // Opening the first query executes Drift's migration strategy.
-      final versionRow =
-          await database.customSelect('PRAGMA user_version').getSingle();
+      const versionPragma = 'PRAGMA user_version';
+      final versionRow = await database.customSelect(versionPragma).getSingle();
       expect(versionRow.read<int>('user_version'), 3);
 
       final completed = await database.watchCompletedActivities().first;
