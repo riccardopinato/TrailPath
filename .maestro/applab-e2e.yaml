@@ -128,7 +128,8 @@ appId: com.riccardopinato.trail_path
 - tapOn:
     text: 'Offline\s*Tab 4 of 5'
 - extendedWaitUntil:
-    visible: "TrailPath E2E Route"
+    visible:
+      text: 'TrailPath E2E Route.*'
     timeout: 30000
 - assertVisible: "Offline ready"
 
