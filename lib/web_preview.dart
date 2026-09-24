@@ -498,9 +498,12 @@ class _PreviewScreenState extends State<_PreviewScreen> {
     if (annotation is! Circle) return;
 
     final kind = annotation.data?['kind'];
-    final rawIndex = kind == 'midpoint'
-        ? (annotation.data?['legIndex'])
-        : (annotation.data?['waypointIndex']);
+    Object? rawIndex;
+    if (kind == 'midpoint') {
+      rawIndex = annotation.data?['legIndex'];
+    } else {
+      rawIndex = annotation.data?['waypointIndex'];
+    }
     final index = rawIndex is int
         ? rawIndex
         : rawIndex is num
