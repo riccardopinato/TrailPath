@@ -20,11 +20,11 @@ class OpenMeteoElevationEngine implements ElevationEngine {
     this.maxRetryDelay = const Duration(seconds: 4),
     NetworkDelay? delay,
     NetworkClock? clock,
-  })  : assert(maxSamples >= 2),
-        assert(maxRetries >= 0),
-        _client = client ?? http.Client(),
-        _delay = delay ?? defaultNetworkDelay,
-        _clock = clock ?? DateTime.now;
+  }) : assert(maxSamples >= 2),
+       assert(maxRetries >= 0),
+       _client = client ?? http.Client(),
+       _delay = delay ?? defaultNetworkDelay,
+       _clock = clock ?? DateTime.now;
 
   final http.Client _client;
   final NetworkDelay _delay;
@@ -58,14 +58,10 @@ class OpenMeteoElevationEngine implements ElevationEngine {
         .map((point) => point.longitude.toStringAsFixed(6))
         .join(',');
 
-    final uri = Uri.https(
-      'api.open-meteo.com',
-      '/v1/elevation',
-      {
-        'latitude': latitudes,
-        'longitude': longitudes,
-      },
-    );
+    final uri = Uri.https('api.open-meteo.com', '/v1/elevation', {
+      'latitude': latitudes,
+      'longitude': longitudes,
+    });
 
     final response = await _request(uri);
     final payload = jsonDecode(response.body);
@@ -84,15 +80,10 @@ class OpenMeteoElevationEngine implements ElevationEngine {
       if (value is! num) {
         throw const ElevationException('Elevation value is invalid.');
       }
-      elevated.add(
-        sampled[index].copyWith(elevationMeters: value.toDouble()),
-      );
+      elevated.add(sampled[index].copyWith(elevationMeters: value.toDouble()));
     }
 
-    return buildElevationProfile(
-      elevated,
-      source: engineId,
-    );
+    return buildElevationProfile(elevated, source: engineId);
   }
 
   Future<http.Response> _request(Uri uri) async {
@@ -214,10 +205,7 @@ List<GeoPoint> resampleRouteByDistance(
 
   final total = cumulative.last;
   if (total <= 0) {
-    return [
-      points.first,
-      points.last,
-    ];
+    return [points.first, points.last];
   }
 
   final result = <GeoPoint>[];
@@ -245,8 +233,7 @@ List<GeoPoint> resampleRouteByDistance(
 
     result.add(
       GeoPoint(
-        latitude:
-            before.latitude + (after.latitude - before.latitude) * ratio,
+        latitude: before.latitude + (after.latitude - before.latitude) * ratio,
         longitude:
             before.longitude + (after.longitude - before.longitude) * ratio,
       ),

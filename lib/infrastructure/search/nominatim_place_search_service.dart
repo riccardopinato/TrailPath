@@ -18,10 +18,10 @@ class NominatimPlaceSearchService implements PlaceSearchService {
     this.maxRetryDelay = const Duration(seconds: 5),
     NetworkDelay? delay,
     NetworkClock? clock,
-  })  : assert(maxRetries >= 0),
-        _client = client ?? http.Client(),
-        _delay = delay ?? defaultNetworkDelay,
-        _clock = clock ?? DateTime.now;
+  }) : assert(maxRetries >= 0),
+       _client = client ?? http.Client(),
+       _delay = delay ?? defaultNetworkDelay,
+       _clock = clock ?? DateTime.now;
 
   final http.Client _client;
   final NetworkDelay _delay;
@@ -75,10 +75,7 @@ class NominatimPlaceSearchService implements PlaceSearchService {
         },
       );
 
-      final response = await _request(
-        uri,
-        languageCode: languageCode,
-      );
+      final response = await _request(uri, languageCode: languageCode);
 
       final results = decodeNominatimSearchResults(response.body);
       _cache[cacheKey] = results;
@@ -99,10 +96,7 @@ class NominatimPlaceSearchService implements PlaceSearchService {
     }
   }
 
-  Future<http.Response> _request(
-    Uri uri, {
-    String? languageCode,
-  }) async {
+  Future<http.Response> _request(Uri uri, {String? languageCode}) async {
     Object? lastNetworkError;
 
     for (var attempt = 0; attempt <= maxRetries; attempt++) {
@@ -160,7 +154,8 @@ class NominatimPlaceSearchService implements PlaceSearchService {
       now: _clock(),
       maxDelay: maxRetryDelay,
     );
-    final computed = retryAfter ??
+    final computed =
+        retryAfter ??
         exponentialBackoff(
           attempt: attempt,
           baseDelay: retryBaseDelay,
@@ -216,10 +211,7 @@ List<PlaceSearchResult> decodeNominatimSearchResults(String body) {
       PlaceSearchResult(
         name: name.isEmpty ? displayName : name,
         displayName: displayName,
-        point: GeoPoint(
-          latitude: latitude,
-          longitude: longitude,
-        ),
+        point: GeoPoint(latitude: latitude, longitude: longitude),
       ),
     );
   }

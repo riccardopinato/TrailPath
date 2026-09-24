@@ -23,8 +23,7 @@ double haversineMeters(GeoPoint a, GeoPoint b) {
 
   final sinLat = math.sin(deltaLat / 2);
   final sinLon = math.sin(deltaLon / 2);
-  final h = sinLat * sinLat +
-      math.cos(lat1) * math.cos(lat2) * sinLon * sinLon;
+  final h = sinLat * sinLat + math.cos(lat1) * math.cos(lat2) * sinLon * sinLon;
   final arc = 2 * math.atan2(math.sqrt(h), math.sqrt(1 - h));
   return earthRadiusMeters * arc;
 }
@@ -35,7 +34,8 @@ double bearingDegrees(GeoPoint from, GeoPoint to) {
   final deltaLon = _degreesToRadians(to.longitude - from.longitude);
 
   final y = math.sin(deltaLon) * math.cos(lat2);
-  final x = math.cos(lat1) * math.sin(lat2) -
+  final x =
+      math.cos(lat1) * math.sin(lat2) -
       math.sin(lat1) * math.cos(lat2) * math.cos(deltaLon);
   final bearing = math.atan2(y, x) * 180 / math.pi;
   return normalizeDegrees(bearing);
@@ -46,10 +46,7 @@ double normalizeDegrees(double degrees) {
   return normalized < 0 ? normalized + 360 : normalized;
 }
 
-GeoPoint pointAlongPolyline(
-  List<GeoPoint> points, {
-  double fraction = 0.5,
-}) {
+GeoPoint pointAlongPolyline(List<GeoPoint> points, {double fraction = 0.5}) {
   if (points.isEmpty) {
     throw ArgumentError.value(points, 'points', 'Polyline cannot be empty.');
   }
@@ -75,9 +72,10 @@ GeoPoint pointAlongPolyline(
 
     if (travelled + segment >= target) {
       final local = ((target - travelled) / segment).clamp(0.0, 1.0);
-      final elevation = from.elevationMeters != null && to.elevationMeters != null
+      final elevation =
+          from.elevationMeters != null && to.elevationMeters != null
           ? from.elevationMeters! +
-              (to.elevationMeters! - from.elevationMeters!) * local
+                (to.elevationMeters! - from.elevationMeters!) * local
           : null;
       return GeoPoint(
         latitude: from.latitude + (to.latitude - from.latitude) * local,
@@ -91,10 +89,7 @@ GeoPoint pointAlongPolyline(
   return points.last;
 }
 
-double distanceToPolylineMeters(
-  GeoPoint point,
-  List<GeoPoint> polyline,
-) {
+double distanceToPolylineMeters(GeoPoint point, List<GeoPoint> polyline) {
   if (polyline.isEmpty) {
     return double.infinity;
   }
@@ -157,7 +152,11 @@ List<GeoPoint> simplifyTraceForRouting(
     );
   }
   if (maxWaypoints < 2) {
-    throw ArgumentError.value(maxWaypoints, 'maxWaypoints', 'Must be at least 2.');
+    throw ArgumentError.value(
+      maxWaypoints,
+      'maxWaypoints',
+      'Must be at least 2.',
+    );
   }
 
   final spaced = <GeoPoint>[points.first];
@@ -166,8 +165,7 @@ List<GeoPoint> simplifyTraceForRouting(
       spaced.add(point);
     }
   }
-  if (spaced.length == 1 ||
-      haversineMeters(spaced.last, points.last) > 0.5) {
+  if (spaced.length == 1 || haversineMeters(spaced.last, points.last) > 0.5) {
     spaced.add(points.last);
   } else {
     spaced[spaced.length - 1] = points.last;
@@ -179,9 +177,11 @@ List<GeoPoint> simplifyTraceForRouting(
 
   var tolerance = toleranceMeters;
   var simplified = _douglasPeucker(spaced, tolerance);
-  for (var attempt = 0;
-      simplified.length > maxWaypoints && attempt < 8;
-      attempt++) {
+  for (
+    var attempt = 0;
+    simplified.length > maxWaypoints && attempt < 8;
+    attempt++
+  ) {
     tolerance *= 1.55;
     simplified = _douglasPeucker(spaced, tolerance);
   }
@@ -218,9 +218,7 @@ List<List<GeoPoint>> chunkRouteWaypoints(
   var start = 0;
   while (start < points.length - 1) {
     final end = math.min(start + maxPointsPerChunk - 1, points.length - 1);
-    chunks.add(
-      List<GeoPoint>.unmodifiable(points.sublist(start, end + 1)),
-    );
+    chunks.add(List<GeoPoint>.unmodifiable(points.sublist(start, end + 1)));
     start = end;
   }
   return List<List<GeoPoint>>.unmodifiable(chunks);
@@ -247,9 +245,11 @@ List<GeoPoint> simplifyPolylineForDisplay(
 
   var tolerance = toleranceMeters;
   var simplified = _douglasPeucker(points, tolerance);
-  for (var attempt = 0;
-      simplified.length > maxPoints && attempt < 8;
-      attempt++) {
+  for (
+    var attempt = 0;
+    simplified.length > maxPoints && attempt < 8;
+    attempt++
+  ) {
     tolerance *= 1.8;
     simplified = _douglasPeucker(points, tolerance);
   }
@@ -267,10 +267,7 @@ List<GeoPoint> simplifyPolylineForDisplay(
   return List<GeoPoint>.unmodifiable(capped);
 }
 
-List<GeoPoint> _douglasPeucker(
-  List<GeoPoint> points,
-  double toleranceMeters,
-) {
+List<GeoPoint> _douglasPeucker(List<GeoPoint> points, double toleranceMeters) {
   final keep = List<bool>.filled(points.length, false)
     ..first = true
     ..last = true;

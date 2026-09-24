@@ -11,7 +11,11 @@ import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/features/navigation/application/active_navigation_controller.dart';
 
 class NavigationScreen extends ConsumerStatefulWidget {
-  const NavigationScreen({super.key, required this.routeName, required this.route});
+  const NavigationScreen({
+    super.key,
+    required this.routeName,
+    required this.route,
+  });
 
   final String routeName;
   final RoutePlan route;
@@ -46,12 +50,7 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
     final languageCode = Localizations.localeOf(context).languageCode;
     final controller = ref.read(activeNavigationProvider.notifier);
     _navigationController = controller;
-    Future<void>.microtask(
-      () => controller.start(
-        widget.route,
-        languageCode,
-      ),
-    );
+    Future<void>.microtask(() => controller.start(widget.route, languageCode));
   }
 
   @override
@@ -179,14 +178,14 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
     final event = state.event;
     final first = widget.route.geometry.first;
 
-    ref.listen<ActiveNavigationState>(
-      activeNavigationProvider,
-      (previous, next) {
-        if (previous?.event != next.event) {
-          unawaited(_drawRoute(next.event));
-        }
-      },
-    );
+    ref.listen<ActiveNavigationState>(activeNavigationProvider, (
+      previous,
+      next,
+    ) {
+      if (previous?.event != next.event) {
+        unawaited(_drawRoute(next.event));
+      }
+    });
 
     return Scaffold(
       body: Stack(
@@ -225,9 +224,7 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
                 children: [
                   Material(
                     shape: const CircleBorder(),
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surface
+                    color: Theme.of(context).colorScheme.surface
                         .withValues(alpha: 0.96),
                     child: IconButton(
                       icon: const Icon(Icons.close_rounded),
@@ -242,9 +239,7 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surface
+                        color: Theme.of(context).colorScheme.surface
                             .withValues(alpha: 0.96),
                         borderRadius: BorderRadius.circular(18),
                       ),
@@ -259,9 +254,7 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
                   const SizedBox(width: 8),
                   Material(
                     shape: const CircleBorder(),
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surface
+                    color: Theme.of(context).colorScheme.surface
                         .withValues(alpha: 0.96),
                     child: IconButton(
                       tooltip: strings.centerLocation,
@@ -306,7 +299,8 @@ class _NavigationPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final event = state.event;
     final scheme = Theme.of(context).colorScheme;
-    final remaining = event?.remainingMeters ?? state.route?.distanceMeters ?? 0;
+    final remaining =
+        event?.remainingMeters ?? state.route?.distanceMeters ?? 0;
     final progress = event?.progressFraction ?? 0;
     final distanceToRoute = event?.distanceToRouteMeters ?? 0;
     final offRoute = event?.isOffRoute == true;
@@ -337,17 +331,28 @@ class _NavigationPanel extends StatelessWidget {
           Row(
             children: [
               Icon(
-                offRoute ? Icons.warning_amber_rounded : Icons.navigation_rounded,
+                offRoute
+                    ? Icons.warning_amber_rounded
+                    : Icons.navigation_rounded,
                 color: offRoute ? scheme.error : scheme.primary,
               ),
               const SizedBox(width: 9),
               Expanded(
                 child: Text(
                   statusText,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
-              Text('v${MapConfig.appVersion}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+              Text(
+                'v${MapConfig.appVersion}',
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -428,7 +433,10 @@ class _NavMetric extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+        ),
         const SizedBox(height: 2),
         Text(
           label,

@@ -11,21 +11,9 @@ void main() {
   test('elevation profile calculates ascent descent and grade', () {
     final profile = buildElevationProfile(
       const [
-        GeoPoint(
-          latitude: 45.0,
-          longitude: 11.0,
-          elevationMeters: 100,
-        ),
-        GeoPoint(
-          latitude: 45.005,
-          longitude: 11.005,
-          elevationMeters: 130,
-        ),
-        GeoPoint(
-          latitude: 45.01,
-          longitude: 11.01,
-          elevationMeters: 120,
-        ),
+        GeoPoint(latitude: 45.0, longitude: 11.0, elevationMeters: 100),
+        GeoPoint(latitude: 45.005, longitude: 11.005, elevationMeters: 130),
+        GeoPoint(latitude: 45.01, longitude: 11.01, elevationMeters: 120),
       ],
       source: 'test',
       noiseThresholdMeters: 0,
@@ -44,21 +32,9 @@ void main() {
   test('elevation noise threshold filters tiny DEM oscillations', () {
     final profile = buildElevationProfile(
       const [
-        GeoPoint(
-          latitude: 45.0,
-          longitude: 11.0,
-          elevationMeters: 100,
-        ),
-        GeoPoint(
-          latitude: 45.001,
-          longitude: 11.001,
-          elevationMeters: 101,
-        ),
-        GeoPoint(
-          latitude: 45.002,
-          longitude: 11.002,
-          elevationMeters: 100,
-        ),
+        GeoPoint(latitude: 45.0, longitude: 11.0, elevationMeters: 100),
+        GeoPoint(latitude: 45.001, longitude: 11.001, elevationMeters: 101),
+        GeoPoint(latitude: 45.002, longitude: 11.002, elevationMeters: 100),
       ],
       source: 'test',
       noiseThresholdMeters: 2,
@@ -84,40 +60,40 @@ void main() {
     expect(sampled.last.latitude, closeTo(points.last.latitude, 0.000001));
   });
 
-  test('elevation engine retries transient failures and returns a profile',
-      () async {
-    var requests = 0;
-    final engine = OpenMeteoElevationEngine(
-      client: MockClient((request) async {
-        requests++;
-        if (requests == 1) {
-          return http.Response('busy', 503);
-        }
-        return http.Response(
-          jsonEncode({
-            'elevation': [100.0, 125.0],
-          }),
-          200,
-        );
-      }),
-      maxRetries: 1,
-      retryBaseDelay: Duration.zero,
-      delay: (_) async {},
-    );
-    addTearDown(engine.dispose);
+  test(
+    'elevation engine retries transient failures and returns a profile',
+    () async {
+      var requests = 0;
+      final engine = OpenMeteoElevationEngine(
+        client: MockClient((request) async {
+          requests++;
+          if (requests == 1) {
+            return http.Response('busy', 503);
+          }
+          return http.Response(
+            jsonEncode({
+              'elevation': [100.0, 125.0],
+            }),
+            200,
+          );
+        }),
+        maxRetries: 1,
+        retryBaseDelay: Duration.zero,
+        delay: (_) async {},
+      );
+      addTearDown(engine.dispose);
 
-    final profile = await engine.resolve(
-      const [
+      final profile = await engine.resolve(const [
         GeoPoint(latitude: 45.0, longitude: 11.0),
         GeoPoint(latitude: 45.01, longitude: 11.01),
-      ],
-    );
+      ]);
 
-    expect(requests, 2);
-    expect(profile.isAvailable, isTrue);
-    expect(profile.samples, hasLength(2));
-    expect(profile.samples.last.point.elevationMeters, 125);
-  });
+      expect(requests, 2);
+      expect(profile.isAvailable, isTrue);
+      expect(profile.samples, hasLength(2));
+      expect(profile.samples.last.point.elevationMeters, 125);
+    },
+  );
 
   test('elevation engine does not retry permanent HTTP failures', () async {
     var requests = 0;
@@ -132,12 +108,10 @@ void main() {
     addTearDown(engine.dispose);
 
     await expectLater(
-      engine.resolve(
-        const [
-          GeoPoint(latitude: 45.0, longitude: 11.0),
-          GeoPoint(latitude: 45.01, longitude: 11.01),
-        ],
-      ),
+      engine.resolve(const [
+        GeoPoint(latitude: 45.0, longitude: 11.0),
+        GeoPoint(latitude: 45.01, longitude: 11.01),
+      ]),
       throwsA(isA<ElevationException>()),
     );
     expect(requests, 1);

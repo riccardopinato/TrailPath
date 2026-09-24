@@ -1,14 +1,6 @@
-enum BatteryMode {
-  performance,
-  balanced,
-  saver,
-}
+enum BatteryMode { performance, balanced, saver }
 
-enum GpsAccuracyPreset {
-  navigation,
-  high,
-  medium,
-}
+enum GpsAccuracyPreset { navigation, high, medium }
 
 class BatteryModePolicy {
   const BatteryModePolicy({
@@ -33,31 +25,31 @@ class BatteryModePolicy {
 BatteryModePolicy batteryModePolicy(BatteryMode mode) {
   return switch (mode) {
     BatteryMode.performance => const BatteryModePolicy(
-        mode: BatteryMode.performance,
-        accuracy: GpsAccuracyPreset.navigation,
-        distanceFilterMeters: 3,
-        interval: Duration(seconds: 3),
-        maxAcceptedAccuracyMeters: 40,
-        minimumSegmentMeters: 2,
-        keepCpuAwake: true,
-      ),
+      mode: BatteryMode.performance,
+      accuracy: GpsAccuracyPreset.navigation,
+      distanceFilterMeters: 3,
+      interval: Duration(seconds: 3),
+      maxAcceptedAccuracyMeters: 40,
+      minimumSegmentMeters: 2,
+      keepCpuAwake: true,
+    ),
     BatteryMode.balanced => const BatteryModePolicy(
-        mode: BatteryMode.balanced,
-        accuracy: GpsAccuracyPreset.high,
-        distanceFilterMeters: 7,
-        interval: Duration(seconds: 6),
-        maxAcceptedAccuracyMeters: 55,
-        minimumSegmentMeters: 4,
-        keepCpuAwake: true,
-      ),
+      mode: BatteryMode.balanced,
+      accuracy: GpsAccuracyPreset.high,
+      distanceFilterMeters: 7,
+      interval: Duration(seconds: 6),
+      maxAcceptedAccuracyMeters: 55,
+      minimumSegmentMeters: 4,
+      keepCpuAwake: true,
+    ),
     BatteryMode.saver => const BatteryModePolicy(
-        mode: BatteryMode.saver,
-        accuracy: GpsAccuracyPreset.medium,
-        distanceFilterMeters: 15,
-        interval: Duration(seconds: 12),
-        maxAcceptedAccuracyMeters: 80,
-        minimumSegmentMeters: 8,
-        keepCpuAwake: false,
-      ),
+      mode: BatteryMode.saver,
+      accuracy: GpsAccuracyPreset.medium,
+      distanceFilterMeters: 15,
+      interval: Duration(seconds: 12),
+      maxAcceptedAccuracyMeters: 80,
+      minimumSegmentMeters: 8,
+      keepCpuAwake: false,
+    ),
   };
 }

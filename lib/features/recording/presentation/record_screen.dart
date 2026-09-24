@@ -103,10 +103,9 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
       if (current != null && controller.lines.contains(current)) {
         await controller.updateLine(current, options);
       } else {
-        _trackLine = await controller.addLine(
-          options,
-          const <String, dynamic>{'kind': 'recordedTrack'},
-        );
+        _trackLine = await controller.addLine(options, const <String, dynamic>{
+          'kind': 'recordedTrack',
+        });
       }
     } else {
       final current = _trackLine;
@@ -124,9 +123,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
       if (start != null && controller.circles.contains(start)) {
         await controller.removeCircle(start);
       }
-      if (end != null &&
-          end != start &&
-          controller.circles.contains(end)) {
+      if (end != null && end != start && controller.circles.contains(end)) {
         await controller.removeCircle(end);
       }
       return;
@@ -175,8 +172,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
 
   Future<void> _finishRecording() async {
     final strings = AppLocalizations.of(context);
-    final recordingController =
-        ref.read(recordingControllerProvider.notifier);
+    final recordingController = ref.read(recordingControllerProvider.notifier);
     final now = DateTime.now();
     final defaultName =
         '${strings.record} ${now.day}/${now.month} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
@@ -199,8 +195,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
             child: Text(strings.cancel),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.of(context).pop(controller.text.trim()),
+            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
             child: Text(strings.save),
           ),
         ],
@@ -234,17 +229,14 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          saved ? strings.activitySaved : strings.activityTooShort,
-        ),
+        content: Text(saved ? strings.activitySaved : strings.activityTooShort),
       ),
     );
   }
 
   Future<void> _discardRecording() async {
     final strings = AppLocalizations.of(context);
-    final recordingController =
-        ref.read(recordingControllerProvider.notifier);
+    final recordingController = ref.read(recordingControllerProvider.notifier);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -286,15 +278,12 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
     final snapshot = state.snapshot;
     final dark = Theme.of(context).brightness == Brightness.dark;
 
-    ref.listen<RecordingState>(
-      recordingControllerProvider,
-      (previous, next) {
-        if (previous?.snapshot.points.length != next.snapshot.points.length ||
-            previous?.snapshot.status != next.snapshot.status) {
-          unawaited(_syncTrack(next.snapshot));
-        }
-      },
-    );
+    ref.listen<RecordingState>(recordingControllerProvider, (previous, next) {
+      if (previous?.snapshot.points.length != next.snapshot.points.length ||
+          previous?.snapshot.status != next.snapshot.status) {
+        unawaited(_syncTrack(next.snapshot));
+      }
+    });
 
     return Stack(
       children: [
@@ -358,8 +347,8 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                         snapshot.status == TrackRecorderStatus.recording
                             ? strings.recording
                             : snapshot.status == TrackRecorderStatus.paused
-                                ? strings.paused
-                                : strings.record,
+                            ? strings.paused
+                            : strings.record,
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
                           letterSpacing: -0.3,
@@ -400,8 +389,9 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
             child: _RecorderPanel(
               strings: strings,
               state: state,
-              onProfileChanged:
-                  ref.read(recordingControllerProvider.notifier).setProfile,
+              onProfileChanged: ref
+                  .read(recordingControllerProvider.notifier)
+                  .setProfile,
               onStart: ref.read(recordingControllerProvider.notifier).start,
               onPause: ref.read(recordingControllerProvider.notifier).pause,
               onResume: ref.read(recordingControllerProvider.notifier).resume,
@@ -469,10 +459,7 @@ class _RecorderPanel extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.restore_rounded,
-                    color: scheme.onPrimaryContainer,
-                  ),
+                  Icon(Icons.restore_rounded, color: scheme.onPrimaryContainer),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -596,10 +583,9 @@ class _RecorderPanel extends StatelessWidget {
               else ...[
                 Expanded(
                   child: FilledButton.tonalIcon(
-                    onPressed:
-                        snapshot.status == TrackRecorderStatus.recording
-                            ? onPause
-                            : onResume,
+                    onPressed: snapshot.status == TrackRecorderStatus.recording
+                        ? onPause
+                        : onResume,
                     icon: Icon(
                       snapshot.status == TrackRecorderStatus.recording
                           ? Icons.pause_rounded
@@ -710,9 +696,7 @@ class _RecordMapFallback extends StatelessWidget {
   Widget build(BuildContext context) {
     return ColoredBox(
       color: dark ? const Color(0xFF17261D) : const Color(0xFFDDE8D9),
-      child: const Center(
-        child: Icon(Icons.route_rounded, size: 54),
-      ),
+      child: const Center(child: Icon(Icons.route_rounded, size: 54)),
     );
   }
 }

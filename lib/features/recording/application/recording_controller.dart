@@ -10,8 +10,8 @@ import 'package:trail_path/features/outdoor/application/battery_mode_controller.
 
 final recordingControllerProvider =
     NotifierProvider<RecordingController, RecordingState>(
-  RecordingController.new,
-);
+      RecordingController.new,
+    );
 
 class RecordingState {
   const RecordingState({
@@ -92,10 +92,7 @@ class RecordingController extends Notifier<RecordingState> {
       return;
     }
     _recoveryChecked = true;
-    state = state.copyWith(
-      isCheckingRecovery: true,
-      clearError: true,
-    );
+    state = state.copyWith(isCheckingRecovery: true, clearError: true);
 
     try {
       final activity = await _database.latestRecoverableActivity();
@@ -206,10 +203,7 @@ class RecordingController extends Notifier<RecordingState> {
         await _safeDiscardDraft(activityId);
       }
       if (ref.mounted) {
-        state = state.copyWith(
-          clearActivityId: true,
-          error: error.toString(),
-        );
+        state = state.copyWith(clearActivityId: true, error: error.toString());
       }
     }
   }
@@ -231,10 +225,7 @@ class RecordingController extends Notifier<RecordingState> {
 
     final permissions = ref.read(runtimePermissionProvider);
     final batteryModeFuture = ref.read(batteryModeProvider.future);
-    state = state.copyWith(
-      hasRecoveredDraft: false,
-      clearError: true,
-    );
+    state = state.copyWith(hasRecoveredDraft: false, clearError: true);
 
     try {
       await permissions.prepareRecording();
@@ -328,10 +319,7 @@ class RecordingController extends Notifier<RecordingState> {
         if (!ref.mounted) {
           return;
         }
-        state = state.copyWith(
-          snapshot: snapshot,
-          clearError: true,
-        );
+        state = state.copyWith(snapshot: snapshot, clearError: true);
         _scheduleAutosave(snapshot);
       },
       onError: (Object error, StackTrace stackTrace) {
@@ -365,10 +353,7 @@ class RecordingController extends Notifier<RecordingState> {
     _lastPersistedPointCount = snapshot.points.length;
     _lastPersistedStatus = snapshot.status;
 
-    _queuePersist(
-      activityId: activityId,
-      snapshot: snapshot,
-    );
+    _queuePersist(activityId: activityId, snapshot: snapshot);
   }
 
   Future<void> _flushAutosave() async {
@@ -378,10 +363,7 @@ class RecordingController extends Notifier<RecordingState> {
     }
 
     final snapshot = state.snapshot;
-    _queuePersist(
-      activityId: activityId,
-      snapshot: snapshot,
-    );
+    _queuePersist(activityId: activityId, snapshot: snapshot);
     await _persistChain;
   }
 

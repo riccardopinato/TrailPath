@@ -40,10 +40,7 @@ class XmlGpxService implements GpxService {
       );
     }
 
-    return GpxDocument(
-      name: name,
-      points: List<GeoPoint>.unmodifiable(points),
-    );
+    return GpxDocument(name: name, points: List<GeoPoint>.unmodifiable(points));
   }
 
   @override
@@ -183,11 +180,7 @@ class XmlGpxService implements GpxService {
     return null;
   }
 
-  String? _firstDescendantText(
-    XmlElement root,
-    String parent,
-    String child,
-  ) {
+  String? _firstDescendantText(XmlElement root, String parent, String child) {
     for (final element in root.descendants.whereType<XmlElement>()) {
       if (element.name.local != parent) {
         continue;

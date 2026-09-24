@@ -95,13 +95,14 @@ class _PreviewScreenState extends State<_PreviewScreen> {
 
     final nextLines = <Line>[];
     if (_geometry.length >= 2) {
-      final geometry = simplifyPolylineForDisplay(
-        _geometry,
-        toleranceMeters: 1.5,
-        maxPoints: 2200,
-      ).map((point) => LatLng(point.latitude, point.longitude)).toList(
-            growable: false,
-          );
+      final geometry =
+          simplifyPolylineForDisplay(
+                _geometry,
+                toleranceMeters: 1.5,
+                maxPoints: 2200,
+              )
+              .map((point) => LatLng(point.latitude, point.longitude))
+              .toList(growable: false);
 
       if (geometry.length >= 2) {
         nextLines.add(
@@ -211,10 +212,7 @@ class _PreviewScreenState extends State<_PreviewScreen> {
 
     try {
       final plan = await _routingService.calculate(
-        RouteRequest(
-          points: requestedPoints,
-          profile: profile,
-        ),
+        RouteRequest(points: requestedPoints, profile: profile),
       );
 
       if (!mounted || generation != _routingGeneration) return;
@@ -482,8 +480,8 @@ class _PlannerPanel extends StatelessWidget {
                           hasSnappedRoute
                               ? 'Percorso agganciato alla rete · $durationLabel'
                               : pointCount < 2
-                                  ? 'Aggiungi almeno 2 punti'
-                                  : 'Calcolo percorso…',
+                              ? 'Aggiungi almeno 2 punti'
+                              : 'Calcolo percorso…',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
@@ -516,10 +514,7 @@ class _PlannerPanel extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             'La preview Web usa routing reale. GPS in background, download offline e notifiche restano funzioni da verificare sull’APK Android.',
-            style: TextStyle(
-              fontSize: 12,
-              color: scheme.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
           ),
         ],
       ),

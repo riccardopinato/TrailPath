@@ -76,8 +76,7 @@ class GeolocatorLocationEngine implements LocationEngine {
         foregroundNotificationConfig: keepAliveInBackground
             ? ForegroundNotificationConfig(
                 notificationTitle: 'TrailPath · navigazione attiva',
-                notificationText:
-                    'La navigazione GPS continua anche con TrailPath in background.',
+                notificationText: 'La navigazione GPS continua anche con TrailPath in background.',
                 enableWakeLock: policy.keepCpuAwake,
                 setOngoing: true,
               )

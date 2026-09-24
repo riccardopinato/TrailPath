@@ -135,7 +135,6 @@ void main() {
     );
     expect(requests, 1);
   });
-
 }
 
 const _validBody = '''

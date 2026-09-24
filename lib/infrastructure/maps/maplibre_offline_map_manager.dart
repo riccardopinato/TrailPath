@@ -25,7 +25,9 @@ class MapLibreOfflineMapManager implements OfflineMapManager {
       regions.add(_toDomain(nativeRegion, status));
     }
 
-    regions.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    regions.sort(
+      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+    );
     return List<OfflineRegion>.unmodifiable(regions);
   }
 
@@ -81,10 +83,7 @@ class MapLibreOfflineMapManager implements OfflineMapManager {
           minZoom: request.minZoom,
           maxZoom: request.maxZoom,
         ),
-        metadata: {
-          'trailPathRegionId': request.id,
-          'name': request.name,
-        },
+        metadata: {'trailPathRegionId': request.id, 'name': request.name},
         onEvent: (event) {
           if (event is ml.InProgress) {
             lastBytes = event.completedResourceSize;
@@ -123,8 +122,8 @@ class MapLibreOfflineMapManager implements OfflineMapManager {
             progress: status.isComplete
                 ? 1
                 : (status.downloadProgress / 100)
-                    .clamp(lastProgress, 1.0)
-                    .toDouble(),
+                      .clamp(lastProgress, 1.0)
+                      .toDouble(),
           ),
         );
       }
@@ -170,7 +169,8 @@ class MapLibreOfflineMapManager implements OfflineMapManager {
     ml.OfflineRegionStatus status,
   ) {
     return OfflineRegion(
-      id: region.metadata['trailPathRegionId']?.toString() ??
+      id:
+          region.metadata['trailPathRegionId']?.toString() ??
           region.id.toString(),
       name: region.metadata['name']?.toString() ?? 'Offline map',
       downloadedBytes: status.completedResourceSize,

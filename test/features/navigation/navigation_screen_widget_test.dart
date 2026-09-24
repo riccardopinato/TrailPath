@@ -12,8 +12,9 @@ import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/navigation/presentation/navigation_screen.dart';
 
 void main() {
-  testWidgets('navigation starts after localization dependencies are ready',
-      (tester) async {
+  testWidgets('navigation starts after localization dependencies are ready', (
+    tester,
+  ) async {
     final database = AppDatabase.memory();
     final engine = _FakeNavigationEngine();
     addTearDown(database.close);
@@ -86,9 +87,7 @@ class _FakeNavigationEngine implements NavigationEngine {
   @override
   Future<void> stop() async {
     if (!_controller.isClosed) {
-      _controller.add(
-        const NavigationEvent(type: NavigationEventType.stopped),
-      );
+      _controller.add(const NavigationEvent(type: NavigationEventType.stopped));
     }
   }
 

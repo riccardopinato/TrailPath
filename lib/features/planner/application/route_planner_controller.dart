@@ -8,8 +8,8 @@ import 'package:trail_path/core/services/service_providers.dart';
 
 final routePlannerProvider =
     NotifierProvider<RoutePlannerController, RoutePlannerState>(
-  RoutePlannerController.new,
-);
+      RoutePlannerController.new,
+    );
 
 class RoutePlannerState {
   const RoutePlannerState({
@@ -93,10 +93,12 @@ class RoutePlannerState {
       routingSource: routingSource ?? this.routingSource,
       elevationProfile: elevationProfile ?? this.elevationProfile,
       isElevationLoading: isElevationLoading ?? this.isElevationLoading,
-      importedName:
-          clearImportedName ? null : importedName ?? this.importedName,
-      routingError:
-          clearRoutingError ? null : routingError ?? this.routingError,
+      importedName: clearImportedName
+          ? null
+          : importedName ?? this.importedName,
+      routingError: clearRoutingError
+          ? null
+          : routingError ?? this.routingError,
       editHandles: editHandles ?? this.editHandles,
     );
   }
@@ -164,10 +166,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       return false;
     }
 
-    final next = List<GeoPoint>.unmodifiable([
-      ...previousPoints,
-      ...append,
-    ]);
+    final next = List<GeoPoint>.unmodifiable([...previousPoints, ...append]);
 
     _pushUndo();
     _redoStack.clear();
@@ -207,8 +206,9 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
 
     if (canPatch && next.length >= 2) {
       final startWaypoint = index == 0 ? 0 : index - 1;
-      final endWaypoint =
-          index == next.length - 1 ? next.length - 1 : index + 1;
+      final endWaypoint = index == next.length - 1
+          ? next.length - 1
+          : index + 1;
       _startRouteEdit(next);
       unawaited(
         _rerouteSpan(
@@ -378,13 +378,11 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
 
     final geometry = List<GeoPoint>.unmodifiable(document.points);
     final distance = calculateRouteDistanceMeters(geometry);
-    final hasCompleteElevation =
-        geometry.every((point) => point.elevationMeters != null);
+    final hasCompleteElevation = geometry.every(
+      (point) => point.elevationMeters != null,
+    );
     final elevationProfile = hasCompleteElevation
-        ? buildElevationProfile(
-            geometry,
-            source: 'gpx',
-          )
+        ? buildElevationProfile(geometry, source: 'gpx')
         : const ElevationProfile.unavailable();
 
     state = RoutePlannerState(
@@ -499,7 +497,9 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     state = state.copyWith(isRouting: true);
 
     try {
-      final plan = await ref.read(routingEngineProvider).calculate(
+      final plan = await ref
+          .read(routingEngineProvider)
+          .calculate(
             RouteRequest(
               points: waypoints,
               profile: profile,
@@ -511,10 +511,9 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         return;
       }
 
-      final snappedWaypoints =
-          plan.snappedWaypoints.length == waypoints.length
-              ? List<GeoPoint>.unmodifiable(plan.snappedWaypoints)
-              : waypoints;
+      final snappedWaypoints = plan.snappedWaypoints.length == waypoints.length
+          ? List<GeoPoint>.unmodifiable(plan.snappedWaypoints)
+          : waypoints;
       _legGeometries = plan.isSnapped
           ? _splitGeometryIntoLegs(plan.geometry, snappedWaypoints)
           : const [];
@@ -559,10 +558,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
   }
 
   List<List<GeoPoint>> _copyLegCache() {
-    return [
-      for (final leg in _legGeometries)
-        List<GeoPoint>.unmodifiable(leg),
-    ];
+    return [for (final leg in _legGeometries) List<GeoPoint>.unmodifiable(leg)];
   }
 
   bool _hasLegCacheFor(List<GeoPoint> points) {
@@ -604,7 +600,9 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     );
 
     try {
-      final plan = await ref.read(routingEngineProvider).calculate(
+      final plan = await ref
+          .read(routingEngineProvider)
+          .calculate(
             RouteRequest(
               points: spanPoints,
               profile: profile,
@@ -616,15 +614,15 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         return;
       }
 
-      final snappedSpan =
-          plan.snappedWaypoints.length == spanPoints.length
-              ? List<GeoPoint>.unmodifiable(plan.snappedWaypoints)
-              : spanPoints;
-      final replacementLegs =
-          _splitGeometryIntoLegs(plan.geometry, snappedSpan);
+      final snappedSpan = plan.snappedWaypoints.length == spanPoints.length
+          ? List<GeoPoint>.unmodifiable(plan.snappedWaypoints)
+          : spanPoints;
+      final replacementLegs = _splitGeometryIntoLegs(
+        plan.geometry,
+        snappedSpan,
+      );
 
-      if (!plan.isSnapped ||
-          replacementLegs.length != snappedSpan.length - 1) {
+      if (!plan.isSnapped || replacementLegs.length != snappedSpan.length - 1) {
         _legGeometries = const [];
         state = state.copyWith(
           points: List<GeoPoint>.unmodifiable(nextPoints),
@@ -646,8 +644,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         ...previousLegs.skip(oldLegStart + oldLegRemoveCount),
       ];
       _legGeometries = [
-        for (final leg in mergedLegs)
-          List<GeoPoint>.unmodifiable(leg),
+        for (final leg in mergedLegs) List<GeoPoint>.unmodifiable(leg),
       ];
 
       if (_legGeometries.length != snappedPoints.length - 1) {
@@ -699,15 +696,10 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     }
   }
 
-  void _applyCachedRoute(
-    List<GeoPoint> points,
-    List<List<GeoPoint>> legs,
-  ) {
+  void _applyCachedRoute(List<GeoPoint> points, List<List<GeoPoint>> legs) {
     final generation = ++_routingGeneration;
     _elevationGeneration++;
-    _legGeometries = [
-      for (final leg in legs) List<GeoPoint>.unmodifiable(leg),
-    ];
+    _legGeometries = [for (final leg in legs) List<GeoPoint>.unmodifiable(leg)];
     final geometry = _mergeLegs(_legGeometries);
     final distance = calculateRouteDistanceMeters(geometry);
 
@@ -736,9 +728,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     if (_legGeometries.length == state.points.length - 1) {
       var bestLeg = -1;
       var bestDistance = double.infinity;
-      for (var legIndex = 0;
-          legIndex < _legGeometries.length;
-          legIndex++) {
+      for (var legIndex = 0; legIndex < _legGeometries.length; legIndex++) {
         for (final routePoint in _legGeometries[legIndex]) {
           final distance = haversineMeters(point, routePoint);
           if (distance < bestDistance) {
@@ -759,7 +749,8 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     var bestLeg = 0;
     var bestDistance = double.infinity;
     for (var index = 0; index < state.points.length - 1; index++) {
-      final distance = haversineMeters(point, state.points[index]) +
+      final distance =
+          haversineMeters(point, state.points[index]) +
           haversineMeters(point, state.points[index + 1]);
       if (distance < bestDistance) {
         bestDistance = distance;
@@ -786,9 +777,11 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     final cuts = <int>[0];
     var previousCut = 0;
 
-    for (var waypointIndex = 1;
-        waypointIndex < waypoints.length - 1;
-        waypointIndex++) {
+    for (
+      var waypointIndex = 1;
+      waypointIndex < waypoints.length - 1;
+      waypointIndex++
+    ) {
       final minIndex = previousCut + 1;
       final remainingWaypoints = waypoints.length - waypointIndex - 1;
       final maxIndex = geometry.length - remainingWaypoints - 1;
@@ -798,9 +791,11 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
 
       var bestIndex = minIndex;
       var bestDistance = double.infinity;
-      for (var geometryIndex = minIndex;
-          geometryIndex <= maxIndex;
-          geometryIndex++) {
+      for (
+        var geometryIndex = minIndex;
+        geometryIndex <= maxIndex;
+        geometryIndex++
+      ) {
         final distance = haversineMeters(
           waypoints[waypointIndex],
           geometry[geometryIndex],

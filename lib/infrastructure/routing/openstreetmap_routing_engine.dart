@@ -19,11 +19,11 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
     this.maxRetryDelay = const Duration(seconds: 4),
     NetworkDelay? delay,
     NetworkClock? clock,
-  })  : assert(maxWaypointsPerRequest >= 2),
-        assert(maxRetries >= 0),
-        _client = client ?? http.Client(),
-        _delay = delay ?? defaultNetworkDelay,
-        _clock = clock ?? DateTime.now;
+  }) : assert(maxWaypointsPerRequest >= 2),
+       assert(maxRetries >= 0),
+       _client = client ?? http.Client(),
+       _delay = delay ?? defaultNetworkDelay,
+       _clock = clock ?? DateTime.now;
 
   final http.Client _client;
   final NetworkDelay _delay;
@@ -332,10 +332,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
 }
 
 class FallbackRoutingEngine implements RoutingEngine {
-  const FallbackRoutingEngine({
-    required this.primary,
-    required this.fallback,
-  });
+  const FallbackRoutingEngine({required this.primary, required this.fallback});
 
   final RoutingEngine primary;
   final RoutingEngine fallback;

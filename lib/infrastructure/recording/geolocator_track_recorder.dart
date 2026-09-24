@@ -209,17 +209,17 @@ class GeolocatorTrackRecorder implements TrackRecorder {
 
     _positionSubscription =
         Geolocator.getPositionStream(locationSettings: settings).listen(
-      (position) {
-        if (_isCurrent(session)) {
-          _onPosition(position);
-        }
-      },
-      onError: (Object error, StackTrace stackTrace) {
-        if (_isCurrent(session) && !_controller.isClosed) {
-          _controller.addError(error, stackTrace);
-        }
-      },
-    );
+          (position) {
+            if (_isCurrent(session)) {
+              _onPosition(position);
+            }
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            if (_isCurrent(session) && !_controller.isClosed) {
+              _controller.addError(error, stackTrace);
+            }
+          },
+        );
   }
 
   LocationSettings _locationSettings() {
@@ -302,7 +302,7 @@ class GeolocatorTrackRecorder implements TrackRecorder {
 
       final seconds = next.timestamp != null && previous.timestamp != null
           ? next.timestamp!.difference(previous.timestamp!).inMilliseconds /
-              1000
+                1000
           : null;
       if (seconds != null && seconds > 0 && segmentDistance / seconds > 55) {
         _emit();
@@ -327,14 +327,11 @@ class GeolocatorTrackRecorder implements TrackRecorder {
 
   void _startTicker() {
     _ticker?.cancel();
-    _ticker = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) {
-        if (!_disposed && _status == TrackRecorderStatus.recording) {
-          _emit();
-        }
-      },
-    );
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!_disposed && _status == TrackRecorderStatus.recording) {
+        _emit();
+      }
+    });
   }
 
   void _captureElapsed() {

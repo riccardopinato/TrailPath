@@ -8,8 +8,8 @@ import 'package:trail_path/core/services/service_providers.dart';
 
 final offlineDownloadsProvider =
     NotifierProvider<OfflineDownloadsController, OfflineDownloadsState>(
-  OfflineDownloadsController.new,
-);
+      OfflineDownloadsController.new,
+    );
 
 class OfflineDownloadsState {
   const OfflineDownloadsState({
@@ -108,10 +108,7 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
       );
     } on Object catch (error) {
       if (ref.mounted) {
-        state = state.copyWith(
-          isReconciling: false,
-          error: error.toString(),
-        );
+        state = state.copyWith(isReconciling: false, error: error.toString());
       }
     }
   }

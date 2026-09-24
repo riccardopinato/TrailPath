@@ -59,28 +59,26 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
       final current = await _currentPosition();
       if (current == null) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(strings.locationUnavailable)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(strings.locationUnavailable)));
         }
         return;
       }
 
       await database.saveReturnPoint(
-            point: current.point,
-            accuracyMeters: current.accuracyMeters,
-          );
+        point: current.point,
+        accuracyMeters: current.accuracyMeters,
+      );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(strings.carPositionSaved)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(strings.carPositionSaved)));
       }
     } on Object catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.toString())),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error.toString())));
       }
     } finally {
       if (mounted) {
@@ -126,9 +124,9 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
       final current = await _currentPosition();
       if (current == null) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(strings.locationUnavailable)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(strings.locationUnavailable)));
         }
         return;
       }
@@ -146,9 +144,8 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
       );
     } on Object {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(strings.sharePositionError)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(strings.sharePositionError)));
       }
     } finally {
       if (mounted) {
@@ -201,8 +198,9 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
               mode: mode,
               loading: modeAsync.isLoading,
               onChanged: (selected) async {
-                final batteryController =
-                    ref.read(batteryModeProvider.notifier);
+                final batteryController = ref.read(
+                  batteryModeProvider.notifier,
+                );
                 final recorder = ref.read(trackRecorderProvider);
                 final navigation = ref.read(navigationEngineProvider);
                 await batteryController.setMode(selected);
@@ -223,7 +221,8 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
                 onClear: returnPoint == null ? null : _clearCar,
               ),
               loading: () => const _LoadingCard(),
-              error: (error, stackTrace) => _ErrorCard(message: error.toString()),
+              error: (error, stackTrace) =>
+                  _ErrorCard(message: error.toString()),
             ),
             const SizedBox(height: 14),
             FutureBuilder<SafetySnapshot>(
@@ -280,23 +279,23 @@ class _BatteryModeCard extends StatelessWidget {
             child: SegmentedButton<BatteryMode>(
               showSelectedIcon: false,
               segments: [
-              ButtonSegment(
-                value: BatteryMode.performance,
-                icon: const Icon(Icons.speed_rounded),
-                label: Text(strings.batteryPerformance),
-              ),
-              ButtonSegment(
-                value: BatteryMode.balanced,
-                icon: const Icon(Icons.balance_rounded),
-                label: Text(strings.batteryBalanced),
-              ),
-              ButtonSegment(
-                value: BatteryMode.saver,
-                icon: const Icon(Icons.eco_outlined),
-                label: Text(strings.batterySaver),
-              ),
-            ],
-            selected: {mode},
+                ButtonSegment(
+                  value: BatteryMode.performance,
+                  icon: const Icon(Icons.speed_rounded),
+                  label: Text(strings.batteryPerformance),
+                ),
+                ButtonSegment(
+                  value: BatteryMode.balanced,
+                  icon: const Icon(Icons.balance_rounded),
+                  label: Text(strings.batteryBalanced),
+                ),
+                ButtonSegment(
+                  value: BatteryMode.saver,
+                  icon: const Icon(Icons.eco_outlined),
+                  label: Text(strings.batterySaver),
+                ),
+              ],
+              selected: {mode},
               onSelectionChanged: loading
                   ? null
                   : (selection) {
@@ -309,11 +308,7 @@ class _BatteryModeCard extends StatelessWidget {
           const SizedBox(height: 9),
           Row(
             children: [
-              Icon(
-                Icons.gps_fixed_rounded,
-                size: 16,
-                color: scheme.primary,
-              ),
+              Icon(Icons.gps_fixed_rounded, size: 16, color: scheme.primary),
               const SizedBox(width: 7),
               Expanded(
                 child: Text(
@@ -360,7 +355,7 @@ class _BackToCarCard extends StatelessWidget {
       subtitle: point == null
           ? strings.backToCarHint
           : '${strings.carSavedAt} ${_formatSavedTime(context, point.savedAt)} · '
-              '±${point.accuracyMeters.round()} m',
+                '±${point.accuracyMeters.round()} m',
       child: Row(
         children: [
           Expanded(
@@ -429,52 +424,51 @@ class _SafetyCard extends StatelessWidget {
       child: loading
           ? const LinearProgressIndicator()
           : error != null
-              ? Text(
-                  error.toString(),
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                )
-              : data == null
-                  ? const SizedBox.shrink()
-                  : Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _StatusChip(
-                          icon: Icons.battery_5_bar_rounded,
-                          label: data.batteryPercent < 0
-                              ? '${strings.battery}: --'
-                              : '${strings.battery}: '
-                                  '${data.batteryPercent}%',
-                          ok: data.batteryPercent < 0 ||
-                              data.batteryPercent >= 20,
-                        ),
-                        _StatusChip(
-                          icon: Icons.location_on_outlined,
-                          label: strings.locationServices,
-                          ok: data.locationServiceEnabled,
-                        ),
-                        _StatusChip(
-                          icon: Icons.admin_panel_settings_outlined,
-                          label: strings.gpsPermission,
-                          ok: data.hasLocationPermission,
-                        ),
-                        _StatusChip(
-                          icon: Icons.map_outlined,
-                          label: strings.offlineMap,
-                          ok: data.isOfflineMapAvailable,
-                        ),
-                        _StatusChip(
-                          icon: Icons.battery_saver_outlined,
-                          label: strings.systemBatterySaver,
-                          ok: !data.isPowerSaveMode,
-                          warningWhenFalse: true,
-                        ),
-                      ],
-                    ),
+          ? Text(
+              error.toString(),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            )
+          : data == null
+          ? const SizedBox.shrink()
+          : Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _StatusChip(
+                  icon: Icons.battery_5_bar_rounded,
+                  label: data.batteryPercent < 0
+                      ? '${strings.battery}: --'
+                      : '${strings.battery}: '
+                            '${data.batteryPercent}%',
+                  ok: data.batteryPercent < 0 || data.batteryPercent >= 20,
+                ),
+                _StatusChip(
+                  icon: Icons.location_on_outlined,
+                  label: strings.locationServices,
+                  ok: data.locationServiceEnabled,
+                ),
+                _StatusChip(
+                  icon: Icons.admin_panel_settings_outlined,
+                  label: strings.gpsPermission,
+                  ok: data.hasLocationPermission,
+                ),
+                _StatusChip(
+                  icon: Icons.map_outlined,
+                  label: strings.offlineMap,
+                  ok: data.isOfflineMapAvailable,
+                ),
+                _StatusChip(
+                  icon: Icons.battery_saver_outlined,
+                  label: strings.systemBatterySaver,
+                  ok: !data.isPowerSaveMode,
+                  warningWhenFalse: true,
+                ),
+              ],
+            ),
     );
   }
 }
@@ -602,13 +596,13 @@ class _StatusChip extends StatelessWidget {
     final background = ok
         ? scheme.primaryContainer
         : warningWhenFalse
-            ? scheme.tertiaryContainer
-            : scheme.errorContainer;
+        ? scheme.tertiaryContainer
+        : scheme.errorContainer;
     final foreground = ok
         ? scheme.onPrimaryContainer
         : warningWhenFalse
-            ? scheme.onTertiaryContainer
-            : scheme.onErrorContainer;
+        ? scheme.onTertiaryContainer
+        : scheme.onErrorContainer;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -685,8 +679,7 @@ String _formatSavedTime(BuildContext context, DateTime value) {
   final date =
       '${local.day.toString().padLeft(2, '0')}/'
       '${local.month.toString().padLeft(2, '0')}';
-  final time = MaterialLocalizations.of(context).formatTimeOfDay(
-    TimeOfDay.fromDateTime(local),
-  );
+  final time = MaterialLocalizations.of(context)
+      .formatTimeOfDay(TimeOfDay.fromDateTime(local));
   return '$date $time';
 }

@@ -111,13 +111,7 @@ class Waypoints extends Table {
 }
 
 @DriftDatabase(
-  tables: [
-    SavedRoutes,
-    Activities,
-    Waypoints,
-    SavedReturnPoints,
-    AppSettings,
-  ],
+  tables: [SavedRoutes, Activities, Waypoints, SavedReturnPoints, AppSettings],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase._(super.executor);
@@ -131,31 +125,31 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (migrator) => migrator.createAll(),
-        onUpgrade: (migrator, from, to) async {
-          if (from < 2) {
-            await migrator.addColumn(activities, activities.updatedAt);
-            await migrator.addColumn(activities, activities.profile);
-            await migrator.addColumn(activities, activities.encodedGeometry);
-            await migrator.addColumn(activities, activities.isPaused);
-          }
-          if (from < 3) {
-            await migrator.createTable(savedReturnPoints);
-            await migrator.createTable(appSettings);
-          }
-        },
-      );
+    onCreate: (migrator) => migrator.createAll(),
+    onUpgrade: (migrator, from, to) async {
+      if (from < 2) {
+        await migrator.addColumn(activities, activities.updatedAt);
+        await migrator.addColumn(activities, activities.profile);
+        await migrator.addColumn(activities, activities.encodedGeometry);
+        await migrator.addColumn(activities, activities.isPaused);
+      }
+      if (from < 3) {
+        await migrator.createTable(savedReturnPoints);
+        await migrator.createTable(appSettings);
+      }
+    },
+  );
 
   Stream<List<SavedRoute>> watchSavedRoutes() {
-    return (select(savedRoutes)
-          ..orderBy([(row) => OrderingTerm.desc(row.updatedAt)]))
-        .watch();
+    return (select(
+      savedRoutes,
+    )..orderBy([(row) => OrderingTerm.desc(row.updatedAt)])).watch();
   }
 
   Future<List<SavedRoute>> listSavedRoutes() {
-    return (select(savedRoutes)
-          ..orderBy([(row) => OrderingTerm.desc(row.updatedAt)]))
-        .get();
+    return (select(
+      savedRoutes,
+    )..orderBy([(row) => OrderingTerm.desc(row.updatedAt)])).get();
   }
 
   Future<String> savePlannedRoute({
@@ -180,8 +174,7 @@ class AppDatabase extends _$AppDatabase {
             (point) => {
               'lat': point.latitude,
               'lon': point.longitude,
-              if (point.elevationMeters != null)
-                'ele': point.elevationMeters,
+              if (point.elevationMeters != null) 'ele': point.elevationMeters,
               if (point.timestamp != null)
                 'time': point.timestamp!.toUtc().toIso8601String(),
             },
@@ -206,21 +199,17 @@ class AppDatabase extends _$AppDatabase {
       );
 
       await batch((batch) {
-        batch.insertAll(
-          waypoints,
-          [
-            for (var index = 0; index < waypointsData.length; index++)
-              WaypointsCompanion.insert(
-                id: '$id-wp-$index',
-                routeId: id,
-                sortIndex: index,
-                latitude: waypointsData[index].latitude,
-                longitude: waypointsData[index].longitude,
-                elevationMeters:
-                    Value(waypointsData[index].elevationMeters),
-              ),
-          ],
-        );
+        batch.insertAll(waypoints, [
+          for (var index = 0; index < waypointsData.length; index++)
+            WaypointsCompanion.insert(
+              id: '$id-wp-$index',
+              routeId: id,
+              sortIndex: index,
+              latitude: waypointsData[index].latitude,
+              longitude: waypointsData[index].longitude,
+              elevationMeters: Value(waypointsData[index].elevationMeters),
+            ),
+        ]);
       });
     });
 
@@ -285,9 +274,7 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  Future<String> createActivityDraft({
-    required RouteProfile profile,
-  }) async {
+  Future<String> createActivityDraft({required RouteProfile profile}) async {
     final now = DateTime.now();
     final id = 'activity-${now.microsecondsSinceEpoch}';
     await into(activities).insert(
@@ -408,38 +395,40 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<ReturnPoint?> getReturnPoint() async {
-    final row = await (select(savedReturnPoints)
-          ..where((candidate) => candidate.id.equals('car'))
-          ..limit(1))
-        .getSingleOrNull();
+    final row =
+        await (select(savedReturnPoints)
+              ..where((candidate) => candidate.id.equals('car'))
+              ..limit(1))
+            .getSingleOrNull();
     return _returnPointFromRow(row);
   }
 
   Future<void> clearReturnPoint() async {
-    await (delete(savedReturnPoints)..where((row) => row.id.equals('car'))).go();
+    await (delete(
+      savedReturnPoints,
+    )..where((row) => row.id.equals('car'))).go();
   }
 
   Future<void> setSetting(String key, String value) async {
     await into(appSettings).insertOnConflictUpdate(
-      AppSettingsCompanion.insert(
-        key: key,
-        value: value,
-      ),
+      AppSettingsCompanion.insert(key: key, value: value),
     );
   }
 
   Future<String?> getSetting(String key) async {
-    final row = await (select(appSettings)
-          ..where((candidate) => candidate.key.equals(key))
-          ..limit(1))
-        .getSingleOrNull();
+    final row =
+        await (select(appSettings)
+              ..where((candidate) => candidate.key.equals(key))
+              ..limit(1))
+            .getSingleOrNull();
     return row?.value;
   }
 
   Future<void> deleteSavedRoute(String routeId) async {
     await transaction(() async {
-      await (delete(waypoints)..where((row) => row.routeId.equals(routeId)))
-          .go();
+      await (delete(
+        waypoints,
+      )..where((row) => row.routeId.equals(routeId))).go();
       await (delete(savedRoutes)..where((row) => row.id.equals(routeId))).go();
     });
   }
@@ -468,7 +457,6 @@ LazyDatabase _openConnection() {
     return NativeDatabase.createInBackground(file);
   });
 }
-
 
 String _encodePoints(List<GeoPoint> points) {
   return jsonEncode(
@@ -518,7 +506,6 @@ List<GeoPoint> _decodePoints(String? encodedGeometry) {
   }
   return List<GeoPoint>.unmodifiable(points);
 }
-
 
 RouteProfile _routeProfileFromName(String value) {
   for (final profile in RouteProfile.values) {

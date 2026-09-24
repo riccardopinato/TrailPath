@@ -228,7 +228,8 @@ class AppLocalizations {
       'routeSnapped': 'Percorso agganciato alla rete OSM',
       'routeUnavailable': 'Routing non disponibile: modifica i punti o riprova',
       'routeLocalFallback': 'Percorso locale o GPX non agganciato alla rete',
-      'routeEditHint': 'Tocca la linea per modificarla; trascina i punti per spostarli.',
+      'routeEditHint':
+          'Tocca la linea per modificarla; trascina i punti per spostarli.',
       'routeEditActive': 'Modifica attiva: trascina i punti bianchi tra le tappe per inserirne di nuovi.',
       'routeDragActive': 'Spostamento in corso: rilascia per ricalcolare solo il tratto modificato.',
       'traceMode': 'Disegna percorso',
@@ -277,7 +278,8 @@ class AppLocalizations {
       'remainingDistance': 'Rimanente',
       'routeProgress': 'Progresso',
       'distanceFromRoute': 'Dalla traccia',
-      'backToRouteHint': 'Rientra verso la linea del percorso indicata sulla mappa.',
+      'backToRouteHint':
+          'Rientra verso la linea del percorso indicata sulla mappa.',
       'offline': 'Offline',
       'offlineMaps': 'Mappe offline',
       'offlineHint': 'Scarica la mappa di un percorso prima di partire: GPS e navigazione restano utilizzabili anche senza rete.',
@@ -290,19 +292,23 @@ class AppLocalizations {
       'cacheCleared': 'Cache mappa svuotata',
       'deleteOfflineMap': 'Eliminare la mappa offline?',
       'noOfflineMaps': 'Nessuna mappa offline',
-      'noOfflineMapsHint': 'Apri Percorsi e scarica la mappa di un itinerario salvato.',
+      'noOfflineMapsHint':
+          'Apri Percorsi e scarica la mappa di un itinerario salvato.',
       'storageUsed': 'Spazio usato',
       'outdoor': 'Outdoor',
-      'outdoorHint': 'Strumenti rapidi per autonomia, rientro e sicurezza sul sentiero.',
+      'outdoorHint':
+          'Strumenti rapidi per autonomia, rientro e sicurezza sul sentiero.',
       'batteryMode': 'Modalità batteria',
       'batteryPerformance': 'Prestazioni',
       'batteryBalanced': 'Bilanciata',
       'batterySaver': 'Risparmio',
       'batteryPerformanceHint': 'GPS più frequente e preciso, ideale per trail e navigazione impegnativa.',
       'batteryBalancedHint': 'Equilibrio tra precisione GPS e autonomia per la maggior parte delle uscite.',
-      'batterySaverHint': 'Riduce gli aggiornamenti GPS per prolungare l’autonomia.',
+      'batterySaverHint':
+          'Riduce gli aggiornamenti GPS per prolungare l’autonomia.',
       'backToCar': 'Back to Car',
-      'backToCarHint': 'Salva il punto di parcheggio e ritrovalo anche senza rete.',
+      'backToCarHint':
+          'Salva il punto di parcheggio e ritrovalo anche senza rete.',
       'saveCarHere': 'Salva auto qui',
       'updateCarPosition': 'Aggiorna posizione',
       'carPositionSaved': 'Posizione auto salvata',
@@ -311,7 +317,8 @@ class AppLocalizations {
       'clearCar': 'Rimuovi posizione auto',
       'clearCarHint': 'Il punto salvato verrà eliminato.',
       'safetyCheck': 'Safety Check',
-      'safetyCheckHint': 'Controlla batteria, GPS, permessi e mappe offline prima di partire.',
+      'safetyCheckHint':
+          'Controlla batteria, GPS, permessi e mappe offline prima di partire.',
       'refresh': 'Aggiorna',
       'battery': 'Batteria',
       'systemBatterySaver': 'Risparmio sistema',
@@ -377,9 +384,11 @@ class AppLocalizations {
       'routeSnapped': 'Route snapped to the OSM network',
       'routeUnavailable': 'Routing unavailable: adjust the points or try again',
       'routeLocalFallback': 'Local or GPX route not snapped to the network',
-      'routeEditHint': 'Tap the route line to edit it; drag points to move them.',
+      'routeEditHint':
+          'Tap the route line to edit it; drag points to move them.',
       'routeEditActive': 'Edit mode: drag the white points between waypoints to insert new ones.',
-      'routeDragActive': 'Dragging: release to recalculate only the edited span.',
+      'routeDragActive':
+          'Dragging: release to recalculate only the edited span.',
       'traceMode': 'Draw route',
       'traceHint': 'Draw mode: drag your finger over the map along the path you want to follow.',
       'traceDrawing': 'Keep drawing; on release TrailPath will snap the trace to the OSM network.',
@@ -439,16 +448,20 @@ class AppLocalizations {
       'cacheCleared': 'Map cache cleared',
       'deleteOfflineMap': 'Delete offline map?',
       'noOfflineMaps': 'No offline maps',
-      'noOfflineMapsHint': 'Open Routes and download the map for a saved route.',
+      'noOfflineMapsHint':
+          'Open Routes and download the map for a saved route.',
       'storageUsed': 'Storage used',
       'outdoor': 'Outdoor',
-      'outdoorHint': 'Quick tools for battery life, return guidance and trail safety.',
+      'outdoorHint':
+          'Quick tools for battery life, return guidance and trail safety.',
       'batteryMode': 'Battery mode',
       'batteryPerformance': 'Performance',
       'batteryBalanced': 'Balanced',
       'batterySaver': 'Saver',
-      'batteryPerformanceHint': 'More frequent, precise GPS for demanding trails and navigation.',
-      'batteryBalancedHint': 'Balances GPS precision and battery life for most outings.',
+      'batteryPerformanceHint':
+          'More frequent, precise GPS for demanding trails and navigation.',
+      'batteryBalancedHint':
+          'Balances GPS precision and battery life for most outings.',
       'batterySaverHint': 'Reduces GPS updates to extend battery life.',
       'backToCar': 'Back to Car',
       'backToCarHint': 'Save your parking point and find it again even without a connection.',
@@ -460,7 +473,8 @@ class AppLocalizations {
       'clearCar': 'Remove car position',
       'clearCarHint': 'The saved return point will be deleted.',
       'safetyCheck': 'Safety Check',
-      'safetyCheckHint': 'Check battery, GPS, permissions and offline maps before leaving.',
+      'safetyCheckHint':
+          'Check battery, GPS, permissions and offline maps before leaving.',
       'refresh': 'Refresh',
       'battery': 'Battery',
       'systemBatterySaver': 'System saver',
@@ -524,11 +538,13 @@ class AppLocalizations {
       'routingReady': 'Routing listo',
       'routingCalculating': 'Calculando por caminos y carreteras…',
       'routeSnapped': 'Ruta ajustada a la red OSM',
-      'routeUnavailable': 'Routing no disponible: ajusta los puntos o inténtalo de nuevo',
+      'routeUnavailable':
+          'Routing no disponible: ajusta los puntos o inténtalo de nuevo',
       'routeLocalFallback': 'Ruta local o GPX sin ajustar a la red',
       'routeEditHint': 'Toca la línea del recorrido para editarla; arrastra los puntos para moverlos.',
       'routeEditActive': 'Edición activa: arrastra los puntos blancos entre etapas para insertar nuevos.',
-      'routeDragActive': 'Arrastrando: suelta para recalcular solo el tramo modificado.',
+      'routeDragActive':
+          'Arrastrando: suelta para recalcular solo el tramo modificado.',
       'traceMode': 'Dibujar ruta',
       'traceHint': 'Modo dibujo: arrastra el dedo por el mapa siguiendo el camino deseado.',
       'traceDrawing': 'Sigue dibujando; al soltar TrailPath ajustará el trazo a la red OSM.',
@@ -588,19 +604,25 @@ class AppLocalizations {
       'cacheCleared': 'Caché del mapa vaciada',
       'deleteOfflineMap': '¿Eliminar mapa offline?',
       'noOfflineMaps': 'No hay mapas offline',
-      'noOfflineMapsHint': 'Abre Rutas y descarga el mapa de una ruta guardada.',
+      'noOfflineMapsHint':
+          'Abre Rutas y descarga el mapa de una ruta guardada.',
       'storageUsed': 'Espacio usado',
       'outdoor': 'Outdoor',
-      'outdoorHint': 'Herramientas rápidas para autonomía, regreso y seguridad en ruta.',
+      'outdoorHint':
+          'Herramientas rápidas para autonomía, regreso y seguridad en ruta.',
       'batteryMode': 'Modo de batería',
       'batteryPerformance': 'Rendimiento',
       'batteryBalanced': 'Equilibrado',
       'batterySaver': 'Ahorro',
-      'batteryPerformanceHint': 'GPS más frecuente y preciso para rutas y navegación exigentes.',
-      'batteryBalancedHint': 'Equilibra precisión GPS y autonomía para la mayoría de salidas.',
-      'batterySaverHint': 'Reduce las actualizaciones GPS para alargar la batería.',
+      'batteryPerformanceHint':
+          'GPS más frecuente y preciso para rutas y navegación exigentes.',
+      'batteryBalancedHint':
+          'Equilibra precisión GPS y autonomía para la mayoría de salidas.',
+      'batterySaverHint':
+          'Reduce las actualizaciones GPS para alargar la batería.',
       'backToCar': 'Back to Car',
-      'backToCarHint': 'Guarda el punto de aparcamiento y vuelve incluso sin conexión.',
+      'backToCarHint':
+          'Guarda el punto de aparcamiento y vuelve incluso sin conexión.',
       'saveCarHere': 'Guardar coche aquí',
       'updateCarPosition': 'Actualizar posición',
       'carPositionSaved': 'Posición del coche guardada',
@@ -609,7 +631,8 @@ class AppLocalizations {
       'clearCar': 'Eliminar posición del coche',
       'clearCarHint': 'Se eliminará el punto guardado.',
       'safetyCheck': 'Safety Check',
-      'safetyCheckHint': 'Comprueba batería, GPS, permisos y mapas offline antes de salir.',
+      'safetyCheckHint':
+          'Comprueba batería, GPS, permisos y mapas offline antes de salir.',
       'refresh': 'Actualizar',
       'battery': 'Batería',
       'systemBatterySaver': 'Ahorro del sistema',
@@ -673,7 +696,8 @@ class AppLocalizations {
       'routingReady': 'Routage prêt',
       'routingCalculating': 'Calcul sur chemins et routes…',
       'routeSnapped': 'Parcours calé sur le réseau OSM',
-      'routeUnavailable': 'Itinéraire indisponible : modifiez les points ou réessayez',
+      'routeUnavailable':
+          'Itinéraire indisponible : modifiez les points ou réessayez',
       'routeLocalFallback': 'Itinéraire local ou GPX non accroché au réseau',
       'routeEditHint': 'Touchez la ligne du parcours pour la modifier ; faites glisser les points pour les déplacer.',
       'routeEditActive': 'Modification active : faites glisser les points blancs entre les étapes pour en insérer.',
@@ -684,7 +708,8 @@ class AppLocalizations {
       'traceProcessing': 'Conversion du geste en itinéraire réel…',
       'traceTooShort': 'Dessinez un tronçon un peu plus long.',
       'traceFailed': 'Impossible de convertir le geste en itinéraire.',
-      'routePressTooFar': 'Effectuez un appui long plus près de la ligne du parcours.',
+      'routePressTooFar':
+          'Effectuez un appui long plus près de la ligne du parcours.',
       'waypointSelected': 'Point sélectionné',
       'removeWaypoint': 'Retirer',
       'elevationProfile': 'Profil altimétrique',
@@ -724,7 +749,8 @@ class AppLocalizations {
       'remainingDistance': 'Restant',
       'routeProgress': 'Progression',
       'distanceFromRoute': 'Du parcours',
-      'backToRouteHint': 'Revenez vers la ligne du parcours affichée sur la carte.',
+      'backToRouteHint':
+          'Revenez vers la ligne du parcours affichée sur la carte.',
       'offline': 'Hors ligne',
       'offlineMaps': 'Cartes hors ligne',
       'offlineHint': 'Téléchargez la carte d’un parcours avant de partir : le GPS et la navigation restent disponibles sans réseau.',
@@ -737,19 +763,25 @@ class AppLocalizations {
       'cacheCleared': 'Cache de la carte vidé',
       'deleteOfflineMap': 'Supprimer la carte hors ligne ?',
       'noOfflineMaps': 'Aucune carte hors ligne',
-      'noOfflineMapsHint': 'Ouvrez Parcours et téléchargez la carte d’un parcours enregistré.',
+      'noOfflineMapsHint':
+          'Ouvrez Parcours et téléchargez la carte d’un parcours enregistré.',
       'storageUsed': 'Espace utilisé',
       'outdoor': 'Outdoor',
-      'outdoorHint': 'Outils rapides pour autonomie, retour et sécurité sur le terrain.',
+      'outdoorHint':
+          'Outils rapides pour autonomie, retour et sécurité sur le terrain.',
       'batteryMode': 'Mode batterie',
       'batteryPerformance': 'Performance',
       'batteryBalanced': 'Équilibré',
       'batterySaver': 'Économie',
-      'batteryPerformanceHint': 'GPS plus fréquent et précis pour les parcours exigeants.',
-      'batteryBalancedHint': 'Équilibre précision GPS et autonomie pour la plupart des sorties.',
-      'batterySaverHint': 'Réduit les mises à jour GPS pour prolonger l’autonomie.',
+      'batteryPerformanceHint':
+          'GPS plus fréquent et précis pour les parcours exigeants.',
+      'batteryBalancedHint':
+          'Équilibre précision GPS et autonomie pour la plupart des sorties.',
+      'batterySaverHint':
+          'Réduit les mises à jour GPS pour prolonger l’autonomie.',
       'backToCar': 'Back to Car',
-      'backToCarHint': 'Enregistrez votre parking et retrouvez-le même sans réseau.',
+      'backToCarHint':
+          'Enregistrez votre parking et retrouvez-le même sans réseau.',
       'saveCarHere': 'Enregistrer la voiture ici',
       'updateCarPosition': 'Mettre à jour',
       'carPositionSaved': 'Position de la voiture enregistrée',
@@ -766,7 +798,8 @@ class AppLocalizations {
       'locationServices': 'Services de localisation',
       'offlineMap': 'Carte hors ligne',
       'sharePosition': 'Partager la position',
-      'sharePositionHint': 'Partagez vos coordonnées actuelles avec un contact.',
+      'sharePositionHint':
+          'Partagez vos coordonnées actuelles avec un contact.',
       'sharedPositionMessage': 'Ma position depuis TrailPath',
       'sharePositionError': 'Impossible de partager la position',
       'distanceToCar': 'Distance à la voiture',
@@ -822,11 +855,13 @@ class AppLocalizations {
       'routingReady': 'Roteamento pronto',
       'routingCalculating': 'A calcular por trilhos e estradas…',
       'routeSnapped': 'Percurso ajustado à rede OSM',
-      'routeUnavailable': 'Roteamento indisponível: ajuste os pontos ou tente novamente',
+      'routeUnavailable':
+          'Roteamento indisponível: ajuste os pontos ou tente novamente',
       'routeLocalFallback': 'Rota local ou GPX não ajustada à rede',
       'routeEditHint': 'Toque na linha do percurso para editar; arraste os pontos para os mover.',
       'routeEditActive': 'Edição ativa: arraste os pontos brancos entre etapas para inserir novos.',
-      'routeDragActive': 'A arrastar: solte para recalcular apenas o troço alterado.',
+      'routeDragActive':
+          'A arrastar: solte para recalcular apenas o troço alterado.',
       'traceMode': 'Desenhar rota',
       'traceHint': 'Modo desenho: arraste o dedo pelo mapa seguindo o caminho pretendido.',
       'traceDrawing': 'Continue a desenhar; ao soltar, o TrailPath ajustará o traço à rede OSM.',
@@ -886,7 +921,8 @@ class AppLocalizations {
       'cacheCleared': 'Cache do mapa limpa',
       'deleteOfflineMap': 'Eliminar mapa offline?',
       'noOfflineMaps': 'Nenhum mapa offline',
-      'noOfflineMapsHint': 'Abra Percursos e descarregue o mapa de um percurso guardado.',
+      'noOfflineMapsHint':
+          'Abra Percursos e descarregue o mapa de um percurso guardado.',
       'storageUsed': 'Espaço usado',
       'outdoor': 'Outdoor',
       'outdoorHint': 'Ferramentas rápidas para autonomia, regresso e segurança no percurso.',
@@ -894,11 +930,14 @@ class AppLocalizations {
       'batteryPerformance': 'Desempenho',
       'batteryBalanced': 'Equilibrado',
       'batterySaver': 'Poupança',
-      'batteryPerformanceHint': 'GPS mais frequente e preciso para percursos exigentes.',
-      'batteryBalancedHint': 'Equilibra precisão GPS e autonomia para a maioria das saídas.',
+      'batteryPerformanceHint':
+          'GPS mais frequente e preciso para percursos exigentes.',
+      'batteryBalancedHint':
+          'Equilibra precisão GPS e autonomia para a maioria das saídas.',
       'batterySaverHint': 'Reduz as atualizações GPS para prolongar a bateria.',
       'backToCar': 'Back to Car',
-      'backToCarHint': 'Guarde o local do estacionamento e volte mesmo sem rede.',
+      'backToCarHint':
+          'Guarde o local do estacionamento e volte mesmo sem rede.',
       'saveCarHere': 'Guardar carro aqui',
       'updateCarPosition': 'Atualizar posição',
       'carPositionSaved': 'Posição do carro guardada',
@@ -907,7 +946,8 @@ class AppLocalizations {
       'clearCar': 'Remover posição do carro',
       'clearCarHint': 'O ponto guardado será eliminado.',
       'safetyCheck': 'Safety Check',
-      'safetyCheckHint': 'Verifique bateria, GPS, permissões e mapas offline antes de sair.',
+      'safetyCheckHint':
+          'Verifique bateria, GPS, permissões e mapas offline antes de sair.',
       'refresh': 'Atualizar',
       'battery': 'Bateria',
       'systemBatterySaver': 'Poupança do sistema',

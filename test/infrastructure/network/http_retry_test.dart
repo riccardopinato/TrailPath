@@ -33,9 +33,6 @@ void main() {
 
   test('rejects malformed HTTP-date values', () {
     expect(tryParseHttpDate('not-a-date'), isNull);
-    expect(
-      tryParseHttpDate('Thu, 31 Sep 2026 14:00:00 GMT'),
-      isNull,
-    );
+    expect(tryParseHttpDate('Thu, 31 Sep 2026 14:00:00 GMT'), isNull);
   });
 }

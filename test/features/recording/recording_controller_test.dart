@@ -33,21 +33,9 @@ void main() {
       const TrackRecorderSnapshot(
         status: TrackRecorderStatus.recording,
         points: [
-          GeoPoint(
-            latitude: 45,
-            longitude: 11,
-            elevationMeters: 100,
-          ),
-          GeoPoint(
-            latitude: 45.001,
-            longitude: 11.001,
-            elevationMeters: 110,
-          ),
-          GeoPoint(
-            latitude: 45.002,
-            longitude: 11.002,
-            elevationMeters: 112,
-          ),
+          GeoPoint(latitude: 45, longitude: 11, elevationMeters: 100),
+          GeoPoint(latitude: 45.001, longitude: 11.001, elevationMeters: 110),
+          GeoPoint(latitude: 45.002, longitude: 11.002, elevationMeters: 112),
         ],
         distanceMeters: 140,
         ascentMeters: 10,

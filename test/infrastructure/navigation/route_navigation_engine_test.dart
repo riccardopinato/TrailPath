@@ -54,7 +54,10 @@ void main() {
     );
     await Future<void>.delayed(Duration.zero);
 
-    expect(events.any((e) => e.type == NavigationEventType.backOnRoute), isTrue);
+    expect(
+      events.any((e) => e.type == NavigationEventType.backOnRoute),
+      isTrue,
+    );
   });
 
   test('navigation emits arrival near route endpoint', () async {
@@ -142,7 +145,6 @@ void main() {
 
     expect(location.watchCalls, 0);
   });
-
 }
 
 class _FakeLocationEngine implements LocationEngine {

@@ -4,8 +4,8 @@ import 'package:trail_path/core/domain/battery_policy.dart';
 
 final batteryModeProvider =
     AsyncNotifierProvider<BatteryModeController, BatteryMode>(
-  BatteryModeController.new,
-);
+      BatteryModeController.new,
+    );
 
 class BatteryModeController extends AsyncNotifier<BatteryMode> {
   static const _settingKey = 'battery_mode';

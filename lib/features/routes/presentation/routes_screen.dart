@@ -75,10 +75,8 @@ class RoutesScreen extends ConsumerWidget {
                               route: route,
                               onNavigate: () =>
                                   _openNavigation(context, ref, route),
-                              onShare: () =>
-                                  _shareRoute(context, ref, route),
-                              onDelete: () =>
-                                  _deleteRoute(context, ref, route),
+                              onShare: () => _shareRoute(context, ref, route),
+                              onDelete: () => _deleteRoute(context, ref, route),
                             ),
                             const SizedBox(height: 10),
                           ],
@@ -124,10 +122,7 @@ class RoutesScreen extends ConsumerWidget {
     final plan = ref.read(appDatabaseProvider).savedRouteToPlan(route);
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => NavigationScreen(
-          routeName: route.name,
-          route: plan,
-        ),
+        builder: (_) => NavigationScreen(routeName: route.name, route: plan),
       ),
     );
   }
@@ -160,9 +155,8 @@ class RoutesScreen extends ConsumerWidget {
       );
     } on Object {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(strings.gpxExportError)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(strings.gpxExportError)));
       }
     }
   }
@@ -196,9 +190,8 @@ class RoutesScreen extends ConsumerWidget {
       );
     } on Object {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(strings.gpxExportError)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(strings.gpxExportError)));
       }
     }
   }
@@ -367,10 +360,7 @@ class _BaseCard extends StatelessWidget {
                 color: scheme.primaryContainer,
                 borderRadius: BorderRadius.circular(15),
               ),
-              child: Icon(
-                icon,
-                color: scheme.onPrimaryContainer,
-              ),
+              child: Icon(icon, color: scheme.onPrimaryContainer),
             ),
             const SizedBox(width: 13),
             Expanded(
@@ -513,19 +503,15 @@ class _OfflineRouteAction extends ConsumerWidget {
       }
     } on Object {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(strings.offlineFailed)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(strings.offlineFailed)));
       }
     }
   }
 }
 
 class _InlineEmpty extends StatelessWidget {
-  const _InlineEmpty({
-    required this.icon,
-    required this.text,
-  });
+  const _InlineEmpty({required this.icon, required this.text});
 
   final IconData icon;
   final String text;
@@ -585,11 +571,7 @@ class _RoutesMessage extends StatelessWidget {
                 color: scheme.primaryContainer,
                 borderRadius: BorderRadius.circular(28),
               ),
-              child: Icon(
-                icon,
-                size: 42,
-                color: scheme.onPrimaryContainer,
-              ),
+              child: Icon(icon, size: 42, color: scheme.onPrimaryContainer),
             ),
             const SizedBox(height: 22),
             Text(

@@ -13,10 +13,7 @@ import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/outdoor/application/battery_mode_controller.dart';
 
 class BackToCarScreen extends ConsumerStatefulWidget {
-  const BackToCarScreen({
-    super.key,
-    required this.returnPoint,
-  });
+  const BackToCarScreen({super.key, required this.returnPoint});
 
   final ReturnPoint returnPoint;
 
@@ -25,7 +22,6 @@ class BackToCarScreen extends ConsumerStatefulWidget {
 }
 
 class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
-
   MapLibreMapController? _mapController;
   StreamSubscription<PositionSample>? _positionSubscription;
   PositionSample? _position;
@@ -98,23 +94,25 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
       await _draw();
 
       await _positionSubscription?.cancel();
-      _positionSubscription = engine.watch(mode: mode).listen(
-        (sample) {
-          if (!mounted) {
-            return;
-          }
-          setState(() {
-            _position = sample;
-            _error = null;
-          });
-          unawaited(_draw());
-        },
-        onError: (Object error, StackTrace stackTrace) {
-          if (mounted) {
-            setState(() => _error = error.toString());
-          }
-        },
-      );
+      _positionSubscription = engine
+          .watch(mode: mode)
+          .listen(
+            (sample) {
+              if (!mounted) {
+                return;
+              }
+              setState(() {
+                _position = sample;
+                _error = null;
+              });
+              unawaited(_draw());
+            },
+            onError: (Object error, StackTrace stackTrace) {
+              if (mounted) {
+                setState(() => _error = error.toString());
+              }
+            },
+          );
     } on Object catch (error) {
       if (mounted) {
         setState(() {
@@ -156,10 +154,7 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
 
     await controller.addCircle(
       CircleOptions(
-        geometry: LatLng(
-          current.point.latitude,
-          current.point.longitude,
-        ),
+        geometry: LatLng(current.point.latitude, current.point.longitude),
         circleRadius: 8,
         circleColor: '#1565C0',
         circleStrokeColor: '#FFFFFF',
@@ -182,9 +177,7 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
     await controller.animateCamera(
       CameraUpdate.newLatLngZoom(
         LatLng(current.point.latitude, current.point.longitude),
-        _cameraZoomForDistance(
-          haversineMeters(current.point, car),
-        ),
+        _cameraZoomForDistance(haversineMeters(current.point, car)),
       ),
     );
   }
@@ -240,9 +233,7 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
               child: Row(
                 children: [
                   Material(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surface
+                    color: Theme.of(context).colorScheme.surface
                         .withValues(alpha: 0.96),
                     shape: const CircleBorder(),
                     child: IconButton(
@@ -258,25 +249,19 @@ class _BackToCarScreenState extends ConsumerState<BackToCarScreen> {
                         vertical: 11,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surface
+                        color: Theme.of(context).colorScheme.surface
                             .withValues(alpha: 0.96),
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: Text(
                         strings.backToCar,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                        ),
+                        style: const TextStyle(fontWeight: FontWeight.w900),
                       ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Material(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surface
+                    color: Theme.of(context).colorScheme.surface
                         .withValues(alpha: 0.96),
                     shape: const CircleBorder(),
                     child: IconButton(
@@ -392,8 +377,8 @@ class _BackToCarPanel extends StatelessWidget {
                       bearing == null
                           ? strings.distanceToCar
                           : '${strings.direction} · '
-                              '${_cardinalDirection(bearing)} '
-                              '${bearing.round()}°',
+                                '${_cardinalDirection(bearing)} '
+                                '${bearing.round()}°',
                       style: TextStyle(
                         color: scheme.onSurfaceVariant,
                         fontSize: 12,
@@ -415,8 +400,8 @@ class _BackToCarPanel extends StatelessWidget {
               error == 'permission'
                   ? strings.locationPermissionNeeded
                   : error == 'location-service'
-                      ? strings.locationServiceOff
-                      : error!,
+                  ? strings.locationServiceOff
+                  : error!,
               style: TextStyle(
                 color: scheme.error,
                 fontSize: 12,
