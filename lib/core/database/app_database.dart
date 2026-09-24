@@ -120,6 +120,9 @@ class AppDatabase extends _$AppDatabase {
 
   factory AppDatabase.memory() => AppDatabase._(NativeDatabase.memory());
 
+  factory AppDatabase.forTesting(QueryExecutor executor) =>
+      AppDatabase._(executor);
+
   @override
   int get schemaVersion => 3;
 
