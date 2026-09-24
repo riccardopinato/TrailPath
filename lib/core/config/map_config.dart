@@ -1,4 +1,8 @@
 abstract final class MapConfig {
+  static const String appVersion = '0.9.8.1';
+  static const String projectUrl =
+      'https://github.com/riccardopinato/TrailPath';
+
   static const String styleUrl =
       'https://tiles.openfreemap.org/styles/liberty';
 
@@ -8,6 +12,5 @@ abstract final class MapConfig {
   static const String searchEndpoint =
       'https://nominatim.openstreetmap.org/search';
 
-  static const String userAgent =
-      'TrailPath/0.9.3 (+https://github.com/riccardopinato/TrailPath)';
+  static const String userAgent = 'TrailPath/$appVersion (+$projectUrl)';
 }
