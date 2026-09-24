@@ -17,7 +17,7 @@ class GeolocatorTrackRecorder implements TrackRecorder {
   Timer? _ticker;
 
   TrackRecorderStatus _status = TrackRecorderStatus.idle;
-  List<GeoPoint> _points = const [];
+  final List<GeoPoint> _points = <GeoPoint>[];
   double _distanceMeters = 0;
   double _ascentMeters = 0;
   Duration _elapsedBase = Duration.zero;
@@ -57,7 +57,7 @@ class GeolocatorTrackRecorder implements TrackRecorder {
       return;
     }
 
-    _points = const [];
+    _points.clear();
     _distanceMeters = 0;
     _ascentMeters = 0;
     _elapsedBase = Duration.zero;
@@ -91,7 +91,9 @@ class GeolocatorTrackRecorder implements TrackRecorder {
       return;
     }
 
-    _points = List<GeoPoint>.unmodifiable(snapshot.points);
+    _points
+      ..clear()
+      ..addAll(snapshot.points);
     _distanceMeters = snapshot.distanceMeters;
     _ascentMeters = snapshot.ascentMeters;
     _elapsedBase = snapshot.elapsed;
@@ -319,7 +321,7 @@ class GeolocatorTrackRecorder implements TrackRecorder {
       }
     }
 
-    _points = List<GeoPoint>.unmodifiable([..._points, next]);
+    _points.add(next);
     _emit();
   }
 
