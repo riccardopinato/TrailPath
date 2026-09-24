@@ -97,7 +97,7 @@ TrailPath v0.9.13 hardens the production path: the release build is exercised by
 
 ## Toolchain
 
-The CI is pinned to Flutter 3.47.5 / Dart 3.13.4, Gradle 9.1.0 and Android Gradle Plugin 9.0.1. Android uses AGP 9 built-in Kotlin instead of the legacy kotlin-android plugin.
+The CI is pinned to Flutter 3.47.5 / Dart 3.13.4, Gradle 9.1.0, Android Gradle Plugin 9.0.1 and Kotlin Gradle Plugin 2.3.20. Built-in Kotlin is temporarily opted out because Flutter 3.47.x currently rejects AGP 9's bundled Kotlin 2.2.10 during dependency validation.
 
 The Android native scaffold is committed and validated by CI for reproducible builds. The iOS release scaffold remains scheduled for v1.0. The current public routing endpoint is suitable for development and validation; the RoutingEngine abstraction is intentionally kept provider-agnostic so a production-grade or self-hosted service can replace it without changing the planner.
 
