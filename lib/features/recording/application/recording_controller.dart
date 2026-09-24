@@ -212,6 +212,31 @@ class RecordingController extends Notifier<RecordingState> {
     if (state.snapshot.status != TrackRecorderStatus.recording) {
       return;
     }
+
+    final activityId = state.activityId;
+    final current = state.snapshot;
+
+    // Persist a paused checkpoint before exposing the paused recorder state.
+    // This closes the kill/restart race where Android could terminate the
+    // process immediately after the UI changed to "Resume" but before the
+    // asynchronous autosave reached SQLite.
+    if (activityId != null) {
+      final checkpoint = TrackRecorderSnapshot(
+        status: TrackRecorderStatus.paused,
+        points: current.points,
+        distanceMeters: current.distanceMeters,
+        ascentMeters: current.ascentMeters,
+        elapsed: current.elapsed,
+        currentSpeedMetersPerSecond: current.currentSpeedMetersPerSecond,
+        accuracyMeters: current.accuracyMeters,
+      );
+      _queuePersist(activityId: activityId, snapshot: checkpoint);
+      await _persistChain;
+      if (!ref.mounted) {
+        return;
+      }
+    }
+
     await _recorder.pause();
     if (ref.mounted) {
       await _flushAutosave();
