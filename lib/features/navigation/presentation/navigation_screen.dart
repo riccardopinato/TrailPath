@@ -36,9 +36,22 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
   Circle? _currentCircle;
   Line? _offRouteLine;
   ActiveNavigationController? _navigationController;
+  late final List<LatLng> _displayRouteGeometry;
 
   bool get _runningWidgetTest =>
       Platform.environment['FLUTTER_TEST']?.toLowerCase() == 'true';
+
+  @override
+  void initState() {
+    super.initState();
+    _displayRouteGeometry = simplifyPolylineForDisplay(
+      widget.route.geometry,
+      toleranceMeters: 1.5,
+      maxPoints: 2500,
+    ).map((point) => LatLng(point.latitude, point.longitude)).toList(
+          growable: false,
+        );
+  }
 
   @override
   void didChangeDependencies() {
@@ -91,11 +104,7 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
       return;
     }
 
-    final routeGeometry = simplifyPolylineForDisplay(
-      widget.route.geometry,
-      toleranceMeters: 1.5,
-      maxPoints: 2500,
-    ).map((p) => LatLng(p.latitude, p.longitude)).toList(growable: false);
+    final routeGeometry = _displayRouteGeometry;
 
     final currentRouteLine = _routeLine;
     if (routeGeometry.length >= 2 &&
@@ -193,28 +202,31 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
           Positioned.fill(
             child: _runningWidgetTest
                 ? const ColoredBox(color: Color(0xFFDDE8D9))
-                : MapLibreMap(
-                    styleString: MapConfig.styleUrl,
-                    initialCameraPosition: CameraPosition(
-                      target: LatLng(first.latitude, first.longitude),
-                      zoom: 14.5,
-                    ),
-                    onMapCreated: (controller) => _mapController = controller,
-                    onStyleLoadedCallback: () {
-                      _styleReady = true;
-                      unawaited(_drawRoute(event));
-                    },
-                    onMapClick: (point, coordinates) {
+                : Listener(
+                    behavior: HitTestBehavior.translucent,
+                    onPointerDown: (_) {
                       if (_followUser && mounted) {
                         setState(() => _followUser = false);
                       }
                     },
-                    compassEnabled: true,
-                    rotateGesturesEnabled: true,
-                    tiltGesturesEnabled: true,
-                    logoEnabled: false,
-                    attributionButtonPosition:
-                        AttributionButtonPosition.bottomRight,
+                    child: MapLibreMap(
+                      styleString: MapConfig.styleUrl,
+                      initialCameraPosition: CameraPosition(
+                        target: LatLng(first.latitude, first.longitude),
+                        zoom: 14.5,
+                      ),
+                      onMapCreated: (controller) => _mapController = controller,
+                      onStyleLoadedCallback: () {
+                        _styleReady = true;
+                        unawaited(_drawRoute(event));
+                      },
+                      compassEnabled: true,
+                      rotateGesturesEnabled: true,
+                      tiltGesturesEnabled: true,
+                      logoEnabled: false,
+                      attributionButtonPosition:
+                          AttributionButtonPosition.bottomRight,
+                    ),
                   ),
           ),
           SafeArea(
