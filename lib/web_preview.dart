@@ -117,9 +117,7 @@ class _PreviewScreenState extends State<_PreviewScreen> {
     _lines = nextLines;
   }
 
-  void _addPoint(math.Point<double> mathPoint, LatLng latLng) {
-    // Screen coordinates are intentionally unused; MapLibre supplies them as part of the callback contract.
-    final _ = mathPoint;
+  void _addPoint(math.Point<double> _, LatLng latLng) {
     setState(() {
       _points.add(
         GeoPoint(latitude: latLng.latitude, longitude: latLng.longitude),
