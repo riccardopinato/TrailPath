@@ -71,14 +71,14 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v6
         with:
-          name: TrailPath-v0.9.8.1-debug
+          name: TrailPath-v0.10.0-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
 
       - name: Upload optimized release APKs
         uses: actions/upload-artifact@v6
         with:
-          name: TrailPath-v0.9.8.1-release-split
+          name: TrailPath-v0.10.0-release-split
           path: build/app/outputs/flutter-apk/app-*-release.apk
           if-no-files-found: error
 
@@ -101,7 +101,7 @@ jobs:
       - name: Download debug APK
         uses: actions/download-artifact@v6
         with:
-          name: TrailPath-v0.9.8.1-debug
+          name: TrailPath-v0.10.0-debug
           path: apk
 
       - name: Checkout AppLab
