@@ -63,5 +63,11 @@ One cross-platform OSM routing engine for Android and Web, persistent HTTP clien
 ## v0.9.12 - Network Core Completion & API Hygiene
 Standards-compliant Retry-After parsing, shared bounded retry primitives, persistent lifecycle-managed Nominatim/Open-Meteo HTTP clients, serialized search requests, elevation retry hardening and deterministic network regression tests.
 
+## v0.9.13 - Production Hardening & Release Consolidation
+Release-mode AppLab E2E with process recovery and real routing, incremental recording/navigation MapLibre updates, GPS follow control, Nominatim retry parity, Android toolchain modernization, explicit GPS backup policy, stricter formatting gate, R8 validation and one primary ARM64 release artifact.
+
+## v0.9.14 - Full Web/Core Parity
+Replace duplicated Web preview planner state with the real shared planner/domain core and isolate only platform-specific capabilities such as background GPS and native offline regions.
+
 ## v1.0 - Release
-Onboarding, Premium foundation, optional backup/sync, accessibility, performance and store QA.
+Onboarding, Premium foundation, optional backup/sync, accessibility, store signing, final performance profiling and store QA.
