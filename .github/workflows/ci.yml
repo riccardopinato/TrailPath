@@ -57,6 +57,9 @@ jobs:
       - name: Test
         run: flutter test
 
+      - name: Build web preview
+        run: flutter build web --release --target lib/web_preview.dart --base-href "/TrailPath/"
+
       - name: Build debug APK
         run: flutter build apk --debug
 
