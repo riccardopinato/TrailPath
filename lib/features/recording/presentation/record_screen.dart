@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:trail_path/core/config/map_config.dart';
+import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/features/recording/application/recording_controller.dart';
@@ -21,6 +22,12 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
 
   MapLibreMapController? _mapController;
   bool _styleReady = false;
+  Line? _trackLine;
+  Circle? _startCircle;
+  Circle? _endCircle;
+  bool _trackSyncRunning = false;
+  TrackRecorderSnapshot? _queuedSnapshot;
+  bool _queuedFollow = true;
 
   bool get _runningWidgetTest =>
       Platform.environment['FLUTTER_TEST']?.toLowerCase() == 'true';
@@ -43,59 +50,126 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
     TrackRecorderSnapshot snapshot, {
     bool follow = true,
   }) async {
+    _queuedSnapshot = snapshot;
+    _queuedFollow = follow;
+    if (_trackSyncRunning) {
+      return;
+    }
+
+    _trackSyncRunning = true;
+    try {
+      while (_queuedSnapshot != null && mounted) {
+        final next = _queuedSnapshot!;
+        final nextFollow = _queuedFollow;
+        _queuedSnapshot = null;
+        await _performTrackSync(next, follow: nextFollow);
+      }
+    } finally {
+      _trackSyncRunning = false;
+    }
+  }
+
+  Future<void> _performTrackSync(
+    TrackRecorderSnapshot snapshot, {
+    required bool follow,
+  }) async {
     if (_runningWidgetTest || !_styleReady) {
       return;
     }
 
     final controller = _mapController;
-    if (controller == null) {
+    if (controller == null || controller.isDisposed) {
       return;
     }
 
-    final geometry = snapshot.points
+    final displayPoints = simplifyPolylineForDisplay(
+      snapshot.points,
+      toleranceMeters: 1.25,
+      maxPoints: 2500,
+    );
+    final geometry = displayPoints
         .map((point) => LatLng(point.latitude, point.longitude))
         .toList(growable: false);
 
-    await controller.clearLines();
-    await controller.clearCircles();
-
     if (geometry.length >= 2) {
-      await controller.addLine(
-        LineOptions(
-          geometry: geometry,
-          lineColor: '#E86A45',
-          lineWidth: 5.5,
-          lineOpacity: 0.96,
-          lineJoin: 'round',
-        ),
+      final options = LineOptions(
+        geometry: geometry,
+        lineColor: '#E86A45',
+        lineWidth: 5.5,
+        lineOpacity: 0.96,
+        lineJoin: 'round',
+      );
+      final current = _trackLine;
+      if (current != null && controller.lines.contains(current)) {
+        await controller.updateLine(current, options);
+      } else {
+        _trackLine = await controller.addLine(
+          options,
+          const <String, dynamic>{'kind': 'recordedTrack'},
+        );
+      }
+    } else {
+      final current = _trackLine;
+      _trackLine = null;
+      if (current != null && controller.lines.contains(current)) {
+        await controller.removeLine(current);
+      }
+    }
+
+    if (geometry.isEmpty) {
+      final start = _startCircle;
+      final end = _endCircle;
+      _startCircle = null;
+      _endCircle = null;
+      if (start != null && controller.circles.contains(start)) {
+        await controller.removeCircle(start);
+      }
+      if (end != null &&
+          end != start &&
+          controller.circles.contains(end)) {
+        await controller.removeCircle(end);
+      }
+      return;
+    }
+
+    final startOptions = CircleOptions(
+      geometry: geometry.first,
+      circleRadius: 6,
+      circleColor: '#2F6F45',
+      circleStrokeColor: '#FFFFFF',
+      circleStrokeWidth: 2.2,
+    );
+    final start = _startCircle;
+    if (start != null && controller.circles.contains(start)) {
+      await controller.updateCircle(start, startOptions);
+    } else {
+      _startCircle = await controller.addCircle(
+        startOptions,
+        const <String, dynamic>{'kind': 'recordingStart'},
       );
     }
 
-    if (geometry.isNotEmpty) {
-      await controller.addCircles(
-        [
-          CircleOptions(
-            geometry: geometry.first,
-            circleRadius: 6,
-            circleColor: '#2F6F45',
-            circleStrokeColor: '#FFFFFF',
-            circleStrokeWidth: 2.2,
-          ),
-          CircleOptions(
-            geometry: geometry.last,
-            circleRadius: 7,
-            circleColor: '#E86A45',
-            circleStrokeColor: '#FFFFFF',
-            circleStrokeWidth: 2.4,
-          ),
-        ],
+    final endOptions = CircleOptions(
+      geometry: geometry.last,
+      circleRadius: 7,
+      circleColor: '#E86A45',
+      circleStrokeColor: '#FFFFFF',
+      circleStrokeWidth: 2.4,
+    );
+    final end = _endCircle;
+    if (end != null && controller.circles.contains(end)) {
+      await controller.updateCircle(end, endOptions);
+    } else {
+      _endCircle = await controller.addCircle(
+        endOptions,
+        const <String, dynamic>{'kind': 'recordingEnd'},
       );
+    }
 
-      if (follow) {
-        await controller.animateCamera(
-          CameraUpdate.newLatLngZoom(geometry.last, 16.2),
-        );
-      }
+    if (follow) {
+      await controller.animateCamera(
+        CameraUpdate.newLatLngZoom(geometry.last, 16.2),
+      );
     }
   }
 
@@ -306,9 +380,9 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                         : const Color(0xF5FFFFFF),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Text(
-                    'v0.6',
-                    style: TextStyle(
+                  child: Text(
+                    'v${MapConfig.appVersion}',
+                    style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w900,
                     ),
