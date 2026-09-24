@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
@@ -138,7 +139,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
 
     final client = HttpClient()
       ..connectionTimeout = timeout
-      ..userAgent = 'TrailPath/0.9.7 (+https://github.com/riccardopinato/TrailPath)';
+      ..userAgent = MapConfig.userAgent;
 
     try {
       final requestHttp = await client.getUrl(uri).timeout(timeout);
