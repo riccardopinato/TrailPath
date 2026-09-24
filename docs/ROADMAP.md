@@ -60,5 +60,8 @@ Native MapLibre region reconciliation on provider startup, database readiness re
 ## v0.9.11 - Routing Resilience & Shared Network Core
 One cross-platform OSM routing engine for Android and Web, persistent HTTP client reuse, bounded retry/backoff for transient failures and HTTP 429/5xx responses, Retry-After handling, strict waypoint-snap validation and deterministic network regression tests.
 
+## v0.9.12 - Network Core Completion & API Hygiene
+Standards-compliant Retry-After parsing, shared bounded retry primitives, persistent lifecycle-managed Nominatim/Open-Meteo HTTP clients, serialized search requests, elevation retry hardening and deterministic network regression tests.
+
 ## v1.0 - Release
 Onboarding, Premium foundation, optional backup/sync, accessibility, performance and store QA.
