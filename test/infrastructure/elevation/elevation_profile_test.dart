@@ -116,7 +116,7 @@ void main() {
     expect(requests, 2);
     expect(profile.isAvailable, isTrue);
     expect(profile.samples, hasLength(2));
-    expect(profile.samples.last.elevationMeters, 125);
+    expect(profile.samples.last.point.elevationMeters, 125);
   });
 
   test('elevation engine does not retry permanent HTTP failures', () async {
