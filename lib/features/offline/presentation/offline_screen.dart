@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/services/service_providers.dart';
