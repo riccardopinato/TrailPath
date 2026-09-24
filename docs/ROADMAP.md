@@ -51,5 +51,11 @@ Freehand map drawing with live preview, gesture sampling and simplification, OSM
 ## v0.9.8 - Release Hardening
 Versioned Android native scaffold, deterministic CI builds, R8/resource shrinking, ABI-split release APKs and release artifact size reporting.
 
+## v0.9.9 - Real Web Routing Parity
+Browser preview uses real OSM foot/bike snapping, routed geometry, provider distance/duration and explicit routing failures instead of straight-line preview geometry.
+
+## v0.10.0 - Footpath-like Planner Core
+Web planner gains draggable waypoints, midpoint-to-waypoint insertion, long-press insertion near the routed line, route selection, undo/redo, selected-point removal and Nominatim place search, with automatic OSM rerouting after edits.
+
 ## v1.0 - Release
 Onboarding, Premium foundation, optional backup/sync, accessibility, performance and store QA.
