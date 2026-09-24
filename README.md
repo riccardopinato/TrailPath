@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.9.8 - Release Hardening
+v0.9.10 - Offline Reliability & State Recovery
 
-TrailPath v0.9.8 hardens Android delivery: the native Android project is now versioned instead of regenerated in CI, release builds enable shrinking/minification and CI produces ABI-split optimized APKs alongside the AppLab-tested debug build.
+TrailPath v0.9.10 hardens offline use across app/process restarts: native MapLibre regions are reconciled back into Riverpod and Drift, stale readiness flags are repaired, interrupted regions can be restarted cleanly and CI artifact names now derive from pubspec automatically.
 
 ### Included
 
@@ -73,7 +73,7 @@ TrailPath v0.9.8 hardens Android delivery: the native Android project is now ver
 - Android runtime notification/location permission preparation before recording
 - battery policies now drive native Android GPS sampling intervals during navigation and Back to Car
 - navigation lifecycle regression test covering the previous localization startup crash
-- offline readiness reconciled against actual native MapLibre regions
+- offline readiness reconciled against actual native MapLibre regions\n- offline region state restored into Riverpod after app/process restart\n- interrupted offline downloads remain visible and can be restarted safely\n- CI APK artifact names derive automatically from the pubspec version
 - native Android emulator smoke test in GitHub Actions
 - committed Android Gradle/manifest scaffold for reproducible builds
 - R8/resource shrinking in release builds
@@ -88,7 +88,7 @@ TrailPath v0.9.8 hardens Android delivery: the native Android project is now ver
 
 The CI is pinned to Flutter 3.47.5 / Dart 3.13.4.
 
-Android and iOS platform folders are generated from the current Flutter template during CI. Native permissions are then applied by CI. The current public routing endpoint is suitable for development and validation; the RoutingEngine abstraction is intentionally kept provider-agnostic so a production-grade or self-hosted service can replace it without changing the planner.
+The Android native scaffold is committed and validated by CI for reproducible builds. The iOS release scaffold remains scheduled for v1.0. The current public routing endpoint is suitable for development and validation; the RoutingEngine abstraction is intentionally kept provider-agnostic so a production-grade or self-hosted service can replace it without changing the planner.
 
 ## Bootstrap locally
 

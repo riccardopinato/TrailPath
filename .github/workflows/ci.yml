@@ -17,6 +17,8 @@ jobs:
   validate-and-build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      app_version: ${{ steps.app-version.outputs.app_version }}
 
     steps:
       - name: Checkout
@@ -41,6 +43,13 @@ jobs:
           test -f android/app/src/main/AndroidManifest.xml
           test -f android/app/src/main/kotlin/com/riccardopinato/trail_path/MainActivity.kt
           test -f android/app/src/main/res/drawable/ic_launcher.xml
+
+      - name: Read app version
+        id: app-version
+        run: |
+          APP_VERSION="$(awk '/^version:/ {print $2}' pubspec.yaml | cut -d+ -f1)"
+          test -n "$APP_VERSION"
+          echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Resolve dependencies
         run: flutter pub get
@@ -71,14 +80,14 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v6
         with:
-          name: TrailPath-v0.9.8.1-debug
+          name: TrailPath-v${{ steps.app-version.outputs.app_version }}-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
 
       - name: Upload optimized release APKs
         uses: actions/upload-artifact@v6
         with:
-          name: TrailPath-v0.9.8.1-release-split
+          name: TrailPath-v${{ steps.app-version.outputs.app_version }}-release-split
           path: build/app/outputs/flutter-apk/app-*-release.apk
           if-no-files-found: error
 
@@ -101,7 +110,7 @@ jobs:
       - name: Download debug APK
         uses: actions/download-artifact@v6
         with:
-          name: TrailPath-v0.9.8.1-debug
+          name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-debug
           path: apk
 
       - name: Checkout AppLab

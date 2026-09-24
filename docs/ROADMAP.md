@@ -51,5 +51,11 @@ Freehand map drawing with live preview, gesture sampling and simplification, OSM
 ## v0.9.8 - Release Hardening
 Versioned Android native scaffold, deterministic CI builds, R8/resource shrinking, ABI-split release APKs and release artifact size reporting.
 
+## v0.9.9 - Real Web Routing Parity
+Browser preview routes against the same OSM foot/bike services as the native planner instead of drawing direct lines, with snapped geometry, distance/duration feedback and web-safe HTTP transport.
+
+## v0.9.10 - Offline Reliability & State Recovery
+Native MapLibre region reconciliation on provider startup, database readiness repair, interrupted-download recovery, live restored progress, centralized deletion state and version-derived CI artifact naming.
+
 ## v1.0 - Release
 Onboarding, Premium foundation, optional backup/sync, accessibility, performance and store QA.
