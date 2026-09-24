@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.9.11 - Routing Resilience & Shared Network Core
+v0.9.12 - Network Core Completion & API Hygiene
 
-TrailPath v0.9.11 consolidates native and browser routing onto one OSM engine, reuses a persistent HTTP client and adds bounded retry/backoff for transient network, rate-limit and provider failures while keeping fake straight-line fallback disabled.
+TrailPath v0.9.12 completes the external-service network hardening: routing now honors standard HTTP-date Retry-After values, Nominatim search is serialized and cached through a persistent client, and Open-Meteo elevation uses the same bounded retry policy and lifecycle-managed transport.
 
 ### Included
 
