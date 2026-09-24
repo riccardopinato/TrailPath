@@ -39,3 +39,5 @@ jobs:
           git add lib test
           git commit -m "chore: normalize Dart formatting"
           git push origin HEAD:dev/v0.9.13-production-hardening
+
+# trigger after workflow registration
