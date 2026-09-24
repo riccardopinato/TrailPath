@@ -109,9 +109,11 @@ appId: com.riccardopinato.trail_path
 
 # Complete a native MapLibre offline-region request for the saved short route.
 - tapOn: "Download map"
+- tapOn:
+    text: 'Offline\s*Tab 4 of 5'
 - extendedWaitUntil:
-    visible: "Downloading offline"
-    timeout: 20000
+    visible: "TrailPath E2E Route"
+    timeout: 30000
 - extendedWaitUntil:
     visible: "Offline ready"
     timeout: 120000
