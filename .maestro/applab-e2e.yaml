@@ -66,9 +66,12 @@ appId: com.riccardopinato.trail_path
     clearState: false
 - tapOn:
     text: 'Routes\s*Tab 3 of 5'
-- extendedWaitUntil:
-    visible: "TrailPath E2E Activity"
-    timeout: 15000
+- scrollUntilVisible:
+    element:
+      text: "TrailPath E2E Activity"
+    direction: DOWN
+    timeout: 20000
+- assertVisible: "TrailPath E2E Activity"
 
 # Planner: center on injected GPS, create a short real routed trail and save it.
 - tapOn:
@@ -104,15 +107,25 @@ appId: com.riccardopinato.trail_path
 - pressKey: BACK
 - assertVisible: "TrailPath E2E Route"
 
-# Start a native MapLibre offline-region request for the saved short route.
+# Complete a native MapLibre offline-region request for the saved short route.
 - tapOn: "Download map"
 - extendedWaitUntil:
     visible: "Downloading offline"
     timeout: 20000
+- extendedWaitUntil:
+    visible: "Offline ready"
+    timeout: 120000
 
+# Native offline-region readiness must survive process restart.
+- stopApp
+- launchApp:
+    clearState: false
 - tapOn:
     text: 'Offline\s*Tab 4 of 5'
-- assertVisible: "Offline maps"
+- extendedWaitUntil:
+    visible: "TrailPath E2E Route"
+    timeout: 30000
+- assertVisible: "Offline ready"
 
 - tapOn:
     text: 'Outdoor\s*Tab 5 of 5'
