@@ -1,4 +1,4 @@
 # Flutter/plugin consumer rules are merged automatically.
-# Keep native MapLibre entry points that may be reached through JNI/reflection.
--keep class org.maplibre.** { *; }
+# MapLibre ships its own consumer rules. Keep only warning suppression here;
+# the release AppLab gate validates the R8-optimized native map runtime.
 -dontwarn org.maplibre.**
