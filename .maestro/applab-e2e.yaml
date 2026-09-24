@@ -54,6 +54,9 @@ appId: com.riccardopinato.trail_path
 - inputText: "TrailPath E2E Activity"
 - tapOn: "Save"
 - extendedWaitUntil:
+    visible: "Activity saved"
+    timeout: 15000
+- extendedWaitUntil:
     visible: "Start recording"
     timeout: 15000
 
