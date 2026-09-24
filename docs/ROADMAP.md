@@ -57,5 +57,8 @@ Browser preview routes against the same OSM foot/bike services as the native pla
 ## v0.9.10 - Offline Reliability & State Recovery
 Native MapLibre region reconciliation on provider startup, database readiness repair, interrupted-download recovery, live restored progress, centralized deletion state and version-derived CI artifact naming.
 
+## v0.9.11 - Routing Resilience & Shared Network Core
+One cross-platform OSM routing engine for Android and Web, persistent HTTP client reuse, bounded retry/backoff for transient failures and HTTP 429/5xx responses, Retry-After handling, strict waypoint-snap validation and deterministic network regression tests.
+
 ## v1.0 - Release
 Onboarding, Premium foundation, optional backup/sync, accessibility, performance and store QA.

@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.9.10 - Offline Reliability & State Recovery
+v0.9.11 - Routing Resilience & Shared Network Core
 
-TrailPath v0.9.10 hardens offline use across app/process restarts: native MapLibre regions are reconciled back into Riverpod and Drift, stale readiness flags are repaired, interrupted regions can be restarted cleanly and CI artifact names now derive from pubspec automatically.
+TrailPath v0.9.11 consolidates native and browser routing onto one OSM engine, reuses a persistent HTTP client and adds bounded retry/backoff for transient network, rate-limit and provider failures while keeping fake straight-line fallback disabled.
 
 ### Included
 
@@ -39,7 +39,7 @@ TrailPath v0.9.10 hardens offline use across app/process restarts: native MapLib
 - chunk failures remain explicit; no silent straight-line replacement
 - route line, undo/redo and clear controls
 - activity profiles with foot/bike routing profiles
-- asynchronous snap-to-network routing through routing.openstreetmap.de
+- asynchronous snap-to-network routing through routing.openstreetmap.de\n- shared Android/Web routing implementation with persistent HTTP client reuse\n- bounded retry/backoff for HTTP 408/425/429/5xx and transient network timeouts\n- Retry-After handling and strict snapped-waypoint response validation
 - explicit routing failure state when network routing is unavailable; no silent straight-line route can be saved
 - Open-Meteo/Copernicus terrain elevation sampling up to 100 points
 - ascent/descent and segment grade calculation with DEM noise filtering

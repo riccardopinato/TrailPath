@@ -24,12 +24,14 @@ final locationEngineProvider = Provider<LocationEngine>(
 );
 
 
-final routingEngineProvider = Provider<RoutingEngine>(
-  (ref) => const FallbackRoutingEngine(
-    primary: OpenStreetMapRoutingEngine(),
-    fallback: StraightLineRoutingEngine(),
-  ),
-);
+final routingEngineProvider = Provider<RoutingEngine>((ref) {
+  final primary = OpenStreetMapRoutingEngine();
+  ref.onDispose(primary.dispose);
+  return FallbackRoutingEngine(
+    primary: primary,
+    fallback: const StraightLineRoutingEngine(),
+  );
+});
 
 
 final elevationEngineProvider = Provider<ElevationEngine>(

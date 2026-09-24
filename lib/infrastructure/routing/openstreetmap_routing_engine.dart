@@ -1,22 +1,44 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 
+typedef RoutingDelay = Future<void> Function(Duration duration);
+
+Future<void> _defaultRoutingDelay(Duration duration) =>
+    Future<void>.delayed(duration);
+
 class OpenStreetMapRoutingEngine implements RoutingEngine {
-  const OpenStreetMapRoutingEngine({
+  OpenStreetMapRoutingEngine({
+    http.Client? client,
     this.timeout = const Duration(seconds: 12),
     this.maxWaypointsPerRequest = 20,
-  }) : assert(maxWaypointsPerRequest >= 2);
+    this.maxRetries = 2,
+    this.retryBaseDelay = const Duration(milliseconds: 350),
+    this.maxRetryDelay = const Duration(seconds: 4),
+    RoutingDelay? delay,
+  })  : assert(maxWaypointsPerRequest >= 2),
+        assert(maxRetries >= 0),
+        _client = client ?? http.Client(),
+        _delay = delay ?? _defaultRoutingDelay;
 
+  final http.Client _client;
+  final RoutingDelay _delay;
   final Duration timeout;
   final int maxWaypointsPerRequest;
+  final int maxRetries;
+  final Duration retryBaseDelay;
+  final Duration maxRetryDelay;
 
   @override
   String get engineId => 'routing.openstreetmap.de';
+
+  void dispose() => _client.close();
 
   @override
   Future<RoutePlan> calculate(RouteRequest request) async {
@@ -118,6 +140,99 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
   }
 
   Future<RoutePlan> _calculateSingle(RouteRequest request) async {
+    final response = await _request(_buildUri(request));
+    final payload = jsonDecode(response.body);
+    if (payload is! Map<String, dynamic>) {
+      throw const RoutingException('Invalid routing response.');
+    }
+
+    final code = payload['code'];
+    if (code != 'Ok') {
+      throw RoutingException('Routing failed: $code');
+    }
+
+    final routes = payload['routes'];
+    if (routes is! List || routes.isEmpty || routes.first is! Map) {
+      throw const RoutingException('No route found.');
+    }
+
+    final route = Map<String, dynamic>.from(routes.first as Map);
+    final geometryJson = route['geometry'];
+    if (geometryJson is! Map) {
+      throw const RoutingException('Missing route geometry.');
+    }
+
+    final coordinatesJson = geometryJson['coordinates'];
+    if (coordinatesJson is! List || coordinatesJson.length < 2) {
+      throw const RoutingException('Route geometry is empty.');
+    }
+
+    final points = <GeoPoint>[];
+    for (final coordinate in coordinatesJson) {
+      if (coordinate is! List || coordinate.length < 2) {
+        continue;
+      }
+      final longitude = coordinate[0];
+      final latitude = coordinate[1];
+      if (longitude is num && latitude is num) {
+        points.add(
+          GeoPoint(
+            latitude: latitude.toDouble(),
+            longitude: longitude.toDouble(),
+          ),
+        );
+      }
+    }
+
+    if (points.length < 2) {
+      throw const RoutingException('Route geometry could not be decoded.');
+    }
+
+    final snappedWaypoints = <GeoPoint>[];
+    final waypointsJson = payload['waypoints'];
+    if (waypointsJson is List) {
+      for (final waypoint in waypointsJson) {
+        if (waypoint is! Map) {
+          continue;
+        }
+        final location = waypoint['location'];
+        if (location is! List || location.length < 2) {
+          continue;
+        }
+        final longitude = location[0];
+        final latitude = location[1];
+        if (longitude is num && latitude is num) {
+          snappedWaypoints.add(
+            GeoPoint(
+              latitude: latitude.toDouble(),
+              longitude: longitude.toDouble(),
+            ),
+          );
+        }
+      }
+    }
+
+    if (snappedWaypoints.length != request.points.length) {
+      throw const RoutingException('Waypoint snapping is incomplete.');
+    }
+
+    final distance = (route['distance'] as num?)?.toDouble() ?? 0;
+    final seconds = (route['duration'] as num?)?.round() ?? 0;
+
+    return RoutePlan(
+      geometry: List<GeoPoint>.unmodifiable(points),
+      distanceMeters: distance,
+      ascentMeters: 0,
+      descentMeters: 0,
+      estimatedDuration: Duration(seconds: seconds),
+      profile: request.profile,
+      isSnapped: true,
+      routingSource: engineId,
+      snappedWaypoints: List<GeoPoint>.unmodifiable(snappedWaypoints),
+    );
+  }
+
+  Uri _buildUri(RouteRequest request) {
     final service = _serviceFor(request.profile);
     final coordinates = request.points
         .map(
@@ -126,7 +241,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         )
         .join(';');
 
-    final uri = Uri.parse(
+    return Uri.parse(
       'https://routing.openstreetmap.de/'
       '$service/route/v1/driving/$coordinates',
     ).replace(
@@ -136,115 +251,99 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         'steps': 'false',
       },
     );
+  }
 
-    final client = HttpClient()
-      ..connectionTimeout = timeout
-      ..userAgent = MapConfig.userAgent;
+  Future<http.Response> _request(Uri uri) async {
+    Object? lastNetworkError;
 
-    try {
-      final requestHttp = await client.getUrl(uri).timeout(timeout);
-      requestHttp.headers.set(HttpHeaders.acceptHeader, 'application/json');
-      final response = await requestHttp.close().timeout(timeout);
+    for (var attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        final response = await _client
+            .get(uri, headers: _requestHeaders())
+            .timeout(timeout);
 
-      if (response.statusCode != HttpStatus.ok) {
-        throw RoutingException(
-          'Routing service returned HTTP ${response.statusCode}.',
-        );
-      }
-
-      final body = await response.transform(utf8.decoder).join().timeout(timeout);
-      final payload = jsonDecode(body);
-      if (payload is! Map<String, dynamic>) {
-        throw const RoutingException('Invalid routing response.');
-      }
-
-      final code = payload['code'];
-      if (code != 'Ok') {
-        throw RoutingException('Routing failed: $code');
-      }
-
-      final routes = payload['routes'];
-      if (routes is! List || routes.isEmpty) {
-        throw const RoutingException('No route found.');
-      }
-
-      final route = routes.first;
-      if (route is! Map<String, dynamic>) {
-        throw const RoutingException('Invalid route payload.');
-      }
-
-      final geometry = route['geometry'];
-      if (geometry is! Map<String, dynamic>) {
-        throw const RoutingException('Missing route geometry.');
-      }
-
-      final coordinatesJson = geometry['coordinates'];
-      if (coordinatesJson is! List || coordinatesJson.length < 2) {
-        throw const RoutingException('Route geometry is empty.');
-      }
-
-      final points = <GeoPoint>[];
-      for (final coordinate in coordinatesJson) {
-        if (coordinate is! List || coordinate.length < 2) {
-          continue;
+        if (response.statusCode == 200) {
+          return response;
         }
-        final longitude = coordinate[0];
-        final latitude = coordinate[1];
-        if (longitude is num && latitude is num) {
-          points.add(
-            GeoPoint(
-              latitude: latitude.toDouble(),
-              longitude: longitude.toDouble(),
-            ),
+
+        if (!_isRetryableStatus(response.statusCode) ||
+            attempt == maxRetries) {
+          throw RoutingException(
+            'Routing service returned HTTP ${response.statusCode}.',
           );
         }
+
+        await _delay(_retryDelay(response, attempt));
+      } on TimeoutException catch (error) {
+        lastNetworkError = error;
+        if (attempt == maxRetries) {
+          throw RoutingException(
+            'Routing request timed out after ${maxRetries + 1} attempts.',
+          );
+        }
+        await _delay(_retryDelay(null, attempt));
+      } on http.ClientException catch (error) {
+        lastNetworkError = error;
+        if (attempt == maxRetries) {
+          throw RoutingException(
+            'Routing network request failed after ${maxRetries + 1} attempts: '
+            '${error.message}',
+          );
+        }
+        await _delay(_retryDelay(null, attempt));
+      }
+    }
+
+    throw RoutingException('Routing request failed: $lastNetworkError');
+  }
+
+  Map<String, String> _requestHeaders() {
+    return {
+      'Accept': 'application/json',
+      if (!kIsWeb) 'User-Agent': MapConfig.userAgent,
+    };
+  }
+
+  bool _isRetryableStatus(int statusCode) {
+    return statusCode == 408 ||
+        statusCode == 425 ||
+        statusCode == 429 ||
+        statusCode == 500 ||
+        statusCode == 502 ||
+        statusCode == 503 ||
+        statusCode == 504;
+  }
+
+  Duration _retryDelay(http.Response? response, int attempt) {
+    final retryAfter = response?.headers['retry-after'];
+    if (retryAfter != null) {
+      final seconds = int.tryParse(retryAfter.trim());
+      if (seconds != null && seconds >= 0) {
+        return _capRetryDelay(Duration(seconds: seconds));
       }
 
-      if (points.length < 2) {
-        throw const RoutingException('Route geometry could not be decoded.');
-      }
-
-      final snappedWaypoints = <GeoPoint>[];
-      final waypointsJson = payload['waypoints'];
-      if (waypointsJson is List) {
-        for (final waypoint in waypointsJson) {
-          if (waypoint is! Map<String, dynamic>) {
-            continue;
-          }
-          final location = waypoint['location'];
-          if (location is! List || location.length < 2) {
-            continue;
-          }
-          final longitude = location[0];
-          final latitude = location[1];
-          if (longitude is num && latitude is num) {
-            snappedWaypoints.add(
-              GeoPoint(
-                latitude: latitude.toDouble(),
-                longitude: longitude.toDouble(),
-              ),
-            );
-          }
+      final date = DateTime.tryParse(retryAfter);
+      if (date != null) {
+        final remaining = date.toUtc().difference(DateTime.now().toUtc());
+        if (!remaining.isNegative) {
+          return _capRetryDelay(remaining);
         }
       }
-
-      final distance = (route['distance'] as num?)?.toDouble() ?? 0;
-      final seconds = (route['duration'] as num?)?.round() ?? 0;
-
-      return RoutePlan(
-        geometry: List<GeoPoint>.unmodifiable(points),
-        distanceMeters: distance,
-        ascentMeters: 0,
-        descentMeters: 0,
-        estimatedDuration: Duration(seconds: seconds),
-        profile: request.profile,
-        isSnapped: true,
-        routingSource: engineId,
-        snappedWaypoints: List<GeoPoint>.unmodifiable(snappedWaypoints),
-      );
-    } finally {
-      client.close(force: true);
     }
+
+    final multiplier = 1 << attempt.clamp(0, 8);
+    return _capRetryDelay(
+      Duration(
+        milliseconds: retryBaseDelay.inMilliseconds * multiplier,
+      ),
+    );
+  }
+
+  Duration _capRetryDelay(Duration value) {
+    if (value > maxRetryDelay) {
+      return maxRetryDelay;
+    }
+    return value;
   }
 
   String _serviceFor(RouteProfile profile) {

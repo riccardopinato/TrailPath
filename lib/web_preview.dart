@@ -1,13 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/infrastructure/routing/openstreetmap_routing_engine.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,7 +39,7 @@ class _PreviewScreen extends StatefulWidget {
 
 class _PreviewScreenState extends State<_PreviewScreen> {
   final List<GeoPoint> _points = <GeoPoint>[];
-  final _routingService = _WebRoutingService();
+  final _routingService = OpenStreetMapRoutingEngine();
 
   MapLibreMapController? _map;
   bool _styleReady = false;
@@ -211,9 +210,11 @@ class _PreviewScreenState extends State<_PreviewScreen> {
     });
 
     try {
-      final plan = await _routingService.route(
-        requestedPoints,
-        profile: profile,
+      final plan = await _routingService.calculate(
+        RouteRequest(
+          points: requestedPoints,
+          profile: profile,
+        ),
       );
 
       if (!mounted || generation != _routingGeneration) return;
@@ -250,7 +251,9 @@ class _PreviewScreenState extends State<_PreviewScreen> {
     final raw = error.toString();
     if (raw.contains('Failed to fetch') ||
         raw.contains('ClientException') ||
-        raw.contains('XMLHttpRequest')) {
+        raw.contains('XMLHttpRequest') ||
+        raw.contains('timed out') ||
+        raw.contains('network request failed')) {
       return 'Il servizio di routing non è raggiungibile dal browser. Riprova tra poco.';
     }
     return 'Impossibile calcolare il percorso sulla rete stradale/sentieristica.';
@@ -522,202 +525,4 @@ class _PlannerPanel extends StatelessWidget {
       ),
     );
   }
-}
-
-class _WebRoutingService {
-  _WebRoutingService() : _client = http.Client();
-
-  final http.Client _client;
-
-  static const _timeout = Duration(seconds: 12);
-  static const _maxWaypointsPerRequest = 20;
-
-  Future<RoutePlan> route(
-    List<GeoPoint> points, {
-    required RouteProfile profile,
-  }) async {
-    if (points.length < 2) {
-      throw const RoutingException('At least two points are required.');
-    }
-
-    final chunks = chunkRouteWaypoints(
-      points,
-      maxPointsPerChunk: _maxWaypointsPerRequest,
-    );
-
-    final plans = <RoutePlan>[];
-    for (final chunk in chunks) {
-      plans.add(await _routeChunk(chunk, profile));
-    }
-
-    if (plans.length == 1) return plans.single;
-
-    final geometry = <GeoPoint>[];
-    final snappedWaypoints = <GeoPoint>[];
-    var distanceMeters = 0.0;
-    var durationSeconds = 0;
-
-    for (var index = 0; index < plans.length; index++) {
-      final plan = plans[index];
-      distanceMeters += plan.distanceMeters;
-      durationSeconds += plan.estimatedDuration.inSeconds;
-
-      if (index == 0) {
-        geometry.addAll(plan.geometry);
-        snappedWaypoints.addAll(plan.snappedWaypoints);
-        continue;
-      }
-
-      if (plan.geometry.isNotEmpty) {
-        final seamDistance = geometry.isEmpty
-            ? double.infinity
-            : haversineMeters(geometry.last, plan.geometry.first);
-        geometry.addAll(
-          seamDistance <= 2 ? plan.geometry.skip(1) : plan.geometry,
-        );
-      }
-
-      if (plan.snappedWaypoints.isNotEmpty) {
-        snappedWaypoints.addAll(plan.snappedWaypoints.skip(1));
-      }
-    }
-
-    if (geometry.length < 2 || snappedWaypoints.length != points.length) {
-      throw const RoutingException('Incomplete chunked route.');
-    }
-
-    return RoutePlan(
-      geometry: List<GeoPoint>.unmodifiable(geometry),
-      distanceMeters: distanceMeters,
-      ascentMeters: 0,
-      descentMeters: 0,
-      estimatedDuration: Duration(seconds: durationSeconds),
-      profile: profile,
-      isSnapped: true,
-      routingSource: 'routing.openstreetmap.de',
-      snappedWaypoints: List<GeoPoint>.unmodifiable(snappedWaypoints),
-    );
-  }
-
-  Future<RoutePlan> _routeChunk(
-    List<GeoPoint> points,
-    RouteProfile profile,
-  ) async {
-    final service = switch (profile) {
-      RouteProfile.mountainBike || RouteProfile.cycling => 'routed-bike',
-      RouteProfile.hiking ||
-      RouteProfile.trailRunning ||
-      RouteProfile.walking ||
-      RouteProfile.dogWalk => 'routed-foot',
-    };
-
-    final coordinates = points
-        .map(
-          (point) =>
-              '${point.longitude.toStringAsFixed(6)},${point.latitude.toStringAsFixed(6)}',
-        )
-        .join(';');
-
-    final uri = Uri.parse(
-      'https://routing.openstreetmap.de/$service/route/v1/driving/$coordinates',
-    ).replace(
-      queryParameters: const {
-        'overview': 'full',
-        'geometries': 'geojson',
-        'steps': 'false',
-      },
-    );
-
-    final response = await _client.get(
-      uri,
-      headers: const {'Accept': 'application/json'},
-    ).timeout(_timeout);
-
-    if (response.statusCode != 200) {
-      throw RoutingException(
-        'Routing service returned HTTP ${response.statusCode}.',
-      );
-    }
-
-    final payload = jsonDecode(response.body);
-    if (payload is! Map<String, dynamic> || payload['code'] != 'Ok') {
-      throw const RoutingException('Routing provider did not return a route.');
-    }
-
-    final routes = payload['routes'];
-    if (routes is! List || routes.isEmpty || routes.first is! Map) {
-      throw const RoutingException('No route found.');
-    }
-
-    final route = Map<String, dynamic>.from(routes.first as Map);
-    final geometryJson = route['geometry'];
-    if (geometryJson is! Map) {
-      throw const RoutingException('Missing route geometry.');
-    }
-
-    final coordinatesJson = geometryJson['coordinates'];
-    if (coordinatesJson is! List) {
-      throw const RoutingException('Invalid route geometry.');
-    }
-
-    final geometry = <GeoPoint>[];
-    for (final coordinate in coordinatesJson) {
-      if (coordinate is! List || coordinate.length < 2) continue;
-      final longitude = coordinate[0];
-      final latitude = coordinate[1];
-      if (longitude is num && latitude is num) {
-        geometry.add(
-          GeoPoint(
-            latitude: latitude.toDouble(),
-            longitude: longitude.toDouble(),
-          ),
-        );
-      }
-    }
-
-    if (geometry.length < 2) {
-      throw const RoutingException('Empty route geometry.');
-    }
-
-    final snappedWaypoints = <GeoPoint>[];
-    final waypointsJson = payload['waypoints'];
-    if (waypointsJson is List) {
-      for (final waypoint in waypointsJson) {
-        if (waypoint is! Map) continue;
-        final location = waypoint['location'];
-        if (location is! List || location.length < 2) continue;
-        final longitude = location[0];
-        final latitude = location[1];
-        if (longitude is num && latitude is num) {
-          snappedWaypoints.add(
-            GeoPoint(
-              latitude: latitude.toDouble(),
-              longitude: longitude.toDouble(),
-            ),
-          );
-        }
-      }
-    }
-
-    if (snappedWaypoints.length != points.length) {
-      throw const RoutingException('Waypoint snapping is incomplete.');
-    }
-
-    final distance = (route['distance'] as num?)?.toDouble() ?? 0;
-    final seconds = (route['duration'] as num?)?.round() ?? 0;
-
-    return RoutePlan(
-      geometry: List<GeoPoint>.unmodifiable(geometry),
-      distanceMeters: distance,
-      ascentMeters: 0,
-      descentMeters: 0,
-      estimatedDuration: Duration(seconds: seconds),
-      profile: profile,
-      isSnapped: true,
-      routingSource: 'routing.openstreetmap.de',
-      snappedWaypoints: List<GeoPoint>.unmodifiable(snappedWaypoints),
-    );
-  }
-
-  void dispose() => _client.close();
 }
