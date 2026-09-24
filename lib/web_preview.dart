@@ -267,7 +267,7 @@ class _PreviewScreenState extends State<_PreviewScreen> {
     final hours = _duration.inHours;
     final minutes = _duration.inMinutes.remainder(60);
     if (hours == 0) return '${minutes.clamp(1, 59)} min';
-    return '${hours} h ${minutes.toString().padLeft(2, '0')} min';
+    return '$hours h ${minutes.toString().padLeft(2, '0')} min';
   }
 
   @override
