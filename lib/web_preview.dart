@@ -194,7 +194,7 @@ class _PreviewScreenState extends State<_PreviewScreen> {
     _routeLines = nextRouteLines;
   }
 
-  void _onMapClick(math.Point<double> _, LatLng latLng) {
+  void _onMapClick(math.Point<double> point, LatLng latLng) {
     if (_draggingFeature) return;
     _commitPoints([
       ..._points,
@@ -202,9 +202,9 @@ class _PreviewScreenState extends State<_PreviewScreen> {
     ]);
   }
 
-  void _onMapLongClick(math.Point<double> _, LatLng latLng) {
+  void _onMapLongClick(math.Point<double> point, LatLng latLng) {
     if (_geometry.length < 2 || _routeLegs.isEmpty) {
-      _onMapClick(_, latLng);
+      _onMapClick(point, latLng);
       return;
     }
 
@@ -224,7 +224,7 @@ class _PreviewScreenState extends State<_PreviewScreen> {
     }
 
     if (bestDistance > 120) {
-      _onMapClick(_, latLng);
+      _onMapClick(point, latLng);
       return;
     }
 
