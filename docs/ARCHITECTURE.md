@@ -44,3 +44,18 @@ v1 must allow an already saved route, downloaded map region, GPS recording and r
 ## Outdoor intelligence
 
 Battery modes are domain policies, not UI-only preferences. Recording and navigation resolve the selected policy into native GPS accuracy, distance filters and sampling intervals. Back to Car stores its return point in Drift and computes distance/bearing locally so guidance remains useful without connectivity.
+
+
+## Shared planner core
+
+From v0.9.14, Android and Web consume the same `RoutePlannerController`,
+`RoutePlannerState`, routing engine, elevation engine and place-search provider.
+
+The planner core must stay free of platform-only dependencies. Web-safe planner
+providers live in `planner_service_providers.dart`; the native provider graph
+re-exports them and adds Android/iOS-only services such as background location,
+recording, TTS and native offline regions.
+
+Presentation may adapt to each platform, but waypoint mutations, profile
+selection, partial rerouting, undo/redo, route geometry, elevation and search
+must not be reimplemented in a parallel Web state machine.
