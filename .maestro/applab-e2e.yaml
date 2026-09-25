@@ -121,7 +121,7 @@ appId: com.riccardopinato.trail_path
       text: '.*TrailPath E2E Route.*'
     timeout: 30000
 - extendedWaitUntil:
-    visible: "Offline ready"
+    visible: "Available offline"
     timeout: 120000
 
 # Native offline-region readiness must survive process restart.
@@ -134,7 +134,7 @@ appId: com.riccardopinato.trail_path
     visible:
       text: '.*TrailPath E2E Route.*'
     timeout: 30000
-- assertVisible: "Offline ready"
+- assertVisible: "Available offline"
 
 - tapOn:
     text: 'Outdoor\s*Tab 5 of 5'
