@@ -35,7 +35,10 @@ void main() {
     expect(find.text('Start TrailPath'), findsOneWidget);
     expect(await database.getSetting(onboardingCompletedSettingKey), isNull);
 
-    await tester.tap(find.byKey(const ValueKey('onboarding_start')));
+    final startButton = find.byKey(const ValueKey('onboarding_start'));
+    await tester.ensureVisible(startButton);
+    await tester.pumpAndSettle();
+    await tester.tap(startButton);
     await tester.pumpAndSettle();
 
     expect(await database.getSetting(onboardingCompletedSettingKey), 'true');
