@@ -1,7 +1,4 @@
-List<T> sampleEvenly<T>(
-  List<T> values, {
-  required int maxItems,
-}) {
+List<T> sampleEvenly<T>(List<T> values, {required int maxItems}) {
   if (maxItems < 2) {
     throw ArgumentError.value(maxItems, 'maxItems', 'Must be at least 2.');
   }
