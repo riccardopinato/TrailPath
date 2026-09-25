@@ -229,7 +229,23 @@ jobs:
 
             # Reuse the persisted E2E route/offline region for a focused
             # no-network gate instead of replaying the entire online journey.
-            maestro test "$GITHUB_WORKSPACE/.maestro/applab-offline-e2e.yaml"
+            OFFLINE_REPORT="$GITHUB_WORKSPACE/applab-report/offline-maestro"
+            mkdir -p "$OFFLINE_REPORT"
+            set +e
+            maestro test "$GITHUB_WORKSPACE/.maestro/applab-offline-e2e.yaml" \
+              --test-output-dir "$OFFLINE_REPORT" \
+              2>&1 | tee "$GITHUB_WORKSPACE/applab-report/offline-maestro.log"
+            OFFLINE_STATUS="${PIPESTATUS[0]}"
+            set -e
+            if [ "$OFFLINE_STATUS" -ne 0 ]; then
+              adb exec-out screencap -p > "$GITHUB_WORKSPACE/applab-report/offline-failure.png" || true
+              adb shell uiautomator dump /sdcard/offline-failure.xml >/dev/null 2>&1 || true
+              adb pull /sdcard/offline-failure.xml "$GITHUB_WORKSPACE/applab-report/offline-failure.xml" >/dev/null 2>&1 || true
+              adb logcat -b all -d -v threadtime > "$GITHUB_WORKSPACE/applab-report/offline-failure-logcat.txt" 2>&1 || true
+              adb shell cmd connectivity airplane-mode disable >/dev/null 2>&1 || true
+              exit "$OFFLINE_STATUS"
+            fi
+            adb shell cmd connectivity airplane-mode disable >/dev/null 2>&1 || true
 
             grep -Fq -- "- Result: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
             grep -Fq -- "- Maestro: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
