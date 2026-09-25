@@ -21,6 +21,10 @@ void main() {
     );
     expect(webPreview, contains('ref.watch(routePlannerProvider)'));
     expect(webPreview, contains('routePlannerProvider.notifier'));
+    expect(webPreview, contains('placeSearchServiceProvider'));
+    expect(webPreview, contains('insertPointNearRoute'));
+    expect(webPreview, contains('movePoint(index, pointValue)'));
+    expect(webPreview, contains('insertPointAt(insertedIndex, pointValue)'));
 
     expect(
       webPreview,
@@ -49,6 +53,7 @@ void main() {
 
     expect(plannerProviders, contains('routingEngineProvider'));
     expect(plannerProviders, contains('elevationEngineProvider'));
+    expect(plannerProviders, contains('placeSearchServiceProvider'));
     expect(
       plannerProviders,
       isNot(contains('dart:io')),
