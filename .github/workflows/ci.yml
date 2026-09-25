@@ -64,6 +64,11 @@ jobs:
       - name: Resolve dependencies
         run: flutter pub get
 
+      - name: Audit dependency freshness
+        run: |
+          echo "Dependency freshness audit (informational):"
+          flutter pub outdated --no-dev-dependencies || true
+
       - name: Generate Drift code
         run: dart run build_runner build --delete-conflicting-outputs
 
@@ -137,6 +142,18 @@ jobs:
         run: |
           ls -lh build/app/outputs/flutter-apk/*-release.apk
           du -b build/app/outputs/flutter-apk/*-release.apk | sort -n
+
+      - name: Enforce ARM64 RC size budget
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-arm64-v8a-release.apk"
+          SIZE="$(stat -c%s "$APK")"
+          MAX_BYTES=$((40 * 1024 * 1024))
+          echo "ARM64 APK: $SIZE bytes; RC budget: $MAX_BYTES bytes"
+          if [ "$SIZE" -gt "$MAX_BYTES" ]; then
+            echo "::error::ARM64 APK exceeds the 40 MiB release-candidate budget."
+            exit 1
+          fi
 
       - name: Upload ARM64 release APK
         uses: actions/upload-artifact@v6
