@@ -210,6 +210,10 @@ jobs:
 
             RUN_MAESTRO=true MAESTRO_FLOW="$GITHUB_WORKSPACE/.maestro/applab-e2e.yaml" REPORT_DIR="$GITHUB_WORKSPACE/applab-report" .applab/scripts/verify_apk.sh "$GITHUB_WORKSPACE/apk/app-x86_64-release.apk" "com.riccardopinato.trail_path"
 
+            # Reuse the persisted E2E route/offline region for a focused
+            # no-network gate instead of replaying the entire online journey.
+            maestro test "$GITHUB_WORKSPACE/.maestro/applab-offline-e2e.yaml"
+
             grep -Fq -- "- Result: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
             grep -Fq -- "- Maestro: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
             test -s "$GITHUB_WORKSPACE/applab-report/launch.png"
