@@ -532,7 +532,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }
   }
 
-
   void _undo() {
     if (_selectedWaypointIndex != null && mounted) {
       setState(() => _selectedWaypointIndex = null);
