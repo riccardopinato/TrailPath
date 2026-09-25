@@ -54,11 +54,11 @@ class _OnboardingGateState extends ConsumerState<OnboardingGate> {
   Widget build(BuildContext context) {
     final completed = _completed;
     if (completed == null) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
           child: Semantics(
             label: 'TrailPath',
-            child: CircularProgressIndicator(),
+            child: const CircularProgressIndicator(),
           ),
         ),
       );
