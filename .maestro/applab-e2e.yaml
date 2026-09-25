@@ -103,8 +103,11 @@ appId: com.riccardopinato.trail_path
     timeout: 15000
 - tapOn: "Navigate"
 - extendedWaitUntil:
-    visible: "Navigation active"
+    visible:
+      text: '.*TrailPath E2E Route.*'
     timeout: 20000
+- assertVisible: "Remaining"
+- assertVisible: "Progress"
 - pressKey: BACK
 - assertVisible:
     text: '.*TrailPath E2E Route.*'
