@@ -867,7 +867,7 @@ class AppLocalizations {
       'onboardingOfflineBody': 'Descarregue a zona do percurso antes de sair para manter o mapa preparado e a navegação disponíveis sem rede.',
       'onboardingRecordTitle': 'Grave e navegue',
       'onboardingRecordBody': 'Use o GPS para gravar uma atividade, seguir percursos guardados e voltar à posição do carro.',
-      'onboardingPrivacy': 'Os percursos e atividades ficam neste dispositivo. O TrailPath pede a localização apenas quando uma função GPS precisa dela.'
+      'onboardingPrivacy': 'Os percursos e atividades ficam neste dispositivo. O TrailPath pede a localização apenas quando uma função GPS precisa dela.',
       'onboardingStart': 'Começar com TrailPath',
       'planner': 'Planear',
       'record': 'Gravar',
