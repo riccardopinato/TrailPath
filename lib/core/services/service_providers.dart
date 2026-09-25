@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
-
-export 'package:trail_path/core/services/planner_service_providers.dart';
 import 'package:trail_path/infrastructure/gpx/xml_gpx_service.dart';
 import 'package:trail_path/infrastructure/location/geolocator_location_engine.dart';
 import 'package:trail_path/infrastructure/maps/maplibre_map_engine.dart';
@@ -13,6 +11,8 @@ import 'package:trail_path/infrastructure/navigation/route_navigation_engine.dar
 import 'package:trail_path/infrastructure/permissions/runtime_permission_service.dart';
 import 'package:trail_path/infrastructure/recording/geolocator_track_recorder.dart';
 import 'package:trail_path/infrastructure/safety/device_safety_service.dart';
+
+export 'package:trail_path/core/services/planner_service_providers.dart';
 
 final mapEngineProvider = Provider<MapEngine>(
   (ref) => const MapLibreMapEngine(),
