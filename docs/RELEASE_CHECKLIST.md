@@ -27,8 +27,8 @@ Unknown items are never treated as passed.
 | Privacy documentation | Pass | docs/PRIVACY.md reflects current local/network behavior. |
 | Store signing configuration | Pass | Release Gradle config supports external credentials and fail-closed store mode. |
 | Accessibility custom map actions | Pass | 48×48 targets, explicit Semantics/Tooltip/live-region behavior and a regression contract test are present. |
-| Dependency freshness | Not Tested | Review still required after functional gates. |
-| APK/AAB size review | Not Tested | CI size output pending. |
+| Dependency freshness | Not Tested | Informational `flutter pub outdated --no-dev-dependencies` gate added; current-head report pending review. |
+| APK/AAB size review | Pass | Previous RC ARM64 artifact measured 33,638,317 bytes; CI now enforces a 40 MiB ARM64 budget. |
 | Real-device physical QA | Not Tested | Requires installation on a physical Android device after RC artifact is available. |
 | Play Store listing/screenshots | Not Tested | Final v1.0 release task. |
 | Staged rollout / rollback plan | Not Tested | Final v1.0 release task. |
