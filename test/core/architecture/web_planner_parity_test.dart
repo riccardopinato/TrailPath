@@ -25,6 +25,8 @@ void main() {
     expect(webPreview, contains('insertPointNearRoute'));
     expect(webPreview, contains('movePoint(index, pointValue)'));
     expect(webPreview, contains('insertPointAt(insertedIndex, pointValue)'));
+    expect(webPreview, contains('addTrace'));
+    expect(webPreview, contains('sampleEvenly'));
 
     expect(
       webPreview,
