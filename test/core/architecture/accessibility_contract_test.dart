@@ -4,8 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('planner custom map actions keep release accessibility contract', () {
-    final source = File('lib/features/planner/presentation/planner_screen.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/features/planner/presentation/planner_screen.dart',
+    ).readAsStringSync();
 
     expect(source, contains('class _MapActionButton'));
     expect(source, contains('Semantics('));
