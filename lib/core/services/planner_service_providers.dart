@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/infrastructure/elevation/open_meteo_elevation_engine.dart';
 import 'package:trail_path/infrastructure/routing/openstreetmap_routing_engine.dart';
+import 'package:trail_path/infrastructure/search/nominatim_place_search_service.dart';
 
 final routingEngineProvider = Provider<RoutingEngine>((ref) {
   final primary = OpenStreetMapRoutingEngine();
@@ -19,4 +20,11 @@ final elevationEngineProvider = Provider<ElevationEngine>((ref) {
     primary: primary,
     fallback: const UnavailableElevationEngine(),
   );
+});
+
+
+final placeSearchServiceProvider = Provider<PlaceSearchService>((ref) {
+  final service = NominatimPlaceSearchService();
+  ref.onDispose(service.dispose);
+  return service;
 });
