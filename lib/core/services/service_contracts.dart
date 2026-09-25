@@ -98,10 +98,7 @@ abstract interface class GpxService {
 }
 
 abstract interface class PlaceSearchService {
-  Future<List<PlaceSearchResult>> search(
-    String query, {
-    String? languageCode,
-  });
+  Future<List<PlaceSearchResult>> search(String query, {String? languageCode});
 }
 
 abstract interface class SafetyService {

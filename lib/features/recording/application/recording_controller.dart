@@ -10,8 +10,8 @@ import 'package:trail_path/features/outdoor/application/battery_mode_controller.
 
 final recordingControllerProvider =
     NotifierProvider<RecordingController, RecordingState>(
-  RecordingController.new,
-);
+      RecordingController.new,
+    );
 
 class RecordingState {
   const RecordingState({
@@ -92,10 +92,7 @@ class RecordingController extends Notifier<RecordingState> {
       return;
     }
     _recoveryChecked = true;
-    state = state.copyWith(
-      isCheckingRecovery: true,
-      clearError: true,
-    );
+    state = state.copyWith(isCheckingRecovery: true, clearError: true);
 
     try {
       final activity = await _database.latestRecoverableActivity();
@@ -164,6 +161,19 @@ class RecordingController extends Notifier<RecordingState> {
     String? activityId;
 
     try {
+      // Ask for runtime access before creating a recoverable database draft.
+      // This prevents an empty "recovered activity" if Android kills the
+      // process while a permission dialog is open.
+      await permissions.prepareRecording();
+      if (!ref.mounted) {
+        return;
+      }
+
+      final batteryMode = await batteryModeFuture;
+      if (!ref.mounted) {
+        return;
+      }
+
       activityId = await _database.createActivityDraft(profile: profile);
       if (!ref.mounted) {
         await _safeDiscardDraft(activityId);
@@ -175,18 +185,6 @@ class RecordingController extends Notifier<RecordingState> {
         hasRecoveredDraft: false,
         clearError: true,
       );
-
-      await permissions.prepareRecording();
-      if (!ref.mounted) {
-        await _safeDiscardDraft(activityId);
-        return;
-      }
-
-      final batteryMode = await batteryModeFuture;
-      if (!ref.mounted) {
-        await _safeDiscardDraft(activityId);
-        return;
-      }
 
       await _recorder.setBatteryMode(batteryMode);
       if (!ref.mounted) {
@@ -205,10 +203,7 @@ class RecordingController extends Notifier<RecordingState> {
         await _safeDiscardDraft(activityId);
       }
       if (ref.mounted) {
-        state = state.copyWith(
-          clearActivityId: true,
-          error: error.toString(),
-        );
+        state = state.copyWith(clearActivityId: true, error: error.toString());
       }
     }
   }
@@ -217,6 +212,45 @@ class RecordingController extends Notifier<RecordingState> {
     if (state.snapshot.status != TrackRecorderStatus.recording) {
       return;
     }
+
+    final activityId = state.activityId;
+    final current = state.snapshot;
+
+    // Persist a paused checkpoint before exposing the paused recorder state.
+    // This closes the kill/restart race where Android could terminate the
+    // process immediately after the UI changed to "Resume" but before the
+    // asynchronous autosave reached SQLite. This write is awaited directly
+    // so a database failure cannot be swallowed by the background autosave
+    // chain while the UI still transitions to paused.
+    if (activityId != null) {
+      final checkpoint = TrackRecorderSnapshot(
+        status: TrackRecorderStatus.paused,
+        points: current.points,
+        distanceMeters: current.distanceMeters,
+        ascentMeters: current.ascentMeters,
+        elapsed: current.elapsed,
+        currentSpeedMetersPerSecond: current.currentSpeedMetersPerSecond,
+        accuracyMeters: current.accuracyMeters,
+      );
+
+      await _persistChain;
+      try {
+        await _database.updateActivityDraft(
+          activityId: activityId,
+          snapshot: checkpoint,
+        );
+      } on Object catch (error) {
+        if (ref.mounted) {
+          state = state.copyWith(error: error.toString());
+        }
+        return;
+      }
+
+      if (!ref.mounted) {
+        return;
+      }
+    }
+
     await _recorder.pause();
     if (ref.mounted) {
       await _flushAutosave();
@@ -230,10 +264,7 @@ class RecordingController extends Notifier<RecordingState> {
 
     final permissions = ref.read(runtimePermissionProvider);
     final batteryModeFuture = ref.read(batteryModeProvider.future);
-    state = state.copyWith(
-      hasRecoveredDraft: false,
-      clearError: true,
-    );
+    state = state.copyWith(hasRecoveredDraft: false, clearError: true);
 
     try {
       await permissions.prepareRecording();
@@ -327,10 +358,7 @@ class RecordingController extends Notifier<RecordingState> {
         if (!ref.mounted) {
           return;
         }
-        state = state.copyWith(
-          snapshot: snapshot,
-          clearError: true,
-        );
+        state = state.copyWith(snapshot: snapshot, clearError: true);
         _scheduleAutosave(snapshot);
       },
       onError: (Object error, StackTrace stackTrace) {
@@ -364,10 +392,7 @@ class RecordingController extends Notifier<RecordingState> {
     _lastPersistedPointCount = snapshot.points.length;
     _lastPersistedStatus = snapshot.status;
 
-    _queuePersist(
-      activityId: activityId,
-      snapshot: snapshot,
-    );
+    _queuePersist(activityId: activityId, snapshot: snapshot);
   }
 
   Future<void> _flushAutosave() async {
@@ -377,10 +402,7 @@ class RecordingController extends Notifier<RecordingState> {
     }
 
     final snapshot = state.snapshot;
-    _queuePersist(
-      activityId: activityId,
-      snapshot: snapshot,
-    );
+    _queuePersist(activityId: activityId, snapshot: snapshot);
     await _persistChain;
   }
 

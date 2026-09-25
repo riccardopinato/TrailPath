@@ -41,9 +41,7 @@ final elevationEngineProvider = Provider<ElevationEngine>((ref) {
   );
 });
 
-final gpxServiceProvider = Provider<GpxService>(
-  (ref) => const XmlGpxService(),
-);
+final gpxServiceProvider = Provider<GpxService>((ref) => const XmlGpxService());
 
 final runtimePermissionProvider = Provider<RuntimePermissionService>(
   (ref) => const RuntimePermissionService(),

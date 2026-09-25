@@ -22,9 +22,7 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
   }
 
   Future<List<OfflineRegion>> _loadRegions() async {
-    await ref
-        .read(offlineDownloadsProvider.notifier)
-        .reconcileNativeState();
+    await ref.read(offlineDownloadsProvider.notifier).reconcileNativeState();
     final regions = ref
         .read(offlineDownloadsProvider)
         .snapshots
@@ -77,9 +75,8 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
     final strings = AppLocalizations.of(context);
     await ref.read(offlineMapManagerProvider).clearCache();
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(strings.cacheCleared)),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(strings.cacheCleared)));
     }
   }
 
@@ -211,10 +208,7 @@ class _StorageCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.sd_storage_outlined,
-            color: scheme.onPrimaryContainer,
-          ),
+          Icon(Icons.sd_storage_outlined, color: scheme.onPrimaryContainer),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -239,10 +233,7 @@ class _StorageCard extends StatelessWidget {
               ],
             ),
           ),
-          TextButton(
-            onPressed: onClear,
-            child: Text(clearLabel),
-          ),
+          TextButton(onPressed: onClear, child: Text(clearLabel)),
         ],
       ),
     );

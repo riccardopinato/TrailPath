@@ -97,14 +97,14 @@ class ElevationProfile {
   });
 
   const ElevationProfile.unavailable()
-      : points = const [],
-        samples = const [],
-        ascentMeters = 0,
-        descentMeters = 0,
-        minElevationMeters = 0,
-        maxElevationMeters = 0,
-        isAvailable = false,
-        source = 'unavailable';
+    : points = const [],
+      samples = const [],
+      ascentMeters = 0,
+      descentMeters = 0,
+      minElevationMeters = 0,
+      maxElevationMeters = 0,
+      isAvailable = false,
+      source = 'unavailable';
 
   final List<GeoPoint> points;
   final List<ElevationSample> samples;
@@ -281,7 +281,6 @@ class SafetySnapshot {
   final bool isPowerSaveMode;
 }
 
-
 class RoutingException implements Exception {
   const RoutingException(this.message);
 
@@ -290,7 +289,6 @@ class RoutingException implements Exception {
   @override
   String toString() => 'RoutingException: $message';
 }
-
 
 class ElevationException implements Exception {
   const ElevationException(this.message);

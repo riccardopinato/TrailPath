@@ -15,7 +15,10 @@ void main() {
     final performance = batteryModePolicy(BatteryMode.performance);
     final saver = batteryModePolicy(BatteryMode.saver);
 
-    expect(saver.distanceFilterMeters, greaterThan(performance.distanceFilterMeters));
+    expect(
+      saver.distanceFilterMeters,
+      greaterThan(performance.distanceFilterMeters),
+    );
     expect(saver.interval, greaterThan(performance.interval));
     expect(saver.keepCpuAwake, isFalse);
     expect(

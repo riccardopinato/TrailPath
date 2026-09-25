@@ -33,21 +33,9 @@ void main() {
       const TrackRecorderSnapshot(
         status: TrackRecorderStatus.recording,
         points: [
-          GeoPoint(
-            latitude: 45,
-            longitude: 11,
-            elevationMeters: 100,
-          ),
-          GeoPoint(
-            latitude: 45.001,
-            longitude: 11.001,
-            elevationMeters: 110,
-          ),
-          GeoPoint(
-            latitude: 45.002,
-            longitude: 11.002,
-            elevationMeters: 112,
-          ),
+          GeoPoint(latitude: 45, longitude: 11, elevationMeters: 100),
+          GeoPoint(latitude: 45.001, longitude: 11.001, elevationMeters: 110),
+          GeoPoint(latitude: 45.002, longitude: 11.002, elevationMeters: 112),
         ],
         distanceMeters: 140,
         ascentMeters: 10,
@@ -60,6 +48,12 @@ void main() {
     expect(draft, isNotNull);
     expect(draft!.distanceMeters, 140);
     expect(draft.ascentMeters, 10);
+
+    await controller.pause();
+    final pausedDraft = await database.latestRecoverableActivity();
+    expect(pausedDraft, isNotNull);
+    expect(pausedDraft!.isPaused, isTrue);
+    expect(pausedDraft.distanceMeters, 140);
 
     final saved = await controller.finish('Morning trail');
     expect(saved, isTrue);

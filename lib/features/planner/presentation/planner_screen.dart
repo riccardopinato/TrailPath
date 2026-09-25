@@ -220,10 +220,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     setState(() => _searchBusy = true);
     try {
       final languageCode = Localizations.localeOf(context).languageCode;
-      final results = await ref.read(placeSearchServiceProvider).search(
-            query,
-            languageCode: languageCode,
-          );
+      final results = await ref
+          .read(placeSearchServiceProvider)
+          .search(query, languageCode: languageCode);
 
       if (!mounted) {
         return;
@@ -262,7 +261,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     child: ListView.separated(
                       shrinkWrap: true,
                       itemCount: results.length,
-                      separatorBuilder: (context, index) => const Divider(height: 1),
+                      separatorBuilder: (context, index) =>
+                          const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final result = results[index];
                         return ListTile(
@@ -335,7 +335,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     if (_selectedWaypointIndex != null && mounted) {
       setState(() => _selectedWaypointIndex = null);
     }
-    ref.read(routePlannerProvider.notifier).addPoint(
+    ref
+        .read(routePlannerProvider.notifier)
+        .addPoint(
           GeoPoint(
             latitude: coordinates.latitude,
             longitude: coordinates.longitude,
@@ -355,8 +357,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       final controller = _mapController;
       if (controller != null) {
         try {
-          final metersPerPixel =
-              await controller.getMetersPerPixelAtLatitude(candidate.latitude);
+          final metersPerPixel = await controller.getMetersPerPixelAtLatitude(
+            candidate.latitude,
+          );
           toleranceMeters = (metersPerPixel * 28).clamp(12.0, 80.0).toDouble();
         } on Object {
           // Keep the conservative geographic fallback when projection data is
@@ -372,7 +375,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       if (distance > toleranceMeters) {
         unawaited(HapticFeedback.warningNotification());
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).routePressTooFar)),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).routePressTooFar),
+          ),
         );
         return;
       }
@@ -435,10 +440,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       return;
     }
     setState(() {
-      _traceScreenPoints = [
-        ..._traceScreenPoints,
-        event.localPosition,
-      ];
+      _traceScreenPoints = [..._traceScreenPoints, event.localPosition];
     });
   }
 
@@ -447,8 +449,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       return;
     }
     final points = List<Offset>.of(_traceScreenPoints);
-    if (points.isEmpty ||
-        (event.localPosition - points.last).distance >= 2) {
+    if (points.isEmpty || (event.localPosition - points.last).distance >= 2) {
       points.add(event.localPosition);
     }
     _tracePointerId = null;
@@ -502,8 +503,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         return;
       }
 
-      final accepted =
-          ref.read(routePlannerProvider.notifier).addTrace(geoPoints);
+      final accepted = ref
+          .read(routePlannerProvider.notifier)
+          .addTrace(geoPoints);
       if (!accepted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context).traceTooShort)),
@@ -593,8 +595,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     final index = rawIndex is int
         ? rawIndex
         : rawIndex is num
-            ? rawIndex.toInt()
-            : null;
+        ? rawIndex.toInt()
+        : null;
     if (index == null) {
       return;
     }
@@ -639,8 +641,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     final index = rawIndex is int
         ? rawIndex
         : rawIndex is num
-            ? rawIndex.toInt()
-            : null;
+        ? rawIndex.toInt()
+        : null;
     if (index == null) {
       return;
     }
@@ -679,12 +681,11 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           _selectedWaypointIndex = insertedIndex;
         });
       }
-      ref.read(routePlannerProvider.notifier).insertPointAt(
+      ref
+          .read(routePlannerProvider.notifier)
+          .insertPointAt(
             insertedIndex,
-            GeoPoint(
-              latitude: current.latitude,
-              longitude: current.longitude,
-            ),
+            GeoPoint(latitude: current.latitude, longitude: current.longitude),
           );
       return;
     }
@@ -696,12 +697,11 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         _routeSelected = true;
       });
     }
-    ref.read(routePlannerProvider.notifier).movePoint(
+    ref
+        .read(routePlannerProvider.notifier)
+        .movePoint(
           index,
-          GeoPoint(
-            latitude: current.latitude,
-            longitude: current.longitude,
-          ),
+          GeoPoint(latitude: current.latitude, longitude: current.longitude),
         );
   }
 
@@ -755,10 +755,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       return;
     }
 
-    _dragPreviewLine = await controller.addLine(
-      options,
-      <String, dynamic>{'kind': 'dragPreview'},
-    );
+    _dragPreviewLine = await controller.addLine(options, <String, dynamic>{
+      'kind': 'dragPreview',
+    });
   }
 
   Future<void> _clearDragPreview() async {
@@ -772,8 +771,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }
   }
 
-  LatLng _latLng(GeoPoint point) =>
-      LatLng(point.latitude, point.longitude);
+  LatLng _latLng(GeoPoint point) => LatLng(point.latitude, point.longitude);
 
   Future<void> _importGpx() async {
     final strings = AppLocalizations.of(context);
@@ -802,15 +800,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       await _syncPlannerAnnotations();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(strings.gpxImported)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(strings.gpxImported)));
       }
     } on Object {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(strings.gpxImportError)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(strings.gpxImportError)));
       }
     }
   }
@@ -827,8 +823,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       final name = planner.importedName?.trim().isNotEmpty == true
           ? planner.importedName!.trim()
           : 'TrailPath route';
-      final document =
-          ref.read(routePlannerProvider.notifier).exportGpx(name);
+      final document = ref.read(routePlannerProvider.notifier).exportGpx(name);
       final xml = await ref.read(gpxServiceProvider).export(document);
       final fileName = _safeGpxFileName(name);
 
@@ -849,9 +844,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       );
     } on Object {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(strings.gpxExportError)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(strings.gpxExportError)));
       }
     }
   }
@@ -889,8 +883,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       toleranceMeters: 1.5,
       maxPoints: 2200,
     );
-    final routeGeometry =
-        displayGeometry.map(_latLng).toList(growable: false);
+    final routeGeometry = displayGeometry.map(_latLng).toList(growable: false);
     final waypoints = planner.points.map(_latLng).toList(growable: false);
 
     final routeOptions = routeGeometry.length >= 2
@@ -912,27 +905,26 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           ]
         : const <LineOptions>[];
 
-    final routeLinesCurrent = _routeLines.length == routeOptions.length &&
+    final routeLinesCurrent =
+        _routeLines.length == routeOptions.length &&
         _routeLines.every(controller.lines.contains);
     if (routeLinesCurrent) {
       for (var index = 0; index < _routeLines.length; index++) {
         await controller.updateLine(_routeLines[index], routeOptions[index]);
       }
     } else {
-      final stale =
-          _routeLines.where(controller.lines.contains).toList(growable: false);
+      final stale = _routeLines
+          .where(controller.lines.contains)
+          .toList(growable: false);
       if (stale.isNotEmpty) {
         await controller.removeLines(stale);
       }
       _routeLines = routeOptions.isEmpty
           ? const []
-          : await controller.addLines(
-              routeOptions,
-              const [
-                <String, dynamic>{'kind': 'route', 'role': 'casing'},
-                <String, dynamic>{'kind': 'route', 'role': 'route'},
-              ],
-            );
+          : await controller.addLines(routeOptions, const [
+              <String, dynamic>{'kind': 'route', 'role': 'casing'},
+              <String, dynamic>{'kind': 'route', 'role': 'route'},
+            ]);
     }
 
     final waypointOptions = <CircleOptions>[
@@ -942,24 +934,25 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           circleRadius: _selectedWaypointIndex == index
               ? 9
               : index == 0 || index == waypoints.length - 1
-                  ? 7
-                  : 5.5,
+              ? 7
+              : 5.5,
           circleColor: _selectedWaypointIndex == index
               ? '#1976D2'
               : index == 0
-                  ? '#205B38'
-                  : index == waypoints.length - 1
-                      ? '#E86A45'
-                      : '#FFFFFF',
-          circleStrokeColor:
-              _selectedWaypointIndex == index ? '#FFFFFF' : '#2F6F45',
+              ? '#205B38'
+              : index == waypoints.length - 1
+              ? '#E86A45'
+              : '#FFFFFF',
+          circleStrokeColor: _selectedWaypointIndex == index
+              ? '#FFFFFF'
+              : '#2F6F45',
           circleStrokeWidth: _selectedWaypointIndex == index ? 3.5 : 2.5,
           draggable: true,
         ),
     ];
     final waypointCirclesCurrent =
         _waypointCircles.length == waypointOptions.length &&
-            _waypointCircles.every(controller.circles.contains);
+        _waypointCircles.every(controller.circles.contains);
     if (waypointCirclesCurrent) {
       for (var index = 0; index < _waypointCircles.length; index++) {
         await controller.updateCircle(
@@ -976,21 +969,17 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       }
       _waypointCircles = waypointOptions.isEmpty
           ? const []
-          : await controller.addCircles(
-              waypointOptions,
-              [
-                for (var index = 0; index < waypointOptions.length; index++)
-                  <String, dynamic>{
-                    'kind': 'waypoint',
-                    'waypointIndex': index,
-                  },
-              ],
-            );
+          : await controller.addCircles(waypointOptions, [
+              for (var index = 0; index < waypointOptions.length; index++)
+                <String, dynamic>{'kind': 'waypoint', 'waypointIndex': index},
+            ]);
     }
 
-    final editHandles =
-        planner.editHandles.map(_latLng).toList(growable: false);
-    final showHandles = _routeSelected &&
+    final editHandles = planner.editHandles
+        .map(_latLng)
+        .toList(growable: false);
+    final showHandles =
+        _routeSelected &&
         !_draggingFeature &&
         !planner.isRouting &&
         planner.isSnapped &&
@@ -1010,7 +999,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         : const <CircleOptions>[];
     final midpointCirclesCurrent =
         _midpointCircles.length == midpointOptions.length &&
-            _midpointCircles.every(controller.circles.contains);
+        _midpointCircles.every(controller.circles.contains);
     if (midpointCirclesCurrent) {
       for (var index = 0; index < _midpointCircles.length; index++) {
         await controller.updateCircle(
@@ -1027,16 +1016,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       }
       _midpointCircles = midpointOptions.isEmpty
           ? const []
-          : await controller.addCircles(
-              midpointOptions,
-              [
-                for (var index = 0; index < midpointOptions.length; index++)
-                  <String, dynamic>{
-                    'kind': 'midpoint',
-                    'legIndex': index,
-                  },
-              ],
-            );
+          : await controller.addCircles(midpointOptions, [
+              for (var index = 0; index < midpointOptions.length; index++)
+                <String, dynamic>{'kind': 'midpoint', 'legIndex': index},
+            ]);
     }
 
     final searchResult = _searchResult;
@@ -1059,10 +1042,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       if (current != null && controller.circles.contains(current)) {
         await controller.updateCircle(current, options);
       } else {
-        _searchCircle = await controller.addCircle(
-          options,
-          <String, dynamic>{'kind': 'search'},
-        );
+        _searchCircle = await controller.addCircle(options, <String, dynamic>{
+          'kind': 'search',
+        });
       }
     }
   }
@@ -1113,17 +1095,17 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }
 
     await database.savePlannedRoute(
-          name: name.trim(),
-          profile: planner.profile.name,
-          waypointsData: planner.points,
-          geometryData: planner.elevationProfile.isAvailable
-              ? planner.elevationProfile.points
-              : planner.geometry,
-          distanceMeters: planner.distanceMeters,
-          ascentMeters: planner.ascentMeters,
-          descentMeters: planner.descentMeters,
-          estimatedDuration: planner.estimatedDuration,
-        );
+      name: name.trim(),
+      profile: planner.profile.name,
+      waypointsData: planner.points,
+      geometryData: planner.elevationProfile.isAvailable
+          ? planner.elevationProfile.points
+          : planner.geometry,
+      distanceMeters: planner.distanceMeters,
+      ascentMeters: planner.ascentMeters,
+      descentMeters: planner.descentMeters,
+      estimatedDuration: planner.estimatedDuration,
+    );
 
     if (!mounted) {
       return;
@@ -1132,9 +1114,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     await _syncPlannerAnnotations();
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(strings.routeSaved)),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(strings.routeSaved)));
     }
   }
 
@@ -1144,15 +1125,12 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final planner = ref.watch(routePlannerProvider);
 
-    ref.listen<RoutePlannerState>(
-      routePlannerProvider,
-      (previous, next) {
-        if (previous?.geometry != next.geometry ||
-            previous?.isRouting != next.isRouting) {
-          unawaited(_syncPlannerAnnotations());
-        }
-      },
-    );
+    ref.listen<RoutePlannerState>(routePlannerProvider, (previous, next) {
+      if (previous?.geometry != next.geometry ||
+          previous?.isRouting != next.isRouting) {
+        unawaited(_syncPlannerAnnotations());
+      }
+    });
 
     return Stack(
       children: [
@@ -1357,8 +1335,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     message: !_locationServiceEnabled
                         ? strings.locationServiceOff
                         : _locationError != null
-                            ? strings.locationUnavailable
-                            : strings.locationPermissionNeeded,
+                        ? strings.locationUnavailable
+                        : strings.locationPermissionNeeded,
                     dark: dark,
                     onTap: _resolveLocationIssue,
                   ),
@@ -1368,8 +1346,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     message: _traceProcessing
                         ? strings.traceProcessing
                         : _traceDrawing
-                            ? strings.traceDrawing
-                            : strings.traceHint,
+                        ? strings.traceDrawing
+                        : strings.traceHint,
                     dark: dark,
                     busy: _traceProcessing,
                   ),
@@ -1397,8 +1375,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
               selectedWaypointIndex: _selectedWaypointIndex,
               routeSelected: _routeSelected,
               draggingFeature: _draggingFeature,
-              onRemoveWaypoint:
-                  _selectedWaypointIndex == null ? null : _removeSelectedWaypoint,
+              onRemoveWaypoint: _selectedWaypointIndex == null
+                  ? null
+                  : _removeSelectedWaypoint,
               onClear: planner.points.isEmpty ? null : _clearRoute,
               onImport: _importGpx,
               onShare: planner.canSave ? _shareCurrentGpx : null,
@@ -1483,16 +1462,13 @@ class _PlannerCard extends StatelessWidget {
               ),
               const SizedBox(width: 9),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 9,
-                  vertical: 5,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                 decoration: BoxDecoration(
                   color: scheme.primaryContainer,
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'v0.9.7',
+                  'v${MapConfig.appVersion}',
                   style: TextStyle(
                     color: scheme.onPrimaryContainer,
                     fontSize: 11,
@@ -1504,7 +1480,9 @@ class _PlannerCard extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            planner.points.isEmpty ? strings.tapMapHint : strings.tapMapContinue,
+            planner.points.isEmpty
+                ? strings.tapMapHint
+                : strings.tapMapContinue,
             style: TextStyle(
               color: scheme.onSurfaceVariant,
               fontWeight: FontWeight.w500,
@@ -1515,9 +1493,13 @@ class _PlannerCard extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  routeSelected ? Icons.edit_road_rounded : Icons.gesture_rounded,
+                  routeSelected
+                      ? Icons.edit_road_rounded
+                      : Icons.gesture_rounded,
                   size: 15,
-                  color: routeSelected ? scheme.primary : scheme.onSurfaceVariant,
+                  color: routeSelected
+                      ? scheme.primary
+                      : scheme.onSurfaceVariant,
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -1525,10 +1507,12 @@ class _PlannerCard extends StatelessWidget {
                     draggingFeature
                         ? strings.routeDragActive
                         : routeSelected
-                            ? strings.routeEditActive
-                            : strings.routeEditHint,
+                        ? strings.routeEditActive
+                        : strings.routeEditHint,
                     style: TextStyle(
-                      color: routeSelected ? scheme.primary : scheme.onSurfaceVariant,
+                      color: routeSelected
+                          ? scheme.primary
+                          : scheme.onSurfaceVariant,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                     ),
@@ -1615,16 +1599,10 @@ class _PlannerCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          _RoutingStatus(
-            strings: strings,
-            planner: planner,
-          ),
+          _RoutingStatus(strings: strings, planner: planner),
           if (planner.points.length >= 2) ...[
             const SizedBox(height: 12),
-            _ElevationPanel(
-              strings: strings,
-              planner: planner,
-            ),
+            _ElevationPanel(strings: strings, planner: planner),
           ],
           const SizedBox(height: 10),
           Row(
@@ -1742,10 +1720,7 @@ String _formatDuration(Duration duration) {
 }
 
 class _ElevationPanel extends StatefulWidget {
-  const _ElevationPanel({
-    required this.strings,
-    required this.planner,
-  });
+  const _ElevationPanel({required this.strings, required this.planner});
 
   final AppLocalizations strings;
   final RoutePlannerState planner;
@@ -1889,8 +1864,9 @@ class _ElevationPanelState extends State<_ElevationPanel> {
                       selectedIndex: _selectedIndex,
                       lineColor: scheme.primary,
                       fillColor: scheme.primary.withValues(alpha: 0.14),
-                      guideColor:
-                          scheme.onSurfaceVariant.withValues(alpha: 0.35),
+                      guideColor: scheme.onSurfaceVariant.withValues(
+                        alpha: 0.35,
+                      ),
                     ),
                   ),
                 ),
@@ -1902,8 +1878,7 @@ class _ElevationPanelState extends State<_ElevationPanel> {
             children: [
               _ElevationValue(
                 label: widget.strings.elevation,
-                value:
-                    '${selected.point.elevationMeters?.round() ?? 0} m',
+                value: '${selected.point.elevationMeters?.round() ?? 0} m',
               ),
               const SizedBox(width: 16),
               _ElevationValue(
@@ -1925,10 +1900,7 @@ class _ElevationPanelState extends State<_ElevationPanel> {
 }
 
 class _ElevationValue extends StatelessWidget {
-  const _ElevationValue({
-    required this.label,
-    required this.value,
-  });
+  const _ElevationValue({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -1955,10 +1927,7 @@ class _ElevationValue extends StatelessWidget {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-            ),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
           ),
         ],
       ),
@@ -1989,10 +1958,9 @@ class _ElevationProfilePainter extends CustomPainter {
     }
 
     final minElevation = profile.minElevationMeters;
-    final elevationSpan =
-        (profile.maxElevationMeters - minElevation).abs() < 1
-            ? 1.0
-            : profile.maxElevationMeters - minElevation;
+    final elevationSpan = (profile.maxElevationMeters - minElevation).abs() < 1
+        ? 1.0
+        : profile.maxElevationMeters - minElevation;
     final totalDistance = samples.last.distanceMeters <= 0
         ? 1.0
         : samples.last.distanceMeters;
@@ -2045,11 +2013,7 @@ class _ElevationProfilePainter extends CustomPainter {
           ..color = guideColor
           ..strokeWidth = 1,
       );
-      canvas.drawCircle(
-        selectedPoint,
-        4.5,
-        Paint()..color = lineColor,
-      );
+      canvas.drawCircle(selectedPoint, 4.5, Paint()..color = lineColor);
     }
   }
 
@@ -2064,10 +2028,7 @@ class _ElevationProfilePainter extends CustomPainter {
 }
 
 class _RoutingStatus extends StatelessWidget {
-  const _RoutingStatus({
-    required this.strings,
-    required this.planner,
-  });
+  const _RoutingStatus({required this.strings, required this.planner});
 
   final AppLocalizations strings;
   final RoutePlannerState planner;
@@ -2079,12 +2040,12 @@ class _RoutingStatus extends StatelessWidget {
     final (icon, label) = planner.points.length < 2
         ? (Icons.alt_route_rounded, strings.routingReady)
         : planner.isRouting
-            ? (Icons.sync_rounded, strings.routingCalculating)
-            : planner.hasRoutingError
-                ? (Icons.cloud_off_rounded, strings.routeUnavailable)
-                : planner.isSnapped
-                    ? (Icons.route_rounded, strings.routeSnapped)
-                    : (Icons.alt_route_rounded, strings.routeLocalFallback);
+        ? (Icons.sync_rounded, strings.routingCalculating)
+        : planner.hasRoutingError
+        ? (Icons.cloud_off_rounded, strings.routeUnavailable)
+        : planner.isSnapped
+        ? (Icons.route_rounded, strings.routeSnapped)
+        : (Icons.alt_route_rounded, strings.routeLocalFallback);
 
     return Row(
       children: [
@@ -2164,8 +2125,8 @@ class _MapActionButton extends StatelessWidget {
         color: active
             ? Theme.of(context).colorScheme.primaryContainer
             : dark
-                ? const Color(0xD91A241E)
-                : const Color(0xEFFFFFFF),
+            ? const Color(0xD91A241E)
+            : const Color(0xEFFFFFFF),
         shape: const CircleBorder(),
         child: InkWell(
           customBorder: const CircleBorder(),
@@ -2211,9 +2172,7 @@ class _TraceStatusChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: dark ? const Color(0xE6222A24) : const Color(0xF7FFFFFF),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: scheme.primary.withValues(alpha: 0.32),
-          ),
+          border: Border.all(color: scheme.primary.withValues(alpha: 0.32)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -2290,10 +2249,7 @@ class _LocationStatusChip extends StatelessWidget {
 }
 
 class _TracePainter extends CustomPainter {
-  const _TracePainter({
-    required this.points,
-    required this.color,
-  });
+  const _TracePainter({required this.points, required this.color});
 
   final List<Offset> points;
   final Color color;
@@ -2347,7 +2303,6 @@ class _MapTestFallback extends StatelessWidget {
     );
   }
 }
-
 
 String _safeGpxFileName(String name) {
   final cleaned = name

@@ -7,64 +7,69 @@ import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/infrastructure/routing/openstreetmap_routing_engine.dart';
 
 void main() {
-  test('retries transient server errors and then returns snapped route',
-      () async {
-    var requests = 0;
-    final client = MockClient((request) async {
-      requests++;
-      if (requests == 1) {
-        return http.Response('busy', 503);
-      }
-      return http.Response(
-        jsonEncode(_successPayload()),
-        200,
-        headers: {'content-type': 'application/json'},
-      );
-    });
-    final engine = OpenStreetMapRoutingEngine(
-      client: client,
-      maxRetries: 2,
-      retryBaseDelay: Duration.zero,
-      delay: (_) async {},
-    );
-    addTearDown(engine.dispose);
-
-    final plan = await engine.calculate(_request());
-
-    expect(requests, 2);
-    expect(plan.isSnapped, isTrue);
-    expect(plan.geometry, hasLength(3));
-    expect(plan.snappedWaypoints, hasLength(2));
-    expect(plan.distanceMeters, 1250);
-  });
-
-  test('honors numeric Retry-After for rate limiting before retrying', () async {
-    var requests = 0;
-    final delays = <Duration>[];
-    final client = MockClient((request) async {
-      requests++;
-      if (requests == 1) {
+  test(
+    'retries transient server errors and then returns snapped route',
+    () async {
+      var requests = 0;
+      final client = MockClient((request) async {
+        requests++;
+        if (requests == 1) {
+          return http.Response('busy', 503);
+        }
         return http.Response(
-          'rate limited',
-          429,
-          headers: {'retry-after': '2'},
+          jsonEncode(_successPayload()),
+          200,
+          headers: {'content-type': 'application/json'},
         );
-      }
-      return http.Response(jsonEncode(_successPayload()), 200);
-    });
-    final engine = OpenStreetMapRoutingEngine(
-      client: client,
-      maxRetries: 1,
-      maxRetryDelay: const Duration(seconds: 4),
-      delay: (duration) async => delays.add(duration),
-    );
-    addTearDown(engine.dispose);
+      });
+      final engine = OpenStreetMapRoutingEngine(
+        client: client,
+        maxRetries: 2,
+        retryBaseDelay: Duration.zero,
+        delay: (_) async {},
+      );
+      addTearDown(engine.dispose);
 
-    await engine.calculate(_request());
+      final plan = await engine.calculate(_request());
 
-    expect(requests, 2);
-    expect(delays, [const Duration(seconds: 2)]);
-  });
+      expect(requests, 2);
+      expect(plan.isSnapped, isTrue);
+      expect(plan.geometry, hasLength(3));
+      expect(plan.snappedWaypoints, hasLength(2));
+      expect(plan.distanceMeters, 1250);
+    },
+  );
+
+  test(
+    'honors numeric Retry-After for rate limiting before retrying',
+    () async {
+      var requests = 0;
+      final delays = <Duration>[];
+      final client = MockClient((request) async {
+        requests++;
+        if (requests == 1) {
+          return http.Response(
+            'rate limited',
+            429,
+            headers: {'retry-after': '2'},
+          );
+        }
+        return http.Response(jsonEncode(_successPayload()), 200);
+      });
+      final engine = OpenStreetMapRoutingEngine(
+        client: client,
+        maxRetries: 1,
+        maxRetryDelay: const Duration(seconds: 4),
+        delay: (duration) async => delays.add(duration),
+      );
+      addTearDown(engine.dispose);
+
+      await engine.calculate(_request());
+
+      expect(requests, 2);
+      expect(delays, [const Duration(seconds: 2)]);
+    },
+  );
 
   test('honors HTTP-date Retry-After before retrying', () async {
     var requests = 0;

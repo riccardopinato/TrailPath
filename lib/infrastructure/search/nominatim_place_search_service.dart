@@ -13,17 +13,24 @@ class NominatimPlaceSearchService implements PlaceSearchService {
     http.Client? client,
     this.timeout = const Duration(seconds: 10),
     this.minimumRequestGap = const Duration(seconds: 1),
+    this.maxRetries = 2,
+    this.retryBaseDelay = const Duration(milliseconds: 500),
+    this.maxRetryDelay = const Duration(seconds: 5),
     NetworkDelay? delay,
     NetworkClock? clock,
-  })  : _client = client ?? http.Client(),
-        _delay = delay ?? defaultNetworkDelay,
-        _clock = clock ?? DateTime.now;
+  }) : assert(maxRetries >= 0),
+       _client = client ?? http.Client(),
+       _delay = delay ?? defaultNetworkDelay,
+       _clock = clock ?? DateTime.now;
 
   final http.Client _client;
   final NetworkDelay _delay;
   final NetworkClock _clock;
   final Duration timeout;
   final Duration minimumRequestGap;
+  final int maxRetries;
+  final Duration retryBaseDelay;
+  final Duration maxRetryDelay;
   final Map<String, List<PlaceSearchResult>> _cache = {};
   Future<void> _requestTail = Future<void>.value();
   DateTime? _lastRequestAt;
@@ -68,23 +75,7 @@ class NominatimPlaceSearchService implements PlaceSearchService {
         },
       );
 
-      final response = await _client
-          .get(
-            uri,
-            headers: {
-              'Accept': 'application/json',
-              if (!kIsWeb) 'User-Agent': MapConfig.userAgent,
-              if (languageCode != null && languageCode.isNotEmpty)
-                'Accept-Language': languageCode,
-            },
-          )
-          .timeout(timeout);
-
-      if (response.statusCode != 200) {
-        throw PlaceSearchException(
-          'Search service returned HTTP ${response.statusCode}.',
-        );
-      }
+      final response = await _request(uri, languageCode: languageCode);
 
       final results = decodeNominatimSearchResults(response.body);
       _cache[cacheKey] = results;
@@ -103,6 +94,74 @@ class NominatimPlaceSearchService implements PlaceSearchService {
     } finally {
       gate.complete();
     }
+  }
+
+  Future<http.Response> _request(Uri uri, {String? languageCode}) async {
+    Object? lastNetworkError;
+
+    for (var attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        final response = await _client
+            .get(
+              uri,
+              headers: {
+                'Accept': 'application/json',
+                if (!kIsWeb) 'User-Agent': MapConfig.userAgent,
+                if (languageCode != null && languageCode.isNotEmpty)
+                  'Accept-Language': languageCode,
+              },
+            )
+            .timeout(timeout);
+
+        if (response.statusCode == 200) {
+          return response;
+        }
+
+        if (!isTransientHttpStatus(response.statusCode) ||
+            attempt == maxRetries) {
+          throw PlaceSearchException(
+            'Search service returned HTTP ${response.statusCode}.',
+          );
+        }
+
+        await _delay(_retryDelay(response, attempt));
+      } on TimeoutException catch (error) {
+        lastNetworkError = error;
+        if (attempt == maxRetries) {
+          throw PlaceSearchException(
+            'Search service timed out after ${maxRetries + 1} attempts.',
+          );
+        }
+        await _delay(_retryDelay(null, attempt));
+      } on http.ClientException catch (error) {
+        lastNetworkError = error;
+        if (attempt == maxRetries) {
+          throw PlaceSearchException(
+            'Search network request failed after ${maxRetries + 1} attempts: '
+            '${error.message}',
+          );
+        }
+        await _delay(_retryDelay(null, attempt));
+      }
+    }
+
+    throw PlaceSearchException('Search request failed: $lastNetworkError');
+  }
+
+  Duration _retryDelay(http.Response? response, int attempt) {
+    final retryAfter = retryAfterDelay(
+      response?.headers['retry-after'],
+      now: _clock(),
+      maxDelay: maxRetryDelay,
+    );
+    final computed =
+        retryAfter ??
+        exponentialBackoff(
+          attempt: attempt,
+          baseDelay: retryBaseDelay,
+          maxDelay: maxRetryDelay,
+        );
+    return computed < minimumRequestGap ? minimumRequestGap : computed;
   }
 
   Future<void> _respectRateLimit() async {
@@ -152,10 +211,7 @@ List<PlaceSearchResult> decodeNominatimSearchResults(String body) {
       PlaceSearchResult(
         name: name.isEmpty ? displayName : name,
         displayName: displayName,
-        point: GeoPoint(
-          latitude: latitude,
-          longitude: longitude,
-        ),
+        point: GeoPoint(latitude: latitude, longitude: longitude),
       ),
     );
   }

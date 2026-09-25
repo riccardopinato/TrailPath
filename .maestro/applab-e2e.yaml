@@ -1,0 +1,148 @@
+# TrailPath v0.9.13 release E2E gate.
+# Covers native release startup, recording/recovery, route persistence,
+# real OSM routing, navigation startup and offline download initiation.
+appId: com.riccardopinato.trail_path
+---
+- launchApp:
+    clearState: true
+
+- assertVisible: "Search place or trail"
+
+# Recording lifecycle + process recovery.
+- tapOn:
+    text: 'Record\s*Tab 2 of 5'
+- assertVisible: "Start recording"
+- setLocation:
+    latitude: 45.232000
+    longitude: 11.750000
+- tapOn: "Start recording"
+- extendedWaitUntil:
+    visible: "Pause"
+    timeout: 15000
+- setLocation:
+    latitude: 45.232090
+    longitude: 11.750000
+- waitForAnimationToEnd
+- setLocation:
+    latitude: 45.232180
+    longitude: 11.750000
+- waitForAnimationToEnd
+- tapOn: "Pause"
+- assertVisible: "Resume"
+
+# Kill the process while the draft is recoverable and verify persistence.
+- stopApp
+- launchApp:
+    clearState: false
+- tapOn:
+    text: 'Record\s*Tab 2 of 5'
+- extendedWaitUntil:
+    visible: "Recovered recording"
+    timeout: 15000
+- tapOn: "Resume"
+- setLocation:
+    latitude: 45.232270
+    longitude: 11.750000
+- waitForAnimationToEnd
+- setLocation:
+    latitude: 45.232360
+    longitude: 11.750000
+- waitForAnimationToEnd
+- tapOn: "Finish"
+- assertVisible: "Activity name"
+- eraseText
+- inputText: "TrailPath E2E Activity"
+- tapOn: "Save"
+- extendedWaitUntil:
+    visible: "Activity saved"
+    timeout: 15000
+- extendedWaitUntil:
+    visible: "Start recording"
+    timeout: 15000
+
+# Persisted activity survives another process restart.
+- stopApp
+- launchApp:
+    clearState: false
+- tapOn:
+    text: 'Routes\s*Tab 3 of 5'
+- extendedWaitUntil:
+    visible:
+      text: 'TrailPath E2E Activity.*'
+    timeout: 20000
+- assertVisible:
+    text: 'TrailPath E2E Activity.*'
+
+# Planner: center on injected GPS, create a short real routed trail and save it.
+- tapOn:
+    text: 'Plan\s*Tab 1 of 5'
+- assertVisible: "Search place or trail"
+- tapOn: "Center on my location"
+- waitForAnimationToEnd
+- tapOn:
+    point: "43%,28%"
+- tapOn:
+    point: "57%,28%"
+- extendedWaitUntil:
+    visible: "Save route"
+    timeout: 60000
+- tapOn: "Save route"
+- assertVisible: "Route name"
+- inputText: "TrailPath E2E Route"
+- tapOn: "Save"
+- extendedWaitUntil:
+    visible: "Route saved"
+    timeout: 15000
+
+# Saved route can open real navigation on the release/R8 build.
+- tapOn:
+    text: 'Routes\s*Tab 3 of 5'
+- extendedWaitUntil:
+    visible:
+      text: '.*TrailPath E2E Route.*'
+    timeout: 15000
+- tapOn: "Navigate"
+- extendedWaitUntil:
+    visible:
+      text: '.*TrailPath E2E Route.*'
+    timeout: 20000
+- assertVisible: "Remaining"
+- assertVisible: "Progress"
+- pressKey: BACK
+- assertVisible:
+    text: '.*TrailPath E2E Route.*'
+
+# Complete a native MapLibre offline-region request for the saved short route.
+- tapOn: "Download map"
+- tapOn:
+    text: 'Offline\s*Tab 4 of 5'
+- extendedWaitUntil:
+    visible:
+      text: '.*TrailPath E2E Route.*'
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      text: '.*Available offline.*'
+    timeout: 120000
+
+# Native offline-region readiness must survive process restart.
+- stopApp
+- launchApp:
+    clearState: false
+- tapOn:
+    text: 'Offline\s*Tab 4 of 5'
+- extendedWaitUntil:
+    visible:
+      text: '.*TrailPath E2E Route.*'
+    timeout: 30000
+- assertVisible:
+    text: '.*Available offline.*'
+
+- tapOn:
+    text: 'Outdoor\s*Tab 5 of 5'
+- assertVisible: "Outdoor"
+- assertVisible: "Balanced"
+
+- tapOn:
+    text: 'Plan\s*Tab 1 of 5'
+- assertVisible: "Search place or trail"

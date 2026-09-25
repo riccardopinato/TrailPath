@@ -20,10 +20,7 @@ class RouteProjection {
       math.max(0, routeDistanceMeters - progressMeters);
 }
 
-RouteProjection projectPointOnRoute(
-  GeoPoint current,
-  List<GeoPoint> geometry,
-) {
+RouteProjection projectPointOnRoute(GeoPoint current, List<GeoPoint> geometry) {
   if (geometry.length < 2) {
     throw ArgumentError('Route geometry requires at least two points.');
   }
@@ -87,11 +84,7 @@ class _SegmentProjection {
   final double segmentLengthMeters;
 }
 
-_SegmentProjection _projectOnSegment(
-  GeoPoint current,
-  GeoPoint a,
-  GeoPoint b,
-) {
+_SegmentProjection _projectOnSegment(GeoPoint current, GeoPoint a, GeoPoint b) {
   const metersPerLatDegree = 111320.0;
   final referenceLat =
       (current.latitude + a.latitude + b.latitude) / 3 * math.pi / 180;

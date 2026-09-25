@@ -22,8 +22,8 @@ Duration exponentialBackoff({
   final boundedAttempt = attempt < 0
       ? 0
       : attempt > 8
-          ? 8
-          : attempt;
+      ? 8
+      : attempt;
   final multiplier = 1 << boundedAttempt;
   return capNetworkDelay(
     Duration(milliseconds: baseDelay.inMilliseconds * multiplier),

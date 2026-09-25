@@ -44,7 +44,9 @@ class RouteNavigationEngine implements NavigationEngine {
       throw StateError('Navigation engine has been disposed.');
     }
     if (route.geometry.length < 2) {
-      throw ArgumentError('Navigation requires a route with at least two points.');
+      throw ArgumentError(
+        'Navigation requires a route with at least two points.',
+      );
     }
 
     await stop();
@@ -56,8 +58,8 @@ class RouteNavigationEngine implements NavigationEngine {
     _isOffRoute = false;
     _arrived = false;
     _batteryMode = mode;
-    _maxAcceptedAccuracyMeters =
-        batteryModePolicy(mode).maxAcceptedAccuracyMeters;
+    _maxAcceptedAccuracyMeters = batteryModePolicy(mode)
+        .maxAcceptedAccuracyMeters;
 
     final enabled = await locationEngine.isServiceEnabled();
     if (!_isCurrent(session)) {
@@ -84,8 +86,8 @@ class RouteNavigationEngine implements NavigationEngine {
     if (!_controller.isClosed) {
       _controller.add(
         NavigationEvent(
-        type: NavigationEventType.started,
-        routeDistanceMeters: _routeDistance(route),
+          type: NavigationEventType.started,
+          routeDistanceMeters: _routeDistance(route),
           remainingMeters: _routeDistance(route),
         ),
       );
@@ -95,22 +97,19 @@ class RouteNavigationEngine implements NavigationEngine {
       return;
     }
     _subscription = locationEngine
-        .watch(
-          mode: mode,
-          keepAliveInBackground: true,
-        )
+        .watch(mode: mode, keepAliveInBackground: true)
         .listen(
-      (sample) {
-        if (_isCurrent(session)) {
-          _onPosition(sample);
-        }
-      },
-      onError: (Object error, StackTrace stackTrace) {
-        if (_isCurrent(session) && !_controller.isClosed) {
-          _controller.addError(error, stackTrace);
-        }
-      },
-    );
+          (sample) {
+            if (_isCurrent(session)) {
+              _onPosition(sample);
+            }
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            if (_isCurrent(session) && !_controller.isClosed) {
+              _controller.addError(error, stackTrace);
+            }
+          },
+        );
   }
 
   @override
@@ -120,8 +119,8 @@ class RouteNavigationEngine implements NavigationEngine {
     }
 
     _batteryMode = mode;
-    _maxAcceptedAccuracyMeters =
-        batteryModePolicy(mode).maxAcceptedAccuracyMeters;
+    _maxAcceptedAccuracyMeters = batteryModePolicy(mode)
+        .maxAcceptedAccuracyMeters;
 
     final previous = _batteryReconfigureChain;
     final next = () async {
@@ -152,22 +151,19 @@ class RouteNavigationEngine implements NavigationEngine {
 
     final mode = _batteryMode;
     _subscription = locationEngine
-        .watch(
-          mode: mode,
-          keepAliveInBackground: true,
-        )
+        .watch(mode: mode, keepAliveInBackground: true)
         .listen(
-      (sample) {
-        if (_isCurrent(session)) {
-          _onPosition(sample);
-        }
-      },
-      onError: (Object error, StackTrace stackTrace) {
-        if (_isCurrent(session) && !_controller.isClosed) {
-          _controller.addError(error, stackTrace);
-        }
-      },
-    );
+          (sample) {
+            if (_isCurrent(session)) {
+              _onPosition(sample);
+            }
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            if (_isCurrent(session) && !_controller.isClosed) {
+              _controller.addError(error, stackTrace);
+            }
+          },
+        );
   }
 
   void _onPosition(PositionSample sample) {
@@ -175,14 +171,12 @@ class RouteNavigationEngine implements NavigationEngine {
       return;
     }
     final route = _route;
-    if (route == null ||
-        sample.accuracyMeters > _maxAcceptedAccuracyMeters) {
+    if (route == null || sample.accuracyMeters > _maxAcceptedAccuracyMeters) {
       return;
     }
 
     final projection = projectPointOnRoute(sample.point, route.geometry);
-    final endpointDistance =
-        haversineMeters(sample.point, route.geometry.last);
+    final endpointDistance = haversineMeters(sample.point, route.geometry.last);
 
     var type = NavigationEventType.instruction;
 
@@ -240,9 +234,7 @@ class RouteNavigationEngine implements NavigationEngine {
     await subscription?.cancel();
 
     if (!_disposed && _route != null && !_controller.isClosed) {
-      _controller.add(
-        const NavigationEvent(type: NavigationEventType.stopped),
-      );
+      _controller.add(const NavigationEvent(type: NavigationEventType.stopped));
     }
     _route = null;
     _isOffRoute = false;

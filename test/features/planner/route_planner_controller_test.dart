@@ -28,12 +28,8 @@ void main() {
 
     final controller = container.read(routePlannerProvider.notifier);
 
-    controller.addPoint(
-      const GeoPoint(latitude: 45.0, longitude: 11.0),
-    );
-    controller.addPoint(
-      const GeoPoint(latitude: 45.0, longitude: 11.01),
-    );
+    controller.addPoint(const GeoPoint(latitude: 45.0, longitude: 11.0));
+    controller.addPoint(const GeoPoint(latitude: 45.0, longitude: 11.01));
     await Future<void>.delayed(Duration.zero);
 
     var state = container.read(routePlannerProvider);
@@ -69,13 +65,15 @@ void main() {
       ..addPoint(const GeoPoint(latitude: 45.0, longitude: 11.05));
     await Future<void>.delayed(Duration.zero);
 
-    final hikingDuration =
-        container.read(routePlannerProvider).estimatedDuration;
+    final hikingDuration = container
+        .read(routePlannerProvider)
+        .estimatedDuration;
 
     controller.setProfile(RouteProfile.cycling);
     await Future<void>.delayed(Duration.zero);
-    final cyclingDuration =
-        container.read(routePlannerProvider).estimatedDuration;
+    final cyclingDuration = container
+        .read(routePlannerProvider)
+        .estimatedDuration;
 
     expect(cyclingDuration, lessThan(hikingDuration));
   });
@@ -116,21 +114,9 @@ void main() {
       const GpxDocument(
         name: 'Imported trail',
         points: [
-          GeoPoint(
-            latitude: 45.0,
-            longitude: 11.0,
-            elevationMeters: 100,
-          ),
-          GeoPoint(
-            latitude: 45.01,
-            longitude: 11.01,
-            elevationMeters: 130,
-          ),
-          GeoPoint(
-            latitude: 45.02,
-            longitude: 11.02,
-            elevationMeters: 120,
-          ),
+          GeoPoint(latitude: 45.0, longitude: 11.0, elevationMeters: 100),
+          GeoPoint(latitude: 45.01, longitude: 11.01, elevationMeters: 130),
+          GeoPoint(latitude: 45.02, longitude: 11.02, elevationMeters: 120),
         ],
       ),
     );
@@ -243,7 +229,10 @@ void main() {
 
     expect(engine.requests, isEmpty);
     expect(container.read(routePlannerProvider).points, hasLength(2));
-    expect(container.read(routePlannerProvider).geometry.length, greaterThan(1));
+    expect(
+      container.read(routePlannerProvider).geometry.length,
+      greaterThan(1),
+    );
     expect(container.read(routePlannerProvider).canUndo, isTrue);
   });
 
@@ -321,9 +310,9 @@ void main() {
   test('distance helper returns zero for fewer than two points', () {
     expect(calculateDistanceMeters(const []), 0);
     expect(
-      calculateDistanceMeters(
-        const [GeoPoint(latitude: 45.0, longitude: 11.0)],
-      ),
+      calculateDistanceMeters(const [
+        GeoPoint(latitude: 45.0, longitude: 11.0),
+      ]),
       0,
     );
   });
@@ -358,7 +347,6 @@ class _SnappedRoutingEngine implements RoutingEngine {
   }
 }
 
-
 class _FakeElevationEngine implements ElevationEngine {
   const _FakeElevationEngine();
 
@@ -380,7 +368,6 @@ class _FakeElevationEngine implements ElevationEngine {
   }
 }
 
-
 class _FailingRoutingEngine implements RoutingEngine {
   const _FailingRoutingEngine();
 
@@ -392,7 +379,6 @@ class _FailingRoutingEngine implements RoutingEngine {
     throw const RoutingException('network unavailable');
   }
 }
-
 
 Future<void> _flushAsync() async {
   for (var index = 0; index < 5; index++) {

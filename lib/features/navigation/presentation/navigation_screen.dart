@@ -5,12 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:trail_path/core/config/map_config.dart';
+import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/features/navigation/application/active_navigation_controller.dart';
 
 class NavigationScreen extends ConsumerStatefulWidget {
-  const NavigationScreen({super.key, required this.routeName, required this.route});
+  const NavigationScreen({
+    super.key,
+    required this.routeName,
+    required this.route,
+  });
 
   final String routeName;
   final RoutePlan route;
@@ -23,10 +28,31 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
   MapLibreMapController? _mapController;
   bool _styleReady = false;
   bool _navigationStarted = false;
+  bool _followUser = true;
+  bool _drawRunning = false;
+  bool _drawQueued = false;
+  NavigationEvent? _queuedEvent;
+  Line? _routeLine;
+  Circle? _currentCircle;
+  Line? _offRouteLine;
   ActiveNavigationController? _navigationController;
+  late final List<LatLng> _displayRouteGeometry;
 
   bool get _runningWidgetTest =>
       Platform.environment['FLUTTER_TEST']?.toLowerCase() == 'true';
+
+  @override
+  void initState() {
+    super.initState();
+    _displayRouteGeometry =
+        simplifyPolylineForDisplay(
+              widget.route.geometry,
+              toleranceMeters: 1.5,
+              maxPoints: 2500,
+            )
+            .map((point) => LatLng(point.latitude, point.longitude))
+            .toList(growable: false);
+  }
 
   @override
   void didChangeDependencies() {
@@ -38,12 +64,7 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
     final languageCode = Localizations.localeOf(context).languageCode;
     final controller = ref.read(activeNavigationProvider.notifier);
     _navigationController = controller;
-    Future<void>.microtask(
-      () => controller.start(
-        widget.route,
-        languageCode,
-      ),
-    );
+    Future<void>.microtask(() => controller.start(widget.route, languageCode));
   }
 
   @override
@@ -57,57 +78,106 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
   }
 
   Future<void> _drawRoute(NavigationEvent? event) async {
-    if (_runningWidgetTest || !_styleReady) return;
+    _queuedEvent = event;
+    _drawQueued = true;
+    if (_drawRunning) {
+      return;
+    }
+
+    _drawRunning = true;
+    try {
+      while (_drawQueued && mounted) {
+        _drawQueued = false;
+        final next = _queuedEvent;
+        await _performDrawRoute(next);
+      }
+    } finally {
+      _drawRunning = false;
+    }
+  }
+
+  Future<void> _performDrawRoute(NavigationEvent? event) async {
+    if (_runningWidgetTest || !_styleReady) {
+      return;
+    }
     final controller = _mapController;
-    if (controller == null) return;
+    if (controller == null || controller.isDisposed) {
+      return;
+    }
 
-    await controller.clearLines();
-    await controller.clearCircles();
+    final routeGeometry = _displayRouteGeometry;
 
-    await controller.addLine(
-      LineOptions(
-        geometry: widget.route.geometry
-            .map((p) => LatLng(p.latitude, p.longitude))
-            .toList(growable: false),
-        lineColor: '#2F6F45',
-        lineWidth: 5.5,
-        lineOpacity: 0.95,
-        lineJoin: 'round',
-      ),
-    );
+    final currentRouteLine = _routeLine;
+    if (routeGeometry.length >= 2 &&
+        (currentRouteLine == null ||
+            !controller.lines.contains(currentRouteLine))) {
+      _routeLine = await controller.addLine(
+        LineOptions(
+          geometry: routeGeometry,
+          lineColor: '#2F6F45',
+          lineWidth: 5.5,
+          lineOpacity: 0.95,
+          lineJoin: 'round',
+        ),
+        const <String, dynamic>{'kind': 'navigationRoute'},
+      );
+    }
 
     final current = event?.currentPoint;
     final nearest = event?.nearestRoutePoint;
     if (current != null) {
-      await controller.addCircle(
-        CircleOptions(
-          geometry: LatLng(current.latitude, current.longitude),
-          circleRadius: 8,
-          circleColor: event?.isOffRoute == true ? '#D84315' : '#1565C0',
-          circleStrokeColor: '#FFFFFF',
-          circleStrokeWidth: 2.5,
-        ),
+      final currentOptions = CircleOptions(
+        geometry: LatLng(current.latitude, current.longitude),
+        circleRadius: 8,
+        circleColor: event?.isOffRoute == true ? '#D84315' : '#1565C0',
+        circleStrokeColor: '#FFFFFF',
+        circleStrokeWidth: 2.5,
       );
-      await controller.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          LatLng(current.latitude, current.longitude),
-          16.5,
-        ),
-      );
+      final marker = _currentCircle;
+      if (marker != null && controller.circles.contains(marker)) {
+        await controller.updateCircle(marker, currentOptions);
+      } else {
+        _currentCircle = await controller.addCircle(
+          currentOptions,
+          const <String, dynamic>{'kind': 'navigationPosition'},
+        );
+      }
+
+      if (_followUser) {
+        await controller.animateCamera(
+          CameraUpdate.newLatLngZoom(
+            LatLng(current.latitude, current.longitude),
+            16.5,
+          ),
+        );
+      }
     }
 
     if (event?.isOffRoute == true && current != null && nearest != null) {
-      await controller.addLine(
-        LineOptions(
-          geometry: [
-            LatLng(current.latitude, current.longitude),
-            LatLng(nearest.latitude, nearest.longitude),
-          ],
-          lineColor: '#D84315',
-          lineWidth: 3.5,
-          lineOpacity: 0.9,
-        ),
+      final connectorOptions = LineOptions(
+        geometry: [
+          LatLng(current.latitude, current.longitude),
+          LatLng(nearest.latitude, nearest.longitude),
+        ],
+        lineColor: '#D84315',
+        lineWidth: 3.5,
+        lineOpacity: 0.9,
       );
+      final connector = _offRouteLine;
+      if (connector != null && controller.lines.contains(connector)) {
+        await controller.updateLine(connector, connectorOptions);
+      } else {
+        _offRouteLine = await controller.addLine(
+          connectorOptions,
+          const <String, dynamic>{'kind': 'offRouteConnector'},
+        );
+      }
+    } else {
+      final connector = _offRouteLine;
+      _offRouteLine = null;
+      if (connector != null && controller.lines.contains(connector)) {
+        await controller.removeLine(connector);
+      }
     }
   }
 
@@ -118,14 +188,14 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
     final event = state.event;
     final first = widget.route.geometry.first;
 
-    ref.listen<ActiveNavigationState>(
-      activeNavigationProvider,
-      (previous, next) {
-        if (previous?.event != next.event) {
-          unawaited(_drawRoute(next.event));
-        }
-      },
-    );
+    ref.listen<ActiveNavigationState>(activeNavigationProvider, (
+      previous,
+      next,
+    ) {
+      if (previous?.event != next.event) {
+        unawaited(_drawRoute(next.event));
+      }
+    });
 
     return Scaffold(
       body: Stack(
@@ -133,23 +203,31 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
           Positioned.fill(
             child: _runningWidgetTest
                 ? const ColoredBox(color: Color(0xFFDDE8D9))
-                : MapLibreMap(
-                    styleString: MapConfig.styleUrl,
-                    initialCameraPosition: CameraPosition(
-                      target: LatLng(first.latitude, first.longitude),
-                      zoom: 14.5,
-                    ),
-                    onMapCreated: (controller) => _mapController = controller,
-                    onStyleLoadedCallback: () {
-                      _styleReady = true;
-                      unawaited(_drawRoute(event));
+                : Listener(
+                    behavior: HitTestBehavior.translucent,
+                    onPointerDown: (_) {
+                      if (_followUser && mounted) {
+                        setState(() => _followUser = false);
+                      }
                     },
-                    compassEnabled: true,
-                    rotateGesturesEnabled: true,
-                    tiltGesturesEnabled: true,
-                    logoEnabled: false,
-                    attributionButtonPosition:
-                        AttributionButtonPosition.bottomRight,
+                    child: MapLibreMap(
+                      styleString: MapConfig.styleUrl,
+                      initialCameraPosition: CameraPosition(
+                        target: LatLng(first.latitude, first.longitude),
+                        zoom: 14.5,
+                      ),
+                      onMapCreated: (controller) => _mapController = controller,
+                      onStyleLoadedCallback: () {
+                        _styleReady = true;
+                        unawaited(_drawRoute(event));
+                      },
+                      compassEnabled: true,
+                      rotateGesturesEnabled: true,
+                      tiltGesturesEnabled: true,
+                      logoEnabled: false,
+                      attributionButtonPosition:
+                          AttributionButtonPosition.bottomRight,
+                    ),
                   ),
           ),
           SafeArea(
@@ -159,9 +237,7 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
                 children: [
                   Material(
                     shape: const CircleBorder(),
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surface
+                    color: Theme.of(context).colorScheme.surface
                         .withValues(alpha: 0.96),
                     child: IconButton(
                       icon: const Icon(Icons.close_rounded),
@@ -176,9 +252,7 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surface
+                        color: Theme.of(context).colorScheme.surface
                             .withValues(alpha: 0.96),
                         borderRadius: BorderRadius.circular(18),
                       ),
@@ -187,6 +261,26 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Material(
+                    shape: const CircleBorder(),
+                    color: Theme.of(context).colorScheme.surface
+                        .withValues(alpha: 0.96),
+                    child: IconButton(
+                      tooltip: strings.centerLocation,
+                      onPressed: () {
+                        setState(() => _followUser = !_followUser);
+                        if (_followUser) {
+                          unawaited(_drawRoute(event));
+                        }
+                      },
+                      icon: Icon(
+                        _followUser
+                            ? Icons.gps_fixed_rounded
+                            : Icons.gps_not_fixed_rounded,
                       ),
                     ),
                   ),
@@ -218,7 +312,8 @@ class _NavigationPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final event = state.event;
     final scheme = Theme.of(context).colorScheme;
-    final remaining = event?.remainingMeters ?? state.route?.distanceMeters ?? 0;
+    final remaining =
+        event?.remainingMeters ?? state.route?.distanceMeters ?? 0;
     final progress = event?.progressFraction ?? 0;
     final distanceToRoute = event?.distanceToRouteMeters ?? 0;
     final offRoute = event?.isOffRoute == true;
@@ -249,17 +344,28 @@ class _NavigationPanel extends StatelessWidget {
           Row(
             children: [
               Icon(
-                offRoute ? Icons.warning_amber_rounded : Icons.navigation_rounded,
+                offRoute
+                    ? Icons.warning_amber_rounded
+                    : Icons.navigation_rounded,
                 color: offRoute ? scheme.error : scheme.primary,
               ),
               const SizedBox(width: 9),
               Expanded(
                 child: Text(
                   statusText,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
-              const Text('v0.9', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+              Text(
+                'v${MapConfig.appVersion}',
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -340,7 +446,10 @@ class _NavMetric extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+        ),
         const SizedBox(height: 2),
         Text(
           label,

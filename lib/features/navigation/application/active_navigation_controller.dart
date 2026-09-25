@@ -9,8 +9,8 @@ import 'package:trail_path/features/outdoor/application/battery_mode_controller.
 
 final activeNavigationProvider =
     NotifierProvider<ActiveNavigationController, ActiveNavigationState>(
-  ActiveNavigationController.new,
-);
+      ActiveNavigationController.new,
+    );
 
 class ActiveNavigationState {
   const ActiveNavigationState({
@@ -183,10 +183,7 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
   }
 }
 
-Future<void> _safeSpeak(
-  NavigationFeedback feedback,
-  String message,
-) async {
+Future<void> _safeSpeak(NavigationFeedback feedback, String message) async {
   try {
     await feedback.speak(message);
   } on Object {
@@ -207,29 +204,29 @@ Future<void> _safeAlert(NavigationFeedback feedback) async {
 ) {
   return switch (languageCode) {
     'it' => (
-        offRoute: 'Fuori percorso',
-        backOnRoute: 'Sei tornato sul percorso',
-        arrived: 'Sei arrivato',
-      ),
+      offRoute: 'Fuori percorso',
+      backOnRoute: 'Sei tornato sul percorso',
+      arrived: 'Sei arrivato',
+    ),
     'es' => (
-        offRoute: 'Fuera de ruta',
-        backOnRoute: 'Has vuelto a la ruta',
-        arrived: 'Has llegado',
-      ),
+      offRoute: 'Fuera de ruta',
+      backOnRoute: 'Has vuelto a la ruta',
+      arrived: 'Has llegado',
+    ),
     'fr' => (
-        offRoute: 'Hors parcours',
-        backOnRoute: 'Vous êtes revenu sur le parcours',
-        arrived: 'Vous êtes arrivé',
-      ),
+      offRoute: 'Hors parcours',
+      backOnRoute: 'Vous êtes revenu sur le parcours',
+      arrived: 'Vous êtes arrivé',
+    ),
     'pt' => (
-        offRoute: 'Fora do percurso',
-        backOnRoute: 'Regressou ao percurso',
-        arrived: 'Chegou ao destino',
-      ),
+      offRoute: 'Fora do percurso',
+      backOnRoute: 'Regressou ao percurso',
+      arrived: 'Chegou ao destino',
+    ),
     _ => (
-        offRoute: 'Off route',
-        backOnRoute: 'You are back on route',
-        arrived: 'You have arrived',
-      ),
+      offRoute: 'Off route',
+      backOnRoute: 'You are back on route',
+      arrived: 'You have arrived',
+    ),
   };
 }
