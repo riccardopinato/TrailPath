@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/domain/elevation_math.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
-import 'package:trail_path/core/services/service_providers.dart';
+import 'package:trail_path/core/services/planner_service_providers.dart';
 
 final routePlannerProvider =
     NotifierProvider<RoutePlannerController, RoutePlannerState>(
