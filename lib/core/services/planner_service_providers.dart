@@ -22,7 +22,6 @@ final elevationEngineProvider = Provider<ElevationEngine>((ref) {
   );
 });
 
-
 final placeSearchServiceProvider = Provider<PlaceSearchService>((ref) {
   final service = NominatimPlaceSearchService();
   ref.onDispose(service.dispose);
