@@ -72,10 +72,7 @@ class _OnboardingGateState extends ConsumerState<OnboardingGate> {
 }
 
 class _OnboardingScreen extends StatelessWidget {
-  const _OnboardingScreen({
-    required this.onStart,
-    required this.saving,
-  });
+  const _OnboardingScreen({required this.onStart, required this.saving});
 
   final VoidCallback onStart;
   final bool saving;
@@ -108,9 +105,8 @@ class _OnboardingScreen extends StatelessWidget {
                       const SizedBox(height: 10),
                       Text(
                         strings.onboardingIntro,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
+                        style: Theme.of(context).textTheme.bodyLarge
+                            ?.copyWith(color: scheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 26),
                       _OnboardingCard(
