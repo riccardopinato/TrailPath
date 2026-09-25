@@ -7,26 +7,26 @@ Unknown items are never treated as passed.
 | --- | --- | --- |
 | Product scope | Pass | v0.9.15 is limited to release-candidate hardening; no new product subsystem. |
 | Versioning | Pass | pubspec 0.9.15+27 and MapConfig 0.9.15. |
-| First-run onboarding | Not Tested | Persistent Drift-backed onboarding added; current branch widget/AppLab evidence pending. |
-| Formatting | Not Tested | Current branch CI pending. |
-| Static analysis | Not Tested | Current branch CI pending. |
-| Full Flutter tests | Not Tested | Current branch CI pending. |
-| ARM64 release APK | Not Tested | Current branch CI pending. |
-| x86_64 R8 runtime APK | Not Tested | Current branch CI pending. |
-| Release AAB structure | Not Tested | Current branch CI pending. |
+| First-run onboarding | Pass | Widget test passed and AppLab completed first-run onboarding plus persisted post-restart state on the RC branch. |
+| Formatting | Pass | Strict Dart formatting gate passed on the RC branch. |
+| Static analysis | Pass | flutter analyze passed on the RC branch. |
+| Full Flutter tests | Pass | Full flutter test suite passed on the RC branch. |
+| ARM64 release APK | Pass | Optimized ARM64 release build completed in CI. |
+| x86_64 R8 runtime APK | Pass | Optimized x86_64 release runtime build completed in CI. |
+| Release AAB structure | Pass | Unsigned/debug-fallback structural release AAB gate completed in CI; store publishing still requires store-signed artifact. |
 | Store-signed AAB | Not Tested | Requires the four repository signing secrets; CI fails closed when store signing is explicitly required. |
-| AppLab release E2E | Not Tested | Current branch gate pending. |
-| Recording recovery | Not Tested | Covered by AppLab flow; current branch rerun pending. |
-| Saved route navigation | Not Tested | Covered by AppLab flow; current branch rerun pending. |
-| Offline map download + restart | Not Tested | Covered by AppLab flow; current branch rerun pending. |
-| Navigation with network disabled | Not Tested | New airplane-mode AppLab scenario pending. |
-| Database migrations v1/v2 → v3 | Not Tested | Automated migration tests exist; current branch suite pending. |
+| AppLab release E2E | Not Tested | Primary journey passed before the focused offline split; current-head rerun pending. |
+| Recording recovery | Pass | RC AppLab reached recovered recording, resume, completion and persisted activity before the offline split. |
+| Saved route navigation | Pass | RC AppLab opened saved-route navigation and verified Remaining/Progress before the offline split. |
+| Offline map download + restart | Pass | RC AppLab completed the MapLibre download and verified Available offline after process restart. |
+| Navigation with network disabled | Not Tested | Focused persisted-state airplane-mode AppLab flow added; current-head evidence pending. |
+| Database migrations v1/v2 → v3 | Pass | Migration regression tests are included in the full passing Flutter suite. |
 | Database schema change | N/A | v0.9.15 does not change Drift schema version 3. |
 | Android backup/device transfer | Pass | Manifest disables backup and data-extraction rules exclude app data. |
 | Cleartext HTTP | Pass | Android runtime explicitly disables cleartext traffic. |
 | Privacy documentation | Pass | docs/PRIVACY.md reflects current local/network behavior. |
 | Store signing configuration | Pass | Release Gradle config supports external credentials and fail-closed store mode. |
-| Accessibility custom map actions | Not Tested | 48×48 targets and explicit semantics added; analyzer/widget evidence pending. |
+| Accessibility custom map actions | Pass | 48×48 targets, explicit Semantics/Tooltip/live-region behavior and a regression contract test are present. |
 | Dependency freshness | Not Tested | Review still required after functional gates. |
 | APK/AAB size review | Not Tested | CI size output pending. |
 | Real-device physical QA | Not Tested | Requires installation on a physical Android device after RC artifact is available. |
