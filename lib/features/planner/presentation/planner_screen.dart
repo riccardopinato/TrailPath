@@ -11,6 +11,7 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/database/database_providers.dart';
+import 'package:trail_path/core/domain/collection_sampling.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
@@ -479,7 +480,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       return;
     }
 
-    final sampled = _sampleTraceOffsets(screenPoints, maxPoints: 56);
+    final sampled = sampleEvenly(screenPoints, maxItems: 56);
     if (sampled.length < 2) {
       return;
     }
@@ -531,22 +532,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     }
   }
 
-  List<Offset> _sampleTraceOffsets(
-    List<Offset> points, {
-    required int maxPoints,
-  }) {
-    if (points.length <= maxPoints) {
-      return List<Offset>.unmodifiable(points);
-    }
-
-    final sampled = <Offset>[points.first];
-    final stride = (points.length - 1) / (maxPoints - 1);
-    for (var index = 1; index < maxPoints - 1; index++) {
-      sampled.add(points[(index * stride).round()]);
-    }
-    sampled.add(points.last);
-    return List<Offset>.unmodifiable(sampled);
-  }
 
   void _undo() {
     if (_selectedWaypointIndex != null && mounted) {
