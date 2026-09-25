@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:trail_path/core/config/map_config.dart';
+import 'package:trail_path/core/domain/collection_sampling.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/planner_service_providers.dart';
@@ -53,6 +54,11 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
   RoutePlannerState? _pendingPlanner;
   bool _syncRunning = false;
   bool _searchBusy = false;
+  bool _traceMode = false;
+  bool _traceDrawing = false;
+  bool _traceProcessing = false;
+  int? _tracePointerId;
+  List<Offset> _traceScreenPoints = const [];
   List<PlaceSearchResult> _searchResults = const [];
   final TextEditingController _searchController = TextEditingController();
 
@@ -474,6 +480,135 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
     ref.read(routePlannerProvider.notifier).addPoint(result.point);
   }
 
+  void _toggleTraceMode() {
+    if (_traceProcessing) {
+      return;
+    }
+    setState(() {
+      _traceMode = !_traceMode;
+      _traceDrawing = false;
+      _tracePointerId = null;
+      _traceScreenPoints = const [];
+      _selectedWaypointIndex = null;
+      if (_traceMode) {
+        _routeSelected = false;
+      }
+    });
+  }
+
+  void _onTracePointerDown(PointerDownEvent event) {
+    if (!_traceMode ||
+        _traceProcessing ||
+        _tracePointerId != null ||
+        ref.read(routePlannerProvider).isRouting) {
+      return;
+    }
+    _tracePointerId = event.pointer;
+    setState(() {
+      _traceDrawing = true;
+      _traceScreenPoints = [event.localPosition];
+    });
+  }
+
+  void _onTracePointerMove(PointerMoveEvent event) {
+    if (!_traceMode ||
+        !_traceDrawing ||
+        _tracePointerId != event.pointer ||
+        _traceScreenPoints.isEmpty) {
+      return;
+    }
+    if ((event.localPosition - _traceScreenPoints.last).distance < 5) {
+      return;
+    }
+    setState(() {
+      _traceScreenPoints = [..._traceScreenPoints, event.localPosition];
+    });
+  }
+
+  void _onTracePointerUp(PointerUpEvent event) {
+    if (_tracePointerId != event.pointer) {
+      return;
+    }
+
+    final points = List<Offset>.of(_traceScreenPoints);
+    if (points.isEmpty || (event.localPosition - points.last).distance >= 2) {
+      points.add(event.localPosition);
+    }
+
+    _tracePointerId = null;
+    setState(() {
+      _traceDrawing = false;
+      _traceScreenPoints = const [];
+    });
+    unawaited(_commitTrace(points));
+  }
+
+  void _onTracePointerCancel(PointerCancelEvent event) {
+    if (_tracePointerId != event.pointer) {
+      return;
+    }
+    _tracePointerId = null;
+    if (mounted) {
+      setState(() {
+        _traceDrawing = false;
+        _traceScreenPoints = const [];
+      });
+    }
+  }
+
+  Future<void> _commitTrace(List<Offset> screenPoints) async {
+    final map = _map;
+    if (map == null || screenPoints.length < 2 || _traceProcessing) {
+      return;
+    }
+
+    final sampled = sampleEvenly(screenPoints, maxItems: 56);
+    setState(() => _traceProcessing = true);
+    try {
+      final geoPoints = <GeoPoint>[];
+      for (final offset in sampled) {
+        final coordinates = await map.toLatLng(
+          math.Point<double>(offset.dx, offset.dy),
+        );
+        geoPoints.add(
+          GeoPoint(
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude,
+          ),
+        );
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      final accepted = ref.read(routePlannerProvider.notifier).addTrace(
+            geoPoints,
+          );
+      if (!accepted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Traccia troppo corta.')),
+        );
+        return;
+      }
+
+      setState(() {
+        _routeSelected = true;
+        _selectedWaypointIndex = null;
+      });
+    } on Object catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Traccia non disponibile: $error')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _traceProcessing = false);
+      }
+    }
+  }
+
   String _distanceLabel(double meters) {
     if (meters < 1000) {
       return '${meters.round()} m';
@@ -516,9 +651,12 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
       searchResults: _searchResults,
       selectedSearchResult: _searchResult,
       selectedWaypointIndex: _selectedWaypointIndex,
+      traceMode: _traceMode,
+      traceProcessing: _traceProcessing,
       onSearch: _searchPlaces,
       onSearchSelected: _focusSearchResult,
       onAddSearchWaypoint: _addSearchResultAsWaypoint,
+      onToggleTrace: _toggleTraceMode,
       onProfileChanged: controller.setProfile,
       onUndo: planner.canUndo ? controller.undo : null,
       onRedo: planner.canRedo ? controller.redo : null,
@@ -552,9 +690,15 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
         _styleReady = true;
         _scheduleMapSync(ref.read(routePlannerProvider));
       },
-      onMapClick: _addPoint,
+      onMapClick: (point, coordinates) {
+        if (!_traceMode) {
+          _addPoint(point, coordinates);
+        }
+      },
       onMapLongClick: (point, coordinates) {
-        unawaited(_insertPoint(point, coordinates));
+        if (!_traceMode) {
+          unawaited(_insertPoint(point, coordinates));
+        }
       },
       annotationOrder: const [AnnotationType.line, AnnotationType.circle],
       annotationConsumeTapEvents: const [
@@ -567,6 +711,28 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
       compassEnabled: true,
       rotateGesturesEnabled: true,
       tiltGesturesEnabled: false,
+    );
+
+    final mapSurface = Stack(
+      children: [
+        Positioned.fill(child: map),
+        if (_traceMode)
+          Positioned.fill(
+            child: Listener(
+              behavior: HitTestBehavior.opaque,
+              onPointerDown: _onTracePointerDown,
+              onPointerMove: _onTracePointerMove,
+              onPointerUp: _onTracePointerUp,
+              onPointerCancel: _onTracePointerCancel,
+              child: CustomPaint(
+                painter: _TracePainter(
+                  points: _traceScreenPoints,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
 
     return Scaffold(
@@ -600,13 +766,13 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
               children: [
                 SizedBox(width: 400, child: panel),
                 const VerticalDivider(width: 1),
-                Expanded(child: map),
+                Expanded(child: mapSurface),
               ],
             );
           }
           return Stack(
             children: [
-              Positioned.fill(child: map),
+              Positioned.fill(child: mapSurface),
               Positioned(
                 left: 12,
                 right: 12,
@@ -639,9 +805,12 @@ class _PlannerPanel extends StatelessWidget {
     required this.searchResults,
     required this.selectedSearchResult,
     required this.selectedWaypointIndex,
+    required this.traceMode,
+    required this.traceProcessing,
     required this.onSearch,
     required this.onSearchSelected,
     required this.onAddSearchWaypoint,
+    required this.onToggleTrace,
     required this.onProfileChanged,
     required this.onUndo,
     required this.onRedo,
@@ -657,9 +826,12 @@ class _PlannerPanel extends StatelessWidget {
   final List<PlaceSearchResult> searchResults;
   final PlaceSearchResult? selectedSearchResult;
   final int? selectedWaypointIndex;
+  final bool traceMode;
+  final bool traceProcessing;
   final VoidCallback onSearch;
   final ValueChanged<PlaceSearchResult> onSearchSelected;
   final VoidCallback onAddSearchWaypoint;
+  final VoidCallback onToggleTrace;
   final ValueChanged<RouteProfile> onProfileChanged;
   final VoidCallback? onUndo;
   final VoidCallback? onRedo;
@@ -844,6 +1016,18 @@ class _PlannerPanel extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: planner.isRouting || traceProcessing
+                ? null
+                : onToggleTrace,
+            icon: Icon(
+              traceMode ? Icons.close_rounded : Icons.draw_rounded,
+            ),
+            label: Text(
+              traceMode ? 'Esci da Trace Mode' : 'Trace Mode',
+            ),
+          ),
+          const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
@@ -884,6 +1068,52 @@ class _PlannerPanel extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _TracePainter extends CustomPainter {
+  const _TracePainter({
+    required this.points,
+    required this.color,
+  });
+
+  final List<Offset> points;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (points.length < 2) {
+      return;
+    }
+
+    final path = Path()..moveTo(points.first.dx, points.first.dy);
+    for (final point in points.skip(1)) {
+      path.lineTo(point.dx, point.dy);
+    }
+
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.92)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 9
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = color.withValues(alpha: 0.92)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _TracePainter oldDelegate) {
+    return oldDelegate.points != points || oldDelegate.color != color;
   }
 }
 
