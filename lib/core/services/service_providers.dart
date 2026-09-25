@@ -58,7 +58,6 @@ final offlineMapManagerProvider = Provider<OfflineMapManager>(
   (ref) => const MapLibreOfflineMapManager(),
 );
 
-
 final safetyServiceProvider = Provider<SafetyService>(
   (ref) => DeviceSafetyService(
     locationEngine: ref.watch(locationEngineProvider),
