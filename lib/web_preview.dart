@@ -362,8 +362,8 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
 
     final kind = annotation.data?['kind'];
     final rawIndex = kind == 'midpoint'
-        ? annotation.data?['legIndex']
-        : annotation.data?['waypointIndex'];
+        ? (annotation.data?['legIndex'])
+        : (annotation.data?['waypointIndex']);
     final index = rawIndex is int
         ? rawIndex
         : rawIndex is num
