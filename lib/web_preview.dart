@@ -7,6 +7,7 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/core/services/planner_service_providers.dart';
 import 'package:trail_path/features/planner/application/route_planner_controller.dart';
 
 void main() {
@@ -41,14 +42,24 @@ class _PreviewScreen extends ConsumerStatefulWidget {
 class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
   MapLibreMapController? _map;
   bool _styleReady = false;
-  List<Circle> _circles = const [];
-  List<Line> _lines = const [];
+  bool _routeSelected = false;
+  bool _draggingFeature = false;
+  int? _selectedWaypointIndex;
+  List<Line> _routeLines = const [];
+  List<Circle> _waypointCircles = const [];
+  List<Circle> _midpointCircles = const [];
+  Circle? _searchCircle;
+  PlaceSearchResult? _searchResult;
   RoutePlannerState? _pendingPlanner;
   bool _syncRunning = false;
+  bool _searchBusy = false;
+  List<PlaceSearchResult> _searchResults = const [];
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void dispose() {
     _pendingPlanner = null;
+    _searchController.dispose();
     _map?.dispose();
     super.dispose();
   }
@@ -83,81 +94,384 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
       return;
     }
 
-    for (final line in _lines) {
-      if (map.lines.contains(line)) {
-        await map.removeLine(line);
-      }
-    }
-    for (final circle in _circles) {
-      if (map.circles.contains(circle)) {
-        await map.removeCircle(circle);
-      }
-    }
+    final displayGeometry = simplifyPolylineForDisplay(
+      planner.geometry,
+      toleranceMeters: 1.5,
+      maxPoints: 2200,
+    );
+    final routeGeometry = displayGeometry
+        .map((point) => LatLng(point.latitude, point.longitude))
+        .toList(growable: false);
 
-    final nextCircles = <Circle>[];
-    for (var index = 0; index < planner.points.length; index++) {
-      final point = planner.points[index];
-      nextCircles.add(
-        await map.addCircle(
-          CircleOptions(
-            geometry: LatLng(point.latitude, point.longitude),
-            circleRadius: 7,
-            circleColor: index == 0 ? '#1565C0' : '#2E7D32',
-            circleStrokeColor: '#FFFFFF',
-            circleStrokeWidth: 2,
-          ),
-          <String, dynamic>{'index': index},
-        ),
-      );
-    }
-
-    final nextLines = <Line>[];
-    if (planner.geometry.length >= 2) {
-      final geometry =
-          simplifyPolylineForDisplay(
-                planner.geometry,
-                toleranceMeters: 1.5,
-                maxPoints: 2200,
-              )
-              .map((point) => LatLng(point.latitude, point.longitude))
-              .toList(growable: false);
-
-      if (geometry.length >= 2) {
-        nextLines.add(
-          await map.addLine(
+    final routeOptions = routeGeometry.length >= 2
+        ? <LineOptions>[
             LineOptions(
-              geometry: geometry,
-              lineColor: '#FFFFFF',
-              lineWidth: 8,
-              lineOpacity: 0.96,
+              geometry: routeGeometry,
+              lineColor: _routeSelected ? '#1976D2' : '#FFFFFF',
+              lineWidth: _routeSelected ? 10 : 8,
+              lineOpacity: _routeSelected ? 0.82 : 0.92,
               lineJoin: 'round',
             ),
-          ),
-        );
-        nextLines.add(
-          await map.addLine(
             LineOptions(
-              geometry: geometry,
+              geometry: routeGeometry,
               lineColor: '#2E7D32',
               lineWidth: 5,
               lineOpacity: 0.98,
               lineJoin: 'round',
             ),
-          ),
-        );
+          ]
+        : const <LineOptions>[];
+
+    final routeLinesCurrent =
+        _routeLines.length == routeOptions.length &&
+        _routeLines.every(map.lines.contains);
+    if (routeLinesCurrent) {
+      for (var index = 0; index < _routeLines.length; index++) {
+        await map.updateLine(_routeLines[index], routeOptions[index]);
       }
+    } else {
+      final stale = _routeLines.where(map.lines.contains).toList(growable: false);
+      if (stale.isNotEmpty) {
+        await map.removeLines(stale);
+      }
+      _routeLines = routeOptions.isEmpty
+          ? const []
+          : await map.addLines(routeOptions, const [
+              <String, dynamic>{'kind': 'route', 'role': 'casing'},
+              <String, dynamic>{'kind': 'route', 'role': 'route'},
+            ]);
     }
 
-    _circles = nextCircles;
-    _lines = nextLines;
+    final waypointOptions = <CircleOptions>[
+      for (var index = 0; index < planner.points.length; index++)
+        CircleOptions(
+          geometry: LatLng(
+            planner.points[index].latitude,
+            planner.points[index].longitude,
+          ),
+          circleRadius: _selectedWaypointIndex == index
+              ? 9
+              : index == 0 || index == planner.points.length - 1
+              ? 7
+              : 5.5,
+          circleColor: _selectedWaypointIndex == index
+              ? '#1976D2'
+              : index == 0
+              ? '#205B38'
+              : index == planner.points.length - 1
+              ? '#E86A45'
+              : '#FFFFFF',
+          circleStrokeColor: _selectedWaypointIndex == index
+              ? '#FFFFFF'
+              : '#2F6F45',
+          circleStrokeWidth: _selectedWaypointIndex == index ? 3.5 : 2.5,
+          draggable: true,
+        ),
+    ];
+
+    final waypointCirclesCurrent =
+        _waypointCircles.length == waypointOptions.length &&
+        _waypointCircles.every(map.circles.contains);
+    if (waypointCirclesCurrent) {
+      for (var index = 0; index < _waypointCircles.length; index++) {
+        await map.updateCircle(_waypointCircles[index], waypointOptions[index]);
+      }
+    } else {
+      final stale = _waypointCircles
+          .where(map.circles.contains)
+          .toList(growable: false);
+      if (stale.isNotEmpty) {
+        await map.removeCircles(stale);
+      }
+      _waypointCircles = waypointOptions.isEmpty
+          ? const []
+          : await map.addCircles(waypointOptions, [
+              for (var index = 0; index < waypointOptions.length; index++)
+                <String, dynamic>{'kind': 'waypoint', 'waypointIndex': index},
+            ]);
+    }
+
+    final showHandles =
+        _routeSelected &&
+        !_draggingFeature &&
+        !planner.isRouting &&
+        planner.isSnapped &&
+        planner.editHandles.length == planner.points.length - 1;
+    final midpointOptions = showHandles
+        ? <CircleOptions>[
+            for (final handle in planner.editHandles)
+              CircleOptions(
+                geometry: LatLng(handle.latitude, handle.longitude),
+                circleRadius: 7.5,
+                circleColor: '#FFFFFF',
+                circleStrokeColor: '#1976D2',
+                circleStrokeWidth: 2.75,
+                draggable: true,
+              ),
+          ]
+        : const <CircleOptions>[];
+
+    final midpointCirclesCurrent =
+        _midpointCircles.length == midpointOptions.length &&
+        _midpointCircles.every(map.circles.contains);
+    if (midpointCirclesCurrent) {
+      for (var index = 0; index < _midpointCircles.length; index++) {
+        await map.updateCircle(_midpointCircles[index], midpointOptions[index]);
+      }
+    } else {
+      final stale = _midpointCircles
+          .where(map.circles.contains)
+          .toList(growable: false);
+      if (stale.isNotEmpty) {
+        await map.removeCircles(stale);
+      }
+      _midpointCircles = midpointOptions.isEmpty
+          ? const []
+          : await map.addCircles(midpointOptions, [
+              for (var index = 0; index < midpointOptions.length; index++)
+                <String, dynamic>{'kind': 'midpoint', 'legIndex': index},
+            ]);
+    }
+
+    final result = _searchResult;
+    if (result == null) {
+      final stale = _searchCircle;
+      _searchCircle = null;
+      if (stale != null && map.circles.contains(stale)) {
+        await map.removeCircle(stale);
+      }
+    } else {
+      final options = CircleOptions(
+        geometry: LatLng(result.point.latitude, result.point.longitude),
+        circleRadius: 8,
+        circleColor: '#1565C0',
+        circleStrokeColor: '#FFFFFF',
+        circleStrokeWidth: 2.5,
+      );
+      final current = _searchCircle;
+      if (current != null && map.circles.contains(current)) {
+        await map.updateCircle(current, options);
+      } else {
+        _searchCircle = await map.addCircle(options, const <String, dynamic>{
+          'kind': 'search',
+        });
+      }
+    }
   }
 
   void _addPoint(math.Point<double> _, LatLng latLng) {
+    if (_selectedWaypointIndex != null || _routeSelected) {
+      setState(() {
+        _selectedWaypointIndex = null;
+        _routeSelected = false;
+      });
+    }
     ref
         .read(routePlannerProvider.notifier)
         .addPoint(
           GeoPoint(latitude: latLng.latitude, longitude: latLng.longitude),
         );
+  }
+
+  Future<void> _insertPoint(math.Point<double> _, LatLng latLng) async {
+    final planner = ref.read(routePlannerProvider);
+    final candidate = GeoPoint(
+      latitude: latLng.latitude,
+      longitude: latLng.longitude,
+    );
+
+    if (planner.geometry.length >= 2 &&
+        distanceToPolylineMeters(candidate, planner.geometry) > 80) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tieni premuto più vicino al percorso.'),
+          ),
+        );
+      }
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _selectedWaypointIndex = null;
+        _routeSelected = true;
+      });
+    }
+    ref.read(routePlannerProvider.notifier).insertPointNearRoute(candidate);
+  }
+
+  void _onCircleTapped(Circle circle) {
+    final kind = circle.data?['kind'];
+    if (kind == 'midpoint') {
+      if (!_routeSelected && mounted) {
+        setState(() => _routeSelected = true);
+        _scheduleMapSync(ref.read(routePlannerProvider));
+      }
+      return;
+    }
+
+    final rawIndex = circle.data?['waypointIndex'];
+    final index = rawIndex is int
+        ? rawIndex
+        : rawIndex is num
+        ? rawIndex.toInt()
+        : null;
+    if (index == null) {
+      return;
+    }
+
+    setState(() {
+      _selectedWaypointIndex = index;
+      _routeSelected = true;
+    });
+    _scheduleMapSync(ref.read(routePlannerProvider));
+  }
+
+  void _onLineTapped(Line line) {
+    if (line.data?['kind'] != 'route') {
+      return;
+    }
+    setState(() {
+      _routeSelected = !_routeSelected;
+      if (!_routeSelected) {
+        _selectedWaypointIndex = null;
+      }
+    });
+    _scheduleMapSync(ref.read(routePlannerProvider));
+  }
+
+  void _onFeatureDrag(
+    math.Point<double> point,
+    LatLng origin,
+    LatLng current,
+    LatLng delta,
+    String id,
+    Annotation? annotation,
+    DragEventType eventType,
+  ) {
+    if (annotation is! Circle) {
+      return;
+    }
+
+    final kind = annotation.data?['kind'];
+    final rawIndex = kind == 'midpoint'
+        ? annotation.data?['legIndex']
+        : annotation.data?['waypointIndex'];
+    final index = rawIndex is int
+        ? rawIndex
+        : rawIndex is num
+        ? rawIndex.toInt()
+        : null;
+    if (index == null) {
+      return;
+    }
+
+    if (eventType == DragEventType.start) {
+      setState(() {
+        _draggingFeature = true;
+        _routeSelected = true;
+        _selectedWaypointIndex = kind == 'midpoint' ? null : index;
+      });
+      return;
+    }
+
+    if (eventType != DragEventType.end) {
+      return;
+    }
+
+    final pointValue = GeoPoint(
+      latitude: current.latitude,
+      longitude: current.longitude,
+    );
+    if (kind == 'midpoint') {
+      final insertedIndex = index + 1;
+      setState(() {
+        _draggingFeature = false;
+        _selectedWaypointIndex = insertedIndex;
+      });
+      ref
+          .read(routePlannerProvider.notifier)
+          .insertPointAt(insertedIndex, pointValue);
+      return;
+    }
+
+    setState(() {
+      _draggingFeature = false;
+      _selectedWaypointIndex = index;
+    });
+    ref.read(routePlannerProvider.notifier).movePoint(index, pointValue);
+  }
+
+  void _removeSelectedWaypoint() {
+    final index = _selectedWaypointIndex;
+    if (index == null) {
+      return;
+    }
+    setState(() => _selectedWaypointIndex = null);
+    ref.read(routePlannerProvider.notifier).removePoint(index);
+  }
+
+  Future<void> _searchPlaces() async {
+    final query = _searchController.text.trim();
+    if (query.length < 2 || _searchBusy) {
+      return;
+    }
+
+    setState(() {
+      _searchBusy = true;
+      _searchResults = const [];
+    });
+
+    try {
+      final results = await ref
+          .read(placeSearchServiceProvider)
+          .search(
+            query,
+            languageCode: Localizations.localeOf(context).languageCode,
+          );
+      if (!mounted) {
+        return;
+      }
+      setState(() => _searchResults = results);
+    } on Object catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ricerca non disponibile: $error')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _searchBusy = false);
+      }
+    }
+  }
+
+  Future<void> _focusSearchResult(PlaceSearchResult result) async {
+    setState(() {
+      _searchResult = result;
+      _searchResults = const [];
+      _searchController.text = result.name;
+    });
+    _scheduleMapSync(ref.read(routePlannerProvider));
+
+    final map = _map;
+    if (map != null) {
+      await map.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          LatLng(result.point.latitude, result.point.longitude),
+          15.5,
+        ),
+      );
+    }
+  }
+
+  void _addSearchResultAsWaypoint() {
+    final result = _searchResult;
+    if (result == null) {
+      return;
+    }
+    ref.read(routePlannerProvider.notifier).addPoint(result.point);
   }
 
   String _distanceLabel(double meters) {
@@ -187,7 +501,8 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
     ref.listen<RoutePlannerState>(routePlannerProvider, (previous, next) {
       if (previous == null ||
           !identical(previous.points, next.points) ||
-          !identical(previous.geometry, next.geometry)) {
+          !identical(previous.geometry, next.geometry) ||
+          previous.isRouting != next.isRouting) {
         _scheduleMapSync(next);
       }
     });
@@ -196,10 +511,29 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
       planner: planner,
       distanceLabel: _distanceLabel(planner.distanceMeters),
       durationLabel: _durationLabel(planner.estimatedDuration),
+      searchController: _searchController,
+      searchBusy: _searchBusy,
+      searchResults: _searchResults,
+      selectedSearchResult: _searchResult,
+      selectedWaypointIndex: _selectedWaypointIndex,
+      onSearch: _searchPlaces,
+      onSearchSelected: _focusSearchResult,
+      onAddSearchWaypoint: _addSearchResultAsWaypoint,
       onProfileChanged: controller.setProfile,
       onUndo: planner.canUndo ? controller.undo : null,
       onRedo: planner.canRedo ? controller.redo : null,
-      onClear: planner.points.isEmpty ? null : controller.clear,
+      onRemoveWaypoint: _selectedWaypointIndex == null
+          ? null
+          : _removeSelectedWaypoint,
+      onClear: planner.points.isEmpty
+          ? null
+          : () {
+              setState(() {
+                _selectedWaypointIndex = null;
+                _routeSelected = false;
+              });
+              controller.clear();
+            },
     );
 
     final map = MapLibreMap(
@@ -208,12 +542,27 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
         target: LatLng(45.232, 11.750),
         zoom: 11.5,
       ),
-      onMapCreated: (controller) => _map = controller,
+      onMapCreated: (controller) {
+        _map = controller;
+        controller.onCircleTapped.add(_onCircleTapped);
+        controller.onLineTapped.add(_onLineTapped);
+        controller.onFeatureDrag.add(_onFeatureDrag);
+      },
       onStyleLoadedCallback: () {
         _styleReady = true;
         _scheduleMapSync(ref.read(routePlannerProvider));
       },
       onMapClick: _addPoint,
+      onMapLongClick: (point, coordinates) {
+        unawaited(_insertPoint(point, coordinates));
+      },
+      annotationOrder: const [AnnotationType.line, AnnotationType.circle],
+      annotationConsumeTapEvents: const [
+        AnnotationType.line,
+        AnnotationType.circle,
+      ],
+      doubleClickZoomEnabled: false,
+      dragEnabled: true,
       myLocationEnabled: false,
       compassEnabled: true,
       rotateGesturesEnabled: true,
@@ -249,7 +598,7 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
           if (constraints.maxWidth >= 900) {
             return Row(
               children: [
-                SizedBox(width: 380, child: panel),
+                SizedBox(width: 400, child: panel),
                 const VerticalDivider(width: 1),
                 Expanded(child: map),
               ],
@@ -263,7 +612,7 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
                 right: 12,
                 bottom: 12,
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 360),
+                  constraints: const BoxConstraints(maxHeight: 430),
                   child: Material(
                     elevation: 8,
                     borderRadius: BorderRadius.circular(24),
@@ -285,18 +634,36 @@ class _PlannerPanel extends StatelessWidget {
     required this.planner,
     required this.distanceLabel,
     required this.durationLabel,
+    required this.searchController,
+    required this.searchBusy,
+    required this.searchResults,
+    required this.selectedSearchResult,
+    required this.selectedWaypointIndex,
+    required this.onSearch,
+    required this.onSearchSelected,
+    required this.onAddSearchWaypoint,
     required this.onProfileChanged,
     required this.onUndo,
     required this.onRedo,
+    required this.onRemoveWaypoint,
     required this.onClear,
   });
 
   final RoutePlannerState planner;
   final String distanceLabel;
   final String durationLabel;
+  final TextEditingController searchController;
+  final bool searchBusy;
+  final List<PlaceSearchResult> searchResults;
+  final PlaceSearchResult? selectedSearchResult;
+  final int? selectedWaypointIndex;
+  final VoidCallback onSearch;
+  final ValueChanged<PlaceSearchResult> onSearchSelected;
+  final VoidCallback onAddSearchWaypoint;
   final ValueChanged<RouteProfile> onProfileChanged;
   final VoidCallback? onUndo;
   final VoidCallback? onRedo;
+  final VoidCallback? onRemoveWaypoint;
   final VoidCallback? onClear;
 
   @override
@@ -317,10 +684,64 @@ class _PlannerPanel extends StatelessWidget {
           const SizedBox(height: 8),
           const Text(
             'Il Web usa lo stesso core planner dell’app: waypoint, profilo, '
-            'routing, undo/redo, distanza ed elevazione condividono la stessa '
+            'routing, editing, undo/redo ed elevazione condividono la stessa '
             'logica applicativa.',
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
+          TextField(
+            controller: searchController,
+            textInputAction: TextInputAction.search,
+            onSubmitted: (_) => onSearch(),
+            decoration: InputDecoration(
+              labelText: 'Cerca luogo o sentiero',
+              prefixIcon: const Icon(Icons.search_rounded),
+              suffixIcon: searchBusy
+                  ? const Padding(
+                      padding: EdgeInsets.all(14),
+                      child: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : IconButton(
+                      tooltip: 'Cerca',
+                      onPressed: onSearch,
+                      icon: const Icon(Icons.arrow_forward_rounded),
+                    ),
+            ),
+          ),
+          if (searchResults.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            for (final result in searchResults.take(4))
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.place_outlined),
+                title: Text(
+                  result.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  result.displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onTap: () => onSearchSelected(result),
+              ),
+          ],
+          if (selectedSearchResult != null) ...[
+            const SizedBox(height: 8),
+            FilledButton.tonalIcon(
+              onPressed: onAddSearchWaypoint,
+              icon: const Icon(Icons.add_location_alt_outlined),
+              label: Text(
+                'Aggiungi ${selectedSearchResult!.name} al percorso',
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
           Row(
             children: [
               const Icon(Icons.tune_rounded, size: 20),
@@ -412,6 +833,16 @@ class _PlannerPanel extends StatelessWidget {
               ),
             ),
           ),
+          if (selectedWaypointIndex != null) ...[
+            const SizedBox(height: 10),
+            FilledButton.tonalIcon(
+              onPressed: onRemoveWaypoint,
+              icon: const Icon(Icons.delete_outline_rounded),
+              label: Text(
+                'Rimuovi waypoint ${selectedWaypointIndex! + 1}',
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           Row(
             children: [
@@ -438,7 +869,13 @@ class _PlannerPanel extends StatelessWidget {
             icon: const Icon(Icons.delete_sweep_rounded),
             label: const Text('Pulisci percorso'),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
+          Text(
+            'Click: aggiungi waypoint · long-press: inserisci sulla route · '
+            'drag: sposta waypoint/midpoint.',
+            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 4),
           Text(
             'GPS in background, registrazione e download offline restano '
             'funzioni native da validare sull’APK Android.',
