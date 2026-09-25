@@ -2168,33 +2168,34 @@ class _TraceStatusChip extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: dark ? const Color(0xE6222A24) : const Color(0xF7FFFFFF),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: scheme.primary.withValues(alpha: 0.32)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (busy)
-              const SizedBox(
-                width: 15,
-                height: 15,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            else
-              Icon(Icons.draw_rounded, size: 17, color: scheme.primary),
-            const SizedBox(width: 7),
-            Flexible(
-              child: Text(
-                message,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+          decoration: BoxDecoration(
+            color: dark ? const Color(0xE6222A24) : const Color(0xF7FFFFFF),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: scheme.primary.withValues(alpha: 0.32)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (busy)
+                const SizedBox(
+                  width: 15,
+                  height: 15,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                Icon(Icons.draw_rounded, size: 17, color: scheme.primary),
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -2220,28 +2221,29 @@ class _LocationStatusChip extends StatelessWidget {
       child: Align(
         alignment: Alignment.centerLeft,
         child: Material(
-        color: dark ? const Color(0xE6222A24) : const Color(0xF7FFFFFF),
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
+          color: dark ? const Color(0xE6222A24) : const Color(0xF7FFFFFF),
           borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.location_off_outlined, size: 17),
-                const SizedBox(width: 7),
-                Flexible(
-                  child: Text(
-                    message,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.location_off_outlined, size: 17),
+                  const SizedBox(width: 7),
+                  Flexible(
+                    child: Text(
+                      message,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
