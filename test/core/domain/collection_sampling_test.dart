@@ -20,9 +20,6 @@ void main() {
   });
 
   test('sampleEvenly rejects invalid limits', () {
-    expect(
-      () => sampleEvenly([1, 2, 3], maxItems: 1),
-      throwsArgumentError,
-    );
+    expect(() => sampleEvenly([1, 2, 3], maxItems: 1), throwsArgumentError);
   });
 }
