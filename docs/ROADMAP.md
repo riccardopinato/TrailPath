@@ -67,7 +67,7 @@ Standards-compliant Retry-After parsing, shared bounded retry primitives, persis
 Release-mode AppLab E2E with process recovery and real routing, incremental recording/navigation MapLibre updates, GPS follow control, Nominatim retry parity, Android toolchain modernization, explicit GPS backup policy, stricter formatting gate, R8 validation and one primary ARM64 release artifact.
 
 ## v0.9.14 - Full Web/Core Parity
-Replace duplicated Web preview planner state with the real shared planner/domain core and isolate only platform-specific capabilities such as background GPS and native offline regions.
+Replace duplicated Web preview planner state with the real shared planner/domain core, share routing/elevation/search providers, expose the same waypoint editing and undo/redo behavior on Web, and isolate only platform-specific capabilities such as background GPS and native offline regions.
 
 ## v1.0 - Release
 Onboarding, Premium foundation, optional backup/sync, accessibility, store signing, final performance profiling and store QA.
