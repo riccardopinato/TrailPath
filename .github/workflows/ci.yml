@@ -72,11 +72,62 @@ jobs:
       - name: Test
         run: flutter test
 
+      - name: Detect store signing credentials
+        id: store-signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.TRAILPATH_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.TRAILPATH_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.TRAILPATH_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.TRAILPATH_KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$STORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASSWORD" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Store signing secrets are not configured; store-signed AAB will be skipped."
+          fi
+
       - name: Build ARM64 optimized release
         run: flutter build apk --release --target-platform android-arm64 --split-per-abi
 
       - name: Build x86_64 optimized release runtime gate
         run: flutter build apk --release --target-platform android-x64 --split-per-abi
+
+      - name: Build release AAB structure gate
+        run: flutter build appbundle --release
+
+      - name: Upload CI-only AAB structure artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-v${{ steps.app-version.outputs.app_version }}-ci-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Build store-signed AAB
+        if: steps.store-signing.outputs.available == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.TRAILPATH_KEYSTORE_BASE64 }}
+          TRAILPATH_STORE_PASSWORD: ${{ secrets.TRAILPATH_STORE_PASSWORD }}
+          TRAILPATH_KEY_ALIAS: ${{ secrets.TRAILPATH_KEY_ALIAS }}
+          TRAILPATH_KEY_PASSWORD: ${{ secrets.TRAILPATH_KEY_PASSWORD }}
+          TRAILPATH_REQUIRE_STORE_SIGNING: "true"
+        run: |
+          set -euo pipefail
+          umask 077
+          STORE_FILE="$RUNNER_TEMP/trailpath-upload.jks"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$STORE_FILE"
+          test -s "$STORE_FILE"
+          TRAILPATH_STORE_FILE="$STORE_FILE" flutter build appbundle --release
+          jarsigner -verify build/app/outputs/bundle/release/app-release.aab
+
+      - name: Upload store-signed AAB
+        if: steps.store-signing.outputs.available == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-v${{ steps.app-version.outputs.app_version }}-store-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
 
       - name: Report release APK sizes
         run: |
