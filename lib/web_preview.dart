@@ -136,7 +136,9 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
         await map.updateLine(_routeLines[index], routeOptions[index]);
       }
     } else {
-      final stale = _routeLines.where(map.lines.contains).toList(growable: false);
+      final stale = _routeLines
+          .where(map.lines.contains)
+          .toList(growable: false);
       if (stale.isNotEmpty) {
         await map.removeLines(stale);
       }
@@ -582,13 +584,13 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
         return;
       }
 
-      final accepted = ref.read(routePlannerProvider.notifier).addTrace(
-            geoPoints,
-          );
+      final accepted = ref
+          .read(routePlannerProvider.notifier)
+          .addTrace(geoPoints);
       if (!accepted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Traccia troppo corta.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Traccia troppo corta.')));
         return;
       }
 
@@ -908,9 +910,7 @@ class _PlannerPanel extends StatelessWidget {
             FilledButton.tonalIcon(
               onPressed: onAddSearchWaypoint,
               icon: const Icon(Icons.add_location_alt_outlined),
-              label: Text(
-                'Aggiungi ${selectedSearchResult!.name} al percorso',
-              ),
+              label: Text('Aggiungi ${selectedSearchResult!.name} al percorso'),
             ),
           ],
           const SizedBox(height: 16),
@@ -1010,9 +1010,7 @@ class _PlannerPanel extends StatelessWidget {
             FilledButton.tonalIcon(
               onPressed: onRemoveWaypoint,
               icon: const Icon(Icons.delete_outline_rounded),
-              label: Text(
-                'Rimuovi waypoint ${selectedWaypointIndex! + 1}',
-              ),
+              label: Text('Rimuovi waypoint ${selectedWaypointIndex! + 1}'),
             ),
           ],
           const SizedBox(height: 12),
@@ -1020,12 +1018,8 @@ class _PlannerPanel extends StatelessWidget {
             onPressed: planner.isRouting || traceProcessing
                 ? null
                 : onToggleTrace,
-            icon: Icon(
-              traceMode ? Icons.close_rounded : Icons.draw_rounded,
-            ),
-            label: Text(
-              traceMode ? 'Esci da Trace Mode' : 'Trace Mode',
-            ),
+            icon: Icon(traceMode ? Icons.close_rounded : Icons.draw_rounded),
+            label: Text(traceMode ? 'Esci da Trace Mode' : 'Trace Mode'),
           ),
           const SizedBox(height: 10),
           Row(
@@ -1072,10 +1066,7 @@ class _PlannerPanel extends StatelessWidget {
 }
 
 class _TracePainter extends CustomPainter {
-  const _TracePainter({
-    required this.points,
-    required this.color,
-  });
+  const _TracePainter({required this.points, required this.color});
 
   final List<Offset> points;
   final Color color;
@@ -1118,11 +1109,7 @@ class _TracePainter extends CustomPainter {
 }
 
 class _MetricRow extends StatelessWidget {
-  const _MetricRow({
-    required this.icon,
-    required this.label,
-    this.iconColor,
-  });
+  const _MetricRow({required this.icon, required this.label, this.iconColor});
 
   final IconData icon;
   final String label;
