@@ -33,18 +33,12 @@ void main() {
 
     expect(find.text('Before you head out'), findsOneWidget);
     expect(find.text('Start TrailPath'), findsOneWidget);
-    expect(
-      await database.getSetting(onboardingCompletedSettingKey),
-      isNull,
-    );
+    expect(await database.getSetting(onboardingCompletedSettingKey), isNull);
 
     await tester.tap(find.byKey(const ValueKey('onboarding_start')));
     await tester.pumpAndSettle();
 
-    expect(
-      await database.getSetting(onboardingCompletedSettingKey),
-      'true',
-    );
+    expect(await database.getSetting(onboardingCompletedSettingKey), 'true');
     expect(find.text('Search place or trail'), findsOneWidget);
     expect(find.text('Start TrailPath'), findsNothing);
   });
