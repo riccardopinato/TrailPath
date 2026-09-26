@@ -1,12 +1,18 @@
-# TrailPath v0.9.13 release E2E gate.
-# Covers native release startup, recording/recovery, route persistence,
-# real OSM routing, navigation startup and offline download initiation.
+# TrailPath v0.9.15 release-candidate E2E gate.
+# Covers first-run onboarding, recording/recovery, route persistence,
+# real OSM routing, navigation, completed offline download and offline restart.
 appId: com.riccardopinato.trail_path
 ---
 - launchApp:
     clearState: true
 
-- assertVisible: "Search place or trail"
+# First-run onboarding is shown once and persisted locally.
+- assertVisible: "Before you head out"
+- assertVisible: "Start TrailPath"
+- tapOn: "Start TrailPath"
+- extendedWaitUntil:
+    visible: "Search place or trail"
+    timeout: 15000
 
 # Recording lifecycle + process recovery.
 - tapOn:
@@ -125,10 +131,11 @@ appId: com.riccardopinato.trail_path
       text: '.*Available offline.*'
     timeout: 120000
 
-# Native offline-region readiness must survive process restart.
+# Native offline-region readiness and onboarding completion must survive restart.
 - stopApp
 - launchApp:
     clearState: false
+- assertNotVisible: "Start TrailPath"
 - tapOn:
     text: 'Offline\s*Tab 4 of 5'
 - extendedWaitUntil:

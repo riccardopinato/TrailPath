@@ -2031,28 +2031,34 @@ class _RoutingStatus extends StatelessWidget {
         ? (Icons.route_rounded, strings.routeSnapped)
         : (Icons.alt_route_rounded, strings.routeLocalFallback);
 
-    return Row(
-      children: [
-        if (planner.isRouting)
-          const SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          )
-        else
-          Icon(icon, size: 17, color: scheme.primary),
-        const SizedBox(width: 7),
-        Expanded(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: scheme.onSurfaceVariant,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
+    return Semantics(
+      liveRegion: planner.isRouting || planner.hasRoutingError,
+      label: label,
+      child: ExcludeSemantics(
+        child: Row(
+          children: [
+            if (planner.isRouting)
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else
+              Icon(icon, size: 17, color: scheme.primary),
+            const SizedBox(width: 7),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: scheme.onSurfaceVariant,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -2103,29 +2109,35 @@ class _MapActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: active
-            ? Theme.of(context).colorScheme.primaryContainer
-            : dark
-            ? const Color(0xD91A241E)
-            : const Color(0xEFFFFFFF),
-        shape: const CircleBorder(),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: Opacity(
-            opacity: onTap == null ? 0.38 : 1,
-            child: SizedBox(
-              width: 42,
-              height: 42,
-              child: Icon(
-                icon,
-                size: 20,
-                color: active
-                    ? Theme.of(context).colorScheme.onPrimaryContainer
-                    : null,
+    return Semantics(
+      button: true,
+      label: tooltip,
+      enabled: onTap != null,
+      selected: active,
+      child: Tooltip(
+        message: tooltip,
+        child: Material(
+          color: active
+              ? Theme.of(context).colorScheme.primaryContainer
+              : dark
+              ? const Color(0xD91A241E)
+              : const Color(0xEFFFFFFF),
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: Opacity(
+              opacity: onTap == null ? 0.38 : 1,
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: active
+                      ? Theme.of(context).colorScheme.onPrimaryContainer
+                      : null,
+                ),
               ),
             ),
           ),
@@ -2149,37 +2161,41 @@ class _TraceStatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: dark ? const Color(0xE6222A24) : const Color(0xF7FFFFFF),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: scheme.primary.withValues(alpha: 0.32)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (busy)
-              const SizedBox(
-                width: 15,
-                height: 15,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            else
-              Icon(Icons.draw_rounded, size: 17, color: scheme.primary),
-            const SizedBox(width: 7),
-            Flexible(
-              child: Text(
-                message,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+    return Semantics(
+      liveRegion: true,
+      label: message,
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: dark ? const Color(0xE6222A24) : const Color(0xF7FFFFFF),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: scheme.primary.withValues(alpha: 0.32)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (busy)
+                const SizedBox(
+                  width: 15,
+                  height: 15,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                Icon(Icons.draw_rounded, size: 17, color: scheme.primary),
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -2199,31 +2215,35 @@ class _LocationStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Material(
-        color: dark ? const Color(0xE6222A24) : const Color(0xF7FFFFFF),
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
+    return Semantics(
+      button: true,
+      label: message,
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Material(
+          color: dark ? const Color(0xE6222A24) : const Color(0xF7FFFFFF),
           borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.location_off_outlined, size: 17),
-                const SizedBox(width: 7),
-                Flexible(
-                  child: Text(
-                    message,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.location_off_outlined, size: 17),
+                  const SizedBox(width: 7),
+                  Flexible(
+                    child: Text(
+                      message,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

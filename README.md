@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.9.14 - Unified Core, Web Parity & Architecture Consolidation (build 26)
+v0.9.15 - Release Candidate & Production Readiness (build 27)
 
-TrailPath v0.9.14 consolidates the planner architecture so Android and Web run on the same RoutePlanner core, routing/elevation providers are platform-safe, and the Web Preview becomes a real parity surface instead of a parallel demo implementation.
+TrailPath v0.9.15 is the release-candidate hardening milestone: store signing, accessibility, performance, offline/upgrade regression, dependency/privacy review and final production gates before v1.0.
 
 ### Included
 

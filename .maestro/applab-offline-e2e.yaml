@@ -1,0 +1,44 @@
+# TrailPath v0.9.15 focused no-network RC gate.
+# Runs after the main E2E flow, reusing its saved route + downloaded map.
+appId: com.riccardopinato.trail_path
+---
+- setAirplaneMode: enabled
+- stopApp
+- launchApp:
+    clearState: false
+
+- assertNotVisible: "Start TrailPath"
+
+# The first bottom-nav tap can be swallowed while Android settles after
+# airplane-mode relaunch. Re-tapping the same destination is idempotent.
+- tapOn:
+    text: 'Routes\s*Tab 3 of 5'
+- waitForAnimationToEnd
+- tapOn:
+    text: 'Routes\s*Tab 3 of 5'
+
+- extendedWaitUntil:
+    visible: "Routes"
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      text: '.*TrailPath E2E Route.*'
+    timeout: 30000
+
+- tapOn: "Navigate"
+- extendedWaitUntil:
+    visible:
+      text: '.*TrailPath E2E Route.*'
+    timeout: 20000
+- assertVisible: "Remaining"
+- assertVisible: "Progress"
+- pressKey: BACK
+
+- tapOn:
+    text: 'Offline\s*Tab 4 of 5'
+- extendedWaitUntil:
+    visible:
+      text: '.*Available offline.*'
+    timeout: 20000
+
+- setAirplaneMode: disabled

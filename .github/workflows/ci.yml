@@ -48,7 +48,11 @@ jobs:
           test -f android/app/src/main/AndroidManifest.xml
           test -f android/app/src/main/kotlin/com/riccardopinato/trail_path/MainActivity.kt
           test -f android/app/src/main/res/drawable/ic_launcher.xml
+          test -f android/app/src/main/res/xml/data_extraction_rules.xml
           grep -Fq 'android:allowBackup="false"' android/app/src/main/AndroidManifest.xml
+          grep -Fq 'android:usesCleartextTraffic="false"' android/app/src/main/AndroidManifest.xml
+          grep -Fq 'android:dataExtractionRules="@xml/data_extraction_rules"' android/app/src/main/AndroidManifest.xml
+          grep -Fq 'TRAILPATH_REQUIRE_STORE_SIGNING' android/app/build.gradle.kts
 
       - name: Read app version
         id: app-version
@@ -59,6 +63,11 @@ jobs:
 
       - name: Resolve dependencies
         run: flutter pub get
+
+      - name: Audit dependency freshness
+        run: |
+          echo "Dependency freshness audit (informational):"
+          flutter pub outdated --no-dev-dependencies || true
 
       - name: Generate Drift code
         run: dart run build_runner build --delete-conflicting-outputs
@@ -72,16 +81,79 @@ jobs:
       - name: Test
         run: flutter test
 
+      - name: Detect store signing credentials
+        id: store-signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.TRAILPATH_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.TRAILPATH_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.TRAILPATH_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.TRAILPATH_KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$STORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASSWORD" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Store signing secrets are not configured; store-signed AAB will be skipped."
+          fi
+
       - name: Build ARM64 optimized release
         run: flutter build apk --release --target-platform android-arm64 --split-per-abi
 
       - name: Build x86_64 optimized release runtime gate
         run: flutter build apk --release --target-platform android-x64 --split-per-abi
 
+      - name: Build release AAB structure gate
+        run: flutter build appbundle --release
+
+      - name: Upload CI-only AAB structure artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-v${{ steps.app-version.outputs.app_version }}-ci-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Build store-signed AAB
+        if: steps.store-signing.outputs.available == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.TRAILPATH_KEYSTORE_BASE64 }}
+          TRAILPATH_STORE_PASSWORD: ${{ secrets.TRAILPATH_STORE_PASSWORD }}
+          TRAILPATH_KEY_ALIAS: ${{ secrets.TRAILPATH_KEY_ALIAS }}
+          TRAILPATH_KEY_PASSWORD: ${{ secrets.TRAILPATH_KEY_PASSWORD }}
+          TRAILPATH_REQUIRE_STORE_SIGNING: "true"
+        run: |
+          set -euo pipefail
+          umask 077
+          STORE_FILE="$RUNNER_TEMP/trailpath-upload.jks"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$STORE_FILE"
+          test -s "$STORE_FILE"
+          TRAILPATH_STORE_FILE="$STORE_FILE" flutter build appbundle --release
+          jarsigner -verify build/app/outputs/bundle/release/app-release.aab
+
+      - name: Upload store-signed AAB
+        if: steps.store-signing.outputs.available == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-v${{ steps.app-version.outputs.app_version }}-store-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+
       - name: Report release APK sizes
         run: |
           ls -lh build/app/outputs/flutter-apk/*-release.apk
           du -b build/app/outputs/flutter-apk/*-release.apk | sort -n
+
+      - name: Enforce ARM64 RC size budget
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-arm64-v8a-release.apk"
+          SIZE="$(stat -c%s "$APK")"
+          MAX_BYTES=$((40 * 1024 * 1024))
+          echo "ARM64 APK: $SIZE bytes; RC budget: $MAX_BYTES bytes"
+          if [ "$SIZE" -gt "$MAX_BYTES" ]; then
+            echo "::error::ARM64 APK exceeds the 40 MiB release-candidate budget."
+            exit 1
+          fi
 
       - name: Upload ARM64 release APK
         uses: actions/upload-artifact@v6
@@ -154,6 +226,10 @@ jobs:
             adb emu geo fix 11.7500 45.2320 100 || true
 
             RUN_MAESTRO=true MAESTRO_FLOW="$GITHUB_WORKSPACE/.maestro/applab-e2e.yaml" REPORT_DIR="$GITHUB_WORKSPACE/applab-report" .applab/scripts/verify_apk.sh "$GITHUB_WORKSPACE/apk/app-x86_64-release.apk" "com.riccardopinato.trail_path"
+
+            # Reuse the persisted E2E route/offline region for a focused
+            # no-network gate instead of replaying the entire online journey.
+            bash "$GITHUB_WORKSPACE/.maestro/run-offline-e2e.sh"
 
             grep -Fq -- "- Result: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
             grep -Fq -- "- Maestro: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"

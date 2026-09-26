@@ -177,8 +177,29 @@ class AppLocalizations {
   String get waitingForGps => _value('waitingForGps');
   String get gpsEvery => _value('gpsEvery');
 
+  String get onboardingTitle => _value('onboardingTitle');
+  String get onboardingIntro => _value('onboardingIntro');
+  String get onboardingPlanTitle => _value('onboardingPlanTitle');
+  String get onboardingPlanBody => _value('onboardingPlanBody');
+  String get onboardingOfflineTitle => _value('onboardingOfflineTitle');
+  String get onboardingOfflineBody => _value('onboardingOfflineBody');
+  String get onboardingRecordTitle => _value('onboardingRecordTitle');
+  String get onboardingRecordBody => _value('onboardingRecordBody');
+  String get onboardingPrivacy => _value('onboardingPrivacy');
+  String get onboardingStart => _value('onboardingStart');
+
   static const Map<String, Map<String, String>> _values = {
     'it': {
+      'onboardingTitle': 'Prima di partire',
+      'onboardingIntro': 'TrailPath ti aiuta a pianificare, registrare e seguire percorsi outdoor anche quando la rete manca.',
+      'onboardingPlanTitle': 'Pianifica su sentieri e strade',
+      'onboardingPlanBody': 'Tocca la mappa, cerca un luogo o disegna la traccia. Il percorso viene agganciato alla rete OSM quando disponibile.',
+      'onboardingOfflineTitle': 'Prepara la mappa offline',
+      'onboardingOfflineBody': 'Scarica la zona del percorso prima di uscire: la mappa preparata e la navigazione restano disponibili senza rete.',
+      'onboardingRecordTitle': 'Registra e naviga',
+      'onboardingRecordBody': 'Usa il GPS per registrare l’attività, seguire percorsi salvati e ritrovare il punto auto.',
+      'onboardingPrivacy': 'Percorsi e attività restano sul dispositivo. TrailPath chiede la posizione solo quando serve a una funzione GPS.',
+      'onboardingStart': 'Inizia con TrailPath',
       'planner': 'Pianifica',
       'record': 'Registra',
       'routes': 'Percorsi',
@@ -335,6 +356,16 @@ class AppLocalizations {
       'gpsEvery': 'Aggiornamento GPS ogni',
     },
     'en': {
+      'onboardingTitle': 'Before you head out',
+      'onboardingIntro': 'TrailPath helps you plan, record and follow outdoor routes, including when connectivity disappears.',
+      'onboardingPlanTitle': 'Plan on paths and roads',
+      'onboardingPlanBody': 'Tap the map, search for a place or draw a trace. TrailPath snaps the route to the OSM network when available.',
+      'onboardingOfflineTitle': 'Prepare an offline map',
+      'onboardingOfflineBody': 'Download the route area before you leave so the prepared map and saved-route navigation remain useful without a network.',
+      'onboardingRecordTitle': 'Record and navigate',
+      'onboardingRecordBody': 'Use GPS to record an activity, follow saved routes and return to a saved car position.',
+      'onboardingPrivacy': 'Routes and activities stay on this device. TrailPath asks for location only when a GPS feature needs it.',
+      'onboardingStart': 'Start TrailPath',
       'planner': 'Plan',
       'record': 'Record',
       'routes': 'Routes',
@@ -491,6 +522,16 @@ class AppLocalizations {
       'gpsEvery': 'GPS update every',
     },
     'es': {
+      'onboardingTitle': 'Antes de salir',
+      'onboardingIntro': 'TrailPath te ayuda a planificar, registrar y seguir rutas outdoor incluso cuando no hay conexión.',
+      'onboardingPlanTitle': 'Planifica por caminos y carreteras',
+      'onboardingPlanBody': 'Toca el mapa, busca un lugar o dibuja el trazado. TrailPath ajusta la ruta a la red OSM cuando está disponible.',
+      'onboardingOfflineTitle': 'Prepara un mapa offline',
+      'onboardingOfflineBody': 'Descarga la zona de la ruta antes de salir para mantener disponible el mapa preparado y la navegación sin conexión.',
+      'onboardingRecordTitle': 'Registra y navega',
+      'onboardingRecordBody': 'Usa el GPS para registrar una actividad, seguir rutas guardadas y volver a la posición del coche.',
+      'onboardingPrivacy': 'Las rutas y actividades permanecen en este dispositivo. TrailPath pide la ubicación solo cuando una función GPS la necesita.',
+      'onboardingStart': 'Empezar con TrailPath',
       'planner': 'Planificar',
       'record': 'Registrar',
       'routes': 'Rutas',
@@ -649,6 +690,16 @@ class AppLocalizations {
       'gpsEvery': 'Actualización GPS cada',
     },
     'fr': {
+      'onboardingTitle': 'Avant de partir',
+      'onboardingIntro': 'TrailPath vous aide à planifier, enregistrer et suivre des parcours outdoor, même sans connexion.',
+      'onboardingPlanTitle': 'Planifiez sur chemins et routes',
+      'onboardingPlanBody': 'Touchez la carte, recherchez un lieu ou dessinez la trace. TrailPath cale le parcours sur le réseau OSM lorsqu’il est disponible.',
+      'onboardingOfflineTitle': 'Préparez une carte hors ligne',
+      'onboardingOfflineBody': 'Téléchargez la zone du parcours avant de partir afin de garder la carte préparée et la navigation disponibles sans réseau.',
+      'onboardingRecordTitle': 'Enregistrez et naviguez',
+      'onboardingRecordBody': 'Utilisez le GPS pour enregistrer une activité, suivre des parcours sauvegardés et retrouver la position de la voiture.',
+      'onboardingPrivacy': 'Les parcours et activités restent sur cet appareil. TrailPath demande la position uniquement lorsqu’une fonction GPS en a besoin.',
+      'onboardingStart': 'Commencer avec TrailPath',
       'planner': 'Planifier',
       'record': 'Enregistrer',
       'routes': 'Parcours',
@@ -808,6 +859,16 @@ class AppLocalizations {
       'gpsEvery': 'Mise à jour GPS toutes les',
     },
     'pt': {
+      'onboardingTitle': 'Antes de sair',
+      'onboardingIntro': 'O TrailPath ajuda a planear, gravar e seguir percursos outdoor, mesmo quando não há ligação à rede.',
+      'onboardingPlanTitle': 'Planeie em trilhos e estradas',
+      'onboardingPlanBody': 'Toque no mapa, procure um local ou desenhe o traçado. O TrailPath ajusta o percurso à rede OSM quando disponível.',
+      'onboardingOfflineTitle': 'Prepare um mapa offline',
+      'onboardingOfflineBody': 'Descarregue a zona do percurso antes de sair para manter o mapa preparado e a navegação disponíveis sem rede.',
+      'onboardingRecordTitle': 'Grave e navegue',
+      'onboardingRecordBody': 'Use o GPS para gravar uma atividade, seguir percursos guardados e voltar à posição do carro.',
+      'onboardingPrivacy': 'Os percursos e atividades ficam neste dispositivo. O TrailPath pede a localização apenas quando uma função GPS precisa dela.',
+      'onboardingStart': 'Começar com TrailPath',
       'planner': 'Planear',
       'record': 'Gravar',
       'routes': 'Percursos',
