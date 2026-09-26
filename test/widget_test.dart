@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trail_path/app/app.dart';
@@ -23,6 +24,6 @@ void main() {
     expect(find.text('TrailPath'), findsOneWidget);
     expect(find.text('0 m'), findsNothing);
     expect(find.text('Start TrailPath'), findsNothing);
-    expect(find.text('Cerca luogo o sentiero'), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
   });
 }
