@@ -21,7 +21,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.text('TrailPath'), findsOneWidget);
-    expect(find.text('0 m'), findsOneWidget);
+    expect(find.text('0 m'), findsNothing);
     expect(find.text('Start TrailPath'), findsNothing);
+    expect(find.text('Cerca luogo o sentiero'), findsOneWidget);
   });
 }
