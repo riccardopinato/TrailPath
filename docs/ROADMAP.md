@@ -80,6 +80,7 @@ No new feature scope. Current candidate: **v1.0.0+29 re-certification**. The pre
 - [x] make Evidence Bundle automated-validation status reflect actual gate results;
 - [x] pin the AppLab harness to an exact SHA and record it in evidence;
 - [x] keep release checklist status tied only to the exact candidate;
+- [x] keep build-29 remediation clean under the strict Dart formatting gate;
 - [ ] rerun the complete AppLab sequence so Network/Offline, Background/Doze and focused no-network gates all execute on build 29.
 
 ### P1 — release hardening

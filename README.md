@@ -12,7 +12,7 @@ TrailPath v1.0.0 is the first stable Android release candidate. No new product s
 
 **RE-CERTIFICATION CANDIDATE — v1.0.0+29.** The previous +28 candidate is NOT CERTIFIED. Build 29 fixes certification integrity, pins the exact AppLab harness, couples saved-route deletion with native offline-region cleanup, and must rerun the complete API 29/API 35 matrix before any merge or release decision.
 
-The automated verdict is authoritative only in the Evidence Bundle generated for the exact candidate SHA. Production remains blocked until store signing, exact-artifact physical ARM64 QA and final Play Store/rollout approvals are complete.
+The automated verdict is authoritative only in the Evidence Bundle generated for the exact candidate SHA. Production remains blocked until store signing, exact-artifact physical ARM64 QA and final Play Store/rollout approvals are complete. The build-29 remediation is kept under the strict Dart formatting gate.
 
 ### Included
 

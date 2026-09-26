@@ -227,7 +227,9 @@ class RoutesScreen extends ConsumerWidget {
       if (!success && context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(strings.routeDeleteFailed)));
+        ).showSnackBar(
+          SnackBar(content: Text(strings.routeDeleteFailed)),
+        );
       }
     }
   }
