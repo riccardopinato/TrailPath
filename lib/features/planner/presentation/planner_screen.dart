@@ -25,7 +25,8 @@ class PlannerScreen extends ConsumerStatefulWidget {
   ConsumerState<PlannerScreen> createState() => _PlannerScreenState();
 }
 
-class _PlannerScreenState extends ConsumerState<PlannerScreen>\n    with WidgetsBindingObserver {
+class _PlannerScreenState extends ConsumerState<PlannerScreen>
+    with WidgetsBindingObserver {
   static const _fallbackCenter = LatLng(45.232, 11.750);
 
   MapLibreMapController? _mapController;
