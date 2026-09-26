@@ -19,6 +19,7 @@ jobs:
     timeout-minutes: 35
     outputs:
       app_version: ${{ steps.app-version.outputs.app_version }}
+      store_signing_available: ${{ steps.store-signing.outputs.available }}
 
     steps:
       - name: Checkout
@@ -170,6 +171,49 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+  android-api29-smoke:
+    name: Android API 29 Release Smoke
+    needs: validate-and-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout TrailPath
+        uses: actions/checkout@v6
+
+      - name: Download x86_64 release APK
+        uses: actions/download-artifact@v6
+        with:
+          name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-ci-x86_64
+          path: apk
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install, launch and restart release on API 29
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          target: google_apis
+          arch: x86_64
+          profile: pixel_4
+          disable-animations: true
+          script: |
+            bash "$GITHUB_WORKSPACE/.maestro/run-api29-smoke.sh"
+
+      - name: Upload API 29 smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-API29-Smoke-${{ github.sha }}
+          path: api29-report/
+          if-no-files-found: warn
+          retention-days: 30
+
   applab-android:
     name: AppLab Android E2E Gate
     needs: validate-and-build
@@ -196,7 +240,15 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: riccardopinato/AppLab
+          ref: 8ccddca7f0f94158483df92d5fd085fe32375de9
           path: .applab
+
+      - name: Verify pinned AppLab identity
+        run: |
+          set -euo pipefail
+          ACTUAL_APPLAB_SHA="$(git -C .applab rev-parse HEAD)"
+          test "$ACTUAL_APPLAB_SHA" = "8ccddca7f0f94158483df92d5fd085fe32375de9"
+          echo "Pinned AppLab: $ACTUAL_APPLAB_SHA"
 
       - name: Install Maestro
         run: |
@@ -246,3 +298,216 @@ jobs:
           path: applab-report/
           if-no-files-found: warn
           retention-days: 14
+
+
+  certification-evidence:
+    name: v1.0 Certification Evidence
+    needs: [validate-and-build, android-api29-smoke, applab-android]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout certification source
+        uses: actions/checkout@v6
+
+      - name: Download ARM64 release candidate
+        if: needs.validate-and-build.result == 'success'
+        uses: actions/download-artifact@v6
+        with:
+          name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-arm64-release
+          path: certification/arm64
+
+      - name: Download x86_64 AppLab artifact
+        if: needs.validate-and-build.result == 'success'
+        uses: actions/download-artifact@v6
+        with:
+          name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-ci-x86_64
+          path: certification/x86_64
+
+      - name: Download store-signed AAB
+        if: needs.validate-and-build.outputs.store_signing_available == 'true'
+        uses: actions/download-artifact@v6
+        with:
+          name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-store-aab
+          path: certification/store-aab
+
+      - name: Download AppLab evidence
+        if: needs.applab-android.result != 'skipped' && needs.applab-android.result != 'cancelled'
+        uses: actions/download-artifact@v6
+        with:
+          name: TrailPath-AppLab-${{ github.sha }}
+          path: certification/applab
+
+      - name: Build certification Evidence Bundle
+        env:
+          BUILD_RESULT: ${{ needs.validate-and-build.result }}
+          APPLAB_RESULT: ${{ needs.applab-android.result }}
+          API29_RESULT: ${{ needs.android-api29-smoke.result }}
+          STORE_SIGNING_AVAILABLE: ${{ needs.validate-and-build.outputs.store_signing_available }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          APPLAB_HARNESS_SHA: 8ccddca7f0f94158483df92d5fd085fe32375de9
+        run: |
+          set -euo pipefail
+          mkdir -p certification
+
+          APP_VERSION="$(awk '/^version:/ {print $2}' pubspec.yaml)"
+          SOURCE_SHA="${PR_HEAD_SHA:-$GITHUB_SHA}"
+          TEST_SHA="$GITHUB_SHA"
+
+          hash_or_na() {
+            local path="$1"
+            if [ -f "$path" ]; then
+              sha256sum "$path" | awk '{print $1}'
+            else
+              printf 'N/A'
+            fi
+          }
+
+          size_or_na() {
+            local path="$1"
+            if [ -f "$path" ]; then
+              stat -c%s "$path"
+            else
+              printf 'N/A'
+            fi
+          }
+
+          ARM64_APK="certification/arm64/app-arm64-v8a-release.apk"
+          X86_APK="certification/x86_64/app-x86_64-release.apk"
+          STORE_AAB="certification/store-aab/app-release.aab"
+
+          ARM64_SHA256="$(hash_or_na "$ARM64_APK")"
+          X86_SHA256="$(hash_or_na "$X86_APK")"
+          STORE_AAB_SHA256="$(hash_or_na "$STORE_AAB")"
+          ARM64_BYTES="$(size_or_na "$ARM64_APK")"
+          X86_BYTES="$(size_or_na "$X86_APK")"
+          STORE_AAB_BYTES="$(size_or_na "$STORE_AAB")"
+
+          test -n "$ARM64_SHA256"
+          test -n "$X86_SHA256"
+          test -n "$ARM64_BYTES"
+          test -n "$X86_BYTES"
+          test "$ARM64_SHA256" != "N/A"
+          test "$X86_SHA256" != "N/A"
+          test "$ARM64_BYTES" != "N/A"
+          test "$X86_BYTES" != "N/A"
+
+          PHYSICAL_QA="$(awk -F': ' '/^- Physical ARM64 device QA:/ {print $2}' docs/PRODUCTION_APPROVAL.md | tr -d '\r')"
+          STORE_REVIEW="$(awk -F': ' '/^- Play Store listing\/screenshots review:/ {print $2}' docs/PRODUCTION_APPROVAL.md | tr -d '\r')"
+          ROLLOUT_REVIEW="$(awk -F': ' '/^- Staged rollout \/ rollback review:/ {print $2}' docs/PRODUCTION_APPROVAL.md | tr -d '\r')"
+
+          if [ "$BUILD_RESULT" = "success" ] && [ "$API29_RESULT" = "success" ] && [ "$APPLAB_RESULT" = "success" ]; then
+            AUTOMATED_VALIDATION="PASS"
+          else
+            AUTOMATED_VALIDATION="FAIL"
+          fi
+
+          if [ "$AUTOMATED_VALIDATION" != "PASS" ]; then
+            VERDICT="NOT CERTIFIED"
+          elif [ "$STORE_SIGNING_AVAILABLE" != "true" ] || [ "$PHYSICAL_QA" != "PASS" ] || [ "$STORE_REVIEW" != "PASS" ] || [ "$ROLLOUT_REVIEW" != "PASS" ]; then
+            VERDICT="BLOCKED"
+          else
+            VERDICT="CERTIFIED"
+          fi
+
+          cat > certification/EVIDENCE_BUNDLE.md <<EOF
+          # TrailPath v1.0.0 Evidence Bundle
+
+          - Verdict: **$VERDICT**
+          - App version/build: **$APP_VERSION**
+          - Source head SHA: **$SOURCE_SHA**
+          - CI tested SHA: **$TEST_SHA**
+          - Workflow run: **$GITHUB_RUN_ID**
+          - Automated validation: **$AUTOMATED_VALIDATION**
+          - Certification status: **$VERDICT**
+          - AppLab harness SHA: **$APPLAB_HARNESS_SHA**
+          - Flutter: **3.47.5**
+          - Dart: **3.13.4**
+          - Android AppLab matrix: **API 35 / google_apis / x86_64 / Pixel 7 Pro profile**
+
+          ## Automated gates
+
+          - validate-and-build: **$BUILD_RESULT**
+          - Android API 29 release smoke: **$API29_RESULT**
+          - AppLab Android E2E (API 35): **$APPLAB_RESULT**
+          - Store-signing credentials available: **$STORE_SIGNING_AVAILABLE**
+          - Formatting / analyze / full Flutter tests: tied to validate-and-build
+          - ARM64 release / x86_64 release / AAB structure / size budget: tied to validate-and-build
+          - Focused no-network navigation: tied to AppLab Android E2E
+
+          ## Artifact identity
+
+          - AppLab-tested x86_64 APK SHA-256: **$X86_SHA256**
+          - AppLab-tested x86_64 APK bytes: **$X86_BYTES**
+          - ARM64 distribution candidate SHA-256: **$ARM64_SHA256**
+          - ARM64 distribution candidate bytes: **$ARM64_BYTES**
+          - Store-signed AAB SHA-256: **$STORE_AAB_SHA256**
+          - Store-signed AAB bytes: **$STORE_AAB_BYTES**
+
+          The x86_64 APK is the exact artifact exercised by AppLab. The ARM64
+          candidate requires physical-device validation of this exact SHA-256
+          before production certification.
+
+          ## External production gates
+
+          - Physical ARM64 device QA: **$PHYSICAL_QA**
+          - Play Store listing/screenshots review: **$STORE_REVIEW**
+          - Staged rollout / rollback review: **$ROLLOUT_REVIEW**
+
+          ## Certification rule
+
+          **CERTIFIED** requires all automated gates to pass, store-signing
+          credentials to be available, and every external production gate above
+          to be PASS. Automated failure yields **NOT CERTIFIED**. Missing external
+          evidence yields **BLOCKED**.
+          EOF
+
+          printf '%s\n' "$VERDICT" > certification/VERDICT.txt
+          {
+            printf '%s  %s\n' "$X86_SHA256" "app-x86_64-release.apk"
+            printf '%s  %s\n' "$ARM64_SHA256" "app-arm64-v8a-release.apk"
+            printf '%s  %s\n' "$STORE_AAB_SHA256" "app-release.aab"
+          } > certification/ARTIFACT_SHA256.txt
+
+          grep -Fq "$ARM64_SHA256" certification/EVIDENCE_BUNDLE.md
+          grep -Fq "$X86_SHA256" certification/EVIDENCE_BUNDLE.md
+          grep -Fq "$SOURCE_SHA" certification/EVIDENCE_BUNDLE.md
+          grep -Fq "$TEST_SHA" certification/EVIDENCE_BUNDLE.md
+          grep -Fq "Automated validation: **$AUTOMATED_VALIDATION**" certification/EVIDENCE_BUNDLE.md
+          grep -Fq "$APPLAB_HARNESS_SHA" certification/EVIDENCE_BUNDLE.md
+
+          if [ -f certification/applab/summary.md ]; then
+            cp certification/applab/summary.md certification/APPLAB_SUMMARY.md
+          fi
+
+          echo "Certification verdict: $VERDICT"
+          if [ "$VERDICT" = "BLOCKED" ]; then
+            echo "::warning::v1.0 production certification is BLOCKED by external release gates."
+          elif [ "$VERDICT" = "NOT CERTIFIED" ]; then
+            echo "::error::v1.0 automated certification failed."
+          fi
+
+      - name: Upload v1.0 Evidence Bundle
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-v1.0.0-Evidence-Bundle
+          path: |
+            certification/EVIDENCE_BUNDLE.md
+            certification/VERDICT.txt
+            certification/ARTIFACT_SHA256.txt
+            certification/APPLAB_SUMMARY.md
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload exact ARM64 certification candidate
+        if: needs.validate-and-build.result == 'success'
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-v1.0.0-ARM64-Certification-Candidate
+          path: |
+            certification/arm64/app-arm64-v8a-release.apk
+            certification/EVIDENCE_BUNDLE.md
+            certification/VERDICT.txt
+            certification/ARTIFACT_SHA256.txt
+          if-no-files-found: error
+          retention-days: 30

@@ -196,6 +196,35 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
     }
   }
 
+  Future<bool> deleteRouteAndOfflineData(String routeId) async {
+    final manager = ref.read(offlineMapManagerProvider);
+    final database = ref.read(appDatabaseProvider);
+
+    try {
+      // Native offline data belongs to the saved route lifecycle. Remove it
+      // first so a failed native cleanup never leaves an invisible orphan
+      // after the database row has already disappeared.
+      await manager.delete(routeId);
+      await database.deleteSavedRoute(routeId);
+
+      if (ref.mounted) {
+        final snapshots = {...state.snapshots}..remove(routeId);
+        final active = {...state.activeRouteIds}..remove(routeId);
+        state = state.copyWith(
+          snapshots: Map<String, OfflineRegion>.unmodifiable(snapshots),
+          activeRouteIds: Set<String>.unmodifiable(active),
+          clearError: true,
+        );
+      }
+      return true;
+    } on Object catch (error) {
+      if (ref.mounted) {
+        state = state.copyWith(error: error.toString());
+      }
+      return false;
+    }
+  }
+
   Future<bool> deleteRegion(String routeId) async {
     final manager = ref.read(offlineMapManagerProvider);
     final database = ref.read(appDatabaseProvider);
