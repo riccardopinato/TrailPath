@@ -30,7 +30,7 @@ Pinned AppLab harness remains `8ccddca7f0f94158483df92d5fd085fe32375de9`.
 - explicit Start / Destination / Add waypoint confirmation before route mutation
 - confirmed planner waypoints retain the exact user-selected coordinates even when route geometry is snapped to the OSM network
 - one-point compact destination prompt and valid-route compact summary bar
-- expandable draggable details sheet for profile, elevation, GPS and secondary actions
+- expandable draggable details sheet for profile, elevation, GPS and secondary actions, with save flow opened outside the sheet so dialogs are not swallowed by sheet dismissal
 - coalesced annotation sync plus route/waypoint/midpoint visual caches to reduce redundant MapLibre platform-channel updates
 - planner GPS tracking now follows app lifecycle: UI-only location streams stop outside the foreground and resume only when TrailPath is active
 - user-location compass rendering and recenter control
