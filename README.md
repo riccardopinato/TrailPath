@@ -17,6 +17,7 @@ TrailPath v1.0.0 is the first stable Android release candidate. No new product s
 - Map, routing, elevation, location, recording, navigation, offline, GPX and safety contracts
 - live MapLibre map in the planner
 - live GPS position with accuracy and heading
+- planner GPS tracking now follows app lifecycle: UI-only location streams stop outside the foreground and resume only when TrailPath is active
 - user-location compass rendering and recenter control
 - Android/iOS native location permission setup
 - tap-to-add waypoint planning with MapLibre annotations
