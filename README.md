@@ -22,6 +22,8 @@ Widget boot regression now matches the map-first empty state: no synthetic `0 m`
 
 The planner shell regression now asserts the search field semantically via the `TextField` widget instead of treating its `InputDecoration` hint as a standalone `Text` widget.
 
+AppLab planner journey now follows the explicit Start / Destination confirmation flow introduced in build 31 instead of assuming two raw map taps immediately create a savable route.
+
 ### Included
 
 - Flutter Android codebase with versioned native Android scaffold; iOS release is outside this Android v1.0 certification scope
