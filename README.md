@@ -14,6 +14,8 @@ TrailPath v1.0.0 is the first stable Android release candidate. No new product s
 
 The automated verdict is authoritative only in the Evidence Bundle generated for the exact candidate SHA. Production remains blocked until store signing, exact-artifact physical ARM64 QA and final Play Store/rollout approvals are complete. The build-30 remediation remains under the strict Dart formatting gate.
 
+Pinned AppLab harness for build 30: `8ccddca7f0f94158483df92d5fd085fe32375de9`.
+
 ### Included
 
 - Flutter Android codebase with versioned native Android scaffold; iOS release is outside this Android v1.0 certification scope
