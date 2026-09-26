@@ -374,6 +374,15 @@ jobs:
           X86_BYTES="$(size_or_na "$X86_APK")"
           STORE_AAB_BYTES="$(size_or_na "$STORE_AAB")"
 
+          test -n "$ARM64_SHA256"
+          test -n "$X86_SHA256"
+          test -n "$ARM64_BYTES"
+          test -n "$X86_BYTES"
+          test "$ARM64_SHA256" != "N/A"
+          test "$X86_SHA256" != "N/A"
+          test "$ARM64_BYTES" != "N/A"
+          test "$X86_BYTES" != "N/A"
+
           PHYSICAL_QA="$(awk -F': ' '/^- Physical ARM64 device QA:/ {print $2}' docs/PRODUCTION_APPROVAL.md | tr -d '\r')"
           STORE_REVIEW="$(awk -F': ' '/^- Play Store listing\/screenshots review:/ {print $2}' docs/PRODUCTION_APPROVAL.md | tr -d '\r')"
           ROLLOUT_REVIEW="$(awk -F': ' '/^- Staged rollout \/ rollback review:/ {print $2}' docs/PRODUCTION_APPROVAL.md | tr -d '\r')"
@@ -443,6 +452,11 @@ jobs:
             printf '%s  %s\n' "$ARM64_SHA256" "app-arm64-v8a-release.apk"
             printf '%s  %s\n' "$STORE_AAB_SHA256" "app-release.aab"
           } > certification/ARTIFACT_SHA256.txt
+
+          grep -Fq "$ARM64_SHA256" certification/EVIDENCE_BUNDLE.md
+          grep -Fq "$X86_SHA256" certification/EVIDENCE_BUNDLE.md
+          grep -Fq "$SOURCE_SHA" certification/EVIDENCE_BUNDLE.md
+          grep -Fq "$TEST_SHA" certification/EVIDENCE_BUNDLE.md
 
           if [ -f certification/applab/summary.md ]; then
             cp certification/applab/summary.md certification/APPLAB_SUMMARY.md
