@@ -86,6 +86,8 @@ TrailPath v1.0.0 is the first stable Android release candidate. No new product s
 - interrupted offline downloads remain visible and can be restarted safely
 - CI APK artifact names derive automatically from the pubspec version
 - release-mode AppLab Android E2E gate covering recording recovery, persisted activities, real routing, saved-route navigation, completed offline download and restart persistence
+- focused offline/no-network Maestro gate with fail-closed assertions and bounded retry only for recognized transient ADB/Maestro infrastructure failures
+- Android API 29 release smoke plus API 35 full AppLab certification matrix
 - committed Android Gradle/manifest scaffold for reproducible builds
 - R8/resource shrinking in release builds
 - single ARM64 release APK artifact for normal distribution plus an ephemeral x86_64 R8 runtime artifact for CI
@@ -93,7 +95,7 @@ TrailPath v1.0.0 is the first stable Android release candidate. No new product s
 - Italian, English, Spanish, French and Portuguese localization foundation
 - structured logging
 - tests
-- GitHub Actions for format, analyze, test, ARM64 release build and release-mode AppLab E2E
+- GitHub Actions for format, analyze, test, ARM64/x86_64 release builds, AAB validation, API 29 smoke, API 35 AppLab E2E and certification evidence
 
 ## Toolchain
 
