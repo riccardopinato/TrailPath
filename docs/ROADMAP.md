@@ -72,5 +72,5 @@ Replace duplicated Web preview planner state with the real shared planner/domain
 ## v0.9.15 - Release Candidate & Production Readiness
 First-run onboarding, accessibility hardening, fail-closed Play Store signing, AAB validation, privacy/security configuration, true no-network AppLab navigation, migration/offline regression evidence, dependency and size review, and final release-candidate audit.
 
-## v1.0 - Release
-Final regression, release notes, production signing verification, store metadata/screenshots, tag and staged production rollout.
+## v1.0 - Certification & Release
+No new feature scope. Run final regression on API 29 and API 35, generate an Evidence Bundle with exact artifact hashes, validate the exact ARM64 candidate on a physical device, verify production signing/store assets and only then tag and stage the production rollout.
