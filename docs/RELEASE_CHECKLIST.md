@@ -5,7 +5,7 @@ Unknown items are never treated as passed.
 
 | Area | Status | Evidence / requirement |
 | --- | --- | --- |
-| Product scope | Pass | v1.0.0 is limited to release-candidate hardening; no new product subsystem. |
+| Product scope | Pass | v1.0.0 is feature-frozen; this branch contains certification/release operations only. |
 | Versioning | Pass | pubspec 1.0.0+28 and MapConfig 1.0.0. |
 | First-run onboarding | Pass | Widget test passed and AppLab completed first-run onboarding plus persisted post-restart state on the RC branch. |
 | Formatting | Pass | Strict Dart formatting gate passed on the RC branch. |
@@ -30,8 +30,8 @@ Unknown items are never treated as passed.
 | Dependency freshness | Pass | Audit completed: permission_handler 12.0.3 has a 13.0.2 major available; major upgrade deliberately deferred beyond RC to avoid permission/API churn. Remaining reported items are transitive. |
 | APK/AAB size review | Pass | Previous RC ARM64 artifact measured 33,638,317 bytes; CI now enforces a 40 MiB ARM64 budget. |
 | Real-device physical QA | Not Tested | Requires installation on a physical Android device after RC artifact is available. |
-| Play Store listing/screenshots | Not Tested | Final v1.0 release task. |
-| Staged rollout / rollback plan | Not Tested | Final v1.0 release task. |
+| Play Store listing/screenshots | Not Tested | Store metadata draft and screenshot plan exist; final screenshots must come from the exact certified physical-device build. |
+| Staged rollout / rollback plan | Pass | docs/STAGED_ROLLOUT_v1.0.0.md defines staged rollout, pause criteria and rollback/hotfix path. |
 
 ## Release blockers
 
@@ -39,3 +39,19 @@ A **Fail** in formatting, analysis, tests, release builds, AppLab, migration
 integrity, offline navigation, privacy configuration or required store signing
 blocks release. Store metadata and physical-device QA may remain Not Tested only
 until the final v1.0 release gate; they cannot remain Not Tested for production.
+
+
+## Certification verdict
+
+**BLOCKED**
+
+Automated technical certification can complete on v1.0.0+28, but production
+certification cannot become **CERTIFIED** until all of the following have
+evidence on the exact release candidate:
+
+1. Store-signed AAB built and verified.
+2. Physical ARM64 device QA completed.
+3. Final Play Store screenshots/metadata reviewed.
+4. Staged rollout plan reviewed for the exact candidate.
+
+A public v1.0.0 tag/release must not be created while the verdict is BLOCKED.
