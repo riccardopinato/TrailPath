@@ -25,7 +25,7 @@ class PlannerScreen extends ConsumerStatefulWidget {
   ConsumerState<PlannerScreen> createState() => _PlannerScreenState();
 }
 
-class _PlannerScreenState extends ConsumerState<PlannerScreen> {
+class _PlannerScreenState extends ConsumerState<PlannerScreen>\n    with WidgetsBindingObserver {
   static const _fallbackCenter = LatLng(45.232, 11.750);
 
   MapLibreMapController? _mapController;
@@ -53,6 +53,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   Circle? _searchCircle;
   Line? _dragPreviewLine;
   String? _locationError;
+  bool _appInForeground = true;
   final TextEditingController _searchController = TextEditingController();
 
   bool get _runningWidgetTest =>
@@ -61,12 +62,34 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    final lifecycleState = WidgetsBinding.instance.lifecycleState;
+    _appInForeground =
+        lifecycleState == null || lifecycleState == AppLifecycleState.resumed;
     Future<void>.microtask(_initializeLocation);
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final isForeground = state == AppLifecycleState.resumed;
+    if (_appInForeground == isForeground) {
+      return;
+    }
+
+    _appInForeground = isForeground;
+    if (isForeground) {
+      if (_permissionGranted && _locationServiceEnabled) {
+        unawaited(_startPositionWatch());
+      }
+    } else {
+      unawaited(_stopPositionWatch());
+    }
+  }
+
+  @override
   void dispose() {
-    _positionSubscription?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_stopPositionWatch());
     _searchController.dispose();
     _mapController?.dispose();
     super.dispose();
@@ -132,20 +155,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         await _focusPosition(current, zoom: 15.5);
       }
 
-      await _positionSubscription?.cancel();
-      _positionSubscription = engine.watch().listen(
-        (sample) {
-          if (!mounted) {
-            return;
-          }
-          setState(() => _position = sample);
-        },
-        onError: (Object error, StackTrace stackTrace) {
-          if (mounted) {
-            setState(() => _locationError = error.toString());
-          }
-        },
-      );
+      if (_appInForeground) {
+        await _startPositionWatch();
+      }
     } catch (error) {
       if (mounted) {
         setState(() {
@@ -154,6 +166,41 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         });
       }
     }
+  }
+
+  Future<void> _startPositionWatch() async {
+    if (!mounted || !_appInForeground) {
+      return;
+    }
+
+    final engine = ref.read(locationEngineProvider);
+    await _stopPositionWatch();
+    if (!mounted || !_appInForeground) {
+      return;
+    }
+
+    _positionSubscription = engine.watch().listen(
+      (sample) {
+        if (!mounted || !_appInForeground) {
+          return;
+        }
+        setState(() {
+          _position = sample;
+          _locationError = null;
+        });
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        if (mounted && _appInForeground) {
+          setState(() => _locationError = error.toString());
+        }
+      },
+    );
+  }
+
+  Future<void> _stopPositionWatch() async {
+    final subscription = _positionSubscription;
+    _positionSubscription = null;
+    await subscription?.cancel();
   }
 
   Future<void> _focusPosition(PositionSample sample, {double zoom = 16}) async {
