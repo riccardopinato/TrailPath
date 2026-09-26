@@ -73,4 +73,26 @@ Replace duplicated Web preview planner state with the real shared planner/domain
 First-run onboarding, accessibility hardening, fail-closed Play Store signing, AAB validation, privacy/security configuration, true no-network AppLab navigation, migration/offline regression evidence, dependency and size review, and final release-candidate audit.
 
 ## v1.0 - Certification & Release
-No new feature scope. Run final regression on API 29 and API 35, generate an Evidence Bundle with exact artifact hashes, validate the exact ARM64 candidate on a physical device, verify production signing/store assets and only then tag and stage the production rollout. The focused offline gate remains fail-closed for product assertions and retries only recognized transient ADB/Maestro infrastructure failures so CI instability cannot be mistaken for an application regression. Final runtime hardening also suspends the planner's UI-only GPS stream whenever the app leaves the foreground, while recording/navigation background tracking remains governed by their dedicated engines.
+No new feature scope. Current audit verdict: **NOT CERTIFIED**.
+
+### P0 — certification integrity
+- isolate and resolve the API 35 Network & Offline Lab failure without weakening fail-closed behavior;
+- make Evidence Bundle automated-validation status reflect actual gate results;
+- pin the AppLab harness to an exact ref and record its SHA in evidence;
+- keep release checklist status tied only to the exact candidate;
+- rerun the complete AppLab sequence so the current planner background-GPS lifecycle fix reaches the Background/Doze lab.
+
+### P1 — release hardening
+- cascade/reconcile native offline-region deletion when a saved route is deleted;
+- establish performance/visual baselines and validate ARM64 performance on a physical device;
+- record resolved Android SDK/merged foreground-service contract in release evidence;
+- decide/accept a production routing-provider reliability strategy;
+- complete exact-artifact ARM64 physical QA, store signing, Play metadata/screenshots and rollout review.
+
+### P2/P3 — post-blocker quality
+- broaden accessibility and safe interaction coverage;
+- replace raw exception strings with localized user-facing errors;
+- upgrade permission_handler after v1 certification with regression tests;
+- decide whether local route/activity history requires app-level encryption.
+
+Full detail: `docs/FULL_AUDIT_v1.0.0.md`.
