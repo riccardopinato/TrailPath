@@ -10,7 +10,7 @@ TrailPath v1.0.0 is the first stable Android release candidate. No new product s
 
 ### Included
 
-- Flutter Android codebase with versioned native Android scaffold (iOS release scaffold remains a v1.0 task)
+- Flutter Android codebase with versioned native Android scaffold; iOS release is outside this Android v1.0 certification scope
 - Riverpod dependency injection and state foundation
 - GoRouter navigation foundation
 - Drift local database schema v3 with recoverable activity drafts, return points and app settings
@@ -99,7 +99,7 @@ TrailPath v1.0.0 is the first stable Android release candidate. No new product s
 
 The CI is pinned to Flutter 3.47.5 / Dart 3.13.4, Gradle 9.1.0, Android Gradle Plugin 9.0.1 and Kotlin Gradle Plugin 2.3.20. Built-in Kotlin is temporarily opted out because Flutter 3.47.x currently rejects AGP 9's bundled Kotlin 2.2.10 during dependency validation.
 
-The Android native scaffold is committed and validated by CI for reproducible builds. The iOS release scaffold remains scheduled for v1.0. The current public routing endpoint is suitable for development and validation; the RoutingEngine abstraction is intentionally kept provider-agnostic so a production-grade or self-hosted service can replace it without changing the planner.
+The Android native scaffold is committed and validated by CI for reproducible builds. iOS is not part of the Android v1.0 certification and remains a later release track. The current public routing endpoint is suitable for development and validation; the RoutingEngine abstraction is intentionally kept provider-agnostic so a production-grade or self-hosted service can replace it without changing the planner.
 
 ## Bootstrap locally
 
