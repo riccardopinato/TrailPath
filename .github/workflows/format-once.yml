@@ -1,0 +1,39 @@
+name: TrailPath one-shot formatter
+
+on:
+  push:
+    branches:
+      - release/v1.0.0
+
+permissions:
+  contents: write
+
+jobs:
+  format-and-self-remove:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v6
+        with:
+          ref: release/v1.0.0
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.5"
+          channel: stable
+          cache: true
+
+      - name: Format changed Dart files
+        run: |
+          dart format             lib/features/planner/application/route_planner_controller.dart             lib/features/planner/presentation/planner_screen.dart             test/core/architecture/planner_map_first_contract_test.dart             test/features/planner/route_planner_controller_test.dart
+
+      - name: Remove one-shot workflow and commit formatting
+        run: |
+          rm .github/workflows/format-once.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             lib/features/planner/application/route_planner_controller.dart             lib/features/planner/presentation/planner_screen.dart             test/core/architecture/planner_map_first_contract_test.dart             test/features/planner/route_planner_controller_test.dart             .github/workflows/format-once.yml
+          git commit -m "style: apply Dart formatter to planner UX pass"
+          git push origin HEAD:release/v1.0.0
