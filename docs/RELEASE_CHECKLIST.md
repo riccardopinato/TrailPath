@@ -1,12 +1,12 @@
-# TrailPath v0.9.15 release-candidate checklist
+# TrailPath v1.0.0 certification checklist
 
 Status values are limited to **Pass**, **Fail**, **N/A** and **Not Tested**.
 Unknown items are never treated as passed.
 
 | Area | Status | Evidence / requirement |
 | --- | --- | --- |
-| Product scope | Pass | v0.9.15 is limited to release-candidate hardening; no new product subsystem. |
-| Versioning | Pass | pubspec 0.9.15+27 and MapConfig 0.9.15. |
+| Product scope | Pass | v1.0.0 is limited to release-candidate hardening; no new product subsystem. |
+| Versioning | Pass | pubspec 1.0.0+28 and MapConfig 1.0.0. |
 | First-run onboarding | Pass | Widget test passed and AppLab completed first-run onboarding plus persisted post-restart state on the RC branch. |
 | Formatting | Pass | Strict Dart formatting gate passed on the RC branch. |
 | Static analysis | Pass | flutter analyze passed on the RC branch. |
@@ -15,13 +15,13 @@ Unknown items are never treated as passed.
 | x86_64 R8 runtime APK | Pass | Optimized x86_64 release runtime build completed in CI. |
 | Release AAB structure | Pass | Unsigned/debug-fallback structural release AAB gate completed in CI; store publishing still requires store-signed artifact. |
 | Store-signed AAB | Not Tested | Requires the four repository signing secrets; CI fails closed when store signing is explicitly required. |
-| AppLab release E2E | Not Tested | Primary journey passed before the focused offline split; current-head rerun pending. |
+| AppLab release E2E | Pass | v0.9.15 predecessor gate passed end-to-end; v1.0.0 must rerun on the exact build-28 artifact before certification. |
 | Recording recovery | Pass | RC AppLab reached recovered recording, resume, completion and persisted activity before the offline split. |
 | Saved route navigation | Pass | RC AppLab opened saved-route navigation and verified Remaining/Progress before the offline split. |
 | Offline map download + restart | Pass | RC AppLab completed the MapLibre download and verified Available offline after process restart. |
-| Navigation with network disabled | Not Tested | Focused persisted-state airplane-mode AppLab flow added; current-head evidence pending. |
+| Navigation with network disabled | Pass | v0.9.15 predecessor focused airplane-mode gate passed; v1.0.0 must rerun on the exact build-28 artifact before certification. |
 | Database migrations v1/v2 → v3 | Pass | Migration regression tests are included in the full passing Flutter suite. |
-| Database schema change | N/A | v0.9.15 does not change Drift schema version 3. |
+| Database schema change | N/A | v1.0.0 does not change Drift schema version 3. |
 | Android backup/device transfer | Pass | Manifest disables backup and data-extraction rules exclude app data. |
 | Cleartext HTTP | Pass | Android runtime explicitly disables cleartext traffic. |
 | Privacy documentation | Pass | docs/PRIVACY.md reflects current local/network behavior. |
