@@ -4,15 +4,15 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v1.0.0 - Certification & Release (build 29)
+v1.0.0 - Certification & Release (build 30)
 
 TrailPath v1.0.0 is the first stable Android release candidate. No new product scope is added here: the milestone is limited to final regression, artifact certification, release evidence and production-readiness gates.
 
 ### Current certification status
 
-**RE-CERTIFICATION CANDIDATE — v1.0.0+29.** The previous +28 candidate is NOT CERTIFIED. Build 29 fixes certification integrity, pins the exact AppLab harness, couples saved-route deletion with native offline-region cleanup, and must rerun the complete API 29/API 35 matrix before any merge or release decision.
+**RE-CERTIFICATION CANDIDATE — v1.0.0+30.** The +29 candidate proved that active offline connectivity detection is fixed, but exposed a second AppLab harness race: a single transient `pidof` miss was classified as an app death even while dedicated Logcat evidence showed the relaunched TrailPath process active and its MainActivity displayed. Build 30 pins the hardened AppLab runtime-health check and reruns the complete API 29/API 35 matrix before any merge or release decision.
 
-The automated verdict is authoritative only in the Evidence Bundle generated for the exact candidate SHA. Production remains blocked until store signing, exact-artifact physical ARM64 QA and final Play Store/rollout approvals are complete. The build-29 remediation is kept under the strict Dart formatting gate.
+The automated verdict is authoritative only in the Evidence Bundle generated for the exact candidate SHA. Production remains blocked until store signing, exact-artifact physical ARM64 QA and final Play Store/rollout approvals are complete. The build-30 remediation remains under the strict Dart formatting gate.
 
 ### Included
 

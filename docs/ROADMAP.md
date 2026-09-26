@@ -73,15 +73,16 @@ Replace duplicated Web preview planner state with the real shared planner/domain
 First-run onboarding, accessibility hardening, fail-closed Play Store signing, AAB validation, privacy/security configuration, true no-network AppLab navigation, migration/offline regression evidence, dependency and size review, and final release-candidate audit.
 
 ## v1.0 - Certification & Release
-No new feature scope. Current candidate: **v1.0.0+29 re-certification**. The previous +28 audit verdict remains **NOT CERTIFIED**.
+No new feature scope. Current candidate: **v1.0.0+30 re-certification**. The previous +28 audit verdict remains **NOT CERTIFIED**.
 
 ### P0 — certification integrity
 - [x] harden AppLab active-connectivity detection and preserve dedicated network-stage Logcat evidence;
 - [x] make Evidence Bundle automated-validation status reflect actual gate results;
 - [x] pin the AppLab harness to an exact SHA and record it in evidence;
 - [x] keep release checklist status tied only to the exact candidate;
-- [x] keep build-29 remediation clean under the strict Dart formatting gate;
-- [ ] rerun the complete AppLab sequence so Network/Offline, Background/Doze and focused no-network gates all execute on build 29.
+- [x] keep remediation clean under the strict Dart formatting gate;
+- [x] fix AppLab Network Lab active-connectivity parsing and cold-relaunch `pidof` stabilization;
+- [ ] rerun the complete AppLab sequence so Network/Offline, Background/Doze and focused no-network gates all execute on build 30.
 
 ### P1 — release hardening
 - [x] cascade native offline-region deletion when a saved route is deleted, with regression coverage;

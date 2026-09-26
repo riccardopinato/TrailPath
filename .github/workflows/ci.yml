@@ -240,14 +240,14 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: riccardopinato/AppLab
-          ref: 9c842837e7efddd27d7fdf600482d75e7f9a2dcb
+          ref: 8ccddca7f0f94158483df92d5fd085fe32375de9
           path: .applab
 
       - name: Verify pinned AppLab identity
         run: |
           set -euo pipefail
           ACTUAL_APPLAB_SHA="$(git -C .applab rev-parse HEAD)"
-          test "$ACTUAL_APPLAB_SHA" = "9c842837e7efddd27d7fdf600482d75e7f9a2dcb"
+          test "$ACTUAL_APPLAB_SHA" = "8ccddca7f0f94158483df92d5fd085fe32375de9"
           echo "Pinned AppLab: $ACTUAL_APPLAB_SHA"
 
       - name: Install Maestro
@@ -345,7 +345,7 @@ jobs:
           API29_RESULT: ${{ needs.android-api29-smoke.result }}
           STORE_SIGNING_AVAILABLE: ${{ needs.validate-and-build.outputs.store_signing_available }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          APPLAB_HARNESS_SHA: 9c842837e7efddd27d7fdf600482d75e7f9a2dcb
+          APPLAB_HARNESS_SHA: 8ccddca7f0f94158483df92d5fd085fe32375de9
         run: |
           set -euo pipefail
           mkdir -p certification

@@ -260,3 +260,17 @@ Completed before re-certification:
 - regression coverage added for route/offline lifecycle cleanup.
 
 The +29 candidate must now rerun the full API 29 + API 35/AppLab matrix. No +28 PASS/FAIL row is promoted to +29 automatically.
+
+
+## Re-certification update — build 30
+
+The build-29 AppLab rerun provided decisive evidence on the previous Network Lab failure:
+
+- airplane mode was correctly detected with `default_network=none` and `validated_internet=false`;
+- TrailPath was intentionally force-stopped by the lab and relaunched as PID 6590;
+- dedicated offline Logcat showed `MainActivity` created/resumed/displayed and the process still active;
+- the lab nevertheless reported `application process is not running` from a later single `pidof` probe.
+
+This is a harness race, not evidence of a TrailPath crash. AppLab now fails closed on target ANR/fatal exceptions and requires process stability across a bounded relaunch window instead of treating one transient `pidof` miss as conclusive.
+
+TrailPath build 30 pins AppLab harness SHA `8ccddca7f0f94158483df92d5fd085fe32375de9` and reruns the complete certification matrix. The build-29 result remains NOT CERTIFIED; no historical result is promoted to PASS.

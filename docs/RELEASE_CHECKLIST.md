@@ -3,8 +3,8 @@
 Status values are limited to **Pass**, **Fail**, **N/A** and **Not Tested**.
 Historical predecessor evidence is not counted as current-candidate evidence.
 
-Current candidate: **v1.0.0+29**  
-Pinned AppLab harness: **9c842837e7efddd27d7fdf600482d75e7f9a2dcb**
+Current candidate: **v1.0.0+30**  
+Pinned AppLab harness: **8ccddca7f0f94158483df92d5fd085fe32375de9**
 
 | Area | Status | Evidence / requirement |
 | --- | --- | --- |
@@ -14,16 +14,16 @@ Pinned AppLab harness: **9c842837e7efddd27d7fdf600482d75e7f9a2dcb**
 | AppLab harness identity | Pass | Workflow is pinned to the exact SHA above and records it in the Evidence Bundle. |
 | Saved-route deletion lifecycle | Pass | Route deletion now removes the linked native offline region before deleting route/waypoints; regression test added. |
 | Planner foreground GPS lifecycle contract | Pass | Source regression test exists; runtime certification still required below. |
-| Formatting | Not Tested | Must pass on exact build-29 candidate. |
-| Static analysis | Not Tested | Must pass on exact build-29 candidate. |
-| Full Flutter tests | Not Tested | Must pass on exact build-29 candidate. |
-| ARM64 release APK | Not Tested | Must be generated from exact build-29 SHA. |
-| x86_64 R8 runtime APK | Not Tested | Must be generated from exact build-29 SHA. |
-| Release AAB structure | Not Tested | Must pass on exact build-29 SHA. |
+| Formatting | Not Tested | Must pass on exact build-30 candidate. |
+| Static analysis | Not Tested | Must pass on exact build-30 candidate. |
+| Full Flutter tests | Not Tested | Must pass on exact build-30 candidate. |
+| ARM64 release APK | Not Tested | Must be generated from exact build-30 SHA. |
+| x86_64 R8 runtime APK | Not Tested | Must be generated from exact build-30 SHA. |
+| Release AAB structure | Not Tested | Must pass on exact build-30 SHA. |
 | ARM64 size budget | Not Tested | 40 MiB gate remains enforced. |
-| Android API 29 release smoke | Not Tested | Must rerun on exact build-29 artifact. |
+| Android API 29 release smoke | Not Tested | Must rerun on exact build-30 artifact. |
 | API 35 AppLab full gate | Not Tested | Must rerun through every required lab. |
-| Network & Offline Lab | Not Tested | Must validate using the pinned hardened AppLab harness. |
+| Network & Offline Lab | Not Tested | Active-connectivity parsing and cold-relaunch runtime stabilization are fixed in the pinned AppLab harness; build 30 must rerun the lab. |
 | Focused no-network navigation gate | Not Tested | Must run after full AppLab passes. |
 | Background/Doze recovery | Not Tested | Must reach and pass on current GPS lifecycle implementation. |
 | Database migrations v1/v2 → v3 | Not Tested | Covered by full Flutter suite when rerun. |
