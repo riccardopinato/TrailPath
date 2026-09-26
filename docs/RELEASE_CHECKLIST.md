@@ -4,7 +4,7 @@ Status values are limited to **Pass**, **Fail**, **N/A** and **Not Tested**.
 Historical predecessor evidence is not counted as current-candidate evidence.
 
 Current candidate: **v1.0.0+31**  
-Pinned AppLab harness: **8ccddca7f0f94158483df92d5fd085fe32375de9**
+Pinned AppLab harness: **16271b3ffa34982a0f04fd118565047e7c09e743**
 
 | Area | Status | Evidence / requirement |
 | --- | --- | --- |
@@ -22,10 +22,10 @@ Pinned AppLab harness: **8ccddca7f0f94158483df92d5fd085fe32375de9**
 | Release AAB structure | Not Tested | Build 31 certification run pending. |
 | ARM64 size budget | Pass | 33,638,317 bytes; below 40 MiB gate. |
 | Android API 29 release smoke | Not Tested | Build 31 certification run pending. |
-| API 35 AppLab full gate | Not Tested | Build 31 certification run pending. |
-| Network & Offline Lab | Not Tested | Build 31 certification run pending. |
-| Focused no-network navigation gate | Not Tested | Build 31 certification run pending. |
-| Background/Doze recovery | Not Tested | Build 31 certification run pending. |
+| API 35 AppLab full gate | Not Tested | Fresh build-31 run pending on pinned harness 16271b3ffa34982a0f04fd118565047e7c09e743. |
+| Network & Offline Lab | Not Tested | Fresh build-31 run pending on pinned harness 16271b3ffa34982a0f04fd118565047e7c09e743. |
+| Focused no-network navigation gate | Not Tested | Fresh build-31 run pending on pinned harness 16271b3ffa34982a0f04fd118565047e7c09e743. |
+| Background/Doze recovery | Not Tested | Fresh build-31 run pending on pinned harness 16271b3ffa34982a0f04fd118565047e7c09e743. |
 | Database migrations v1/v2 → v3 | Pass | Migration tests passed in full Flutter suite. |
 | Android backup/device transfer | Pass | Backup disabled and extraction rules exclude app data. |
 | Cleartext HTTP | Pass | Explicitly disabled in Android manifest. |

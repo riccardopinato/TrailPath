@@ -14,7 +14,9 @@ TrailPath v1.0.0 is the first stable Android release candidate. No new product s
 
 The previous build 30 remains the last fully green automated baseline. Build 31 must pass the complete certification matrix before replacing it as the validated candidate. Production remains blocked by exact-artifact physical ARM64 QA, store signing, Play Store assets/review and staged-rollout approval.
 
-Pinned AppLab harness remains `8ccddca7f0f94158483df92d5fd085fe32375de9`.
+Pinned AppLab harness remains `16271b3ffa34982a0f04fd118565047e7c09e743`.
+
+The pinned AppLab harness now includes Configuration/Lifecycle recovery for Android-allowed process reclaim during repeated background/foreground stress while still failing on target ANR/fatal evidence.
 
 Build 31 planner sources and regression tests are normalized with the same Dart formatter shipped by the pinned Flutter 3.47.5 CI toolchain.
 

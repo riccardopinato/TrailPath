@@ -4,7 +4,7 @@ Audit date: 2026-09-26
 Audited runtime candidate: **v1.0.0+30**  
 Audited source SHA: `e8323cab507d34fd2a09ba6978439723b3c46e29`  
 Certification workflow: **TrailPath CI #376**  
-AppLab harness: `8ccddca7f0f94158483df92d5fd085fe32375de9`
+AppLab harness: `16271b3ffa34982a0f04fd118565047e7c09e743`
 
 ## Executive result
 
@@ -196,3 +196,5 @@ Implemented from physical-device feedback and the reference-app benchmark:
 - confirmed user-selected waypoint coordinates are now kept stable after routing: the route geometry may snap to the OSM network, but the start/destination/waypoint marker no longer jumps to the provider's snapped coordinate.
 
 Build 31 is a new runtime artifact and **must not inherit build-30 certification**. It requires the full automated matrix and a new physical ARM64 comparison focused on pan/zoom, point preview, destination confirmation, waypoint drag and bottom-sheet behavior.
+
+The first build-31 full AppLab rerun reached the new planner flow successfully but exposed an AppLab Configuration/Lifecycle race: Android reclaimed the process after a foreground return, and the harness treated the transient process absence as an app failure without attempting recovery. AppLab was hardened in `16271b3ffa34982a0f04fd118565047e7c09e743` to allow one bounded relaunch in that specific lifecycle stage while preserving fail-closed ANR/fatal checks. TrailPath is now pinned to that exact harness SHA and requires a fresh full certification run.
