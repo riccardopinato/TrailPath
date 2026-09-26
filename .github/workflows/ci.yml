@@ -391,10 +391,11 @@ jobs:
 
           - Verdict: **$VERDICT**
           - App version/build: **$APP_VERSION**
-          - Source head SHA: `$SOURCE_SHA`
-          - CI tested SHA: `$TEST_SHA`
-          - Workflow run: `$GITHUB_RUN_ID`
-          - Validation level: **CERTIFIED**
+          - Source head SHA: **$SOURCE_SHA**
+          - CI tested SHA: **$TEST_SHA**
+          - Workflow run: **$GITHUB_RUN_ID**
+          - Automated validation: **PASS**
+          - Certification status: **$VERDICT**
           - Flutter: **3.47.5**
           - Dart: **3.13.4**
           - Android AppLab matrix: **API 35 / google_apis / x86_64 / Pixel 7 Pro profile**
@@ -411,12 +412,12 @@ jobs:
 
           ## Artifact identity
 
-          - AppLab-tested x86_64 APK SHA-256: `$X86_SHA256`
-          - AppLab-tested x86_64 APK bytes: `$X86_BYTES`
-          - ARM64 distribution candidate SHA-256: `$ARM64_SHA256`
-          - ARM64 distribution candidate bytes: `$ARM64_BYTES`
-          - Store-signed AAB SHA-256: `$STORE_AAB_SHA256`
-          - Store-signed AAB bytes: `$STORE_AAB_BYTES`
+          - AppLab-tested x86_64 APK SHA-256: **$X86_SHA256**
+          - AppLab-tested x86_64 APK bytes: **$X86_BYTES**
+          - ARM64 distribution candidate SHA-256: **$ARM64_SHA256**
+          - ARM64 distribution candidate bytes: **$ARM64_BYTES**
+          - Store-signed AAB SHA-256: **$STORE_AAB_SHA256**
+          - Store-signed AAB bytes: **$STORE_AAB_BYTES**
 
           The x86_64 APK is the exact artifact exercised by AppLab. The ARM64
           candidate requires physical-device validation of this exact SHA-256
