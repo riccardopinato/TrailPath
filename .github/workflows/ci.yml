@@ -19,6 +19,9 @@ jobs:
     timeout-minutes: 35
     outputs:
       app_version: ${{ steps.app-version.outputs.app_version }}
+      arm64_sha256: ${{ steps.certification-base.outputs.arm64_sha256 }}
+      arm64_size: ${{ steps.certification-base.outputs.arm64_size }}
+      store_signing: ${{ steps.store-signing.outputs.available }}
 
     steps:
       - name: Checkout
@@ -155,6 +158,45 @@ jobs:
             exit 1
           fi
 
+      - name: Write certification base evidence
+        id: certification-base
+        env:
+          STORE_SIGNING_AVAILABLE: ${{ steps.store-signing.outputs.available }}
+        run: |
+          set -euo pipefail
+          mkdir -p certification
+          APK="build/app/outputs/flutter-apk/app-arm64-v8a-release.apk"
+          APK_SIZE="$(stat -c%s "$APK")"
+          APK_SHA256="$(sha256sum "$APK" | awk '{print $1}')"
+          TESTED_COMMIT="$(git rev-parse HEAD)"
+          {
+            echo "TRAILPATH_CERTIFICATION_EVIDENCE_V1"
+            echo "VERSION=${{ steps.app-version.outputs.app_version }}"
+            echo "BUILD=28"
+            echo "TESTED_COMMIT=$TESTED_COMMIT"
+            echo "WORKFLOW_SHA=$GITHUB_SHA"
+            echo "DART_FORMAT=PASS"
+            echo "FLUTTER_ANALYZE=PASS"
+            echo "FLUTTER_TEST=PASS"
+            echo "ARM64_RELEASE_BUILD=PASS"
+            echo "X86_64_RELEASE_BUILD=PASS"
+            echo "AAB_STRUCTURE_BUILD=PASS"
+            echo "STORE_SIGNING_AVAILABLE=$STORE_SIGNING_AVAILABLE"
+            echo "ARM64_APK_SIZE_BYTES=$APK_SIZE"
+            echo "ARM64_APK_SHA256=$APK_SHA256"
+            echo "ARM64_SIZE_BUDGET_BYTES=$((40 * 1024 * 1024))"
+          } > certification/evidence-base.txt
+          echo "arm64_sha256=$APK_SHA256" >> "$GITHUB_OUTPUT"
+          echo "arm64_size=$APK_SIZE" >> "$GITHUB_OUTPUT"
+
+      - name: Upload certification base evidence
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-v${{ steps.app-version.outputs.app_version }}-certification-base
+          path: certification/evidence-base.txt
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Upload ARM64 release APK
         uses: actions/upload-artifact@v6
         with:
@@ -191,6 +233,12 @@ jobs:
         with:
           name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-ci-x86_64
           path: apk
+
+      - name: Download certification base evidence
+        uses: actions/download-artifact@v6
+        with:
+          name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-certification-base
+          path: certification
 
       - name: Checkout AppLab
         uses: actions/checkout@v6
@@ -237,6 +285,46 @@ jobs:
             test -s "$GITHUB_WORKSPACE/applab-report/post-maestro.png"
             test -s "$GITHUB_WORKSPACE/applab-report/logcat.txt"
             ! grep -Eq "ANR in com\\.riccardopinato\\.trail_path|Process: com\\.riccardopinato\\.trail_path.*FATAL" "$GITHUB_WORKSPACE/applab-report/logcat.txt"
+
+      - name: Finalize v1.0.0 certification evidence
+        env:
+          APP_VERSION: ${{ needs.validate-and-build.outputs.app_version }}
+          ARM64_SHA256: ${{ needs.validate-and-build.outputs.arm64_sha256 }}
+          ARM64_SIZE: ${{ needs.validate-and-build.outputs.arm64_size }}
+          STORE_SIGNING_AVAILABLE: ${{ needs.validate-and-build.outputs.store_signing }}
+        run: |
+          set -euo pipefail
+          test -s certification/evidence-base.txt
+          {
+            cat certification/evidence-base.txt
+            echo "APPLAB_ANDROID_E2E=PASS"
+            echo "OFFLINE_NO_NETWORK_E2E=PASS"
+            echo "APPLAB_DEVICE=Pixel_7_Pro_emulator"
+            echo "APPLAB_API=35"
+            echo "APPLAB_ARCH=x86_64"
+            echo "PHYSICAL_DEVICE_QA=NOT_TESTED"
+            echo "PLAY_STORE_SCREENSHOTS=NOT_TESTED"
+            if [ "$STORE_SIGNING_AVAILABLE" = "true" ]; then
+              echo "STORE_SIGNED_AAB=PASS"
+            else
+              echo "STORE_SIGNED_AAB=NOT_TESTED"
+            fi
+            echo "VERDICT=BLOCKED"
+            echo "BLOCKERS=physical_device_QA,final_Play_Store_screenshots"
+            if [ "$STORE_SIGNING_AVAILABLE" != "true" ]; then
+              echo "BLOCKER_STORE_SIGNING=true"
+            fi
+            echo "CERTIFIED_ARTIFACT_SHA256=$ARM64_SHA256"
+            echo "CERTIFIED_ARTIFACT_SIZE_BYTES=$ARM64_SIZE"
+          } > "certification/TrailPath-v${APP_VERSION}-evidence-bundle.txt"
+
+      - name: Upload v1.0.0 certification Evidence Bundle
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-evidence-bundle
+          path: certification/TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-evidence-bundle.txt
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Upload AppLab report
         if: always()
