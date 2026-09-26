@@ -16,6 +16,8 @@ The previous build 30 remains the last fully green automated baseline. Build 31 
 
 Pinned AppLab harness remains `8ccddca7f0f94158483df92d5fd085fe32375de9`.
 
+Build 31 planner sources and regression tests are normalized with the same Dart formatter shipped by the pinned Flutter 3.47.5 CI toolchain.
+
 ### Included
 
 - Flutter Android codebase with versioned native Android scaffold; iOS release is outside this Android v1.0 certification scope
