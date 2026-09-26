@@ -16,7 +16,7 @@ The automated verdict is authoritative only in the Evidence Bundle generated for
 
 Pinned AppLab harness for build 30: `8ccddca7f0f94158483df92d5fd085fe32375de9`.
 
-Latest full audit: **build 30 automated core/release validation PASS, no code-level P0 blockers found**. Remaining production blockers are external: exact ARM64 physical-device QA, Play Store signing, listing/screenshots approval and staged-rollout approval. Advisory follow-ups remain for physical performance baselining, full-app accessibility, visual-regression baseline, broader interaction coverage and localized error surfaces.
+Latest full audit: **build 30 automated core/release validation PASS, no code-level P0 crash/data-integrity blockers found**. Subsequent physical-device feedback has opened pre-release P1 UX blockers: planner/map fluidity, inaccurate/ambiguous destination selection and an always-visible PlannerCard that unnecessarily reduces usable map area. These must be corrected and re-certified before v1.0 is treated as release-ready, in addition to store signing, exact-artifact physical QA, Play Store assets/review and rollout approval. See `docs/REFERENCE_APPS_UX_BENCHMARK_2026.md` for the benchmark-driven redesign direction.
 
 ### Included
 

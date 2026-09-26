@@ -161,3 +161,16 @@ These are documentation-only changes. Because TrailPath certification intentiona
 The application is technically ready for the user's physical ARM64 test phase. The next production decision should be based on the exact post-audit certification artifact plus physical QA and store-signing evidence.
 
 The public v1.0.0 tag/release becomes eligible only when the Evidence Bundle verdict reaches **CERTIFIED**.
+
+
+## Post-audit physical UX feedback — release hold
+
+After the build-30 automated PASS, physical-device testing identified three pre-release UX issues that are not represented by emulator crash/ANR gates:
+
+1. **Planner fluidity is insufficient** during normal map interaction and planning.
+2. **Destination selection is ambiguous/inaccurate in practice.** The current planner mutates the route immediately on map tap, while search uses a separate focus-marker flow; there is no shared preview/confirm state.
+3. **The full PlannerCard is permanently visible**, including when the route is empty, reducing the map viewport and making the home/planner screen feel constrained.
+
+These are now **P1 pre-release blockers** even though they are not P0 crash/data-integrity defects. The build-30 automated evidence remains historically valid for its exact SHA, but v1.0 must not ship from that artifact. The next runtime candidate must implement the map-first UX/performance roadmap, then rerun the full certification sequence.
+
+Reference direction is documented in `docs/REFERENCE_APPS_UX_BENCHMARK_2026.md`.
