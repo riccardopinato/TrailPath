@@ -1,6 +1,6 @@
 # TrailPath v1.0.0 — Release Notes
 
-Build: 28
+Build: 30
 
 ## Highlights
 
@@ -15,6 +15,8 @@ Build: 28
 - Release-mode CI, AppLab E2E, size budget and dependency audit.
 
 ## Release state
+
+Automated certification status: PASS on build 30. API 29 smoke, full API 35 AppLab, Network/Offline, Persistence/Restart, Configuration/Lifecycle, Background/Doze and focused no-network navigation are green on the exact automated candidate.
 
 The codebase is feature-frozen for v1.0.0. Production publication remains blocked until:
 1. a store-signed AAB is built and verified;

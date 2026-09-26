@@ -1,276 +1,163 @@
 # TrailPath v1.0.0 — Full Audit
 
 Audit date: 2026-09-26  
-Audited candidate: v1.0.0+28  
-Source branch: `release/v1.0.0`  
-Source SHA before audit documentation: `d87a6e535025c0b6ea3ad9574ef87e302d6777f9`  
-Latest certification workflow audited: TrailPath CI #368
+Audited runtime candidate: **v1.0.0+30**  
+Audited source SHA: `e8323cab507d34fd2a09ba6978439723b3c46e29`  
+Certification workflow: **TrailPath CI #376**  
+AppLab harness: `8ccddca7f0f94158483df92d5fd085fe32375de9`
 
 ## Executive result
 
-**Verdict: NOT CERTIFIED**
+**Automated validation: PASS**  
+**Production verdict: BLOCKED**
 
-The application core is mature and the normal validation pipeline is healthy: formatting, static analysis, the full Flutter test suite, ARM64/x86_64 optimized release builds, the AAB structure gate, the ARM64 size budget and the Android API 29 smoke test all pass.
+The build-30 application candidate passes the full automated certification path. Formatting, static analysis, the full Flutter test suite, ARM64/x86_64 optimized release builds, AAB structure validation, the ARM64 size budget, Android API 29 smoke, the complete API 35 AppLab gate and the focused no-network navigation flow all pass.
 
-The exact v1.0.0+28 candidate is not ready to merge/tag/release because the API 35 AppLab gate failed in the Network & Offline Lab and therefore the remaining full certification path did not complete on this exact candidate. Production signing and the required physical/store gates are also still absent.
+No code-level P0 blocker remains in the audited automated path.
 
-No public v1.0.0 tag or production artifact should be created from this state.
+Production remains BLOCKED because the exact ARM64 candidate has not yet completed physical-device QA, Play Store signing is not configured, and final Play listing/screenshots plus staged-rollout approval are still not evidenced. No public v1.0.0 tag/release should be created before those gates are complete.
 
-## Evidence snapshot
+## Exact automated evidence
 
-| Area | Result | Audit note |
+| Area | Result | Evidence |
 | --- | --- | --- |
-| Dart formatting | PASS | CI #368 |
-| flutter analyze | PASS | CI #368 |
-| Full Flutter tests | PASS | CI #368 |
-| ARM64 release APK | PASS | Exact candidate built successfully |
-| x86_64 release APK | PASS | Exact AppLab runtime artifact built successfully |
-| Release AAB structure | PASS | CI-only structure gate passed |
-| ARM64 size budget | PASS | 33,638,317 bytes, below 40 MiB budget |
-| Android API 29 smoke | PASS | Install, launch and restart passed |
-| API 35 AppLab | FAIL | Network & Offline Lab stopped the full AppLab sequence |
-| Network & Offline Lab | FAIL | Offline state was not confirmed and the app process was later observed absent during the offline stage |
-| Focused no-network Maestro gate | NOT TESTED | Not reached after AppLab failure |
-| Background/Doze recovery on current SHA | NOT TESTED | Not reached after the Network Lab failure |
-| Store-signed AAB | NOT TESTED | Signing secrets not configured |
-| Exact ARM64 physical QA | NOT TESTED | Required before production |
-| Play listing/screenshots review | NOT TESTED | Required before production |
-| Staged rollout review | NOT TESTED | Required before production |
+| Formatting | PASS | CI #376 |
+| flutter analyze | PASS | CI #376 |
+| Full Flutter tests | PASS | CI #376 |
+| ARM64 release APK | PASS | 33,638,317 bytes |
+| ARM64 SHA-256 | PASS | `9bb600e7dc81deabf2b9f1182094da0ece9ed60ad90d5dca0d42ec7217d34e84` |
+| x86_64 release runtime | PASS | 35,516,030 bytes |
+| Release AAB structure | PASS | CI #376 |
+| ARM64 size budget | PASS | below 40 MiB |
+| Android API 29 smoke | PASS | install / launch / restart |
+| API 35 AppLab | PASS | complete gate |
+| Network & Offline Lab | PASS | zero errors/warnings |
+| Persistence & Restart Lab | PASS | zero errors/warnings |
+| Configuration & Lifecycle | PASS | zero errors/warnings |
+| Background / Doze recovery | PASS | zero errors/warnings |
+| Focused no-network navigation | PASS | Maestro gate |
+| Smart Visual QA | PASS | zero errors/warnings |
+| Safe Interaction Crawler | PASS | one safe action exercised |
+| Resource Pressure Lab | WARN | trim-memory request rejected by Android; no app error |
+| Storage & Data Integrity Lab | WARN | release APK private storage not inspectable with run-as |
+| Visual Regression | NO_BASELINE | first passing checkpoint available |
+| Performance Lab | WARN | no accepted baseline; emulator advisory metrics |
+| Store-signed AAB | NOT TESTED | secrets absent |
+| Exact ARM64 physical QA | NOT TESTED | external gate |
+| Play assets/review | NOT TESTED | external gate |
+| Staged rollout approval | NOT TESTED | external gate |
 
-## What is strong
+## Architecture and implementation
 
-- Clean Flutter architecture with app/core/features/infrastructure separation.
-- Riverpod provider graph and explicit service contracts keep map, routing, elevation, location, recording, navigation and offline engines replaceable.
-- Local-first Drift persistence with migration tests and recoverable recording drafts.
-- Route planning, GPX, recording, navigation, offline regions, Back to Car and safety tooling are implemented rather than represented by placeholders.
-- Routing failures remain explicit; the app does not silently replace failed online routing with fake straight-line routes.
-- HTTP services use persistent clients, timeouts, bounded retry/backoff and Retry-After handling.
-- Android backup/device transfer is disabled for app data and cleartext HTTP is disabled.
-- Signing secrets are excluded from source control and store-signing mode fails closed when explicitly required.
-- ARM64 release size is controlled by a CI budget.
-- API 29 and API 35 are separate validation targets and artifact identity is tracked by SHA-256.
+The architecture is coherent for the current scope: app/core/features/infrastructure separation, Riverpod dependency injection, explicit service contracts, Drift persistence and provider-isolated map/routing/location/navigation implementations. The design keeps routing, elevation, location, offline maps and feedback replaceable without coupling the UI to one infrastructure provider.
 
-## P0 — certification blockers
+The local lifecycle is materially stronger than the earlier release candidates:
+- recoverable recording drafts are persisted;
+- route/offline-region deletion is coordinated;
+- offline readiness is reconciled against native MapLibre state;
+- interrupted downloads can recover;
+- planner-only GPS tracking stops outside the foreground;
+- recording/navigation retain their dedicated background-capable engines;
+- API 29 and API 35 validation are separated;
+- the AppLab harness is pinned to an exact SHA;
+- artifact identity is recorded by SHA-256.
 
-### 1. Current API 35 AppLab failure must be isolated and resolved
-
-The current candidate fails the Network & Offline Lab. Evidence shows that airplane mode was requested but validated Internet remained visible in the emulator, followed by the application process being absent during the offline stage. The app successfully ran again after network restoration and the report does not establish a TrailPath fatal exception or ANR as the cause.
-
-This is therefore a **release-blocking unresolved runtime/harness failure**, not yet a proven product crash and not safe to dismiss as infrastructure without a targeted reproduction.
-
-Required action:
-- reproduce the Network Lab in isolation;
-- distinguish emulator connectivity-state failure from application process termination;
-- retain fail-closed behavior;
-- rerun the complete AppLab sequence on the exact resulting SHA.
-
-### 2. Evidence Bundle contains an incorrect unconditional PASS statement
-
-The CI Evidence Bundle currently writes:
-
-`Automated validation: PASS`
-
-even when AppLab fails and the resulting verdict is `NOT CERTIFIED`.
-
-This makes the certification artifact internally contradictory.
-
-Required action:
-- derive the automated-validation field from validate/build + API29 + AppLab results;
-- never emit PASS when any required automated gate failed;
-- add a regression check for the generated Evidence Bundle.
-
-### 3. Release checklist is using predecessor evidence as current PASS evidence
-
-The previous checklist marks AppLab and no-network navigation as PASS using v0.9.15 predecessor evidence while also stating that v1.0.0 must rerun those tests.
-
-Certification must be exact-artifact/exact-SHA based. Historical evidence is useful context but cannot be counted as a current PASS.
-
-Required action:
-- keep historical evidence labeled as historical;
-- current certification rows must reflect only the exact v1.0 candidate.
-
-### 4. AppLab harness is not pinned
-
-The TrailPath workflow checks out `riccardopinato/AppLab` without a fixed ref. A later AppLab change can therefore change the certification result for the same TrailPath source/artifact.
-
-Required action:
-- pin AppLab to a commit SHA or versioned tag during CERTIFIED runs;
-- record the AppLab harness SHA in the Evidence Bundle.
-
-### 5. Current background-GPS fix is not yet certified
-
-The planner now stops its UI-only GPS stream when the app leaves the foreground and resumes it on return. Recording/navigation keep their dedicated background-capable engines.
-
-The source-level regression test passes, but CI #368 stopped at Network Lab before the Background Execution, Doze & Recovery Lab could validate the behavior.
-
-Required action:
-- do not mark this runtime fix as certified until the full AppLab path reaches and passes the background/Doze lab on the same candidate.
-
-## P1 — release-critical hardening
-
-### 6. Deleting a saved route can leave an orphan native offline map region
-
-The route UI deletes the route and its waypoints from Drift, but does not delete the MapLibre offline region associated with that route. The offline manager already exposes a dedicated delete operation.
-
-Impact:
-- stale native map data can consume storage after the owning route no longer exists;
-- database and native offline inventory can diverge.
-
-Required action:
-- make route deletion a lifecycle operation that removes/reconciles the linked offline region;
-- add a regression test for route + waypoints + offline-region cleanup.
-
-### 7. Performance has no baseline and AppLab reports severe emulator jank
-
-The current advisory performance report has no accepted baseline and reports:
-- cold startup about 1.8 s;
-- PSS about 103 MB;
-- RSS about 236 MB;
-- 100% janky frames;
-- p90 frame time about 400 ms.
-
-This measurement is from an x86_64 emulator and is not sufficient by itself to diagnose physical-device performance, but it is too poor to ignore.
-
-Required action:
-- establish a reproducible performance baseline;
-- profile the exact ARM64 candidate on a physical mid-range device;
-- investigate MapLibre/platform-view rendering if the jank reproduces.
-
-### 8. Production routing endpoint remains a reliability dependency
-
-The README correctly states that the current public routing endpoint is suitable for development/validation and that the routing layer is provider-agnostic. For a production outdoor-navigation app, this remains an availability/rate-limit dependency.
-
-Required action before broad rollout:
-- explicitly accept and document this service risk, or
-- move to a production-grade/self-hosted routing provider behind the existing contract.
-
-### 9. Android/Play release contract must be verified from the built artifact
-
-The Gradle config inherits Flutter's target SDK instead of pinning/recording the resolved target in certification evidence.
-
-Required action:
-- record resolved min/target/compile SDK values in CI evidence;
-- verify the production AAB meets the current Play target-SDK requirement;
-- verify the merged manifest contains the expected location foreground-service declaration produced by the location plugin;
-- complete the corresponding Play Console foreground-service declaration before production.
-
-## P2 — quality hardening
-
-### 10. Automated interaction coverage is shallow
-
-The safe interaction crawler passed but exercised only one safe candidate/control. The dedicated Maestro flow gives meaningful feature coverage, but generic interaction exploration is still narrow.
-
-Required action:
-- increase crawler-safe semantics/test IDs on key controls;
-- add targeted flows for deletion, permission denial, offline-region retry and error recovery.
-
-### 11. Accessibility evidence is partial
-
-Planner custom controls have explicit semantics, tooltips, 48×48 targets and a regression contract. There is no equivalent end-to-end evidence yet for TalkBack, large text, contrast and all major screens.
-
-Required action:
-- add an accessibility release pass covering the complete navigation shell and critical flows.
-
-### 12. Some UI paths expose raw exception strings
-
-Several error surfaces use `error.toString()`. This can expose technical/provider text and bypass localization.
-
-Required action:
-- map infrastructure exceptions to localized user-facing error categories;
-- keep detailed diagnostics in structured logs rather than normal UI.
-
-### 13. Dependency major upgrade is intentionally deferred
-
-`permission_handler` is on 12.0.3 while 13.0.2 is currently resolvable; its Android implementation also has a newer major version.
-
-This is not a v1 RC blocker because upgrading permission behavior during certification would add churn.
-
-Required action:
-- schedule the major upgrade immediately after v1 certification with permission regression tests.
-
-## P3 — future hardening
-
-### 14. Local location history is sandboxed but not app-level encrypted
-
-Routes, activities and the Back to Car point are stored locally in Drift/SQLite. Android backup/device transfer is disabled, which is positive, but the database itself is not encrypted by the app.
-
-This is acceptable for the current local-first threat model if explicitly accepted. If stronger protection of location history becomes a product requirement, add encrypted-at-rest storage with a migration plan.
-
-## Deletion & lifecycle audit
-
-| Entity | Current behavior | Audit result |
-| --- | --- | --- |
-| Saved route | confirmation + DB delete | Needs offline-region cascade |
-| Route waypoints | deleted transactionally with route | PASS |
-| Completed activity | confirmation + delete | PASS |
-| Recoverable recording draft | discard flow exists | PASS |
-| Back to Car point | confirmation + clear | PASS |
-| Native offline region | explicit delete API exists | PASS independently |
-| Ambient cache | explicit clear operation exists | PASS independently |
-| Route + offline region combined lifecycle | not atomic/coordinated | FAIL |
-
-## Security & privacy audit
+## Security and privacy
 
 | Control | Result |
 | --- | --- |
-| Android cleartext traffic disabled | PASS |
-| Platform backup disabled | PASS |
+| Cleartext HTTP disabled | PASS |
+| Android backup disabled | PASS |
 | Device-transfer extraction disabled | PASS |
-| Keystore/secrets excluded from repo | PASS |
-| Fail-closed store-signing mode | PASS |
+| Signing secrets excluded from source | PASS |
+| Store mode fails closed when signing is required | PASS |
 | Account/ads/analytics/cloud sync absent | PASS |
 | External network providers documented | PASS |
-| App-level encryption of local route history | NOT IMPLEMENTED / accepted-risk decision required |
+| App-level encryption of local route/activity history | NOT IMPLEMENTED |
 | Store-signed production artifact | NOT TESTED |
+
+The lack of app-level database encryption is not a current functional blocker because the documented threat model is local-first with platform backup disabled. It remains an explicit product/security decision if stronger at-rest protection is desired later.
+
+## Deletion and data lifecycle
+
+| Entity | Result |
+| --- | --- |
+| Saved route | PASS — confirmation + coordinated offline cleanup |
+| Route waypoints | PASS — removed with route |
+| Completed activity | PASS — explicit delete |
+| Recoverable recording draft | PASS — discard flow |
+| Back to Car point | PASS — explicit clear |
+| Native offline region | PASS — explicit delete and route cascade |
+| Ambient map cache | PASS — explicit clear |
+
+No known orphan-data P0 remains from the previously identified route/offline lifecycle defect.
+
+## P0 — production blockers
+
+There are no remaining code-level P0 blockers in the automated certification path.
+
+The release is still blocked by four external gates:
+1. install and test the exact ARM64 SHA-256 candidate on a physical device;
+2. configure GitHub/Play Store signing and build/verify the store-signed AAB;
+3. capture and approve Play Store listing/screenshots from the exact accepted build;
+4. complete staged-rollout and rollback approval.
+
+## P1 — release-quality hardening
+
+### 1. Physical performance baseline
+
+AppLab performance remains advisory and has no accepted baseline. On the API 35 x86_64 emulator it reported:
+- cold startup: 3142 ms;
+- PSS: 103,849 KB;
+- RSS: 238,664 KB;
+- janky frames: 100%;
+- p90 frame time: 850 ms.
+
+These numbers are not sufficient to diagnose ARM64 physical-device performance, but they are too poor to ignore. The exact ARM64 APK should be profiled on a representative mid-range Android device before broad rollout, with special attention to MapLibre/platform-view startup and first-map interaction.
+
+### 2. Visual regression baseline
+
+Smart Visual QA passes, but Visual Regression is still NO_BASELINE. Promote the current full-PASS visual checkpoint only after confirming it represents the intended UI. Future release gates can then detect visual drift.
+
+### 3. Full-app accessibility
+
+Planner-specific semantics, tooltips and minimum touch-target contracts exist, but there is no recorded end-to-end TalkBack, large-text and contrast pass across all critical screens. Perform this before broad production rollout or immediately after the initial controlled release.
+
+### 4. Generic interaction coverage is narrow
+
+The Safe Interaction Crawler found and exercised only one safe candidate: place/trail search. Dedicated Maestro flows provide much stronger domain coverage, so this is not a release blocker, but generic exploratory coverage should be broadened for destructive actions, permission denial, retry/error states and offline management.
+
+### 5. Android release contract evidence
+
+The Gradle project resolves compile/min/target SDK values through Flutter. Certification should record the resolved values and the merged foreground-location service contract from the built release artifact so Play Console declarations can be checked against exact evidence rather than source assumptions.
+
+### 6. Routing-provider production dependency
+
+The current public OSM routing endpoint remains an availability/rate-limit dependency. The provider abstraction is already correct; before a large user rollout, either explicitly accept/document this dependency or place a production-grade/self-hosted provider behind the existing RoutingEngine contract.
+
+## P2 — post-v1 hardening
+
+- Replace remaining raw infrastructure exception strings shown in UI with localized user-facing categories while preserving details in structured logs.
+- Schedule the deferred `permission_handler` major upgrade after v1 certification and rerun permission/background regression tests.
+- Decide whether local route/activity history requires app-level encryption at rest.
+- Convert the first accepted passing screenshots/performance measurements into explicit regression baselines.
+- The Storage Lab warning is an observability limitation of a non-debuggable release APK (`run-as` unavailable), not proof of corruption. If deeper automated release-storage validation is required, add an instrumentation/self-check path rather than weakening the release build.
+
+## Documentation audit
+
+The build-30 code/CI state is stronger than some release documents that still referenced build 28/29. This audit aligns:
+- full audit status to build 30;
+- release checklist versioning to 1.0.0+30;
+- release notes to build 30;
+- staged-rollout target to the exact v1.0.0+30 store AAB;
+- README and roadmap with the current audit outcome.
+
+These are documentation-only changes. Because TrailPath certification intentionally binds evidence to an exact source SHA, committing this audit documentation triggers a fresh CI/evidence cycle even though no runtime source is changed.
 
 ## Release decision
 
-The current v1.0.0+28 branch should remain open and unmerged.
+**Do not tag or publish v1.0.0 yet.**
 
-The next certification candidate should be created only after the P0 process defects are fixed. That candidate must rerun the whole matrix from the beginning; passing isolated historical jobs is not sufficient.
+The application is technically ready for the user's physical ARM64 test phase. The next production decision should be based on the exact post-audit certification artifact plus physical QA and store-signing evidence.
 
-## Required certification sequence
-
-1. Fix Network & Offline Lab root cause or reproduce/prove a harness defect without weakening the product gate.
-2. Fix Evidence Bundle truthfulness.
-3. Pin AppLab and record its SHA.
-4. Align the release checklist to exact-candidate evidence.
-5. Fix saved-route/offline-region lifecycle cleanup.
-6. Run format + analyze + full tests.
-7. Build exact ARM64/x86_64/AAB artifacts.
-8. Run API 29 smoke.
-9. Run full API 35 AppLab through every lab.
-10. Run the focused no-network Maestro gate.
-11. Produce a new internally consistent Evidence Bundle.
-12. Install the exact ARM64 artifact on a physical device and execute production QA.
-13. Configure and validate store signing.
-14. Complete Play listing/screenshots and rollout review.
-15. Only then merge/tag/release if every required gate is green.
-
-
-## Remediation started — build 29
-
-The next candidate is v1.0.0+29.
-
-Completed before re-certification:
-- AppLab Network Lab hardened to ignore stale NetworkOffer/NetworkRequest validation tokens and capture stage-specific Logcat;
-- TrailPath pins AppLab harness SHA `9c842837e7efddd27d7fdf600482d75e7f9a2dcb`;
-- Evidence Bundle automated-validation status is derived from actual required gate outcomes;
-- saved-route deletion now cascades to the associated native offline map region before database deletion;
-- regression coverage added for route/offline lifecycle cleanup.
-
-The +29 candidate must now rerun the full API 29 + API 35/AppLab matrix. No +28 PASS/FAIL row is promoted to +29 automatically.
-
-
-## Re-certification update — build 30
-
-The build-29 AppLab rerun provided decisive evidence on the previous Network Lab failure:
-
-- airplane mode was correctly detected with `default_network=none` and `validated_internet=false`;
-- TrailPath was intentionally force-stopped by the lab and relaunched as PID 6590;
-- dedicated offline Logcat showed `MainActivity` created/resumed/displayed and the process still active;
-- the lab nevertheless reported `application process is not running` from a later single `pidof` probe.
-
-This is a harness race, not evidence of a TrailPath crash. AppLab now fails closed on target ANR/fatal exceptions and requires process stability across a bounded relaunch window instead of treating one transient `pidof` miss as conclusive.
-
-TrailPath build 30 pins AppLab harness SHA `8ccddca7f0f94158483df92d5fd085fe32375de9` and reruns the complete certification matrix. The build-29 result remains NOT CERTIFIED; no historical result is promoted to PASS.
+The public v1.0.0 tag/release becomes eligible only when the Evidence Bundle verdict reaches **CERTIFIED**.

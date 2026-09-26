@@ -9,7 +9,7 @@ Pinned AppLab harness: **8ccddca7f0f94158483df92d5fd085fe32375de9**
 | Area | Status | Evidence / requirement |
 | --- | --- | --- |
 | Product scope | Pass | v1.0 remains feature-frozen; changes are certification/release hardening only. |
-| Versioning | Pass | pubspec 1.0.0+29 and MapConfig 1.0.0. |
+| Versioning | Pass | pubspec 1.0.0+30 and MapConfig 1.0.0. |
 | Evidence Bundle truthfulness | Pass | Automated validation is derived from actual build/API29/AppLab results and regression-checked in CI. |
 | AppLab harness identity | Pass | Workflow is pinned to the exact SHA above and records it in the Evidence Bundle. |
 | Saved-route deletion lifecycle | Pass | Route deletion now removes the linked native offline region before deleting route/waypoints; regression test added. |

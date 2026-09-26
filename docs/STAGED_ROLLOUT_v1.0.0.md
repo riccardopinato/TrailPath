@@ -2,7 +2,7 @@
 
 ## Rollout
 
-1. Internal test track: exact store-signed v1.0.0+28 AAB.
+1. Internal test track: exact store-signed v1.0.0+30 AAB.
 2. Closed test: small tester cohort for 24–48 hours.
 3. Production staged rollout: 10%.
 4. Expand to 25% only if no startup crash, ANR, data-loss, navigation/offline regression or permission blocker is observed.

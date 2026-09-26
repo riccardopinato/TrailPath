@@ -83,6 +83,7 @@ No new feature scope. Current candidate: **v1.0.0+30**. Automated certification 
 - [x] keep remediation clean under the strict Dart formatting gate;
 - [x] fix AppLab Network Lab active-connectivity parsing and cold-relaunch `pidof` stabilization;
 - [x] rerun the complete AppLab sequence: Network/Offline PASS, Persistence/Restart PASS, Configuration/Lifecycle PASS, Background/Doze PASS and focused no-network Maestro PASS on build 30.
+- [x] complete the build-30 full audit: no remaining code-level P0 blocker; automated certification PASS, production still BLOCKED only by external gates.
 
 ### P1 — release hardening
 - [x] cascade native offline-region deletion when a saved route is deleted, with regression coverage;
