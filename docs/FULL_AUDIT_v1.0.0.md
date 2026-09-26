@@ -246,3 +246,17 @@ The next certification candidate should be created only after the P0 process def
 13. Configure and validate store signing.
 14. Complete Play listing/screenshots and rollout review.
 15. Only then merge/tag/release if every required gate is green.
+
+
+## Remediation started — build 29
+
+The next candidate is v1.0.0+29.
+
+Completed before re-certification:
+- AppLab Network Lab hardened to ignore stale NetworkOffer/NetworkRequest validation tokens and capture stage-specific Logcat;
+- TrailPath pins AppLab harness SHA `9c842837e7efddd27d7fdf600482d75e7f9a2dcb`;
+- Evidence Bundle automated-validation status is derived from actual required gate outcomes;
+- saved-route deletion now cascades to the associated native offline map region before database deletion;
+- regression coverage added for route/offline lifecycle cleanup.
+
+The +29 candidate must now rerun the full API 29 + API 35/AppLab matrix. No +28 PASS/FAIL row is promoted to +29 automatically.

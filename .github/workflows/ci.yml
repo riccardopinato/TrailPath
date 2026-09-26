@@ -240,7 +240,15 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: riccardopinato/AppLab
+          ref: 9c842837e7efddd27d7fdf600482d75e7f9a2dcb
           path: .applab
+
+      - name: Verify pinned AppLab identity
+        run: |
+          set -euo pipefail
+          ACTUAL_APPLAB_SHA="$(git -C .applab rev-parse HEAD)"
+          test "$ACTUAL_APPLAB_SHA" = "9c842837e7efddd27d7fdf600482d75e7f9a2dcb"
+          echo "Pinned AppLab: $ACTUAL_APPLAB_SHA"
 
       - name: Install Maestro
         run: |
@@ -337,6 +345,7 @@ jobs:
           API29_RESULT: ${{ needs.android-api29-smoke.result }}
           STORE_SIGNING_AVAILABLE: ${{ needs.validate-and-build.outputs.store_signing_available }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          APPLAB_HARNESS_SHA: 9c842837e7efddd27d7fdf600482d75e7f9a2dcb
         run: |
           set -euo pipefail
           mkdir -p certification
@@ -387,7 +396,13 @@ jobs:
           STORE_REVIEW="$(awk -F': ' '/^- Play Store listing\/screenshots review:/ {print $2}' docs/PRODUCTION_APPROVAL.md | tr -d '\r')"
           ROLLOUT_REVIEW="$(awk -F': ' '/^- Staged rollout \/ rollback review:/ {print $2}' docs/PRODUCTION_APPROVAL.md | tr -d '\r')"
 
-          if [ "$BUILD_RESULT" != "success" ] || [ "$API29_RESULT" != "success" ] || [ "$APPLAB_RESULT" != "success" ]; then
+          if [ "$BUILD_RESULT" = "success" ] && [ "$API29_RESULT" = "success" ] && [ "$APPLAB_RESULT" = "success" ]; then
+            AUTOMATED_VALIDATION="PASS"
+          else
+            AUTOMATED_VALIDATION="FAIL"
+          fi
+
+          if [ "$AUTOMATED_VALIDATION" != "PASS" ]; then
             VERDICT="NOT CERTIFIED"
           elif [ "$STORE_SIGNING_AVAILABLE" != "true" ] || [ "$PHYSICAL_QA" != "PASS" ] || [ "$STORE_REVIEW" != "PASS" ] || [ "$ROLLOUT_REVIEW" != "PASS" ]; then
             VERDICT="BLOCKED"
@@ -403,8 +418,9 @@ jobs:
           - Source head SHA: **$SOURCE_SHA**
           - CI tested SHA: **$TEST_SHA**
           - Workflow run: **$GITHUB_RUN_ID**
-          - Automated validation: **PASS**
+          - Automated validation: **$AUTOMATED_VALIDATION**
           - Certification status: **$VERDICT**
+          - AppLab harness SHA: **$APPLAB_HARNESS_SHA**
           - Flutter: **3.47.5**
           - Dart: **3.13.4**
           - Android AppLab matrix: **API 35 / google_apis / x86_64 / Pixel 7 Pro profile**
@@ -457,6 +473,8 @@ jobs:
           grep -Fq "$X86_SHA256" certification/EVIDENCE_BUNDLE.md
           grep -Fq "$SOURCE_SHA" certification/EVIDENCE_BUNDLE.md
           grep -Fq "$TEST_SHA" certification/EVIDENCE_BUNDLE.md
+          grep -Fq "Automated validation: **$AUTOMATED_VALIDATION**" certification/EVIDENCE_BUNDLE.md
+          grep -Fq "$APPLAB_HARNESS_SHA" certification/EVIDENCE_BUNDLE.md
 
           if [ -f certification/applab/summary.md ]; then
             cp certification/applab/summary.md certification/APPLAB_SUMMARY.md

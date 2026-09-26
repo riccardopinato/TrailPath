@@ -221,7 +221,14 @@ class RoutesScreen extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      await ref.read(appDatabaseProvider).deleteSavedRoute(route.id);
+      final success = await ref
+          .read(offlineDownloadsProvider.notifier)
+          .deleteRouteAndOfflineData(route.id);
+      if (!success && context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(strings.routeDeleteFailed)));
+      }
     }
   }
 

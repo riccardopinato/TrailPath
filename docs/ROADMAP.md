@@ -73,17 +73,17 @@ Replace duplicated Web preview planner state with the real shared planner/domain
 First-run onboarding, accessibility hardening, fail-closed Play Store signing, AAB validation, privacy/security configuration, true no-network AppLab navigation, migration/offline regression evidence, dependency and size review, and final release-candidate audit.
 
 ## v1.0 - Certification & Release
-No new feature scope. Current audit verdict: **NOT CERTIFIED**.
+No new feature scope. Current candidate: **v1.0.0+29 re-certification**. The previous +28 audit verdict remains **NOT CERTIFIED**.
 
 ### P0 — certification integrity
-- isolate and resolve the API 35 Network & Offline Lab failure without weakening fail-closed behavior;
-- make Evidence Bundle automated-validation status reflect actual gate results;
-- pin the AppLab harness to an exact ref and record its SHA in evidence;
-- keep release checklist status tied only to the exact candidate;
-- rerun the complete AppLab sequence so the current planner background-GPS lifecycle fix reaches the Background/Doze lab.
+- [x] harden AppLab active-connectivity detection and preserve dedicated network-stage Logcat evidence;
+- [x] make Evidence Bundle automated-validation status reflect actual gate results;
+- [x] pin the AppLab harness to an exact SHA and record it in evidence;
+- [x] keep release checklist status tied only to the exact candidate;
+- [ ] rerun the complete AppLab sequence so Network/Offline, Background/Doze and focused no-network gates all execute on build 29.
 
 ### P1 — release hardening
-- cascade/reconcile native offline-region deletion when a saved route is deleted;
+- [x] cascade native offline-region deletion when a saved route is deleted, with regression coverage;
 - establish performance/visual baselines and validate ARM64 performance on a physical device;
 - record resolved Android SDK/merged foreground-service contract in release evidence;
 - decide/accept a production routing-provider reliability strategy;

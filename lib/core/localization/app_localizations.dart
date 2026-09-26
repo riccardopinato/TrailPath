@@ -73,6 +73,7 @@ class AppLocalizations {
   String get profileDogWalk => _value('profileDogWalk');
   String get delete => _value('delete');
   String get deleteRoute => _value('deleteRoute');
+  String get routeDeleteFailed => _value('routeDeleteFailed');
   String get routingReady => _value('routingReady');
   String get routingCalculating => _value('routingCalculating');
   String get routeSnapped => _value('routeSnapped');
@@ -244,6 +245,7 @@ class AppLocalizations {
       'profileDogWalk': 'Cane',
       'delete': 'Elimina',
       'deleteRoute': 'Eliminare il percorso?',
+      'routeDeleteFailed': 'Impossibile eliminare completamente il percorso',
       'routingReady': 'Routing pronto',
       'routingCalculating': 'Calcolo percorso su sentieri e strade…',
       'routeSnapped': 'Percorso agganciato alla rete OSM',
@@ -410,6 +412,7 @@ class AppLocalizations {
       'profileDogWalk': 'Dog walk',
       'delete': 'Delete',
       'deleteRoute': 'Delete route?',
+      'routeDeleteFailed': 'Could not completely delete the route',
       'routingReady': 'Routing ready',
       'routingCalculating': 'Routing along paths and roads…',
       'routeSnapped': 'Route snapped to the OSM network',
@@ -576,6 +579,7 @@ class AppLocalizations {
       'profileDogWalk': 'Perro',
       'delete': 'Eliminar',
       'deleteRoute': '¿Eliminar la ruta?',
+      'routeDeleteFailed': 'No se pudo eliminar completamente la ruta',
       'routingReady': 'Routing listo',
       'routingCalculating': 'Calculando por caminos y carreteras…',
       'routeSnapped': 'Ruta ajustada a la red OSM',
@@ -744,6 +748,7 @@ class AppLocalizations {
       'profileDogWalk': 'Chien',
       'delete': 'Supprimer',
       'deleteRoute': 'Supprimer le parcours ?',
+      'routeDeleteFailed': 'Impossible de supprimer complètement le parcours',
       'routingReady': 'Routage prêt',
       'routingCalculating': 'Calcul sur chemins et routes…',
       'routeSnapped': 'Parcours calé sur le réseau OSM',
@@ -913,6 +918,7 @@ class AppLocalizations {
       'profileDogWalk': 'Cão',
       'delete': 'Eliminar',
       'deleteRoute': 'Eliminar percurso?',
+      'routeDeleteFailed': 'Não foi possível eliminar completamente o percurso',
       'routingReady': 'Roteamento pronto',
       'routingCalculating': 'A calcular por trilhos e estradas…',
       'routeSnapped': 'Percurso ajustado à rede OSM',
