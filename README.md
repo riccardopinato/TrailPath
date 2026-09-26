@@ -4,19 +4,17 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v1.0.0 - Certification & Release (build 30)
+v1.0.0 - Planner UX Hardening (build 31)
 
 TrailPath v1.0.0 is the first stable Android release candidate. No new product scope is added here: the milestone is limited to final regression, artifact certification, release evidence and production-readiness gates.
 
 ### Current certification status
 
-**AUTOMATED CERTIFICATION PASS — v1.0.0+30.** The exact build-30 candidate has passed formatting, analyze, the full Flutter suite, ARM64/x86_64 release builds, AAB structure, size budget, Android API 29 smoke and the complete API 35 AppLab gate. AppLab passed Network & Offline, Persistence & Restart, Configuration/Lifecycle, Background/Doze recovery and the focused no-network Maestro flow.
+**CURRENT RUNTIME CANDIDATE — v1.0.0+31.** Build 31 introduces the physical-feedback planner overhaul: map-first empty state, destination preview/confirmation, shared map/search point-selection flow, compact route summary with expandable details and annotation-update coalescing/caching for smoother MapLibre interaction.
 
-The automated verdict is authoritative only in the Evidence Bundle generated for the exact candidate SHA. The latest automated verdict is **BLOCKED**, not NOT CERTIFIED: automated validation is PASS, while production is still blocked by missing store signing, exact-artifact physical ARM64 QA, Play Store listing/screenshots approval and staged-rollout approval.
+The previous build 30 remains the last fully green automated baseline. Build 31 must pass the complete certification matrix before replacing it as the validated candidate. Production remains blocked by exact-artifact physical ARM64 QA, store signing, Play Store assets/review and staged-rollout approval.
 
-Pinned AppLab harness for build 30: `8ccddca7f0f94158483df92d5fd085fe32375de9`.
-
-Latest full audit: **build 30 automated core/release validation PASS, no code-level P0 crash/data-integrity blockers found**. Subsequent physical-device feedback has opened pre-release P1 UX blockers: planner/map fluidity, inaccurate/ambiguous destination selection and an always-visible PlannerCard that unnecessarily reduces usable map area. These must be corrected and re-certified before v1.0 is treated as release-ready, in addition to store signing, exact-artifact physical QA, Play Store assets/review and rollout approval. See `docs/REFERENCE_APPS_UX_BENCHMARK_2026.md` for the benchmark-driven redesign direction.
+Pinned AppLab harness remains `8ccddca7f0f94158483df92d5fd085fe32375de9`.
 
 ### Included
 
@@ -27,6 +25,12 @@ Latest full audit: **build 30 automated core/release validation PASS, no code-le
 - Map, routing, elevation, location, recording, navigation, offline, GPX and safety contracts
 - live MapLibre map in the planner
 - live GPS position with accuracy and heading
+- map-first planner empty state: no permanent summary card until a point/route exists
+- unified temporary candidate pin for map taps and place-search results
+- explicit Start / Destination / Add waypoint confirmation before route mutation
+- one-point compact destination prompt and valid-route compact summary bar
+- expandable draggable details sheet for profile, elevation, GPS and secondary actions
+- coalesced annotation sync plus route/waypoint/midpoint visual caches to reduce redundant MapLibre platform-channel updates
 - planner GPS tracking now follows app lifecycle: UI-only location streams stop outside the foreground and resume only when TrailPath is active
 - user-location compass rendering and recenter control
 - Android/iOS native location permission setup

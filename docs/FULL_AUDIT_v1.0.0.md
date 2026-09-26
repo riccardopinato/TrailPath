@@ -174,3 +174,24 @@ After the build-30 automated PASS, physical-device testing identified three pre-
 These are now **P1 pre-release blockers** even though they are not P0 crash/data-integrity defects. The build-30 automated evidence remains historically valid for its exact SHA, but v1.0 must not ship from that artifact. The next runtime candidate must implement the map-first UX/performance roadmap, then rerun the full certification sequence.
 
 Reference direction is documented in `docs/REFERENCE_APPS_UX_BENCHMARK_2026.md`.
+
+
+## Build 31 — Planner UX & fluidity remediation
+
+Runtime candidate: **v1.0.0+31**.
+
+Implemented from physical-device feedback and the reference-app benchmark:
+
+- removed the permanently visible full PlannerCard from the empty planner;
+- introduced one canonical temporary candidate state for both map taps and search results;
+- route state is no longer mutated by an exploratory tap: the user confirms Start, Destination or Add waypoint first;
+- when only the start exists, a compact destination prompt replaces the full summary;
+- once a valid route exists, only a compact distance/time/ascent summary remains over the map;
+- full profile/elevation/GPS/secondary controls moved into an expandable draggable details sheet;
+- added a dedicated visual candidate pin at the exact selected coordinate;
+- added a 16 ms coalescing scheduler for planner annotation synchronization;
+- added visual keys so unchanged route lines, waypoints and midpoint handles are not rewritten through MapLibre platform channels;
+- added an architecture regression test for the map-first/candidate-selection contract;
+- localized the new selection flow in IT/EN/ES/FR/PT.
+
+Build 31 is a new runtime artifact and **must not inherit build-30 certification**. It requires the full automated matrix and a new physical ARM64 comparison focused on pan/zoom, point preview, destination confirmation, waypoint drag and bottom-sheet behavior.

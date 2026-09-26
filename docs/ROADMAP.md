@@ -73,7 +73,7 @@ Replace duplicated Web preview planner state with the real shared planner/domain
 First-run onboarding, accessibility hardening, fail-closed Play Store signing, AAB validation, privacy/security configuration, true no-network AppLab navigation, migration/offline regression evidence, dependency and size review, and final release-candidate audit.
 
 ## v1.0 - Certification & Release
-Current automated candidate: **v1.0.0+30**. Automated certification is **PASS**, but physical-device feedback has reopened pre-release UX hardening. Production is therefore **BLOCKED** by planner/map fluidity, destination-selection UX, map-space usage and the remaining external release gates (store signing, exact ARM64 physical QA, Play Store assets/review and rollout approval). No new social/community scope is introduced.
+Current runtime candidate: **v1.0.0+31**. Build 30 is the last fully green automated baseline; build 31 implements the physical-device UX hardening and is awaiting full re-certification. Production is therefore **BLOCKED** by planner/map fluidity, destination-selection UX, map-space usage and the remaining external release gates (store signing, exact ARM64 physical QA, Play Store assets/review and rollout approval). No new social/community scope is introduced.
 
 ### P0 — certification integrity
 - [x] harden AppLab active-connectivity detection and preserve dedicated network-stage Logcat evidence;
@@ -87,16 +87,16 @@ Current automated candidate: **v1.0.0+30**. Automated certification is **PASS**,
 
 ### P1 — Map-first UX, fluidity & release hardening
 - [x] cascade native offline-region deletion when a saved route is deleted, with regression coverage;
-- [ ] **Planner map-first layout:** remove the permanently visible full PlannerCard from the empty/home state. Keep the map dominant. Before a route exists, show only lightweight floating controls; after the first confirmed point use a compact prompt; show the route summary only after a confirmed destination/valid route exists;
-- [ ] **Progressive bottom sheet:** replace the fixed large summary card with hidden / compact / expanded states. Compact mode exposes only essential route stats/actions; elevation, profile details, GPS diagnostics and secondary actions move to the expanded sheet;
-- [ ] **Destination-selection rewrite:** a map tap must create a temporary preview pin, not immediately mutate the route. Use one consistent confirmation flow for map tap, search result and POI: `Start here`, `Destination`, or `Add waypoint`. Recalculate only after confirmation;
-- [ ] **Selection accuracy:** keep the candidate pin exactly at the chosen coordinate, add camera padding that accounts for the bottom sheet, enlarge interactive hit areas without oversized visuals, make drag/selection state obvious and prevent accidental waypoint creation during map pan/zoom;
-- [ ] **Search-to-route parity:** selecting a search result must enter the same preview/confirmation state as tapping the map instead of merely centering a separate marker;
-- [ ] **Waypoint editing parity:** retain draggable points and route-line editing, but simplify selection/removal/reorder flows and expose only the actions relevant to the currently selected point;
-- [ ] **Planner fluidity pass:** profile MapLibre/platform-channel work, reduce sequential per-annotation updates, batch/coalesce redraws, throttle high-frequency syncs and investigate style source/layer rendering for route geometry while keeping interactive annotations only where needed;
+- [x] **Planner map-first layout:** remove the permanently visible full PlannerCard from the empty/home state. Keep the map dominant. Before a route exists, show only lightweight floating controls; after the first confirmed point use a compact prompt; show the route summary only after a confirmed destination/valid route exists;
+- [x] **Progressive bottom sheet:** replace the fixed large summary card with hidden / compact / expanded states. Compact mode exposes only essential route stats/actions; elevation, profile details, GPS diagnostics and secondary actions move to the expanded sheet;
+- [x] **Destination-selection rewrite:** a map tap must create a temporary preview pin, not immediately mutate the route. Use one consistent confirmation flow for map tap, search result and POI: `Start here`, `Destination`, or `Add waypoint`. Recalculate only after confirmation;
+- [~] **Selection accuracy:** candidate pin now preserves the exact chosen/search coordinate and route mutation requires confirmation; physical QA must still verify bottom-edge visibility/camera padding and accidental-tap behavior on real devices;
+- [x] **Search-to-route parity:** selecting a search result must enter the same preview/confirmation state as tapping the map instead of merely centering a separate marker;
+- [~] **Waypoint editing parity:** existing drag/route-line editing is preserved and candidate selection no longer interferes with normal point selection; further reorder/context-action simplification remains after physical QA;
+- [x] **Planner fluidity pass — first runtime pass:** profile MapLibre/platform-channel work, reduce sequential per-annotation updates, batch/coalesce redraws, throttle high-frequency syncs and investigate style source/layer rendering for route geometry while keeping interactive annotations only where needed;
 - [ ] **Map interaction frame budget:** physical ARM64 map pan/zoom/drag/point-selection must remain responsive during route editing; establish frame-time and startup baselines on a representative mid-range Android device and fail the release gate on reproducible severe jank;
-- [ ] **Toolbar declutter:** preserve recenter and the highest-frequency planning action on-map; move low-frequency actions out of the permanent map chrome so the map remains the primary workspace;
-- [ ] **Reference-app parity review:** apply the useful interaction patterns documented in `docs/REFERENCE_APPS_UX_BENCHMARK_2026.md` (Komoot, AllTrails, Wikiloc, Organic Maps) without importing community/social scope;
+- [~] **Toolbar declutter:** the largest permanent UI block has been removed and secondary route details moved off-map; top toolbar simplification remains a follow-up if physical testing still finds it crowded;
+- [x] **Reference-app parity review:** map-first/progressive-detail and unified selection patterns from the documented Komoot, AllTrails, Wikiloc and Organic Maps benchmark are now represented in the planner without importing community/social scope;
 - [ ] rerun targeted widget/domain tests, API 29 smoke, full API 35 AppLab, visual checks and exact ARM64 physical QA after the UX/performance changes;
 - [ ] establish performance/visual baselines and validate ARM64 performance on a physical device;
 - [ ] record resolved Android SDK/merged foreground-service contract in release evidence;
