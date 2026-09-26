@@ -28,6 +28,7 @@ Pinned AppLab harness remains `8ccddca7f0f94158483df92d5fd085fe32375de9`.
 - map-first planner empty state: no permanent summary card until a point/route exists
 - unified temporary candidate pin for map taps and place-search results
 - explicit Start / Destination / Add waypoint confirmation before route mutation
+- confirmed planner waypoints retain the exact user-selected coordinates even when route geometry is snapped to the OSM network
 - one-point compact destination prompt and valid-route compact summary bar
 - expandable draggable details sheet for profile, elevation, GPS and secondary actions
 - coalesced annotation sync plus route/waypoint/midpoint visual caches to reduce redundant MapLibre platform-channel updates

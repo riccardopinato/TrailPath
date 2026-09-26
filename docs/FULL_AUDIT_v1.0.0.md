@@ -192,6 +192,7 @@ Implemented from physical-device feedback and the reference-app benchmark:
 - added a 16 ms coalescing scheduler for planner annotation synchronization;
 - added visual keys so unchanged route lines, waypoints and midpoint handles are not rewritten through MapLibre platform channels;
 - added an architecture regression test for the map-first/candidate-selection contract;
-- localized the new selection flow in IT/EN/ES/FR/PT.
+- localized the new selection flow in IT/EN/ES/FR/PT;
+- confirmed user-selected waypoint coordinates are now kept stable after routing: the route geometry may snap to the OSM network, but the start/destination/waypoint marker no longer jumps to the provider's snapped coordinate.
 
 Build 31 is a new runtime artifact and **must not inherit build-30 certification**. It requires the full automated matrix and a new physical ARM64 comparison focused on pan/zoom, point preview, destination confirmation, waypoint drag and bottom-sheet behavior.

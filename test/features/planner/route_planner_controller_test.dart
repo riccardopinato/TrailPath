@@ -122,8 +122,6 @@ void main() {
 
     var state = container.read(routePlannerProvider);
     expect(state.points, [start, destination]);
-    expect(state.geometry.first, isNot(start));
-    expect(state.geometry.last, isNot(destination));
 
     const movedDestination = GeoPoint(
       latitude: 45.01234,
