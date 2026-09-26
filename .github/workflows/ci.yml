@@ -203,22 +203,7 @@ jobs:
           profile: pixel_4
           disable-animations: true
           script: |
-            set -euo pipefail
-            APK="apk/app-x86_64-release.apk"
-            PACKAGE="com.riccardopinato.trail_path"
-            adb install -r "$APK"
-            adb logcat -c
-            adb shell monkey -p "$PACKAGE" -c android.intent.category.LAUNCHER 1
-            sleep 8
-            test -n "$(adb shell pidof "$PACKAGE" | tr -d '\r')"
-            adb shell am force-stop "$PACKAGE"
-            adb shell monkey -p "$PACKAGE" -c android.intent.category.LAUNCHER 1
-            sleep 6
-            test -n "$(adb shell pidof "$PACKAGE" | tr -d '\r')"
-            mkdir -p api29-report
-            adb exec-out screencap -p > api29-report/launch-after-restart.png
-            adb logcat -b all -d -v threadtime > api29-report/logcat.txt
-            ! grep -Eq "ANR in $PACKAGE|Process: $PACKAGE.*FATAL" api29-report/logcat.txt
+            bash "$GITHUB_WORKSPACE/.maestro/run-api29-smoke.sh"
 
       - name: Upload API 29 smoke evidence
         if: always()
