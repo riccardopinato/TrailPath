@@ -399,10 +399,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       return;
     }
     await controller.animateCamera(
-      CameraUpdate.newLatLngZoom(
-        LatLng(point.latitude, point.longitude),
-        15.5,
-      ),
+      CameraUpdate.newLatLngZoom(LatLng(point.latitude, point.longitude), 15.5),
     );
   }
 
@@ -1086,9 +1083,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     final waypointVisualKeys = <String>[
       for (var index = 0; index < planner.points.length; index++)
         '${planner.points[index].latitude.toStringAsFixed(6)}:'
-        '${planner.points[index].longitude.toStringAsFixed(6)}:'
-        '${_selectedWaypointIndex == index ? 1 : 0}:'
-        '${index == 0 ? "s" : index == planner.points.length - 1 ? "d" : "w"}',
+            '${planner.points[index].longitude.toStringAsFixed(6)}:'
+            '${_selectedWaypointIndex == index ? 1 : 0}:'
+            '${index == 0
+                ? "s"
+                : index == planner.points.length - 1
+                ? "d"
+                : "w"}',
     ];
     final waypointCirclesCurrent =
         _waypointCircles.length == waypointOptions.length &&
@@ -1199,10 +1200,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
           await controller.updateCircle(current, options);
         }
       } else {
-        _candidateCircle =
-            await controller.addCircle(options, <String, dynamic>{
-              'kind': 'candidate',
-            });
+        _candidateCircle = await controller.addCircle(
+          options,
+          <String, dynamic>{'kind': 'candidate'},
+        );
       }
       _candidateVisualKey = candidateVisualKey;
     }
@@ -1341,8 +1342,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                                 Navigator.of(sheetContext).pop();
                               },
                         onImport: _importGpx,
-                        onShare:
-                            planner.canSave ? _shareCurrentGpx : null,
+                        onShare: planner.canSave ? _shareCurrentGpx : null,
                         onSave: planner.canSave
                             ? () async {
                                 Navigator.of(sheetContext).pop();
@@ -1623,8 +1623,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                 onStart: () => _confirmCandidate(_CandidateIntent.start),
                 onDestination: () =>
                     _confirmCandidate(_CandidateIntent.destination),
-                onWaypoint: () =>
-                    _confirmCandidate(_CandidateIntent.waypoint),
+                onWaypoint: () => _confirmCandidate(_CandidateIntent.waypoint),
                 onCancel: _cancelCandidate,
               ),
             ),
@@ -1767,10 +1766,7 @@ class _CandidateSelectionCard extends StatelessWidget {
 }
 
 class _DestinationPromptBar extends StatelessWidget {
-  const _DestinationPromptBar({
-    required this.strings,
-    required this.onClear,
-  });
+  const _DestinationPromptBar({required this.strings, required this.onClear});
 
   final AppLocalizations strings;
   final VoidCallback onClear;
@@ -1908,10 +1904,7 @@ class _CompactMetric extends StatelessWidget {
         const SizedBox(height: 1),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w900,
-          ),
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
         ),
       ],
     );

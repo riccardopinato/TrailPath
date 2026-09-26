@@ -511,10 +511,9 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         return;
       }
 
-      final routingWaypoints =
-          plan.snappedWaypoints.length == waypoints.length
-              ? List<GeoPoint>.unmodifiable(plan.snappedWaypoints)
-              : waypoints;
+      final routingWaypoints = plan.snappedWaypoints.length == waypoints.length
+          ? List<GeoPoint>.unmodifiable(plan.snappedWaypoints)
+          : waypoints;
       _legGeometries = plan.isSnapped
           ? _splitGeometryIntoLegs(plan.geometry, routingWaypoints)
           : const [];

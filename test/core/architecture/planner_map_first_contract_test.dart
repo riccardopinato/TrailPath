@@ -18,9 +18,6 @@ void main() {
     expect(source, contains('else if (planner.points.length == 1)'));
     expect(source, contains('else if (planner.points.length >= 2)'));
     expect(source, contains('_schedulePlannerAnnotationSync'));
-    expect(
-      source,
-      isNot(contains('_addWaypoint(coordinates)')),
-    );
+    expect(source, isNot(contains('_addWaypoint(coordinates)')));
   });
 }

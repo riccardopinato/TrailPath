@@ -123,10 +123,7 @@ void main() {
     var state = container.read(routePlannerProvider);
     expect(state.points, [start, destination]);
 
-    const movedDestination = GeoPoint(
-      latitude: 45.01234,
-      longitude: 11.01456,
-    );
+    const movedDestination = GeoPoint(latitude: 45.01234, longitude: 11.01456);
     controller.movePoint(1, movedDestination);
     await _flushAsync();
 
