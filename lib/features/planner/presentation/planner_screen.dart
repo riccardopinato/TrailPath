@@ -1344,9 +1344,12 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                         onShare:
                             planner.canSave ? _shareCurrentGpx : null,
                         onSave: planner.canSave
-                            ? () {
-                                unawaited(_saveRoute());
+                            ? () async {
                                 Navigator.of(sheetContext).pop();
+                                await Future<void>.delayed(Duration.zero);
+                                if (mounted) {
+                                  await _saveRoute();
+                                }
                               }
                             : null,
                       ),
