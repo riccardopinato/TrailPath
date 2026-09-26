@@ -225,11 +225,8 @@ class RoutesScreen extends ConsumerWidget {
           .read(offlineDownloadsProvider.notifier)
           .deleteRouteAndOfflineData(route.id);
       if (!success && context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
-          SnackBar(content: Text(strings.routeDeleteFailed)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(strings.routeDeleteFailed)));
       }
     }
   }
