@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.9.15 - Release Candidate & Production Readiness (build 27)
+v1.0.0 - Certification & Release (build 28)
 
-TrailPath v0.9.15 is the release-candidate hardening milestone: store signing, accessibility, performance, offline/upgrade regression, dependency/privacy review and final production gates before v1.0.
+TrailPath v1.0.0 is the first stable Android release candidate. No new product scope is added here: the milestone is limited to final regression, artifact certification, release evidence and production-readiness gates.
 
 ### Included
 
