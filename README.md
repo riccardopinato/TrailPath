@@ -10,9 +10,9 @@ TrailPath v1.0.0 is the first stable Android release candidate. No new product s
 
 ### Current certification status
 
-**RE-CERTIFICATION CANDIDATE — v1.0.0+30.** The +29 candidate proved that active offline connectivity detection is fixed, but exposed a second AppLab harness race: a single transient `pidof` miss was classified as an app death even while dedicated Logcat evidence showed the relaunched TrailPath process active and its MainActivity displayed. Build 30 pins the hardened AppLab runtime-health check and reruns the complete API 29/API 35 matrix before any merge or release decision.
+**AUTOMATED CERTIFICATION PASS — v1.0.0+30.** The exact build-30 candidate has passed formatting, analyze, the full Flutter suite, ARM64/x86_64 release builds, AAB structure, size budget, Android API 29 smoke and the complete API 35 AppLab gate. AppLab passed Network & Offline, Persistence & Restart, Configuration/Lifecycle, Background/Doze recovery and the focused no-network Maestro flow.
 
-The automated verdict is authoritative only in the Evidence Bundle generated for the exact candidate SHA. Production remains blocked until store signing, exact-artifact physical ARM64 QA and final Play Store/rollout approvals are complete. The build-30 remediation remains under the strict Dart formatting gate.
+The automated verdict is authoritative only in the Evidence Bundle generated for the exact candidate SHA. The latest automated verdict is **BLOCKED**, not NOT CERTIFIED: automated validation is PASS, while production is still blocked by missing store signing, exact-artifact physical ARM64 QA, Play Store listing/screenshots approval and staged-rollout approval.
 
 Pinned AppLab harness for build 30: `8ccddca7f0f94158483df92d5fd085fe32375de9`.
 
