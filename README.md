@@ -4,9 +4,9 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v0.9.15 - Release Candidate & Production Readiness (build 27)
+v1.0.0 - Certification Candidate (build 28)
 
-TrailPath v0.9.15 is the release-candidate hardening milestone: store signing, accessibility, performance, offline/upgrade regression, dependency/privacy review and final production gates before v1.0.
+TrailPath v1.0.0 is the certification candidate. The codebase is feature-frozen; only release evidence, store signing, physical-device QA and production publication gates remain.
 
 ### Included
 
