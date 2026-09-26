@@ -37,7 +37,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   bool _locationBusy = true;
   bool _styleReady = false;
   bool _searchBusy = false;
-  PlaceSearchResult? _searchResult;
+  GeoPoint? _candidatePoint;
+  String? _candidateLabel;
   int? _selectedWaypointIndex;
   bool _routeSelected = false;
   bool _draggingFeature = false;
@@ -48,11 +49,16 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   List<Offset> _traceScreenPoints = const [];
   bool _annotationSyncRunning = false;
   bool _annotationSyncQueued = false;
+  Timer? _annotationSyncTimer;
   List<Line> _routeLines = const [];
   List<Circle> _waypointCircles = const [];
   List<Circle> _midpointCircles = const [];
-  Circle? _searchCircle;
+  Circle? _candidateCircle;
   Line? _dragPreviewLine;
+  String? _routeVisualKey;
+  List<String> _waypointVisualKeys = const [];
+  List<String> _midpointVisualKeys = const [];
+  String? _candidateVisualKey;
   String? _locationError;
   bool _appInForeground = true;
   final TextEditingController _searchController = TextEditingController();
@@ -90,6 +96,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _annotationSyncTimer?.cancel();
     unawaited(_stopPositionWatch());
     _searchController.dispose();
     _mapController?.dispose();
@@ -347,7 +354,11 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       );
 
       if (selected != null && mounted) {
-        await _focusSearchResult(selected);
+        await _previewCandidate(
+          selected.point,
+          label: selected.name,
+          focus: true,
+        );
       }
     } on Object {
       if (mounted) {
@@ -362,11 +373,26 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     }
   }
 
-  Future<void> _focusSearchResult(PlaceSearchResult result) async {
-    if (mounted) {
-      setState(() => _searchResult = result);
+  Future<void> _previewCandidate(
+    GeoPoint point, {
+    String? label,
+    bool focus = false,
+  }) async {
+    if (!mounted) {
+      return;
     }
+
+    setState(() {
+      _candidatePoint = point;
+      _candidateLabel = label?.trim().isEmpty == true ? null : label?.trim();
+      _selectedWaypointIndex = null;
+    });
+    unawaited(HapticFeedback.selectionClick());
     await _syncPlannerAnnotations();
+
+    if (!focus) {
+      return;
+    }
 
     final controller = _mapController;
     if (controller == null) {
@@ -374,24 +400,79 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     }
     await controller.animateCamera(
       CameraUpdate.newLatLngZoom(
-        LatLng(result.point.latitude, result.point.longitude),
+        LatLng(point.latitude, point.longitude),
         15.5,
       ),
     );
   }
 
-  void _addWaypoint(LatLng coordinates) {
-    if (_selectedWaypointIndex != null && mounted) {
-      setState(() => _selectedWaypointIndex = null);
+  Future<void> _previewCandidateLatLng(LatLng coordinates) {
+    return _previewCandidate(
+      GeoPoint(
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+      ),
+    );
+  }
+
+  void _cancelCandidate() {
+    if (_candidatePoint == null) {
+      return;
     }
-    ref
-        .read(routePlannerProvider.notifier)
-        .addPoint(
-          GeoPoint(
-            latitude: coordinates.latitude,
-            longitude: coordinates.longitude,
-          ),
-        );
+    setState(() {
+      _candidatePoint = null;
+      _candidateLabel = null;
+    });
+    _schedulePlannerAnnotationSync();
+  }
+
+  void _confirmCandidate(_CandidateIntent intent) {
+    final candidate = _candidatePoint;
+    if (candidate == null) {
+      return;
+    }
+
+    final planner = ref.read(routePlannerProvider);
+    final controller = ref.read(routePlannerProvider.notifier);
+
+    switch (intent) {
+      case _CandidateIntent.start:
+        if (planner.points.isEmpty) {
+          controller.addPoint(candidate);
+        } else {
+          controller.movePoint(0, candidate);
+        }
+      case _CandidateIntent.destination:
+        if (planner.points.isEmpty) {
+          final current = _position;
+          if (current == null) {
+            controller.addPoint(candidate);
+          } else {
+            controller
+              ..addPoint(current.point)
+              ..addPoint(candidate);
+          }
+        } else if (planner.points.length == 1) {
+          controller.addPoint(candidate);
+        } else {
+          controller.movePoint(planner.points.length - 1, candidate);
+        }
+      case _CandidateIntent.waypoint:
+        if (planner.points.length >= 2) {
+          controller.insertPointAt(planner.points.length - 1, candidate);
+        } else {
+          controller.addPoint(candidate);
+        }
+    }
+
+    setState(() {
+      _candidatePoint = null;
+      _candidateLabel = null;
+      _selectedWaypointIndex = null;
+      _routeSelected = planner.points.isNotEmpty;
+    });
+    unawaited(HapticFeedback.lightImpact());
+    _schedulePlannerAnnotationSync();
   }
 
   Future<void> _insertWaypoint(LatLng coordinates) async {
@@ -581,6 +662,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   }
 
   void _undo() {
+    _cancelCandidate();
     if (_selectedWaypointIndex != null && mounted) {
       setState(() => _selectedWaypointIndex = null);
     }
@@ -588,6 +670,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   }
 
   void _redo() {
+    _cancelCandidate();
     if (_selectedWaypointIndex != null && mounted) {
       setState(() => _selectedWaypointIndex = null);
     }
@@ -597,6 +680,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   void _clearRoute() {
     if (mounted) {
       setState(() {
+        _candidatePoint = null;
+        _candidateLabel = null;
         _selectedWaypointIndex = null;
         _routeSelected = false;
       });
@@ -882,6 +967,17 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     }
   }
 
+  void _schedulePlannerAnnotationSync({
+    Duration delay = const Duration(milliseconds: 16),
+  }) {
+    _annotationSyncTimer?.cancel();
+    _annotationSyncTimer = Timer(delay, () {
+      if (mounted) {
+        unawaited(_syncPlannerAnnotations());
+      }
+    });
+  }
+
   Future<void> _syncPlannerAnnotations() async {
     _annotationSyncQueued = true;
     if (_annotationSyncRunning) {
@@ -937,12 +1033,16 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
           ]
         : const <LineOptions>[];
 
+    final routeVisualKey =
+        '${_routeSelected ? 1 : 0}:${Object.hashAll(routeGeometry.map((point) => Object.hash(point.latitude, point.longitude)))}';
     final routeLinesCurrent =
         _routeLines.length == routeOptions.length &&
         _routeLines.every(controller.lines.contains);
     if (routeLinesCurrent) {
-      for (var index = 0; index < _routeLines.length; index++) {
-        await controller.updateLine(_routeLines[index], routeOptions[index]);
+      if (_routeVisualKey != routeVisualKey) {
+        for (var index = 0; index < _routeLines.length; index++) {
+          await controller.updateLine(_routeLines[index], routeOptions[index]);
+        }
       }
     } else {
       final stale = _routeLines
@@ -958,6 +1058,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
               <String, dynamic>{'kind': 'route', 'role': 'route'},
             ]);
     }
+    _routeVisualKey = routeOptions.isEmpty ? null : routeVisualKey;
 
     final waypointOptions = <CircleOptions>[
       for (var index = 0; index < waypoints.length; index++)
@@ -982,15 +1083,25 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
           draggable: true,
         ),
     ];
+    final waypointVisualKeys = <String>[
+      for (var index = 0; index < planner.points.length; index++)
+        '${planner.points[index].latitude.toStringAsFixed(6)}:'
+        '${planner.points[index].longitude.toStringAsFixed(6)}:'
+        '${_selectedWaypointIndex == index ? 1 : 0}:'
+        '${index == 0 ? "s" : index == planner.points.length - 1 ? "d" : "w"}',
+    ];
     final waypointCirclesCurrent =
         _waypointCircles.length == waypointOptions.length &&
         _waypointCircles.every(controller.circles.contains);
     if (waypointCirclesCurrent) {
       for (var index = 0; index < _waypointCircles.length; index++) {
-        await controller.updateCircle(
-          _waypointCircles[index],
-          waypointOptions[index],
-        );
+        if (index >= _waypointVisualKeys.length ||
+            _waypointVisualKeys[index] != waypointVisualKeys[index]) {
+          await controller.updateCircle(
+            _waypointCircles[index],
+            waypointOptions[index],
+          );
+        }
       }
     } else {
       final stale = _waypointCircles
@@ -1006,6 +1117,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                 <String, dynamic>{'kind': 'waypoint', 'waypointIndex': index},
             ]);
     }
+    _waypointVisualKeys = List<String>.unmodifiable(waypointVisualKeys);
 
     final editHandles = planner.editHandles
         .map(_latLng)
@@ -1029,15 +1141,22 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
               ),
           ]
         : const <CircleOptions>[];
+    final midpointVisualKeys = <String>[
+      for (final handle in editHandles)
+        '${handle.latitude.toStringAsFixed(6)}:${handle.longitude.toStringAsFixed(6)}',
+    ];
     final midpointCirclesCurrent =
         _midpointCircles.length == midpointOptions.length &&
         _midpointCircles.every(controller.circles.contains);
     if (midpointCirclesCurrent) {
       for (var index = 0; index < _midpointCircles.length; index++) {
-        await controller.updateCircle(
-          _midpointCircles[index],
-          midpointOptions[index],
-        );
+        if (index >= _midpointVisualKeys.length ||
+            _midpointVisualKeys[index] != midpointVisualKeys[index]) {
+          await controller.updateCircle(
+            _midpointCircles[index],
+            midpointOptions[index],
+          );
+        }
       }
     } else {
       final stale = _midpointCircles
@@ -1053,31 +1172,39 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                 <String, dynamic>{'kind': 'midpoint', 'legIndex': index},
             ]);
     }
+    _midpointVisualKeys = List<String>.unmodifiable(midpointVisualKeys);
 
-    final searchResult = _searchResult;
-    if (searchResult == null) {
-      final stale = _searchCircle;
-      _searchCircle = null;
+    final candidate = _candidatePoint;
+    if (candidate == null) {
+      final stale = _candidateCircle;
+      _candidateCircle = null;
+      _candidateVisualKey = null;
       if (stale != null && controller.circles.contains(stale)) {
         await controller.removeCircle(stale);
       }
     } else {
+      final candidateVisualKey =
+          '${candidate.latitude.toStringAsFixed(6)}:${candidate.longitude.toStringAsFixed(6)}';
       final options = CircleOptions(
-        geometry: _latLng(searchResult.point),
-        circleRadius: 8,
-        circleColor: '#1565C0',
+        geometry: _latLng(candidate),
+        circleRadius: 9,
+        circleColor: '#F97316',
         circleStrokeColor: '#FFFFFF',
-        circleStrokeWidth: 2.5,
+        circleStrokeWidth: 3,
         draggable: false,
       );
-      final current = _searchCircle;
+      final current = _candidateCircle;
       if (current != null && controller.circles.contains(current)) {
-        await controller.updateCircle(current, options);
+        if (_candidateVisualKey != candidateVisualKey) {
+          await controller.updateCircle(current, options);
+        }
       } else {
-        _searchCircle = await controller.addCircle(options, <String, dynamic>{
-          'kind': 'search',
-        });
+        _candidateCircle =
+            await controller.addCircle(options, <String, dynamic>{
+              'kind': 'candidate',
+            });
       }
+      _candidateVisualKey = candidateVisualKey;
     }
   }
 
@@ -1151,6 +1278,89 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     }
   }
 
+  Future<void> _openPlannerDetails() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return Consumer(
+          builder: (context, sheetRef, child) {
+            final planner = sheetRef.watch(routePlannerProvider);
+            return DraggableScrollableSheet(
+              expand: false,
+              initialChildSize: 0.58,
+              minChildSize: 0.34,
+              maxChildSize: 0.9,
+              builder: (context, scrollController) {
+                final scheme = Theme.of(context).colorScheme;
+                return Material(
+                  color: scheme.surface,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(28),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: ListView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 42,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            color: scheme.outlineVariant,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                      ),
+                      _PlannerCard(
+                        strings: AppLocalizations.of(context),
+                        planner: planner,
+                        position: _position,
+                        locationReady:
+                            _permissionGranted &&
+                            _locationServiceEnabled &&
+                            _locationError == null,
+                        onProfileChanged: (profile) {
+                          sheetRef
+                              .read(routePlannerProvider.notifier)
+                              .setProfile(profile);
+                        },
+                        selectedWaypointIndex: _selectedWaypointIndex,
+                        routeSelected: _routeSelected,
+                        draggingFeature: _draggingFeature,
+                        onRemoveWaypoint: _selectedWaypointIndex == null
+                            ? null
+                            : _removeSelectedWaypoint,
+                        onClear: planner.points.isEmpty
+                            ? null
+                            : () {
+                                _clearRoute();
+                                Navigator.of(sheetContext).pop();
+                              },
+                        onImport: _importGpx,
+                        onShare:
+                            planner.canSave ? _shareCurrentGpx : null,
+                        onSave: planner.canSave
+                            ? () {
+                                unawaited(_saveRoute());
+                                Navigator.of(sheetContext).pop();
+                              }
+                            : null,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
@@ -1159,8 +1369,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
 
     ref.listen<RoutePlannerState>(routePlannerProvider, (previous, next) {
       if (previous?.geometry != next.geometry ||
+          previous?.points != next.points ||
           previous?.isRouting != next.isRouting) {
-        unawaited(_syncPlannerAnnotations());
+        _schedulePlannerAnnotationSync();
       }
     });
 
@@ -1190,8 +1401,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                     unawaited(_syncPlannerAnnotations());
                   },
                   onMapClick: (point, coordinates) {
-                    if (!_traceMode) {
-                      _addWaypoint(coordinates);
+                    if (!_traceMode &&
+                        !_draggingFeature &&
+                        !planner.isRouting) {
+                      unawaited(_previewCandidateLatLng(coordinates));
                     }
                   },
                   onMapLongClick: (point, coordinates) {
@@ -1388,33 +1601,313 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
             ),
           ),
         ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: SafeArea(
-            top: false,
-            minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            child: _PlannerCard(
-              strings: strings,
-              planner: planner,
-              position: _position,
-              locationReady:
-                  _permissionGranted &&
-                  _locationServiceEnabled &&
-                  _locationError == null,
-              onProfileChanged: (profile) {
-                ref.read(routePlannerProvider.notifier).setProfile(profile);
-              },
-              selectedWaypointIndex: _selectedWaypointIndex,
-              routeSelected: _routeSelected,
-              draggingFeature: _draggingFeature,
-              onRemoveWaypoint: _selectedWaypointIndex == null
-                  ? null
-                  : _removeSelectedWaypoint,
-              onClear: planner.points.isEmpty ? null : _clearRoute,
-              onImport: _importGpx,
-              onShare: planner.canSave ? _shareCurrentGpx : null,
-              onSave: planner.canSave ? _saveRoute : null,
+        if (_candidatePoint != null)
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SafeArea(
+              top: false,
+              minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: _CandidateSelectionCard(
+                strings: strings,
+                point: _candidatePoint!,
+                label: _candidateLabel,
+                canUseCurrentLocation:
+                    _position != null &&
+                    _permissionGranted &&
+                    _locationServiceEnabled &&
+                    _locationError == null,
+                pointCount: planner.points.length,
+                onStart: () => _confirmCandidate(_CandidateIntent.start),
+                onDestination: () =>
+                    _confirmCandidate(_CandidateIntent.destination),
+                onWaypoint: () =>
+                    _confirmCandidate(_CandidateIntent.waypoint),
+                onCancel: _cancelCandidate,
+              ),
             ),
+          )
+        else if (planner.points.length == 1)
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SafeArea(
+              top: false,
+              minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: _DestinationPromptBar(
+                strings: strings,
+                onClear: _clearRoute,
+              ),
+            ),
+          )
+        else if (planner.points.length >= 2)
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SafeArea(
+              top: false,
+              minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: _RouteSummaryBar(
+                strings: strings,
+                planner: planner,
+                onExpand: _openPlannerDetails,
+                onSave: planner.canSave ? _saveRoute : null,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+enum _CandidateIntent { start, destination, waypoint }
+
+class _CandidateSelectionCard extends StatelessWidget {
+  const _CandidateSelectionCard({
+    required this.strings,
+    required this.point,
+    required this.label,
+    required this.canUseCurrentLocation,
+    required this.pointCount,
+    required this.onStart,
+    required this.onDestination,
+    required this.onWaypoint,
+    required this.onCancel,
+  });
+
+  final AppLocalizations strings;
+  final GeoPoint point;
+  final String? label;
+  final bool canUseCurrentLocation;
+  final int pointCount;
+  final VoidCallback onStart;
+  final VoidCallback onDestination;
+  final VoidCallback onWaypoint;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final canSetDestination = pointCount > 0 || canUseCurrentLocation;
+
+    return Material(
+      color: scheme.surface.withValues(alpha: 0.98),
+      elevation: 8,
+      borderRadius: BorderRadius.circular(22),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.place_rounded, color: scheme.primary),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label ?? strings.pointPreview,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${point.latitude.toStringAsFixed(5)}, '
+                        '${point.longitude.toStringAsFixed(5)}',
+                        style: TextStyle(
+                          color: scheme.onSurfaceVariant,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: strings.cancel,
+                  onPressed: onCancel,
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.end,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: onStart,
+                  icon: const Icon(Icons.trip_origin_rounded, size: 18),
+                  label: Text(strings.startHere),
+                ),
+                if (pointCount >= 2)
+                  OutlinedButton.icon(
+                    onPressed: onWaypoint,
+                    icon: const Icon(Icons.add_location_alt_outlined, size: 18),
+                    label: Text(strings.addWaypoint),
+                  ),
+                FilledButton.icon(
+                  onPressed: canSetDestination ? onDestination : null,
+                  icon: const Icon(Icons.flag_rounded, size: 18),
+                  label: Text(strings.setDestination),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DestinationPromptBar extends StatelessWidget {
+  const _DestinationPromptBar({
+    required this.strings,
+    required this.onClear,
+  });
+
+  final AppLocalizations strings;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surface.withValues(alpha: 0.97),
+      elevation: 7,
+      borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 9, 8, 9),
+        child: Row(
+          children: [
+            Icon(Icons.flag_outlined, color: scheme.primary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    strings.chooseDestination,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  Text(
+                    strings.chooseDestinationHint,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: scheme.onSurfaceVariant,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              tooltip: strings.clear,
+              onPressed: onClear,
+              icon: const Icon(Icons.close_rounded),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RouteSummaryBar extends StatelessWidget {
+  const _RouteSummaryBar({
+    required this.strings,
+    required this.planner,
+    required this.onExpand,
+    required this.onSave,
+  });
+
+  final AppLocalizations strings;
+  final RoutePlannerState planner;
+  final VoidCallback onExpand;
+  final VoidCallback? onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surface.withValues(alpha: 0.97),
+      elevation: 8,
+      borderRadius: BorderRadius.circular(22),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onExpand,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
+          child: Row(
+            children: [
+              _CompactMetric(
+                label: strings.distance,
+                value: _formatDistance(planner.distanceMeters),
+              ),
+              const SizedBox(width: 14),
+              _CompactMetric(
+                label: strings.duration,
+                value: _formatDuration(planner.estimatedDuration),
+              ),
+              const SizedBox(width: 14),
+              _CompactMetric(
+                label: strings.ascent,
+                value: planner.hasElevation
+                    ? '+${planner.ascentMeters.round()} m'
+                    : '--',
+              ),
+              const Spacer(),
+              if (onSave != null)
+                IconButton(
+                  tooltip: strings.saveRoute,
+                  onPressed: onSave,
+                  icon: const Icon(Icons.bookmark_add_outlined),
+                ),
+              IconButton(
+                tooltip: strings.routeDetails,
+                onPressed: onExpand,
+                icon: const Icon(Icons.keyboard_arrow_up_rounded),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CompactMetric extends StatelessWidget {
+  const _CompactMetric({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: scheme.onSurfaceVariant,
+            fontSize: 9,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 1),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
           ),
         ),
       ],

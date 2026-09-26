@@ -37,6 +37,13 @@ class AppLocalizations {
   String get searchFailed => _value('searchFailed');
   String get createRoute => _value('createRoute');
   String get tapMapHint => _value('tapMapHint');
+  String get pointPreview => _value('pointPreview');
+  String get startHere => _value('startHere');
+  String get setDestination => _value('setDestination');
+  String get addWaypoint => _value('addWaypoint');
+  String get chooseDestination => _value('chooseDestination');
+  String get chooseDestinationHint => _value('chooseDestinationHint');
+  String get routeDetails => _value('routeDetails');
   String get distance => _value('distance');
   String get ascent => _value('ascent');
   String get duration => _value('duration');
@@ -208,6 +215,13 @@ class AppLocalizations {
       'noSearchResults': 'Nessun risultato trovato',
       'searchFailed': 'Ricerca non disponibile. Riprova più tardi',
       'createRoute': 'Crea un percorso',
+      'pointPreview': 'Punto selezionato',
+      'startHere': 'Parti da qui',
+      'setDestination': 'Destinazione',
+      'addWaypoint': 'Aggiungi tappa',
+      'chooseDestination': 'Scegli la destinazione',
+      'chooseDestinationHint': 'Tocca la mappa o cerca un luogo',
+      'routeDetails': 'Dettagli percorso',
       'tapMapHint': 'Tocca la mappa per aggiungere il primo punto',
       'distance': 'Distanza',
       'ascent': 'Salita',
@@ -375,6 +389,13 @@ class AppLocalizations {
       'noSearchResults': 'No results found',
       'searchFailed': 'Search is unavailable. Try again later',
       'createRoute': 'Create a route',
+      'pointPreview': 'Selected point',
+      'startHere': 'Start here',
+      'setDestination': 'Destination',
+      'addWaypoint': 'Add waypoint',
+      'chooseDestination': 'Choose destination',
+      'chooseDestinationHint': 'Tap the map or search for a place',
+      'routeDetails': 'Route details',
       'tapMapHint': 'Tap the map to add the first point',
       'distance': 'Distance',
       'ascent': 'Ascent',
@@ -542,6 +563,13 @@ class AppLocalizations {
       'noSearchResults': 'No se encontraron resultados',
       'searchFailed': 'La búsqueda no está disponible. Inténtalo de nuevo',
       'createRoute': 'Crear una ruta',
+      'pointPreview': 'Punto seleccionado',
+      'startHere': 'Empezar aquí',
+      'setDestination': 'Destino',
+      'addWaypoint': 'Añadir parada',
+      'chooseDestination': 'Elige destino',
+      'chooseDestinationHint': 'Toca el mapa o busca un lugar',
+      'routeDetails': 'Detalles de la ruta',
       'tapMapHint': 'Toca el mapa para añadir el primer punto',
       'distance': 'Distancia',
       'ascent': 'Ascenso',
@@ -711,6 +739,13 @@ class AppLocalizations {
       'noSearchResults': 'Aucun résultat trouvé',
       'searchFailed': 'Recherche indisponible. Réessayez plus tard',
       'createRoute': 'Créer un parcours',
+      'pointPreview': 'Point sélectionné',
+      'startHere': 'Partir d’ici',
+      'setDestination': 'Destination',
+      'addWaypoint': 'Ajouter une étape',
+      'chooseDestination': 'Choisissez la destination',
+      'chooseDestinationHint': 'Touchez la carte ou recherchez un lieu',
+      'routeDetails': 'Détails du parcours',
       'tapMapHint': 'Touchez la carte pour ajouter le premier point',
       'distance': 'Distance',
       'ascent': 'Montée',
@@ -881,6 +916,13 @@ class AppLocalizations {
       'noSearchResults': 'Nenhum resultado encontrado',
       'searchFailed': 'Pesquisa indisponível. Tente novamente mais tarde',
       'createRoute': 'Criar um percurso',
+      'pointPreview': 'Ponto selecionado',
+      'startHere': 'Começar aqui',
+      'setDestination': 'Destino',
+      'addWaypoint': 'Adicionar etapa',
+      'chooseDestination': 'Escolha o destino',
+      'chooseDestinationHint': 'Toque no mapa ou pesquise um local',
+      'routeDetails': 'Detalhes do percurso',
       'tapMapHint': 'Toque no mapa para adicionar o primeiro ponto',
       'distance': 'Distância',
       'ascent': 'Subida',
