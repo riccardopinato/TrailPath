@@ -171,6 +171,64 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+  android-api29-smoke:
+    name: Android API 29 Release Smoke
+    needs: validate-and-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout TrailPath
+        uses: actions/checkout@v6
+
+      - name: Download x86_64 release APK
+        uses: actions/download-artifact@v6
+        with:
+          name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-ci-x86_64
+          path: apk
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install, launch and restart release on API 29
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          target: google_apis
+          arch: x86_64
+          profile: pixel_4
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            APK="apk/app-x86_64-release.apk"
+            PACKAGE="com.riccardopinato.trail_path"
+            adb install -r "$APK"
+            adb logcat -c
+            adb shell monkey -p "$PACKAGE" -c android.intent.category.LAUNCHER 1
+            sleep 8
+            test -n "$(adb shell pidof "$PACKAGE" | tr -d '\r')"
+            adb shell am force-stop "$PACKAGE"
+            adb shell monkey -p "$PACKAGE" -c android.intent.category.LAUNCHER 1
+            sleep 6
+            test -n "$(adb shell pidof "$PACKAGE" | tr -d '\r')"
+            mkdir -p api29-report
+            adb exec-out screencap -p > api29-report/launch-after-restart.png
+            adb logcat -b all -d -v threadtime > api29-report/logcat.txt
+            ! grep -Eq "ANR in $PACKAGE|Process: $PACKAGE.*FATAL" api29-report/logcat.txt
+
+      - name: Upload API 29 smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-API29-Smoke-${{ github.sha }}
+          path: api29-report/
+          if-no-files-found: warn
+          retention-days: 30
+
   applab-android:
     name: AppLab Android E2E Gate
     needs: validate-and-build
@@ -251,7 +309,7 @@ jobs:
 
   certification-evidence:
     name: v1.0 Certification Evidence
-    needs: [validate-and-build, applab-android]
+    needs: [validate-and-build, android-api29-smoke, applab-android]
     if: always()
     runs-on: ubuntu-latest
 
@@ -273,6 +331,13 @@ jobs:
           name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-ci-x86_64
           path: certification/x86_64
 
+      - name: Download store-signed AAB
+        if: needs.validate-and-build.outputs.store_signing_available == 'true'
+        uses: actions/download-artifact@v6
+        with:
+          name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-store-aab
+          path: certification/store-aab
+
       - name: Download AppLab evidence
         if: needs.applab-android.result != 'skipped' && needs.applab-android.result != 'cancelled'
         uses: actions/download-artifact@v6
@@ -284,6 +349,7 @@ jobs:
         env:
           BUILD_RESULT: ${{ needs.validate-and-build.result }}
           APPLAB_RESULT: ${{ needs.applab-android.result }}
+          API29_RESULT: ${{ needs.android-api29-smoke.result }}
           STORE_SIGNING_AVAILABLE: ${{ needs.validate-and-build.outputs.store_signing_available }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
@@ -314,17 +380,20 @@ jobs:
 
           ARM64_APK="certification/arm64/app-arm64-v8a-release.apk"
           X86_APK="certification/x86_64/app-x86_64-release.apk"
+          STORE_AAB="certification/store-aab/app-release.aab"
 
           ARM64_SHA256="$(hash_or_na "$ARM64_APK")"
           X86_SHA256="$(hash_or_na "$X86_APK")"
+          STORE_AAB_SHA256="$(hash_or_na "$STORE_AAB")"
           ARM64_BYTES="$(size_or_na "$ARM64_APK")"
           X86_BYTES="$(size_or_na "$X86_APK")"
+          STORE_AAB_BYTES="$(size_or_na "$STORE_AAB")"
 
           PHYSICAL_QA="$(awk -F': ' '/^- Physical ARM64 device QA:/ {print $2}' docs/PRODUCTION_APPROVAL.md | tr -d '\r')"
           STORE_REVIEW="$(awk -F': ' '/^- Play Store listing\/screenshots review:/ {print $2}' docs/PRODUCTION_APPROVAL.md | tr -d '\r')"
           ROLLOUT_REVIEW="$(awk -F': ' '/^- Staged rollout \/ rollback review:/ {print $2}' docs/PRODUCTION_APPROVAL.md | tr -d '\r')"
 
-          if [ "$BUILD_RESULT" != "success" ] || [ "$APPLAB_RESULT" != "success" ]; then
+          if [ "$BUILD_RESULT" != "success" ] || [ "$API29_RESULT" != "success" ] || [ "$APPLAB_RESULT" != "success" ]; then
             VERDICT="NOT CERTIFIED"
           elif [ "$STORE_SIGNING_AVAILABLE" != "true" ] || [ "$PHYSICAL_QA" != "PASS" ] || [ "$STORE_REVIEW" != "PASS" ] || [ "$ROLLOUT_REVIEW" != "PASS" ]; then
             VERDICT="BLOCKED"
@@ -348,7 +417,8 @@ jobs:
           ## Automated gates
 
           - validate-and-build: **$BUILD_RESULT**
-          - AppLab Android E2E: **$APPLAB_RESULT**
+          - Android API 29 release smoke: **$API29_RESULT**
+          - AppLab Android E2E (API 35): **$APPLAB_RESULT**
           - Store-signing credentials available: **$STORE_SIGNING_AVAILABLE**
           - Formatting / analyze / full Flutter tests: tied to validate-and-build
           - ARM64 release / x86_64 release / AAB structure / size budget: tied to validate-and-build
@@ -360,6 +430,8 @@ jobs:
           - AppLab-tested x86_64 APK bytes: `$X86_BYTES`
           - ARM64 distribution candidate SHA-256: `$ARM64_SHA256`
           - ARM64 distribution candidate bytes: `$ARM64_BYTES`
+          - Store-signed AAB SHA-256: `$STORE_AAB_SHA256`
+          - Store-signed AAB bytes: `$STORE_AAB_BYTES`
 
           The x86_64 APK is the exact artifact exercised by AppLab. The ARM64
           candidate requires physical-device validation of this exact SHA-256
@@ -383,6 +455,7 @@ jobs:
           {
             printf '%s  %s\n' "$X86_SHA256" "app-x86_64-release.apk"
             printf '%s  %s\n' "$ARM64_SHA256" "app-arm64-v8a-release.apk"
+            printf '%s  %s\n' "$STORE_AAB_SHA256" "app-release.aab"
           } > certification/ARTIFACT_SHA256.txt
 
           if [ -f certification/applab/summary.md ]; then
@@ -405,5 +478,18 @@ jobs:
             certification/VERDICT.txt
             certification/ARTIFACT_SHA256.txt
             certification/APPLAB_SUMMARY.md
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload exact ARM64 certification candidate
+        if: needs.validate-and-build.result == 'success'
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-v1.0.0-ARM64-Certification-Candidate
+          path: |
+            certification/arm64/app-arm64-v8a-release.apk
+            certification/EVIDENCE_BUNDLE.md
+            certification/VERDICT.txt
+            certification/ARTIFACT_SHA256.txt
           if-no-files-found: error
           retention-days: 30
