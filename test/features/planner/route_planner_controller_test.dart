@@ -98,11 +98,42 @@ void main() {
     expect(state.distanceMeters, 1500);
     expect(state.routingSource, 'test-snap');
     expect(state.editHandles, hasLength(1));
-    expect(state.points.first.latitude, closeTo(45.0002, 0.000001));
-    expect(state.points.last.longitude, closeTo(11.0098, 0.000001));
+    expect(state.points.first.latitude, closeTo(45.0, 0.000001));
+    expect(state.points.first.longitude, closeTo(11.0, 0.000001));
+    expect(state.points.last.latitude, closeTo(45.01, 0.000001));
+    expect(state.points.last.longitude, closeTo(11.01, 0.000001));
     expect(state.hasElevation, isTrue);
     expect(state.ascentMeters, 25);
     expect(state.descentMeters, 5);
+  });
+
+  test('routing snap never moves user-selected waypoint coordinates', () async {
+    final container = containerWith(const _SnappedRoutingEngine());
+    addTearDown(container.dispose);
+
+    final controller = container.read(routePlannerProvider.notifier);
+    const start = GeoPoint(latitude: 45.0, longitude: 11.0);
+    const destination = GeoPoint(latitude: 45.01, longitude: 11.01);
+
+    controller
+      ..addPoint(start)
+      ..addPoint(destination);
+    await Future<void>.delayed(Duration.zero);
+
+    var state = container.read(routePlannerProvider);
+    expect(state.points, [start, destination]);
+    expect(state.geometry.first, isNot(start));
+    expect(state.geometry.last, isNot(destination));
+
+    const movedDestination = GeoPoint(
+      latitude: 45.01234,
+      longitude: 11.01456,
+    );
+    controller.movePoint(1, movedDestination);
+    await _flushAsync();
+
+    state = container.read(routePlannerProvider);
+    expect(state.points.last, movedDestination);
   });
 
   test('imports GPX geometry without rerouting and preserves elevation', () {
