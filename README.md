@@ -20,6 +20,8 @@ Build 31 planner sources and regression tests are normalized with the same Dart 
 
 Widget boot regression now matches the map-first empty state: no synthetic `0 m` summary is expected before a route exists.
 
+The planner shell regression now asserts the search field semantically via the `TextField` widget instead of treating its `InputDecoration` hint as a standalone `Text` widget.
+
 ### Included
 
 - Flutter Android codebase with versioned native Android scaffold; iOS release is outside this Android v1.0 certification scope

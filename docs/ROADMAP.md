@@ -88,6 +88,7 @@ Current runtime candidate: **v1.0.0+31**. Build 30 is the last fully green autom
 ### P1 — Map-first UX, fluidity & release hardening
 - [x] cascade native offline-region deletion when a saved route is deleted, with regression coverage;
 - [x] widget boot regression aligned with the map-first empty state (no pre-route `0 m` summary expected);
+- [x] planner shell test now validates the search field semantically instead of matching an `InputDecoration` hint as standalone text;
 - [x] **Planner map-first layout:** remove the permanently visible full PlannerCard from the empty/home state. Keep the map dominant. Before a route exists, show only lightweight floating controls; after the first confirmed point use a compact prompt; show the route summary only after a confirmed destination/valid route exists;
 - [x] **Progressive bottom sheet:** replace the fixed large summary card with hidden / compact / expanded states. Compact mode exposes only essential route stats/actions; elevation, profile details, GPS diagnostics and secondary actions move to the expanded sheet; save dialogs are launched after sheet dismissal to preserve correct navigation lifecycle;
 - [x] **Destination-selection rewrite:** a map tap must create a temporary preview pin, not immediately mutate the route. Use one consistent confirmation flow for map tap, search result and POI: `Start here`, `Destination`, or `Add waypoint`. Recalculate only after confirmation;
