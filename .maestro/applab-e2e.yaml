@@ -87,8 +87,19 @@ appId: com.riccardopinato.trail_path
 - waitForAnimationToEnd
 - tapOn:
     point: "43%,28%"
+- extendedWaitUntil:
+    visible: "Start here"
+    timeout: 15000
+- tapOn: "Start here"
+- extendedWaitUntil:
+    visible: "Choose destination"
+    timeout: 15000
 - tapOn:
     point: "57%,28%"
+- extendedWaitUntil:
+    visible: "Destination"
+    timeout: 15000
+- tapOn: "Destination"
 - extendedWaitUntil:
     visible: "Save route"
     timeout: 60000
