@@ -14,19 +14,19 @@ Pinned AppLab harness: **8ccddca7f0f94158483df92d5fd085fe32375de9**
 | AppLab harness identity | Pass | Workflow is pinned to the exact SHA above and records it in the Evidence Bundle. |
 | Saved-route deletion lifecycle | Pass | Route deletion now removes the linked native offline region before deleting route/waypoints; regression test added. |
 | Planner foreground GPS lifecycle contract | Pass | Source regression test exists; runtime certification still required below. |
-| Formatting | Not Tested | Must pass on exact build-30 candidate. |
-| Static analysis | Not Tested | Must pass on exact build-30 candidate. |
-| Full Flutter tests | Not Tested | Must pass on exact build-30 candidate. |
-| ARM64 release APK | Not Tested | Must be generated from exact build-30 SHA. |
-| x86_64 R8 runtime APK | Not Tested | Must be generated from exact build-30 SHA. |
-| Release AAB structure | Not Tested | Must pass on exact build-30 SHA. |
-| ARM64 size budget | Not Tested | 40 MiB gate remains enforced. |
-| Android API 29 release smoke | Not Tested | Must rerun on exact build-30 artifact. |
-| API 35 AppLab full gate | Not Tested | Must rerun through every required lab. |
-| Network & Offline Lab | Not Tested | Active-connectivity parsing and cold-relaunch runtime stabilization are fixed in the pinned AppLab harness; build 30 must rerun the lab. |
-| Focused no-network navigation gate | Not Tested | Must run after full AppLab passes. |
-| Background/Doze recovery | Not Tested | Must reach and pass on current GPS lifecycle implementation. |
-| Database migrations v1/v2 → v3 | Not Tested | Covered by full Flutter suite when rerun. |
+| Formatting | Pass | Green build-30 certification run. |
+| Static analysis | Pass | flutter analyze passed on exact candidate. |
+| Full Flutter tests | Pass | Full Flutter suite passed on exact candidate. |
+| ARM64 release APK | Pass | Exact candidate built; SHA-256 recorded in Evidence Bundle. |
+| x86_64 R8 runtime APK | Pass | Exact AppLab artifact built and exercised. |
+| Release AAB structure | Pass | Structural AAB gate passed. |
+| ARM64 size budget | Pass | 33,638,317 bytes; below 40 MiB gate. |
+| Android API 29 release smoke | Pass | Install/launch/restart passed. |
+| API 35 AppLab full gate | Pass | Complete AppLab gate passed. |
+| Network & Offline Lab | Pass | Hardened active-connectivity and cold-relaunch checks passed. |
+| Focused no-network navigation gate | Pass | Focused airplane-mode Maestro flow passed after AppLab. |
+| Background/Doze recovery | Pass | AppLab Background Execution, Doze & Recovery Lab passed with zero errors/warnings. |
+| Database migrations v1/v2 → v3 | Pass | Migration tests passed in full Flutter suite. |
 | Android backup/device transfer | Pass | Backup disabled and extraction rules exclude app data. |
 | Cleartext HTTP | Pass | Explicitly disabled in Android manifest. |
 | Privacy documentation | Pass | Current local/network behavior documented. |
@@ -42,7 +42,7 @@ Pinned AppLab harness: **8ccddca7f0f94158483df92d5fd085fe32375de9**
 
 ## Certification rule
 
-The generated Evidence Bundle for the exact candidate SHA is the authoritative automated verdict.
+The generated Evidence Bundle for the exact candidate SHA is the authoritative automated verdict. Build 30 automated validation is PASS; current production verdict is BLOCKED by external gates.
 
 - Any required automated failure → **NOT CERTIFIED**.
 - All automated gates pass but external production evidence is incomplete → **BLOCKED**.
