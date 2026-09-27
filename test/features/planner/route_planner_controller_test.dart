@@ -55,50 +55,53 @@ void main() {
     expect(state.points, hasLength(2));
   });
 
-  test('route tools close loop, reverse, out-and-back and erase atomically', () async {
-    final container = containerWith(const StraightLineRoutingEngine());
-    addTearDown(container.dispose);
+  test(
+    'route tools close loop, reverse, out-and-back and erase atomically',
+    () async {
+      final container = containerWith(const StraightLineRoutingEngine());
+      addTearDown(container.dispose);
 
-    final controller = container.read(routePlannerProvider.notifier);
-    const a = GeoPoint(latitude: 45.0, longitude: 11.0);
-    const b = GeoPoint(latitude: 45.01, longitude: 11.01);
-    const c = GeoPoint(latitude: 45.02, longitude: 11.02);
+      final controller = container.read(routePlannerProvider.notifier);
+      const a = GeoPoint(latitude: 45.0, longitude: 11.0);
+      const b = GeoPoint(latitude: 45.01, longitude: 11.01);
+      const c = GeoPoint(latitude: 45.02, longitude: 11.02);
 
-    controller
-      ..addPoint(a)
-      ..addPoint(b)
-      ..addPoint(c);
-    await _flushAsync();
+      controller
+        ..addPoint(a)
+        ..addPoint(b)
+        ..addPoint(c);
+      await _flushAsync();
 
-    expect(controller.closeLoop(), isTrue);
-    await _flushAsync();
-    var state = container.read(routePlannerProvider);
-    expect(state.points, [a, b, c, a]);
+      expect(controller.closeLoop(), isTrue);
+      await _flushAsync();
+      var state = container.read(routePlannerProvider);
+      expect(state.points, [a, b, c, a]);
 
-    controller.undo();
-    await _flushAsync();
-    state = container.read(routePlannerProvider);
-    expect(state.points, [a, b, c]);
+      controller.undo();
+      await _flushAsync();
+      state = container.read(routePlannerProvider);
+      expect(state.points, [a, b, c]);
 
-    controller.reverseRoute();
-    await _flushAsync();
-    state = container.read(routePlannerProvider);
-    expect(state.points, [c, b, a]);
+      controller.reverseRoute();
+      await _flushAsync();
+      state = container.read(routePlannerProvider);
+      expect(state.points, [c, b, a]);
 
-    controller.undo();
-    await _flushAsync();
-    expect(container.read(routePlannerProvider).points, [a, b, c]);
+      controller.undo();
+      await _flushAsync();
+      expect(container.read(routePlannerProvider).points, [a, b, c]);
 
-    expect(controller.makeOutAndBack(), isTrue);
-    await _flushAsync();
-    state = container.read(routePlannerProvider);
-    expect(state.points, [a, b, c, b, a]);
+      expect(controller.makeOutAndBack(), isTrue);
+      await _flushAsync();
+      state = container.read(routePlannerProvider);
+      expect(state.points, [a, b, c, b, a]);
 
-    expect(controller.eraseLastSegment(), isTrue);
-    await _flushAsync();
-    state = container.read(routePlannerProvider);
-    expect(state.points, [a, b, c, b]);
-  });
+      expect(controller.eraseLastSegment(), isTrue);
+      await _flushAsync();
+      state = container.read(routePlannerProvider);
+      expect(state.points, [a, b, c, b]);
+    },
+  );
 
   test('changing route profile recalculates estimated duration', () async {
     final container = containerWith(const StraightLineRoutingEngine());

@@ -412,9 +412,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     }
     _pushUndo();
     _redoStack.clear();
-    _applyPoints(
-      List<GeoPoint>.unmodifiable(state.points.reversed),
-    );
+    _applyPoints(List<GeoPoint>.unmodifiable(state.points.reversed));
   }
 
   bool closeLoop() {
@@ -429,9 +427,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
 
     _pushUndo();
     _redoStack.clear();
-    _applyPoints(
-      List<GeoPoint>.unmodifiable([...state.points, first]),
-    );
+    _applyPoints(List<GeoPoint>.unmodifiable([...state.points, first]));
     return true;
   }
 
