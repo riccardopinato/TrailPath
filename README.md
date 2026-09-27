@@ -159,3 +159,5 @@ The post-v1 branch starts at **v1.1.0+32** with Smart Trace and multi-map founda
 - The Valhalla public demo endpoint is development/fair-use infrastructure only; production provider strategy remains an explicit release decision.
 
 The v1.1 Dart sources are normalized with the pinned Flutter 3.47.5 formatter before CI validation.
+
+- Loop, out-and-back, reverse and erase-last-segment route tools are available inside Smart Trace mode, reusing the planner undo/reroute pipeline.
