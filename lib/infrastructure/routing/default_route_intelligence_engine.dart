@@ -10,17 +10,22 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
   const DefaultRouteIntelligenceEngine({
     required RoutingEngine routing,
     required ElevationEngine elevation,
+    OutdoorContextService? context,
   }) : _routing = routing,
-       _elevation = elevation;
+       _elevation = elevation,
+       _context = context;
 
   final RoutingEngine _routing;
   final ElevationEngine _elevation;
+  final OutdoorContextService? _context;
 
   @override
   Set<AlternativeRoutePreference> get supportedAlternativePreferences =>
-      const {
+      {
         AlternativeRoutePreference.shortest,
         AlternativeRoutePreference.leastClimb,
+        if (_context != null) AlternativeRoutePreference.moreTrail,
+        if (_context != null) AlternativeRoutePreference.moreRoad,
       };
 
   @override
@@ -123,11 +128,7 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
           continue;
         }
         final plan = await _withElevation(raw);
-        final score = switch (preference) {
-          AlternativeRoutePreference.shortest => plan.distanceMeters,
-          AlternativeRoutePreference.leastClimb =>
-            plan.ascentMeters * 1000 + plan.distanceMeters * 0.08,
-        };
+        final score = await _scoreAlternative(plan, preference);
         candidates.add(
           RouteCandidate(
             plan: plan,
@@ -142,6 +143,40 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
 
     candidates.sort((a, b) => a.score.compareTo(b.score));
     return List<RouteCandidate>.unmodifiable(candidates);
+  }
+
+  Future<double> _scoreAlternative(
+    RoutePlan plan,
+    AlternativeRoutePreference preference,
+  ) async {
+    switch (preference) {
+      case AlternativeRoutePreference.shortest:
+        return plan.distanceMeters;
+      case AlternativeRoutePreference.leastClimb:
+        return plan.ascentMeters * 1000 + plan.distanceMeters * 0.08;
+      case AlternativeRoutePreference.moreTrail:
+      case AlternativeRoutePreference.moreRoad:
+        final context = _context;
+        if (context == null) {
+          return double.infinity;
+        }
+        try {
+          final surface = await context.surfaceSummary(plan.geometry);
+          final known = 1 - surface.fraction(RouteSurfaceType.unknown);
+          if (known <= 0) {
+            return 2 + plan.distanceMeters / 100000;
+          }
+          final preferred = preference == AlternativeRoutePreference.moreTrail
+              ? surface.fraction(RouteSurfaceType.trail) +
+                    surface.fraction(RouteSurfaceType.dirt) +
+                    surface.fraction(RouteSurfaceType.gravel)
+              : surface.fraction(RouteSurfaceType.paved);
+          return (1 - preferred) + (1 - known) * 0.35 +
+              plan.distanceMeters / 1000000;
+        } on Object {
+          return 2 + plan.distanceMeters / 100000;
+        }
+    }
   }
 
   Future<RoutePlan> _withElevation(RoutePlan route) async {
