@@ -380,38 +380,38 @@ class _ProCard extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(17),
             child: Row(
-            children: [
-              Icon(
-                Icons.workspace_premium_rounded,
-                color: scheme.onPrimaryContainer,
-                size: 30,
-              ),
-              const SizedBox(width: 13),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      strings.trailPathPro,
-                      style: TextStyle(
-                        color: scheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 17,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      isPro ? strings.proActive : strings.proSubtitle,
-                      style: TextStyle(color: scheme.onPrimaryContainer),
-                    ),
-                  ],
+              children: [
+                Icon(
+                  Icons.workspace_premium_rounded,
+                  color: scheme.onPrimaryContainer,
+                  size: 30,
                 ),
-              ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: scheme.onPrimaryContainer,
-              ),
-            ],
+                const SizedBox(width: 13),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        strings.trailPathPro,
+                        style: TextStyle(
+                          color: scheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 17,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        isPro ? strings.proActive : strings.proSubtitle,
+                        style: TextStyle(color: scheme.onPrimaryContainer),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: scheme.onPrimaryContainer,
+                ),
+              ],
             ),
           ),
         ),
