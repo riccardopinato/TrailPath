@@ -773,7 +773,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       _PlannerMapStyle.outdoor => MapConfig.plannerStyleUrl,
       _PlannerMapStyle.street => MapConfig.styleUrl,
       _PlannerMapStyle.highContrast => MapConfig.highContrastStyleUrl,
-      _PlannerMapStyle.satellite => MapConfig.mapTilerStyleUrl('satellite'),
+      _PlannerMapStyle.satellite => MapConfig.mapTilerStyleUrl('satellite-v4'),
       _PlannerMapStyle.hybrid => MapConfig.mapTilerStyleUrl('hybrid'),
     };
   }
