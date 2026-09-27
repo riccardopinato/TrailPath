@@ -219,3 +219,5 @@ TrailPath Pro is implemented behind a provider-agnostic Premium Engine using the
 - Google Sign-In is optional and runtime-configured through `GOOGLE_SERVER_CLIENT_ID`.
 - Sign-out does not remove local TrailPath routes, activities or preferences.
 - A global km/mi preference is not exposed yet because every metric surface must convert consistently before shipping it.
+
+v1.5 Outdoor Intelligence sources and tests are normalized with the pinned Flutter 3.47.5 formatter before staging CI.
