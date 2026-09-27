@@ -1733,11 +1733,15 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                           horizontal: 8,
                           vertical: 5,
                         ),
-                        child: Wrap(
-                          spacing: 6,
-                          runSpacing: 4,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ChoiceChip(
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: [
+                                ChoiceChip(
                               label: Text(strings.traceFollowTrails),
                               selected: _traceMatchMode == MapMatchMode.trails,
                               onSelected: _traceProcessing
@@ -1768,10 +1772,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                                       () => _traceMatchMode = MapMatchMode.free,
                                     ),
                               visualDensity: VisualDensity.compact,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        if (planner.points.length >= 2) ...[
+                            if (planner.points.length >= 2) ...[
                           const SizedBox(height: 5),
                           Wrap(
                             spacing: 6,
@@ -1845,9 +1849,11 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                                       },
                                 visualDensity: VisualDensity.compact,
                               ),
+                                ],
+                              ),
                             ],
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
