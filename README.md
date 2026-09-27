@@ -220,7 +220,7 @@ TrailPath Pro is implemented behind a provider-agnostic Premium Engine using the
 
 ## v1.3 Settings, Profile & Account
 
-- Settings are behavior-backed: theme, default activity/map, battery mode, voice guidance and Wi-Fi-only offline downloads.
+- Settings are behavior-backed: theme, Metric/Imperial units, default activity/map, battery mode, voice guidance, Wi-Fi-only offline downloads and automatic rerouting.
 - Profile is the app/account hub and keeps Outdoor tools available without expanding bottom navigation.
 - Google Sign-In is optional and runtime-configured through `GOOGLE_SERVER_CLIENT_ID`.
 - Sign-out does not remove local TrailPath routes, activities or preferences.
@@ -240,3 +240,5 @@ Surface analysis uses bounded route-corridor probes against Overpass instead of 
 - Invalid/unavailable Supabase initialization cannot prevent TrailPath startup: the app continues local-first.
 - Drift migration coverage now includes v1, v2, v3 and v4 databases upgrading to schema v5.
 - Surface analysis uses bounded route-corridor Overpass probes rather than a potentially huge full-route bounding box.
+
+Metric/Imperial formatting is shared across planner, elevation, recording pace/GPS accuracy, saved routes, navigation, Back to Car, Profile/Stats, Collections, Route Lab POIs and route weather.
