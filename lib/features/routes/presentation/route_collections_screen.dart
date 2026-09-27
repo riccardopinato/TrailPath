@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 
 class RouteCollectionsScreen extends ConsumerWidget {
   const RouteCollectionsScreen({super.key});
@@ -174,7 +175,7 @@ class RouteCollectionsScreen extends ConsumerWidget {
                             return CheckboxListTile(
                               value: selected.contains(route.id),
                               title: Text(route.name),
-                              subtitle: Text(_distance(route.distanceMeters)),
+                              subtitle: Text(context.formatDistance(route.distanceMeters)),
                               onChanged: (value) async {
                                 if (value == true) {
                                   await database.addRouteToCollection(
@@ -291,6 +292,3 @@ class _CollectionCard extends StatelessWidget {
   }
 }
 
-String _distance(double meters) => meters < 1000
-    ? '${meters.round()} m'
-    : '${(meters / 1000).toStringAsFixed(1)} km';
