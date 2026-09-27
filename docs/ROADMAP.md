@@ -144,14 +144,14 @@ Goal: make route creation materially closer to Footpath-quality behavior before 
 
 Goal: introduce monetization only after the planner/map experience is strong enough to justify payment.
 
-- [ ] implement a **Premium Engine** behind feature entitlements, provider-agnostic and testable.
-- [ ] integrate Google Play Billing through a stable abstraction; evaluate RevenueCat only if it materially reduces subscription/restore complexity.
+- [x] implement a **Premium Engine** behind feature entitlements, provider-agnostic and testable.
+- [x] integrate Google Play Billing through the official Flutter `in_app_purchase` package behind `PremiumEngine`; RevenueCat is not required for the current architecture.
 - [ ] proposed launch pricing to validate: **€2.99/month / €19.99/year**.
 - [ ] no Lifetime at launch while satellite/cloud providers create recurring operating cost.
-- [ ] build a clear, non-blocking paywall with restore purchases and transparent feature comparison.
-- [ ] Free remains useful: route planning, GPS recording, elevation, GPX basics, standard maps, basic navigation.
+- [x] build a clear, non-blocking paywall with monthly/yearly offers, restore purchases and feature comparison.
+- [x] Free remains useful: route planning, GPS recording, elevation, GPX basics, standard maps, basic navigation.
 - [ ] Pro candidates: satellite layers, satellite + trails, advanced offline maps, advanced Smart Trace tools, advanced stats, cloud sync, route collections, route generator, terrain/slope layers and future premium map providers.
-- [ ] keep critical safety/recovery features out of an aggressive paywall.
+- [x] keep critical safety/recovery features out of the paywall.
 
 ### v1.3 — Settings, Profile & Account Foundation
 
