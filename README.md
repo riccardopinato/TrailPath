@@ -187,3 +187,17 @@ AppLab now enters Outdoor tools through the Profile hub and verifies the v1.3 Se
 Profile keeps the TrailPath Pro card above account details so subscription state and management remain immediately discoverable on small screens and in AppLab.
 
 Profile Pro card exposes an explicit accessibility semantic label; AppLab now scrolls to Settings rather than assuming every Profile action fits the initial viewport.
+
+
+## v1.4 Cloud Sync
+
+The rebased v1.4 candidate is **v1.4.0+35**.
+
+- Supabase is optional and initializes only with `SUPABASE_URL` + `SUPABASE_PUBLISHABLE_KEY`.
+- Google Sign-In remains optional; Google tokens establish Supabase Auth only when cloud sync is used.
+- Local Drift remains the offline source of truth.
+- Schema v4 adds a coalescing sync outbox and deletion tombstones.
+- Routes, completed activities and behavior-backed preferences sync bidirectionally with last-write-wins timestamps.
+- Existing local data seeds the outbox on first cloud enablement.
+- Sign-out never deletes local TrailPath data.
+- RLS reference schema is documented in `docs/SUPABASE_CLOUD_SYNC_SCHEMA.sql`; no service-role/secret key is embedded in the client.
