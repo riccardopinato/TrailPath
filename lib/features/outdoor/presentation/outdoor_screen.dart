@@ -674,9 +674,8 @@ String _modeTechnicalLabel(
   BatteryMode mode,
 ) {
   final policy = batteryModePolicy(mode);
-  return '${strings.gpsEvery} '
-      '${policy.interval.inSeconds}s · '
-      context.formatDistance(policy.distanceFilterMeters.toDouble());
+  return '${strings.gpsEvery} ${policy.interval.inSeconds}s · '
+      '${context.formatDistance(policy.distanceFilterMeters.toDouble())}';
 }
 
 String _formatSavedTime(BuildContext context, DateTime value) {
