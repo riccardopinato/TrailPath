@@ -555,6 +555,51 @@ class AppDatabase extends _$AppDatabase {
     return value == null ? null : DateTime.tryParse(value)?.toUtc();
   }
 
+  Future<void> ensureInitialSyncOutbox() async {
+    final bootstrapped = await getSetting('cloud_sync_bootstrapped');
+    if (bootstrapped == 'true') {
+      return;
+    }
+
+    final routes = await listSavedRoutes();
+    final completed = await listCompletedActivities();
+    final preferences = await listCloudPreferences();
+    await transaction(() async {
+      for (final route in routes) {
+        await _queueSyncMutation(
+          SyncEntityType.route,
+          route.id,
+          SyncMutationAction.upsert,
+          updatedAt: route.updatedAt,
+        );
+      }
+      for (final activity in completed) {
+        await _queueSyncMutation(
+          SyncEntityType.activity,
+          activity.id,
+          SyncMutationAction.upsert,
+          updatedAt:
+              activity.updatedAt ?? activity.endedAt ?? activity.startedAt,
+        );
+      }
+      if (preferences.isNotEmpty) {
+        final updatedAt = await cloudPreferencesUpdatedAt() ?? DateTime.now();
+        await _queueSyncMutation(
+          SyncEntityType.preferences,
+          'preferences',
+          SyncMutationAction.upsert,
+          updatedAt: updatedAt,
+        );
+      }
+      await into(appSettings).insertOnConflictUpdate(
+        AppSettingsCompanion.insert(
+          key: 'cloud_sync_bootstrapped',
+          value: 'true',
+        ),
+      );
+    });
+  }
+
   Future<List<SyncMutation>> listSyncMutations() async {
     final rows =
         await (select(syncOutboxEntries)
