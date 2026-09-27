@@ -87,6 +87,16 @@ class AppLocalizations {
   String get outdoorTools => _value('outdoorTools');
   String get cloudSync => _value('cloudSync');
   String get cloudSyncAccountHint => _value('cloudSyncAccountHint');
+  String get syncNow => _value('syncNow');
+  String get syncing => _value('syncing');
+  String get syncLast => _value('syncLast');
+  String get syncPending => _value('syncPending');
+  String get syncRequiresPro => _value('syncRequiresPro');
+  String get syncRequiresAccount => _value('syncRequiresAccount');
+  String get syncUnavailable => _value('syncUnavailable');
+  String get syncReady => _value('syncReady');
+  String get syncDone => _value('syncDone');
+  String get syncError => _value('syncError');
   String get googleAccount => _value('googleAccount');
   String get signInGoogle => _value('signInGoogle');
   String get signOut => _value('signOut');
@@ -330,6 +340,16 @@ class AppLocalizations {
       'outdoorTools': 'Strumenti Outdoor',
       'cloudSync': 'Cloud Sync',
       'cloudSyncAccountHint': 'Backup e sincronizzazione opzionali con account',
+      'syncNow': 'Sincronizza ora',
+      'syncing': 'Sincronizzazione…',
+      'syncLast': 'Ultima sincronizzazione',
+      'syncPending': 'modifiche in attesa',
+      'syncRequiresPro': 'Richiede TrailPath Pro',
+      'syncRequiresAccount': 'Accedi con Google per sincronizzare',
+      'syncUnavailable': 'Cloud Sync non configurato in questa build',
+      'syncReady': 'Pronto per la sincronizzazione',
+      'syncDone': 'Sincronizzazione completata',
+      'syncError': 'Errore di sincronizzazione',
       'googleAccount': 'Account Google',
       'signInGoogle': 'Accedi',
       'signOut': 'Esci',
@@ -568,6 +588,16 @@ class AppLocalizations {
       'outdoorTools': 'Outdoor tools',
       'cloudSync': 'Cloud Sync',
       'cloudSyncAccountHint': 'Optional backup and sync with an account',
+      'syncNow': 'Sync now',
+      'syncing': 'Syncing…',
+      'syncLast': 'Last sync',
+      'syncPending': 'pending changes',
+      'syncRequiresPro': 'Requires TrailPath Pro',
+      'syncRequiresAccount': 'Sign in with Google to sync',
+      'syncUnavailable': 'Cloud Sync is not configured in this build',
+      'syncReady': 'Ready to sync',
+      'syncDone': 'Sync complete',
+      'syncError': 'Sync error',
       'googleAccount': 'Google account',
       'signInGoogle': 'Sign in',
       'signOut': 'Sign out',
@@ -806,6 +836,16 @@ class AppLocalizations {
       'outdoorTools': 'Herramientas Outdoor',
       'cloudSync': 'Cloud Sync',
       'cloudSyncAccountHint': 'Copia y sincronización opcionales con una cuenta',
+      'syncNow': 'Sincronizar ahora',
+      'syncing': 'Sincronizando…',
+      'syncLast': 'Última sincronización',
+      'syncPending': 'cambios pendientes',
+      'syncRequiresPro': 'Requiere TrailPath Pro',
+      'syncRequiresAccount': 'Inicia sesión con Google para sincronizar',
+      'syncUnavailable': 'Cloud Sync no está configurado en esta build',
+      'syncReady': 'Listo para sincronizar',
+      'syncDone': 'Sincronización completada',
+      'syncError': 'Error de sincronización',
       'googleAccount': 'Cuenta de Google',
       'signInGoogle': 'Acceder',
       'signOut': 'Cerrar sesión',
@@ -1046,6 +1086,16 @@ class AppLocalizations {
       'outdoorTools': 'Outils Outdoor',
       'cloudSync': 'Cloud Sync',
       'cloudSyncAccountHint': 'Sauvegarde et synchronisation facultatives avec un compte',
+      'syncNow': 'Synchroniser',
+      'syncing': 'Synchronisation…',
+      'syncLast': 'Dernière synchronisation',
+      'syncPending': 'modifications en attente',
+      'syncRequiresPro': 'Nécessite TrailPath Pro',
+      'syncRequiresAccount': 'Connectez-vous avec Google pour synchroniser',
+      'syncUnavailable': 'Cloud Sync n’est pas configuré dans cette build',
+      'syncReady': 'Prêt à synchroniser',
+      'syncDone': 'Synchronisation terminée',
+      'syncError': 'Erreur de synchronisation',
       'googleAccount': 'Compte Google',
       'signInGoogle': 'Se connecter',
       'signOut': 'Se déconnecter',
@@ -1287,6 +1337,16 @@ class AppLocalizations {
       'outdoorTools': 'Ferramentas Outdoor',
       'cloudSync': 'Cloud Sync',
       'cloudSyncAccountHint': 'Backup e sincronização opcionais com uma conta',
+      'syncNow': 'Sincronizar agora',
+      'syncing': 'A sincronizar…',
+      'syncLast': 'Última sincronização',
+      'syncPending': 'alterações pendentes',
+      'syncRequiresPro': 'Requer TrailPath Pro',
+      'syncRequiresAccount': 'Entre com Google para sincronizar',
+      'syncUnavailable': 'Cloud Sync não está configurado nesta build',
+      'syncReady': 'Pronto para sincronizar',
+      'syncDone': 'Sincronização concluída',
+      'syncError': 'Erro de sincronização',
       'googleAccount': 'Conta Google',
       'signInGoogle': 'Entrar',
       'signOut': 'Terminar sessão',
