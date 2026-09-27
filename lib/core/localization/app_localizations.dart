@@ -248,6 +248,9 @@ class AppLocalizations {
   String get recoveredRecordingHint => _value('recoveredRecordingHint');
   String get activityName => _value('activityName');
   String get activitySaved => _value('activitySaved');
+  String get activitySaveFailed => _value('activitySaveFailed');
+  String get retrySave => _value('retrySave');
+  String get savePending => _value('savePending');
   String get activityTooShort => _value('activityTooShort');
   String get currentPace => _value('currentPace');
   String get gpsAccuracy => _value('gpsAccuracy');
@@ -563,6 +566,9 @@ class AppLocalizations {
       'recoveredRecordingHint': 'Ho trovato una registrazione interrotta. Puoi riprenderla o scartarla.',
       'activityName': 'Nome attività',
       'activitySaved': 'Attività salvata',
+      'activitySaveFailed': 'Salvataggio attività non riuscito. La traccia è ancora recuperabile.',
+      'retrySave': 'Riprova salvataggio',
+      'savePending': 'Salvataggio in attesa',
       'activityTooShort': 'Traccia troppo breve per essere salvata',
       'currentPace': 'Passo',
       'gpsAccuracy': 'Precisione GPS',
@@ -873,6 +879,9 @@ class AppLocalizations {
       'recoveredRecordingHint': 'An interrupted recording was found. You can resume it or discard it.',
       'activityName': 'Activity name',
       'activitySaved': 'Activity saved',
+      'activitySaveFailed': 'Activity save failed. Your track is still recoverable.',
+      'retrySave': 'Retry save',
+      'savePending': 'Save pending',
       'activityTooShort': 'Track is too short to save',
       'currentPace': 'Pace',
       'gpsAccuracy': 'GPS accuracy',
@@ -1186,6 +1195,9 @@ class AppLocalizations {
       'recoveredRecordingHint': 'Se encontró un registro interrumpido. Puedes reanudarlo o descartarlo.',
       'activityName': 'Nombre de actividad',
       'activitySaved': 'Actividad guardada',
+      'activitySaveFailed': 'No se pudo guardar la actividad. La ruta sigue siendo recuperable.',
+      'retrySave': 'Reintentar guardado',
+      'savePending': 'Guardado pendiente',
       'activityTooShort': 'La ruta es demasiado corta para guardarla',
       'currentPace': 'Ritmo',
       'gpsAccuracy': 'Precisión GPS',
@@ -1498,6 +1510,9 @@ class AppLocalizations {
       'recoveredRecordingHint': 'Un enregistrement interrompu a été trouvé. Vous pouvez le reprendre ou le supprimer.',
       'activityName': 'Nom de l’activité',
       'activitySaved': 'Activité enregistrée',
+      'activitySaveFailed': 'Échec de l’enregistrement de l’activité. La trace reste récupérable.',
+      'retrySave': 'Réessayer l’enregistrement',
+      'savePending': 'Enregistrement en attente',
       'activityTooShort': 'Trace trop courte pour être enregistrée',
       'currentPace': 'Allure',
       'gpsAccuracy': 'Précision GPS',
@@ -1812,6 +1827,9 @@ class AppLocalizations {
       'recoveredRecordingHint': 'Foi encontrada uma gravação interrompida. Pode retomá-la ou descartá-la.',
       'activityName': 'Nome da atividade',
       'activitySaved': 'Atividade guardada',
+      'activitySaveFailed': 'Falha ao guardar a atividade. O percurso continua recuperável.',
+      'retrySave': 'Tentar guardar novamente',
+      'savePending': 'Guardado pendente',
       'activityTooShort': 'Percurso demasiado curto para guardar',
       'currentPace': 'Ritmo',
       'gpsAccuracy': 'Precisão GPS',
