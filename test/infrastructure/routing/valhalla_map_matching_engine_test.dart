@@ -65,8 +65,7 @@ void main() {
     final client = MockClient((request) async {
       final payload = jsonDecode(request.body) as Map<String, dynamic>;
       expect(payload['costing'], 'bicycle');
-      final costing =
-          payload['costing_options'] as Map<String, dynamic>;
+      final costing = payload['costing_options'] as Map<String, dynamic>;
       final options = costing['bicycle'] as Map<String, dynamic>;
       expect(options['bicycle_type'], 'road');
       expect(options['use_roads'], 0.95);

@@ -557,8 +557,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                       : style.isPremium
                       ? const Icon(Icons.workspace_premium_outlined)
                       : null,
-                  enabled:
-                      !style.isPremium || MapConfig.hasPremiumMapProvider,
+                  enabled: !style.isPremium || MapConfig.hasPremiumMapProvider,
                   onTap: () => Navigator.of(context).pop(style),
                 ),
             ],
@@ -1740,14 +1739,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                           children: [
                             ChoiceChip(
                               label: Text(strings.traceFollowTrails),
-                              selected:
-                                  _traceMatchMode == MapMatchMode.trails,
+                              selected: _traceMatchMode == MapMatchMode.trails,
                               onSelected: _traceProcessing
                                   ? null
                                   : (_) => setState(
-                                        () => _traceMatchMode =
-                                            MapMatchMode.trails,
-                                      ),
+                                      () =>
+                                          _traceMatchMode = MapMatchMode.trails,
+                                    ),
                               visualDensity: VisualDensity.compact,
                             ),
                             ChoiceChip(
@@ -1756,9 +1754,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                               onSelected: _traceProcessing
                                   ? null
                                   : (_) => setState(
-                                        () => _traceMatchMode =
-                                            MapMatchMode.roads,
-                                      ),
+                                      () =>
+                                          _traceMatchMode = MapMatchMode.roads,
+                                    ),
                               visualDensity: VisualDensity.compact,
                             ),
                             ChoiceChip(
@@ -1767,9 +1765,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                               onSelected: _traceProcessing
                                   ? null
                                   : (_) => setState(
-                                        () => _traceMatchMode =
-                                            MapMatchMode.free,
-                                      ),
+                                      () => _traceMatchMode = MapMatchMode.free,
+                                    ),
                               visualDensity: VisualDensity.compact,
                             ),
                           ],

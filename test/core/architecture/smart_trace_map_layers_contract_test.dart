@@ -7,9 +7,8 @@ void main() {
     final planner = File(
       'lib/features/planner/presentation/planner_screen.dart',
     ).readAsStringSync();
-    final providers = File(
-      'lib/core/services/planner_service_providers.dart',
-    ).readAsStringSync();
+    final providers = File('lib/core/services/planner_service_providers.dart')
+        .readAsStringSync();
 
     expect(planner, contains('MapMatchMode _traceMatchMode'));
     expect(planner, contains('mapMatchingEngineProvider'));

@@ -53,22 +53,17 @@ class ValhallaMapMatchingEngine implements MapMatchingEngine {
         ? request.trace
         : <GeoPoint>[
             for (var i = 0; i < 95; i++)
-              request.trace[
-                (i * (request.trace.length - 1) / 94)
-                    .round()
-                    .clamp(0, request.trace.length - 1)
-                    .toInt()
-              ],
+              request.trace[(i * (request.trace.length - 1) / 94)
+                  .round()
+                  .clamp(0, request.trace.length - 1)
+                  .toInt()],
           ];
 
     final costing = _costing(request.profile);
     final body = <String, Object?>{
       'shape': [
         for (final point in sampled)
-          <String, double>{
-            'lat': point.latitude,
-            'lon': point.longitude,
-          },
+          <String, double>{'lat': point.latitude, 'lon': point.longitude},
       ],
       'costing': costing,
       'shape_match': 'walk_or_snap',
@@ -274,12 +269,7 @@ List<GeoPoint> decodeValhallaPolyline6(String encoded) {
       break;
     }
     longitude += decodeValue();
-    points.add(
-      GeoPoint(
-        latitude: latitude / 1e6,
-        longitude: longitude / 1e6,
-      ),
-    );
+    points.add(GeoPoint(latitude: latitude / 1e6, longitude: longitude / 1e6));
   }
   return List<GeoPoint>.unmodifiable(points);
 }
