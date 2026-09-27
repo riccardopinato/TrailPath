@@ -66,7 +66,8 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
     final controller = ref.read(activeNavigationProvider.notifier);
     _navigationController = controller;
     final voiceGuidance =
-        ref.read(settingsControllerProvider).asData?.value.voiceGuidance ?? true;
+        ref.read(settingsControllerProvider).asData?.value.voiceGuidance ??
+        true;
     Future<void>.microtask(
       () => controller.start(
         widget.route,
