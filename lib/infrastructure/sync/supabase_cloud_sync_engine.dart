@@ -116,6 +116,9 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
           case SyncEntityType.preferences:
             await _database.applyRemotePreferences(payload, item.updatedAt);
             break;
+          case SyncEntityType.collection:
+            await _database.applyRemoteCollection(payload);
+            break;
         }
       }
 
@@ -187,6 +190,8 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
       SyncEntityType.activity =>
         _database.activitySyncPayload(mutation.entityId),
       SyncEntityType.preferences => _database.preferencesSyncPayload(),
+      SyncEntityType.collection =>
+        _database.collectionSyncPayload(mutation.entityId),
     };
   }
 
