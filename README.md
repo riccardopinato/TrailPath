@@ -179,3 +179,15 @@ The v1.2 staging candidate is **v1.2.0+33**.
 - Entitlement verification is currently local-store-receipt level; server verification is reserved for the cloud/backend hardening step.
 
 v1.2 Pro sources are normalized with the pinned Flutter 3.47.5 formatter.
+
+
+## v1.2 Pro foundation
+
+TrailPath Pro is implemented behind a provider-agnostic Premium Engine.
+
+- Google Play Billing uses the official `in_app_purchase` Flutter plugin.
+- Product IDs: `trailpath_pro_monthly` and `trailpath_pro_yearly`.
+- Purchases and restores flow through one engine/controller boundary.
+- Satellite and Hybrid map layers require both an active Pro entitlement and a configured `MAPTILER_API_KEY`.
+- Core planning, recording, navigation, recovery and safety remain outside the paywall.
+- Current entitlement evidence is the Google Play receipt exposed by the store plugin; server-side receipt verification is intentionally deferred to the cloud/backend phase before production billing launch.
