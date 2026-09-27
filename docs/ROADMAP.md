@@ -166,11 +166,11 @@ Goal: make TrailPath feel like a complete product without forcing account creati
 
 ### v1.4 — Cloud Sync & Cross-device
 
-- [ ] optional backup/sync for routes, activities, preferences and collections.
-- [ ] design conflict resolution, offline-first queueing and explicit sync status before implementation.
-- [ ] encrypt transport and define at-rest policy for cloud-stored route/location history.
-- [ ] restore on new device and sign-out behavior must be deterministic and tested.
-- [ ] no mandatory cloud dependency for route recording/navigation.
+- [~] optional backup/sync for routes, completed activities and preferences is implemented; collections join the same sync model in v1.5 when the collection entity exists.
+- [x] implement last-write-wins conflict resolution, local outbox queueing, remote tombstones and explicit Profile sync status.
+- [~] TLS transport is provided by Supabase HTTPS; cloud at-rest handling follows the selected Supabase project/storage policy and must be reviewed before production enablement.
+- [x] remote-newer records restore into local Drift, deletions propagate through tombstones, and Google/Supabase sign-out does not delete local data.
+- [x] no mandatory cloud dependency for planning, recording or navigation; Supabase is runtime-config gated.
 
 ### v1.5 — Premium Outdoor Intelligence
 
