@@ -54,6 +54,128 @@ class AppLocalizations {
   String get noRoutesHint => _value('noRoutesHint');
   String get foundationReady => _value('foundationReady');
   String get mapLayers => _value('mapLayers');
+  String get mapOutdoor => _value('mapOutdoor');
+  String get mapStreet => _value('mapStreet');
+  String get mapHighContrast => _value('mapHighContrast');
+  String get mapSatellite => _value('mapSatellite');
+  String get mapHybrid => _value('mapHybrid');
+  String get proMap => _value('proMap');
+  String get proMapUnavailable => _value('proMapUnavailable');
+  String get trailPathPro => _value('trailPathPro');
+  String get proSubtitle => _value('proSubtitle');
+  String get proActive => _value('proActive');
+  String get proBenefitMaps => _value('proBenefitMaps');
+  String get proBenefitTrace => _value('proBenefitTrace');
+  String get proBenefitOffline => _value('proBenefitOffline');
+  String get proBenefitStats => _value('proBenefitStats');
+  String get proBenefitCloud => _value('proBenefitCloud');
+  String get proMonthly => _value('proMonthly');
+  String get proYearly => _value('proYearly');
+  String get proMonthlyUnavailable => _value('proMonthlyUnavailable');
+  String get proYearlyUnavailable => _value('proYearlyUnavailable');
+  String get restorePurchases => _value('restorePurchases');
+  String get proStoreUnavailable => _value('proStoreUnavailable');
+  String get proPurchaseError => _value('proPurchaseError');
+  String get proSafetyFree => _value('proSafetyFree');
+  String get profile => _value('profile');
+  String get settings => _value('settings');
+  String get preferences => _value('preferences');
+  String get activitySummary => _value('activitySummary');
+  String get activities => _value('activities');
+  String get totalDistance => _value('totalDistance');
+  String get totalAscent => _value('totalAscent');
+  String get savedRoutesCount => _value('savedRoutesCount');
+  String get outdoorTools => _value('outdoorTools');
+  String get cloudSync => _value('cloudSync');
+  String get cloudSyncAccountHint => _value('cloudSyncAccountHint');
+  String get syncNow => _value('syncNow');
+  String get syncing => _value('syncing');
+  String get syncLast => _value('syncLast');
+  String get syncPending => _value('syncPending');
+  String get syncRequiresPro => _value('syncRequiresPro');
+  String get syncRequiresAccount => _value('syncRequiresAccount');
+  String get syncUnavailable => _value('syncUnavailable');
+  String get syncReady => _value('syncReady');
+  String get syncDone => _value('syncDone');
+  String get syncError => _value('syncError');
+  String get googleAccount => _value('googleAccount');
+  String get signInGoogle => _value('signInGoogle');
+  String get signOut => _value('signOut');
+  String get accountOptional => _value('accountOptional');
+  String get accountNotConfigured => _value('accountNotConfigured');
+  String get appearance => _value('appearance');
+  String get theme => _value('theme');
+  String get systemTheme => _value('systemTheme');
+  String get lightTheme => _value('lightTheme');
+  String get darkTheme => _value('darkTheme');
+  String get routePreferences => _value('routePreferences');
+  String get defaultActivity => _value('defaultActivity');
+  String get defaultMap => _value('defaultMap');
+  String get units => _value('units');
+  String get metricUnits => _value('metricUnits');
+  String get imperialUnits => _value('imperialUnits');
+  String get gpsAndDownloads => _value('gpsAndDownloads');
+  String get voiceGuidance => _value('voiceGuidance');
+  String get voiceGuidanceHint => _value('voiceGuidanceHint');
+  String get wifiOnlyDownloads => _value('wifiOnlyDownloads');
+  String get wifiOnlyDownloadsHint => _value('wifiOnlyDownloadsHint');
+  String get privacyData => _value('privacyData');
+  String get localFirst => _value('localFirst');
+  String get localFirstHint => _value('localFirstHint');
+  String get routeLab => _value('routeLab');
+  String get routeLabHint => _value('routeLabHint');
+  String get circularRoute => _value('circularRoute');
+  String get circularRouteHint => _value('circularRouteHint');
+  String get generateRoutes => _value('generateRoutes');
+  String get routeOption => _value('routeOption');
+  String get routeAlternatives => _value('routeAlternatives');
+  String get routeAlternativesUnavailable =>
+      _value('routeAlternativesUnavailable');
+  String get shortestRoute => _value('shortestRoute');
+  String get leastClimb => _value('leastClimb');
+  String get moreTrail => _value('moreTrail');
+  String get moreRoad => _value('moreRoad');
+  String get generateAlternatives => _value('generateAlternatives');
+  String get alternative => _value('alternative');
+  String get routeContext => _value('routeContext');
+  String get routeContextHint => _value('routeContextHint');
+  String get analyzeRoute => _value('analyzeRoute');
+  String get surface => _value('surface');
+  String get weatherAlongRoute => _value('weatherAlongRoute');
+  String get outdoorPois => _value('outdoorPois');
+  String get fromRoute => _value('fromRoute');
+  String get noRouteCandidates => _value('noRouteCandidates');
+  String get routeGenerationFailed => _value('routeGenerationFailed');
+  String get routeContextFailed => _value('routeContextFailed');
+  String get surfacePaved => _value('surfacePaved');
+  String get surfaceGravel => _value('surfaceGravel');
+  String get surfaceDirt => _value('surfaceDirt');
+  String get surfaceTrail => _value('surfaceTrail');
+  String get surfaceUnknown => _value('surfaceUnknown');
+  String get routeCollections => _value('routeCollections');
+  String get routeCollectionsHint => _value('routeCollectionsHint');
+  String get newCollection => _value('newCollection');
+  String get collectionName => _value('collectionName');
+  String get collectionsUnavailable => _value('collectionsUnavailable');
+  String get noCollections => _value('noCollections');
+  String get noCollectionsHint => _value('noCollectionsHint');
+  String get manageCollection => _value('manageCollection');
+  String get deleteCollection => _value('deleteCollection');
+  String get personalStats => _value('personalStats');
+  String get personalStatsHint => _value('personalStatsHint');
+  String get statsUnavailable => _value('statsUnavailable');
+  String get last7Days => _value('last7Days');
+  String get last30Days => _value('last30Days');
+  String get longestActivity => _value('longestActivity');
+  String get highestAscent => _value('highestAscent');
+  String get movingTime => _value('movingTime');
+  String get slopeMap => _value('slopeMap');
+  String get slopeMapHint => _value('slopeMapHint');
+  String get terrain3d => _value('terrain3d');
+  String get terrain3dHint => _value('terrain3dHint');
+  String get autoReroute => _value('autoReroute');
+  String get autoRerouteHint => _value('autoRerouteHint');
+  String get autoRerouteProHint => _value('autoRerouteProHint');
   String get centerLocation => _value('centerLocation');
   String get locationServiceOff => _value('locationServiceOff');
   String get locationUnavailable => _value('locationUnavailable');
@@ -90,6 +212,13 @@ class AppLocalizations {
   String get routeEditActive => _value('routeEditActive');
   String get routeDragActive => _value('routeDragActive');
   String get traceMode => _value('traceMode');
+  String get traceFollowTrails => _value('traceFollowTrails');
+  String get traceFollowRoads => _value('traceFollowRoads');
+  String get traceFree => _value('traceFree');
+  String get traceCloseLoop => _value('traceCloseLoop');
+  String get traceOutAndBack => _value('traceOutAndBack');
+  String get traceReverse => _value('traceReverse');
+  String get traceErase => _value('traceErase');
   String get traceHint => _value('traceHint');
   String get traceDrawing => _value('traceDrawing');
   String get traceProcessing => _value('traceProcessing');
@@ -233,6 +362,134 @@ class AppLocalizations {
       'noRoutesHint': 'I percorsi pianificati compariranno qui.',
       'foundationReady': 'Mappa e posizione attive',
       'mapLayers': 'Livelli mappa',
+      'mapOutdoor': 'Outdoor',
+      'mapStreet': 'Stradale',
+      'mapHighContrast': 'Alto contrasto',
+      'mapSatellite': 'Satellite',
+      'mapHybrid': 'Satellite + strade',
+      'proMap': 'Mappa Pro',
+      'proMapUnavailable': 'Mappa Pro non configurata',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Mappe e strumenti outdoor avanzati',
+      'proActive': 'TrailPath Pro attivo',
+      'proBenefitMaps': 'Satellite e mappe premium',
+      'proBenefitTrace': 'Smart Trace e strumenti percorso avanzati',
+      'proBenefitOffline': 'Funzioni offline avanzate',
+      'proBenefitStats': 'Statistiche e analisi avanzate',
+      'proBenefitCloud': 'Cloud sync e backup tra dispositivi',
+      'proMonthly': 'Mensile',
+      'proYearly': 'Annuale',
+      'proMonthlyUnavailable': 'Piano mensile non configurato',
+      'proYearlyUnavailable': 'Piano annuale non configurato',
+      'restorePurchases': 'Ripristina acquisti',
+      'proStoreUnavailable': 'Google Play Billing non è disponibile o i prodotti Pro non sono ancora configurati.',
+      'proPurchaseError': 'Non è stato possibile completare l\'acquisto.',
+      'proSafetyFree': 'Registrazione, recovery e funzioni di sicurezza di base restano disponibili anche senza Pro.',
+      'profile': 'Profilo',
+      'settings': 'Impostazioni',
+      'preferences': 'Preferenze dell\'app',
+      'activitySummary': 'Riepilogo attività',
+      'activities': 'Attività',
+      'totalDistance': 'Distanza totale',
+      'totalAscent': 'Dislivello totale',
+      'savedRoutesCount': 'Percorsi salvati',
+      'outdoorTools': 'Strumenti Outdoor',
+      'cloudSync': 'Cloud Sync',
+      'cloudSyncAccountHint': 'Backup e sincronizzazione opzionali con account',
+      'syncNow': 'Sincronizza ora',
+      'syncing': 'Sincronizzazione…',
+      'syncLast': 'Ultima sincronizzazione',
+      'syncPending': 'modifiche in attesa',
+      'syncRequiresPro': 'Richiede TrailPath Pro',
+      'syncRequiresAccount': 'Accedi con Google per sincronizzare',
+      'syncUnavailable': 'Cloud Sync non configurato in questa build',
+      'syncReady': 'Pronto per la sincronizzazione',
+      'syncDone': 'Sincronizzazione completata',
+      'syncError': 'Errore di sincronizzazione',
+      'googleAccount': 'Account Google',
+      'signInGoogle': 'Accedi',
+      'signOut': 'Esci',
+      'accountOptional': 'Account facoltativo: TrailPath funziona anche offline e senza login.',
+      'accountNotConfigured': 'Google Sign-In non configurato in questa build.',
+      'appearance': 'Aspetto',
+      'theme': 'Tema',
+      'systemTheme': 'Sistema',
+      'lightTheme': 'Chiaro',
+      'darkTheme': 'Scuro',
+      'routePreferences': 'Preferenze percorso',
+      'defaultActivity': 'Attività predefinita',
+      'defaultMap': 'Mappa predefinita',
+      'units': 'Unità',
+      'metricUnits': 'Metriche (km, m)',
+      'imperialUnits': 'Imperiali (mi, ft)',
+      'gpsAndDownloads': 'GPS e download',
+      'voiceGuidance': 'Guida vocale',
+      'voiceGuidanceHint': 'Usa la voce durante la navigazione attiva.',
+      'wifiOnlyDownloads': 'Download mappe solo Wi‑Fi',
+      'wifiOnlyDownloadsHint':
+          'Evita di avviare nuovi download offline su rete mobile.',
+      'privacyData': 'Privacy e dati',
+      'localFirst': 'Local-first',
+      'localFirstHint': 'Percorsi e attività restano sul dispositivo salvo sincronizzazione cloud esplicitamente attivata.',
+      'routeLab': 'Route Lab',
+      'routeLabHint':
+          'Anelli, alternative, POI, meteo e superficie del percorso',
+      'circularRoute': 'Percorso circolare',
+      'circularRouteHint': 'Genera anelli reali sulle strade e sui sentieri OSM partendo dalla posizione attuale.',
+      'generateRoutes': 'Genera percorsi',
+      'routeOption': 'Opzione',
+      'routeAlternatives': 'Percorsi alternativi',
+      'routeAlternativesUnavailable':
+          'Alternative temporaneamente non disponibili',
+      'shortestRoute': 'Più breve',
+      'leastClimb': 'Meno salita',
+      'moreTrail': 'Più sentieri',
+      'moreRoad': 'Più strada',
+      'generateAlternatives': 'Genera alternative',
+      'alternative': 'Alternativa',
+      'routeContext': 'Contesto del percorso',
+      'routeContextHint':
+          'Analizza POI outdoor, meteo e superficie lungo un percorso salvato.',
+      'analyzeRoute': 'Analizza percorso',
+      'surface': 'Superficie',
+      'weatherAlongRoute': 'Meteo lungo il percorso',
+      'outdoorPois': 'POI outdoor',
+      'fromRoute': 'dal percorso',
+      'noRouteCandidates':
+          'Nessun percorso valido trovato per questi parametri.',
+      'routeGenerationFailed': 'Impossibile generare i percorsi.',
+      'routeContextFailed': 'Impossibile analizzare il contesto del percorso.',
+      'surfacePaved': 'Asfalto/pavimentato',
+      'surfaceGravel': 'Ghiaia/compatto',
+      'surfaceDirt': 'Terra',
+      'surfaceTrail': 'Sentiero/sterrato',
+      'surfaceUnknown': 'Sconosciuta',
+      'routeCollections': 'Collezioni',
+      'routeCollectionsHint': 'Organizza i percorsi in cartelle personali',
+      'newCollection': 'Nuova collezione',
+      'collectionName': 'Nome collezione',
+      'collectionsUnavailable': 'Collezioni temporaneamente non disponibili',
+      'noCollections': 'Nessuna collezione',
+      'noCollectionsHint':
+          'Crea cartelle per organizzare percorsi, viaggi e attività.',
+      'manageCollection': 'Gestisci percorsi',
+      'deleteCollection': 'Eliminare la collezione?',
+      'personalStats': 'Statistiche',
+      'personalStatsHint': 'Analizza distanza, dislivello e attività nel tempo',
+      'statsUnavailable': 'Statistiche temporaneamente non disponibili',
+      'last7Days': 'Ultimi 7 giorni',
+      'last30Days': 'Ultimi 30 giorni',
+      'longestActivity': 'Attività più lunga',
+      'highestAscent': 'Dislivello massimo',
+      'movingTime': 'Tempo in movimento',
+      'slopeMap': 'Mappa pendenza',
+      'slopeMapHint': 'Colora il percorso in base alla pendenza',
+      'terrain3d': 'Terreno 3D',
+      'terrain3dHint': 'Rilievo 3D basato sui dati altimetrici della mappa',
+      'autoReroute': 'Ricalcolo automatico',
+      'autoRerouteHint': 'Calcola un nuovo percorso verso la destinazione quando esci dalla traccia.',
+      'autoRerouteProHint':
+          'Ricalcolo automatico disponibile con TrailPath Pro.',
       'centerLocation': 'Centra sulla mia posizione',
       'locationServiceOff': 'Attiva i servizi di localizzazione',
       'locationUnavailable': 'Posizione temporaneamente non disponibile',
@@ -270,6 +527,13 @@ class AppLocalizations {
       'routeEditActive': 'Modifica attiva: trascina i punti bianchi tra le tappe per inserirne di nuovi.',
       'routeDragActive': 'Spostamento in corso: rilascia per ricalcolare solo il tratto modificato.',
       'traceMode': 'Disegna percorso',
+      'traceFollowTrails': 'Segui sentieri',
+      'traceFollowRoads': 'Segui strade',
+      'traceFree': 'Libero',
+      'traceCloseLoop': 'Chiudi anello',
+      'traceOutAndBack': 'Andata e ritorno',
+      'traceReverse': 'Inverti',
+      'traceErase': 'Gomma ultimo tratto',
       'traceHint': 'Modalità Disegna: trascina il dito sulla mappa per seguire il sentiero desiderato.',
       'traceDrawing': 'Continua a disegnare; al rilascio TrailPath aggancerà il tratto alla rete OSM.',
       'traceProcessing': 'Conversione del gesto in percorso reale…',
@@ -407,6 +671,134 @@ class AppLocalizations {
       'noRoutesHint': 'Routes you plan will appear here.',
       'foundationReady': 'Map and location active',
       'mapLayers': 'Map layers',
+      'mapOutdoor': 'Outdoor',
+      'mapStreet': 'Street',
+      'mapHighContrast': 'High contrast',
+      'mapSatellite': 'Satellite',
+      'mapHybrid': 'Satellite + roads',
+      'proMap': 'Pro map',
+      'proMapUnavailable': 'Pro map provider not configured',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Advanced maps and outdoor tools',
+      'proActive': 'TrailPath Pro active',
+      'proBenefitMaps': 'Satellite and premium maps',
+      'proBenefitTrace': 'Advanced Smart Trace and route tools',
+      'proBenefitOffline': 'Advanced offline features',
+      'proBenefitStats': 'Advanced statistics and analysis',
+      'proBenefitCloud': 'Cloud sync and cross-device backup',
+      'proMonthly': 'Monthly',
+      'proYearly': 'Yearly',
+      'proMonthlyUnavailable': 'Monthly plan not configured',
+      'proYearlyUnavailable': 'Yearly plan not configured',
+      'restorePurchases': 'Restore purchases',
+      'proStoreUnavailable': 'Google Play Billing is unavailable or Pro products are not configured yet.',
+      'proPurchaseError': 'The purchase could not be completed.',
+      'proSafetyFree': 'Core recording, recovery and safety features remain available without Pro.',
+      'profile': 'Profile',
+      'settings': 'Settings',
+      'preferences': 'App preferences',
+      'activitySummary': 'Activity summary',
+      'activities': 'Activities',
+      'totalDistance': 'Total distance',
+      'totalAscent': 'Total ascent',
+      'savedRoutesCount': 'Saved routes',
+      'outdoorTools': 'Outdoor tools',
+      'cloudSync': 'Cloud Sync',
+      'cloudSyncAccountHint': 'Optional backup and sync with an account',
+      'syncNow': 'Sync now',
+      'syncing': 'Syncing…',
+      'syncLast': 'Last sync',
+      'syncPending': 'pending changes',
+      'syncRequiresPro': 'Requires TrailPath Pro',
+      'syncRequiresAccount': 'Sign in with Google to sync',
+      'syncUnavailable': 'Cloud Sync is not configured in this build',
+      'syncReady': 'Ready to sync',
+      'syncDone': 'Sync complete',
+      'syncError': 'Sync error',
+      'googleAccount': 'Google account',
+      'signInGoogle': 'Sign in',
+      'signOut': 'Sign out',
+      'accountOptional':
+          'Account is optional: TrailPath works offline and without sign-in.',
+      'accountNotConfigured': 'Google Sign-In is not configured in this build.',
+      'appearance': 'Appearance',
+      'theme': 'Theme',
+      'systemTheme': 'System',
+      'lightTheme': 'Light',
+      'darkTheme': 'Dark',
+      'routePreferences': 'Route preferences',
+      'defaultActivity': 'Default activity',
+      'defaultMap': 'Default map',
+      'units': 'Units',
+      'metricUnits': 'Metric (km, m)',
+      'imperialUnits': 'Imperial (mi, ft)',
+      'gpsAndDownloads': 'GPS and downloads',
+      'voiceGuidance': 'Voice guidance',
+      'voiceGuidanceHint': 'Use spoken feedback during active navigation.',
+      'wifiOnlyDownloads': 'Offline maps on Wi‑Fi only',
+      'wifiOnlyDownloadsHint':
+          'Do not start new offline downloads on mobile data.',
+      'privacyData': 'Privacy and data',
+      'localFirst': 'Local-first',
+      'localFirstHint': 'Routes and activities stay on this device unless cloud sync is explicitly enabled.',
+      'routeLab': 'Route Lab',
+      'routeLabHint': 'Loops, alternatives, POIs, weather and route surface',
+      'circularRoute': 'Circular route',
+      'circularRouteHint': 'Generate real loops on OSM roads and trails from your current position.',
+      'generateRoutes': 'Generate routes',
+      'routeOption': 'Option',
+      'routeAlternatives': 'Route alternatives',
+      'routeAlternativesUnavailable':
+          'Alternatives are temporarily unavailable',
+      'shortestRoute': 'Shortest',
+      'leastClimb': 'Less climbing',
+      'moreTrail': 'More trail',
+      'moreRoad': 'More road',
+      'generateAlternatives': 'Generate alternatives',
+      'alternative': 'Alternative',
+      'routeContext': 'Route context',
+      'routeContextHint':
+          'Analyze outdoor POIs, weather and surface along a saved route.',
+      'analyzeRoute': 'Analyze route',
+      'surface': 'Surface',
+      'weatherAlongRoute': 'Weather along route',
+      'outdoorPois': 'Outdoor POIs',
+      'fromRoute': 'from route',
+      'noRouteCandidates': 'No valid route found for these parameters.',
+      'routeGenerationFailed': 'Routes could not be generated.',
+      'routeContextFailed': 'Route context could not be analyzed.',
+      'surfacePaved': 'Paved',
+      'surfaceGravel': 'Gravel/compacted',
+      'surfaceDirt': 'Dirt',
+      'surfaceTrail': 'Trail/unpaved',
+      'surfaceUnknown': 'Unknown',
+      'routeCollections': 'Collections',
+      'routeCollectionsHint': 'Organize routes into personal folders',
+      'newCollection': 'New collection',
+      'collectionName': 'Collection name',
+      'collectionsUnavailable': 'Collections are temporarily unavailable',
+      'noCollections': 'No collections',
+      'noCollectionsHint':
+          'Create folders to organize routes, trips and activities.',
+      'manageCollection': 'Manage routes',
+      'deleteCollection': 'Delete collection?',
+      'personalStats': 'Statistics',
+      'personalStatsHint': 'Analyze distance, ascent and activity over time',
+      'statsUnavailable': 'Statistics are temporarily unavailable',
+      'last7Days': 'Last 7 days',
+      'last30Days': 'Last 30 days',
+      'longestActivity': 'Longest activity',
+      'highestAscent': 'Highest ascent',
+      'movingTime': 'Moving time',
+      'slopeMap': 'Slope map',
+      'slopeMapHint': 'Color the route by grade',
+      'terrain3d': '3D terrain',
+      'terrain3dHint': '3D relief using map elevation data',
+      'autoReroute': 'Automatic rerouting',
+      'autoRerouteHint':
+          'Calculate a new route to the destination when you leave the track.',
+      'autoRerouteProHint':
+          'Automatic rerouting is available with TrailPath Pro.',
       'centerLocation': 'Center on my location',
       'locationServiceOff': 'Turn on location services',
       'locationUnavailable': 'Location temporarily unavailable',
@@ -445,6 +837,13 @@ class AppLocalizations {
       'routeDragActive':
           'Dragging: release to recalculate only the edited span.',
       'traceMode': 'Draw route',
+      'traceFollowTrails': 'Follow trails',
+      'traceFollowRoads': 'Follow roads',
+      'traceFree': 'Free',
+      'traceCloseLoop': 'Close loop',
+      'traceOutAndBack': 'Out & back',
+      'traceReverse': 'Reverse',
+      'traceErase': 'Erase last segment',
       'traceHint': 'Draw mode: drag your finger over the map along the path you want to follow.',
       'traceDrawing': 'Keep drawing; on release TrailPath will snap the trace to the OSM network.',
       'traceProcessing': 'Turning your gesture into a real route…',
@@ -581,6 +980,138 @@ class AppLocalizations {
       'noRoutesHint': 'Las rutas planificadas aparecerán aquí.',
       'foundationReady': 'Mapa y ubicación activos',
       'mapLayers': 'Capas del mapa',
+      'mapOutdoor': 'Outdoor',
+      'mapStreet': 'Carreteras',
+      'mapHighContrast': 'Alto contraste',
+      'mapSatellite': 'Satélite',
+      'mapHybrid': 'Satélite + carreteras',
+      'proMap': 'Mapa Pro',
+      'proMapUnavailable': 'Proveedor de mapas Pro no configurado',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Mapas y herramientas outdoor avanzadas',
+      'proActive': 'TrailPath Pro activo',
+      'proBenefitMaps': 'Satélite y mapas premium',
+      'proBenefitTrace': 'Smart Trace y herramientas de ruta avanzadas',
+      'proBenefitOffline': 'Funciones offline avanzadas',
+      'proBenefitStats': 'Estadísticas y análisis avanzados',
+      'proBenefitCloud': 'Sincronización cloud y copia entre dispositivos',
+      'proMonthly': 'Mensual',
+      'proYearly': 'Anual',
+      'proMonthlyUnavailable': 'Plan mensual no configurado',
+      'proYearlyUnavailable': 'Plan anual no configurado',
+      'restorePurchases': 'Restaurar compras',
+      'proStoreUnavailable': 'Google Play Billing no está disponible o los productos Pro aún no están configurados.',
+      'proPurchaseError': 'No se pudo completar la compra.',
+      'proSafetyFree': 'La grabación, recuperación y seguridad básicas siguen disponibles sin Pro.',
+      'profile': 'Perfil',
+      'settings': 'Ajustes',
+      'preferences': 'Preferencias de la app',
+      'activitySummary': 'Resumen de actividad',
+      'activities': 'Actividades',
+      'totalDistance': 'Distancia total',
+      'totalAscent': 'Desnivel total',
+      'savedRoutesCount': 'Rutas guardadas',
+      'outdoorTools': 'Herramientas Outdoor',
+      'cloudSync': 'Cloud Sync',
+      'cloudSyncAccountHint':
+          'Copia y sincronización opcionales con una cuenta',
+      'syncNow': 'Sincronizar ahora',
+      'syncing': 'Sincronizando…',
+      'syncLast': 'Última sincronización',
+      'syncPending': 'cambios pendientes',
+      'syncRequiresPro': 'Requiere TrailPath Pro',
+      'syncRequiresAccount': 'Inicia sesión con Google para sincronizar',
+      'syncUnavailable': 'Cloud Sync no está configurado en esta build',
+      'syncReady': 'Listo para sincronizar',
+      'syncDone': 'Sincronización completada',
+      'syncError': 'Error de sincronización',
+      'googleAccount': 'Cuenta de Google',
+      'signInGoogle': 'Acceder',
+      'signOut': 'Cerrar sesión',
+      'accountOptional': 'La cuenta es opcional: TrailPath funciona offline y sin iniciar sesión.',
+      'accountNotConfigured':
+          'Google Sign-In no está configurado en esta build.',
+      'appearance': 'Apariencia',
+      'theme': 'Tema',
+      'systemTheme': 'Sistema',
+      'lightTheme': 'Claro',
+      'darkTheme': 'Oscuro',
+      'routePreferences': 'Preferencias de ruta',
+      'defaultActivity': 'Actividad predeterminada',
+      'defaultMap': 'Mapa predeterminado',
+      'units': 'Unidades',
+      'metricUnits': 'Métricas (km, m)',
+      'imperialUnits': 'Imperiales (mi, ft)',
+      'gpsAndDownloads': 'GPS y descargas',
+      'voiceGuidance': 'Guía por voz',
+      'voiceGuidanceHint': 'Usa avisos hablados durante la navegación.',
+      'wifiOnlyDownloads': 'Mapas offline solo por Wi‑Fi',
+      'wifiOnlyDownloadsHint':
+          'No inicia nuevas descargas offline con datos móviles.',
+      'privacyData': 'Privacidad y datos',
+      'localFirst': 'Local-first',
+      'localFirstHint': 'Las rutas y actividades quedan en el dispositivo salvo que actives expresamente la sincronización cloud.',
+      'routeLab': 'Route Lab',
+      'routeLabHint': 'Circuitos, alternativas, POI, tiempo y superficie',
+      'circularRoute': 'Ruta circular',
+      'circularRouteHint': 'Genera circuitos reales por carreteras y senderos OSM desde tu posición actual.',
+      'generateRoutes': 'Generar rutas',
+      'routeOption': 'Opción',
+      'routeAlternatives': 'Rutas alternativas',
+      'routeAlternativesUnavailable':
+          'Las alternativas no están disponibles temporalmente',
+      'shortestRoute': 'Más corta',
+      'leastClimb': 'Menos subida',
+      'moreTrail': 'Más sendero',
+      'moreRoad': 'Más carretera',
+      'generateAlternatives': 'Generar alternativas',
+      'alternative': 'Alternativa',
+      'routeContext': 'Contexto de ruta',
+      'routeContextHint':
+          'Analiza POI outdoor, tiempo y superficie en una ruta guardada.',
+      'analyzeRoute': 'Analizar ruta',
+      'surface': 'Superficie',
+      'weatherAlongRoute': 'Tiempo a lo largo de la ruta',
+      'outdoorPois': 'POI outdoor',
+      'fromRoute': 'de la ruta',
+      'noRouteCandidates':
+          'No se encontró una ruta válida con estos parámetros.',
+      'routeGenerationFailed': 'No se pudieron generar las rutas.',
+      'routeContextFailed': 'No se pudo analizar el contexto de la ruta.',
+      'surfacePaved': 'Pavimentado',
+      'surfaceGravel': 'Grava/compactado',
+      'surfaceDirt': 'Tierra',
+      'surfaceTrail': 'Sendero/sin pavimentar',
+      'surfaceUnknown': 'Desconocida',
+      'routeCollections': 'Colecciones',
+      'routeCollectionsHint': 'Organiza rutas en carpetas personales',
+      'newCollection': 'Nueva colección',
+      'collectionName': 'Nombre de la colección',
+      'collectionsUnavailable':
+          'Las colecciones no están disponibles temporalmente',
+      'noCollections': 'Sin colecciones',
+      'noCollectionsHint':
+          'Crea carpetas para organizar rutas, viajes y actividades.',
+      'manageCollection': 'Gestionar rutas',
+      'deleteCollection': '¿Eliminar la colección?',
+      'personalStats': 'Estadísticas',
+      'personalStatsHint':
+          'Analiza distancia, desnivel y actividad a lo largo del tiempo',
+      'statsUnavailable': 'Las estadísticas no están disponibles temporalmente',
+      'last7Days': 'Últimos 7 días',
+      'last30Days': 'Últimos 30 días',
+      'longestActivity': 'Actividad más larga',
+      'highestAscent': 'Mayor desnivel',
+      'movingTime': 'Tiempo en movimiento',
+      'slopeMap': 'Mapa de pendiente',
+      'slopeMapHint': 'Colorea la ruta según la pendiente',
+      'terrain3d': 'Terreno 3D',
+      'terrain3dHint': 'Relieve 3D basado en datos de elevación del mapa',
+      'autoReroute': 'Recálculo automático',
+      'autoRerouteHint':
+          'Calcula una nueva ruta al destino al salir del trazado.',
+      'autoRerouteProHint':
+          'El recálculo automático está disponible con TrailPath Pro.',
       'centerLocation': 'Centrar en mi ubicación',
       'locationServiceOff': 'Activa los servicios de ubicación',
       'locationUnavailable': 'Ubicación temporalmente no disponible',
@@ -619,6 +1150,13 @@ class AppLocalizations {
       'routeDragActive':
           'Arrastrando: suelta para recalcular solo el tramo modificado.',
       'traceMode': 'Dibujar ruta',
+      'traceFollowTrails': 'Seguir senderos',
+      'traceFollowRoads': 'Seguir carreteras',
+      'traceFree': 'Libre',
+      'traceCloseLoop': 'Cerrar circuito',
+      'traceOutAndBack': 'Ida y vuelta',
+      'traceReverse': 'Invertir',
+      'traceErase': 'Borrar último tramo',
       'traceHint': 'Modo dibujo: arrastra el dedo por el mapa siguiendo el camino deseado.',
       'traceDrawing': 'Sigue dibujando; al soltar TrailPath ajustará el trazo a la red OSM.',
       'traceProcessing': 'Convirtiendo el gesto en una ruta real…',
@@ -757,6 +1295,135 @@ class AppLocalizations {
       'noRoutesHint': 'Vos parcours planifiés apparaîtront ici.',
       'foundationReady': 'Carte et position actives',
       'mapLayers': 'Couches de carte',
+      'mapOutdoor': 'Outdoor',
+      'mapStreet': 'Routes',
+      'mapHighContrast': 'Contraste élevé',
+      'mapSatellite': 'Satellite',
+      'mapHybrid': 'Satellite + routes',
+      'proMap': 'Carte Pro',
+      'proMapUnavailable': 'Fournisseur de cartes Pro non configuré',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Cartes et outils outdoor avancés',
+      'proActive': 'TrailPath Pro actif',
+      'proBenefitMaps': 'Satellite et cartes premium',
+      'proBenefitTrace': 'Smart Trace et outils de parcours avancés',
+      'proBenefitOffline': 'Fonctions hors ligne avancées',
+      'proBenefitStats': 'Statistiques et analyses avancées',
+      'proBenefitCloud': 'Synchronisation cloud et sauvegarde multi-appareils',
+      'proMonthly': 'Mensuel',
+      'proYearly': 'Annuel',
+      'proMonthlyUnavailable': 'Offre mensuelle non configurée',
+      'proYearlyUnavailable': 'Offre annuelle non configurée',
+      'restorePurchases': 'Restaurer les achats',
+      'proStoreUnavailable': 'Google Play Billing est indisponible ou les produits Pro ne sont pas encore configurés.',
+      'proPurchaseError': 'L’achat n’a pas pu être effectué.',
+      'proSafetyFree': 'L’enregistrement, la récupération et les fonctions de sécurité essentielles restent disponibles sans Pro.',
+      'profile': 'Profil',
+      'settings': 'Réglages',
+      'preferences': 'Préférences de l’application',
+      'activitySummary': 'Résumé d’activité',
+      'activities': 'Activités',
+      'totalDistance': 'Distance totale',
+      'totalAscent': 'Dénivelé total',
+      'savedRoutesCount': 'Parcours enregistrés',
+      'outdoorTools': 'Outils Outdoor',
+      'cloudSync': 'Cloud Sync',
+      'cloudSyncAccountHint':
+          'Sauvegarde et synchronisation facultatives avec un compte',
+      'syncNow': 'Synchroniser',
+      'syncing': 'Synchronisation…',
+      'syncLast': 'Dernière synchronisation',
+      'syncPending': 'modifications en attente',
+      'syncRequiresPro': 'Nécessite TrailPath Pro',
+      'syncRequiresAccount': 'Connectez-vous avec Google pour synchroniser',
+      'syncUnavailable': 'Cloud Sync n’est pas configuré dans cette build',
+      'syncReady': 'Prêt à synchroniser',
+      'syncDone': 'Synchronisation terminée',
+      'syncError': 'Erreur de synchronisation',
+      'googleAccount': 'Compte Google',
+      'signInGoogle': 'Se connecter',
+      'signOut': 'Se déconnecter',
+      'accountOptional': 'Le compte est facultatif : TrailPath fonctionne hors ligne et sans connexion.',
+      'accountNotConfigured':
+          'Google Sign-In n’est pas configuré dans cette build.',
+      'appearance': 'Apparence',
+      'theme': 'Thème',
+      'systemTheme': 'Système',
+      'lightTheme': 'Clair',
+      'darkTheme': 'Sombre',
+      'routePreferences': 'Préférences de parcours',
+      'defaultActivity': 'Activité par défaut',
+      'defaultMap': 'Carte par défaut',
+      'units': 'Unités',
+      'metricUnits': 'Métriques (km, m)',
+      'imperialUnits': 'Impériales (mi, ft)',
+      'gpsAndDownloads': 'GPS et téléchargements',
+      'voiceGuidance': 'Guidage vocal',
+      'voiceGuidanceHint':
+          'Utiliser les annonces vocales pendant la navigation.',
+      'wifiOnlyDownloads': 'Cartes hors ligne uniquement en Wi‑Fi',
+      'wifiOnlyDownloadsHint': 'Ne pas démarrer de nouveau téléchargement hors ligne sur le réseau mobile.',
+      'privacyData': 'Confidentialité et données',
+      'localFirst': 'Local-first',
+      'localFirstHint': 'Les parcours et activités restent sur l’appareil sauf activation explicite de la synchronisation cloud.',
+      'routeLab': 'Route Lab',
+      'routeLabHint': 'Boucles, alternatives, POI, météo et surface',
+      'circularRoute': 'Parcours circulaire',
+      'circularRouteHint': 'Générez des boucles réelles sur routes et sentiers OSM depuis votre position.',
+      'generateRoutes': 'Générer des parcours',
+      'routeOption': 'Option',
+      'routeAlternatives': 'Parcours alternatifs',
+      'routeAlternativesUnavailable':
+          'Les alternatives sont temporairement indisponibles',
+      'shortestRoute': 'Plus court',
+      'leastClimb': 'Moins de montée',
+      'moreTrail': 'Plus de sentiers',
+      'moreRoad': 'Plus de route',
+      'generateAlternatives': 'Générer des alternatives',
+      'alternative': 'Alternative',
+      'routeContext': 'Contexte du parcours',
+      'routeContextHint': 'Analysez les POI outdoor, la météo et la surface d’un parcours enregistré.',
+      'analyzeRoute': 'Analyser le parcours',
+      'surface': 'Surface',
+      'weatherAlongRoute': 'Météo le long du parcours',
+      'outdoorPois': 'POI outdoor',
+      'fromRoute': 'du parcours',
+      'noRouteCandidates': 'Aucun parcours valide trouvé pour ces paramètres.',
+      'routeGenerationFailed': 'Impossible de générer les parcours.',
+      'routeContextFailed': 'Impossible d’analyser le contexte du parcours.',
+      'surfacePaved': 'Revêtu',
+      'surfaceGravel': 'Gravier/compacté',
+      'surfaceDirt': 'Terre',
+      'surfaceTrail': 'Sentier/non revêtu',
+      'surfaceUnknown': 'Inconnue',
+      'routeCollections': 'Collections',
+      'routeCollectionsHint':
+          'Organisez les parcours dans des dossiers personnels',
+      'newCollection': 'Nouvelle collection',
+      'collectionName': 'Nom de la collection',
+      'collectionsUnavailable': 'Collections temporairement indisponibles',
+      'noCollections': 'Aucune collection',
+      'noCollectionsHint':
+          'Créez des dossiers pour organiser parcours, voyages et activités.',
+      'manageCollection': 'Gérer les parcours',
+      'deleteCollection': 'Supprimer la collection ?',
+      'personalStats': 'Statistiques',
+      'personalStatsHint':
+          'Analysez distance, dénivelé et activité dans le temps',
+      'statsUnavailable': 'Statistiques temporairement indisponibles',
+      'last7Days': '7 derniers jours',
+      'last30Days': '30 derniers jours',
+      'longestActivity': 'Activité la plus longue',
+      'highestAscent': 'Dénivelé maximal',
+      'movingTime': 'Temps en mouvement',
+      'slopeMap': 'Carte des pentes',
+      'slopeMapHint': 'Colore le parcours selon la pente',
+      'terrain3d': 'Terrain 3D',
+      'terrain3dHint': 'Relief 3D basé sur les données d’altitude de la carte',
+      'autoReroute': 'Recalcul automatique',
+      'autoRerouteHint': 'Calcule un nouveau parcours vers la destination en quittant la trace.',
+      'autoRerouteProHint':
+          'Le recalcul automatique est disponible avec TrailPath Pro.',
       'centerLocation': 'Centrer sur ma position',
       'locationServiceOff': 'Activez les services de localisation',
       'locationUnavailable': 'Position temporairement indisponible',
@@ -794,6 +1461,13 @@ class AppLocalizations {
       'routeEditActive': 'Modification active : faites glisser les points blancs entre les étapes pour en insérer.',
       'routeDragActive': 'Déplacement en cours : relâchez pour recalculer uniquement le tronçon modifié.',
       'traceMode': 'Dessiner l’itinéraire',
+      'traceFollowTrails': 'Suivre les sentiers',
+      'traceFollowRoads': 'Suivre les routes',
+      'traceFree': 'Libre',
+      'traceCloseLoop': 'Fermer la boucle',
+      'traceOutAndBack': 'Aller-retour',
+      'traceReverse': 'Inverser',
+      'traceErase': 'Effacer le dernier tronçon',
       'traceHint': 'Mode dessin : faites glisser votre doigt sur la carte le long du chemin souhaité.',
       'traceDrawing': 'Continuez à dessiner ; au relâchement TrailPath accrochera le tracé au réseau OSM.',
       'traceProcessing': 'Conversion du geste en itinéraire réel…',
@@ -934,6 +1608,136 @@ class AppLocalizations {
       'noRoutesHint': 'Os percursos planeados aparecerão aqui.',
       'foundationReady': 'Mapa e localização ativos',
       'mapLayers': 'Camadas do mapa',
+      'mapOutdoor': 'Outdoor',
+      'mapStreet': 'Estradas',
+      'mapHighContrast': 'Alto contraste',
+      'mapSatellite': 'Satélite',
+      'mapHybrid': 'Satélite + estradas',
+      'proMap': 'Mapa Pro',
+      'proMapUnavailable': 'Fornecedor de mapas Pro não configurado',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Mapas e ferramentas outdoor avançadas',
+      'proActive': 'TrailPath Pro ativo',
+      'proBenefitMaps': 'Satélite e mapas premium',
+      'proBenefitTrace': 'Smart Trace e ferramentas de rota avançadas',
+      'proBenefitOffline': 'Funcionalidades offline avançadas',
+      'proBenefitStats': 'Estatísticas e análises avançadas',
+      'proBenefitCloud': 'Sincronização cloud e backup entre dispositivos',
+      'proMonthly': 'Mensal',
+      'proYearly': 'Anual',
+      'proMonthlyUnavailable': 'Plano mensal não configurado',
+      'proYearlyUnavailable': 'Plano anual não configurado',
+      'restorePurchases': 'Restaurar compras',
+      'proStoreUnavailable': 'Google Play Billing não está disponível ou os produtos Pro ainda não estão configurados.',
+      'proPurchaseError': 'Não foi possível concluir a compra.',
+      'proSafetyFree': 'Gravação, recuperação e funcionalidades essenciais de segurança continuam disponíveis sem Pro.',
+      'profile': 'Perfil',
+      'settings': 'Definições',
+      'preferences': 'Preferências da app',
+      'activitySummary': 'Resumo de atividade',
+      'activities': 'Atividades',
+      'totalDistance': 'Distância total',
+      'totalAscent': 'Desnível total',
+      'savedRoutesCount': 'Percursos guardados',
+      'outdoorTools': 'Ferramentas Outdoor',
+      'cloudSync': 'Cloud Sync',
+      'cloudSyncAccountHint': 'Backup e sincronização opcionais com uma conta',
+      'syncNow': 'Sincronizar agora',
+      'syncing': 'A sincronizar…',
+      'syncLast': 'Última sincronização',
+      'syncPending': 'alterações pendentes',
+      'syncRequiresPro': 'Requer TrailPath Pro',
+      'syncRequiresAccount': 'Entre com Google para sincronizar',
+      'syncUnavailable': 'Cloud Sync não está configurado nesta build',
+      'syncReady': 'Pronto para sincronizar',
+      'syncDone': 'Sincronização concluída',
+      'syncError': 'Erro de sincronização',
+      'googleAccount': 'Conta Google',
+      'signInGoogle': 'Entrar',
+      'signOut': 'Terminar sessão',
+      'accountOptional':
+          'A conta é opcional: o TrailPath funciona offline e sem login.',
+      'accountNotConfigured':
+          'Google Sign-In não está configurado nesta build.',
+      'appearance': 'Aparência',
+      'theme': 'Tema',
+      'systemTheme': 'Sistema',
+      'lightTheme': 'Claro',
+      'darkTheme': 'Escuro',
+      'routePreferences': 'Preferências de rota',
+      'defaultActivity': 'Atividade predefinida',
+      'defaultMap': 'Mapa predefinido',
+      'units': 'Unidades',
+      'metricUnits': 'Métricas (km, m)',
+      'imperialUnits': 'Imperiais (mi, ft)',
+      'gpsAndDownloads': 'GPS e downloads',
+      'voiceGuidance': 'Orientação por voz',
+      'voiceGuidanceHint': 'Usa avisos falados durante a navegação.',
+      'wifiOnlyDownloads': 'Mapas offline apenas por Wi‑Fi',
+      'wifiOnlyDownloadsHint':
+          'Não inicia novos downloads offline em dados móveis.',
+      'privacyData': 'Privacidade e dados',
+      'localFirst': 'Local-first',
+      'localFirstHint': 'Percursos e atividades ficam no dispositivo salvo sincronização cloud explicitamente ativada.',
+      'routeLab': 'Route Lab',
+      'routeLabHint': 'Circuitos, alternativas, POI, meteorologia e superfície',
+      'circularRoute': 'Percurso circular',
+      'circularRouteHint': 'Gera circuitos reais em estradas e trilhos OSM a partir da posição atual.',
+      'generateRoutes': 'Gerar percursos',
+      'routeOption': 'Opção',
+      'routeAlternatives': 'Percursos alternativos',
+      'routeAlternativesUnavailable':
+          'As alternativas estão temporariamente indisponíveis',
+      'shortestRoute': 'Mais curto',
+      'leastClimb': 'Menos subida',
+      'moreTrail': 'Mais trilho',
+      'moreRoad': 'Mais estrada',
+      'generateAlternatives': 'Gerar alternativas',
+      'alternative': 'Alternativa',
+      'routeContext': 'Contexto do percurso',
+      'routeContextHint': 'Analisa POI outdoor, meteorologia e superfície num percurso guardado.',
+      'analyzeRoute': 'Analisar percurso',
+      'surface': 'Superfície',
+      'weatherAlongRoute': 'Meteorologia ao longo do percurso',
+      'outdoorPois': 'POI outdoor',
+      'fromRoute': 'do percurso',
+      'noRouteCandidates':
+          'Nenhum percurso válido encontrado para estes parâmetros.',
+      'routeGenerationFailed': 'Não foi possível gerar os percursos.',
+      'routeContextFailed': 'Não foi possível analisar o contexto do percurso.',
+      'surfacePaved': 'Pavimentado',
+      'surfaceGravel': 'Cascalho/compactado',
+      'surfaceDirt': 'Terra',
+      'surfaceTrail': 'Trilho/não pavimentado',
+      'surfaceUnknown': 'Desconhecida',
+      'routeCollections': 'Coleções',
+      'routeCollectionsHint': 'Organiza percursos em pastas pessoais',
+      'newCollection': 'Nova coleção',
+      'collectionName': 'Nome da coleção',
+      'collectionsUnavailable': 'Coleções temporariamente indisponíveis',
+      'noCollections': 'Sem coleções',
+      'noCollectionsHint':
+          'Cria pastas para organizar percursos, viagens e atividades.',
+      'manageCollection': 'Gerir percursos',
+      'deleteCollection': 'Eliminar coleção?',
+      'personalStats': 'Estatísticas',
+      'personalStatsHint':
+          'Analisa distância, desnível e atividade ao longo do tempo',
+      'statsUnavailable': 'Estatísticas temporariamente indisponíveis',
+      'last7Days': 'Últimos 7 dias',
+      'last30Days': 'Últimos 30 dias',
+      'longestActivity': 'Atividade mais longa',
+      'highestAscent': 'Maior desnível',
+      'movingTime': 'Tempo em movimento',
+      'slopeMap': 'Mapa de inclinação',
+      'slopeMapHint': 'Colore o percurso conforme a inclinação',
+      'terrain3d': 'Terreno 3D',
+      'terrain3dHint': 'Relevo 3D baseado nos dados de elevação do mapa',
+      'autoReroute': 'Recálculo automático',
+      'autoRerouteHint':
+          'Calcula um novo percurso até ao destino quando sai da rota.',
+      'autoRerouteProHint':
+          'O recálculo automático está disponível com TrailPath Pro.',
       'centerLocation': 'Centrar na minha localização',
       'locationServiceOff': 'Ative os serviços de localização',
       'locationUnavailable': 'Localização temporariamente indisponível',
@@ -972,6 +1776,13 @@ class AppLocalizations {
       'routeDragActive':
           'A arrastar: solte para recalcular apenas o troço alterado.',
       'traceMode': 'Desenhar rota',
+      'traceFollowTrails': 'Seguir trilhos',
+      'traceFollowRoads': 'Seguir estradas',
+      'traceFree': 'Livre',
+      'traceCloseLoop': 'Fechar circuito',
+      'traceOutAndBack': 'Ida e volta',
+      'traceReverse': 'Inverter',
+      'traceErase': 'Apagar último troço',
       'traceHint': 'Modo desenho: arraste o dedo pelo mapa seguindo o caminho pretendido.',
       'traceDrawing': 'Continue a desenhar; ao soltar, o TrailPath ajustará o traço à rede OSM.',
       'traceProcessing': 'A converter o gesto numa rota real…',

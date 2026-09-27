@@ -4,7 +4,13 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v1.0.0 - Planner UX Hardening (build 31)
+Stable certification baseline: **v1.0.0+31**  
+Post-v1 cumulative development candidate: **v1.5.0+36**
+
+### Post-v1 cumulative candidate
+
+The v1.5 branch contains the approved v1.1→v1.5 train: Smart Trace/map layers, TrailPath Pro, Settings/Profile/optional Google account, optional Supabase Cloud Sync, Route Lab, Collections, personal statistics, slope/terrain layers and automatic rerouting. Runtime/provider features remain fail-safe when their commercial configuration is absent.
+
 
 TrailPath v1.0.0 is the first stable Android release candidate. No new product scope is added here: the milestone is limited to final regression, artifact certification, release evidence and production-readiness gates.
 
@@ -144,3 +150,93 @@ After v1.0 certification, approved development moves in this order: **Smart Trac
 The current v1.0 release remains feature-frozen. The approved post-v1 scope is tracked in `docs/ROADMAP.md`; satellite/provider licensing and recurring service cost must be validated before any paid map layer is shipped.
 
 See docs/ARCHITECTURE.md and docs/ROADMAP.md.
+
+
+## v1.1 development train
+
+The post-v1 branch starts at **v1.1.0+32** with Smart Trace and multi-map foundations.
+
+- Smart Trace uses a dedicated `MapMatchingEngine` and Valhalla `trace_route` map matching for Trail/Road modes instead of converting the finger gesture directly into ordinary route waypoints.
+- Free mode preserves the previous trace behavior for deliberate free-form planning.
+- Cycling/MTB matching switches between mountain/path-biased and road-biased Valhalla bicycle costing.
+- Planner exposes Outdoor, Street, Satellite and Hybrid map choices.
+- Satellite/Hybrid are provider-gated through `MAPTILER_API_KEY`; no commercial map key is committed to source.
+- Existing distance/elevation pipeline remains the source of truth after matched geometry is accepted.
+- The Valhalla public demo endpoint is development/fair-use infrastructure only; production provider strategy remains an explicit release decision.
+
+The v1.1 Dart sources are normalized with the pinned Flutter 3.47.5 formatter before CI validation.
+
+- Loop, out-and-back, reverse and erase-last-segment route tools are available inside Smart Trace mode, reusing the planner undo/reroute pipeline.
+
+**v1.1 Smart Trace feature-complete checkpoint:** map matching, Trail/Road/Free modes, map layers, loop, out-and-back, reverse, eraser-last-segment and undo/redo are implemented; exact-head CI/AppLab validation follows this documentation commit.
+
+
+## v1.4 Cloud Sync
+
+The v1.4 staging candidate is **v1.4.0+35**.
+
+- Optional Supabase client, initialized only when `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` are supplied.
+- Google identity remains the user-facing sign-in; native Google tokens establish a Supabase session only when cloud sync is actually used.
+- Local Drift remains the source of truth while offline.
+- Schema v4 adds a coalescing sync outbox.
+- Route/activity deletes are represented as remote tombstones to avoid deleted data reappearing from another device.
+- Routes, completed activities and behavior-backed preferences use last-write-wins timestamps.
+- First cloud enablement seeds the outbox from existing local data.
+- Cloud Sync is a Pro entitlement but planning/recording/navigation remain fully local without it.
+- RLS-safe reference schema is documented in `docs/SUPABASE_CLOUD_SYNC_SCHEMA.sql`.
+- No Supabase service-role/secret key is embedded in the app.
+
+
+## v1.5 Outdoor Intelligence
+
+The full approved post-v1 development train reaches **v1.5.0+36**.
+
+Implemented:
+- Circular Route Generator using the existing routing + elevation engines and ranked loop candidates.
+- Route alternatives for **shortest**, **least climb**, **more trail** and **more road**, with OSM surface-aware ranking where data is available.
+- Pro **Slope Map** rendered from the existing elevation/grade profile.
+- Pro **3D Terrain** using a runtime-configured MapTiler Terrain DEM.
+- OSM/Overpass route-surface analysis with explicit unknown coverage where tagging is insufficient.
+- Outdoor POIs along the route: drinking water, shelters/huts, parking, viewpoints and toilets.
+- Open-Meteo weather sampling along multiple route positions.
+- Route Collections persisted in Drift schema v5 and included in optional cloud sync.
+- Personal statistics: totals, 7/30-day distance, moving time, longest activity and highest ascent.
+- Optional Pro automatic rerouting after off-route events, with cooldown and non-destructive failure behavior.
+- High-contrast map style as an additional free map option.
+- Pro access remains centralized through the Premium Engine; basic route ownership, recording, recovery and safety functions remain free.
+
+Provider-dependent functionality stays fail-safe: no MapTiler key means no Satellite/Hybrid/3D terrain; no cloud configuration means the app remains local-first; Overpass/Open-Meteo failures do not invalidate saved local routes.
+
+
+## v1.2 TrailPath Pro
+
+TrailPath Pro is implemented behind a provider-agnostic Premium Engine using the official Flutter Google Play Billing integration.
+
+- Monthly and yearly products: `trailpath_pro_monthly` / `trailpath_pro_yearly`.
+- Non-blocking paywall with purchase, restore and purchase-completion handling.
+- Satellite/Hybrid maps and later premium tools consume one entitlement state.
+- Basic planning, route ownership, recording, recovery and safety remain available without Pro.
+- Runtime map provider keys are never committed to source.
+
+## v1.3 Settings, Profile & Account
+
+- Settings are behavior-backed: theme, default activity/map, battery mode, voice guidance and Wi-Fi-only offline downloads.
+- Profile is the app/account hub and keeps Outdoor tools available without expanding bottom navigation.
+- Google Sign-In is optional and runtime-configured through `GOOGLE_SERVER_CLIENT_ID`.
+- Sign-out does not remove local TrailPath routes, activities or preferences.
+- A global km/mi preference is not exposed yet because every metric surface must convert consistently before shipping it.
+
+v1.5 Outdoor Intelligence sources and tests are normalized with the pinned Flutter 3.47.5 formatter before staging CI.
+
+The v1.5 analyzer fixes are normalized with the pinned Flutter 3.47.5 toolchain before full CI/AppLab validation.
+
+Surface analysis uses bounded route-corridor probes against Overpass instead of querying the full route bounding box, keeping long-route requests controlled while preserving explicit unknown coverage.
+
+### v1.5 hardening notes
+
+- Cloud/collection conflict hardening removes collection membership when a route tombstone arrives and applies collection records after route state.
+- Remote collections ignore route IDs that are not present locally, preventing stale cloud references from resurrecting deleted memberships.
+- Google ID token is sufficient for Supabase authentication; a secondary Google access token is optional rather than a sync blocker.
+- Invalid/unavailable Supabase initialization cannot prevent TrailPath startup: the app continues local-first.
+- Drift migration coverage now includes v1, v2, v3 and v4 databases upgrading to schema v5.
+- Surface analysis uses bounded route-corridor Overpass probes rather than a potentially huge full-route bounding box.
