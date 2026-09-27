@@ -531,10 +531,9 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> deleteSavedRoute(String routeId) async {
     final now = DateTime.now();
-    final affectedMemberships =
-        await (select(routeCollectionItems)
-              ..where((row) => row.routeId.equals(routeId)))
-            .get();
+    final affectedMemberships = await (select(
+      routeCollectionItems,
+    )..where((row) => row.routeId.equals(routeId))).get();
     final affectedCollectionIds = affectedMemberships
         .map((row) => row.collectionId)
         .toSet();

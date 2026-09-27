@@ -12,7 +12,9 @@ import 'package:trail_path/features/settings/application/settings_controller.dar
 import 'package:trail_path/infrastructure/sync/supabase_cloud_sync_engine.dart';
 
 final cloudSyncEngineProvider = Provider<CloudSyncEngine>((ref) {
-  final client = CloudConfig.isRuntimeAvailable ? Supabase.instance.client : null;
+  final client = CloudConfig.isRuntimeAvailable
+      ? Supabase.instance.client
+      : null;
   return SupabaseCloudSyncEngine(
     database: ref.watch(appDatabaseProvider),
     accountService: ref.watch(accountServiceProvider),
