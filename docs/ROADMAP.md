@@ -170,7 +170,11 @@ Goal: make TrailPath feel like a complete product without forcing account creati
 - [x] implement last-write-wins conflict resolution, local outbox queueing, remote tombstones and explicit Profile sync status.
 - [~] TLS transport is provided by Supabase HTTPS; cloud at-rest handling follows the selected Supabase project/storage policy and must be reviewed before production enablement.
 - [x] remote-newer records restore into local Drift, deletions propagate through tombstones, and Google/Supabase sign-out does not delete local data.
+- [x] route tombstones remove collection membership deterministically and collection records are applied after route state to prevent stale cross-device references.
 - [x] no mandatory cloud dependency for planning, recording or navigation; Supabase is runtime-config gated.
+- [x] Drift migration regression covers **v1/v2/v3/v4 → v5** while preserving legacy activity data.
+- [x] Google ID-token auth does not require a secondary access token; optional token enrichment cannot block cloud authentication.
+- [x] Supabase initialization fails closed to local-first availability instead of blocking app startup.
 
 ### v1.5 — Premium Outdoor Intelligence
 
