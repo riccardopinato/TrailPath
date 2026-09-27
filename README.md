@@ -267,3 +267,5 @@ AppLab planner start transition now accepts the explicit `Start here` candidate 
 - Privacy-safe provider usage counters are local-only and record only provider/capability counts plus the last-use timestamp for MapTiler Satellite, Hybrid and 3D Terrain. No route geometry, coordinates or precise-location analytics are written or transmitted.
 - Cloud Sync uses Supabase HTTPS/TLS, RLS and authenticated user-scoped rows with only runtime publishable credentials in the client. TrailPath does not embed a service-role key.
 - Supabase project-level at-rest encryption, backups and retention remain deployment controls that must be reviewed before production Cloud Sync is enabled; TrailPath does not claim client-side encryption of cloud payloads.
+
+Final v1.5 provider-usage sources are normalized with the pinned Flutter 3.47.5 formatter before the exact-head CI/AppLab gate.
