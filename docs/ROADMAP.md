@@ -146,8 +146,8 @@ Goal: introduce monetization only after the planner/map experience is strong eno
 
 - [x] implement a **Premium Engine** behind feature entitlements, provider-agnostic and testable.
 - [x] integrate Google Play Billing through the official Flutter `in_app_purchase` package behind `PremiumEngine`; RevenueCat is not required for the current architecture.
-- [ ] proposed launch pricing to validate: **€2.99/month / €19.99/year**.
-- [ ] no Lifetime at launch while satellite/cloud providers create recurring operating cost.
+- [x] product structure is monthly/yearly with launch pricing target **€2.99/month / €19.99/year**; actual localized Play prices come from product metadata.
+- [x] no Lifetime at launch while satellite/cloud providers create recurring operating cost.
 - [x] build a clear, non-blocking paywall with monthly/yearly offers, restore purchases and feature comparison.
 - [x] Free remains useful: route planning, GPS recording, elevation, GPX basics, standard maps, basic navigation.
 - [ ] Pro candidates: satellite layers, satellite + trails, advanced offline maps, advanced Smart Trace tools, advanced stats, cloud sync, route collections, route generator, terrain/slope layers and future premium map providers.
