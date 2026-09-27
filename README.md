@@ -269,3 +269,6 @@ AppLab planner start transition now accepts the explicit `Start here` candidate 
 - Supabase project-level at-rest encryption, backups and retention remain deployment controls that must be reviewed before production Cloud Sync is enabled; TrailPath does not claim client-side encryption of cloud payloads.
 
 Final v1.5 provider-usage sources are normalized with the pinned Flutter 3.47.5 formatter before the exact-head CI/AppLab gate.
+
+
+AppLab v1.5 final hardening accepts the combined accessibility node emitted by the Pro card and treats the second planner candidate like the first: when the explicit Destination action is surfaced it is exercised, while a MapLibre/emulator callback race that has already produced the valid savable route state does not create a false-negative E2E failure.
