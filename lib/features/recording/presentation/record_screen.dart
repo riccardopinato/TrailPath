@@ -208,29 +208,55 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
       return;
     }
 
-    final saved = await recordingController.finish(name);
+    final result = await recordingController.finish(name);
+    await _handleFinishResult(result);
+  }
 
+  Future<void> _retryFinalization() async {
+    final result = await ref
+        .read(recordingControllerProvider.notifier)
+        .retryFinish();
+    await _handleFinishResult(result);
+  }
+
+  Future<void> _handleFinishResult(RecordingFinishResult result) async {
     if (!mounted) {
       return;
     }
 
-    await _syncTrack(
-      const TrackRecorderSnapshot(
-        status: TrackRecorderStatus.idle,
-        points: [],
-        distanceMeters: 0,
-        elapsed: Duration.zero,
-      ),
-      follow: false,
-    );
-
-    if (!mounted) {
-      return;
+    if (result != RecordingFinishResult.saveFailed) {
+      await _syncTrack(
+        const TrackRecorderSnapshot(
+          status: TrackRecorderStatus.idle,
+          points: [],
+          distanceMeters: 0,
+          elapsed: Duration.zero,
+        ),
+        follow: false,
+      );
+      if (!mounted) {
+        return;
+      }
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    final strings = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
       SnackBar(
-        content: Text(saved ? strings.activitySaved : strings.activityTooShort),
+        content: Text(
+          switch (result) {
+            RecordingFinishResult.saved => strings.activitySaved,
+            RecordingFinishResult.tooShort => strings.activityTooShort,
+            RecordingFinishResult.saveFailed => strings.activitySaveFailed,
+          },
+        ),
+        action: result == RecordingFinishResult.saveFailed
+            ? SnackBarAction(
+                label: strings.retrySave,
+                onPressed: () => unawaited(_retryFinalization()),
+              )
+            : null,
       ),
     );
   }
@@ -345,7 +371,9 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        snapshot.status == TrackRecorderStatus.recording
+                        state.hasPendingFinalization
+                            ? strings.savePending
+                            : snapshot.status == TrackRecorderStatus.recording
                             ? strings.recording
                             : snapshot.status == TrackRecorderStatus.paused
                             ? strings.paused
@@ -397,6 +425,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
               onPause: ref.read(recordingControllerProvider.notifier).pause,
               onResume: ref.read(recordingControllerProvider.notifier).resume,
               onFinish: _finishRecording,
+              onRetryFinish: _retryFinalization,
               onDiscard: _discardRecording,
             ),
           ),
@@ -415,6 +444,7 @@ class _RecorderPanel extends StatelessWidget {
     required this.onPause,
     required this.onResume,
     required this.onFinish,
+    required this.onRetryFinish,
     required this.onDiscard,
   });
 
@@ -425,6 +455,7 @@ class _RecorderPanel extends StatelessWidget {
   final Future<void> Function() onPause;
   final Future<void> Function() onResume;
   final Future<void> Function() onFinish;
+  final Future<void> Function() onRetryFinish;
   final Future<void> Function() onDiscard;
 
   @override
@@ -432,6 +463,7 @@ class _RecorderPanel extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final snapshot = state.snapshot;
     final active = state.isActive;
+    final pendingFinalization = state.hasPendingFinalization;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 15),
@@ -537,7 +569,7 @@ class _RecorderPanel extends StatelessWidget {
               ),
             ],
           ),
-          if (!active) ...[
+          if (!active && !pendingFinalization) ...[
             const SizedBox(height: 12),
             SizedBox(
               height: 38,
@@ -573,7 +605,21 @@ class _RecorderPanel extends StatelessWidget {
             ),
           Row(
             children: [
-              if (!active)
+              if (pendingFinalization) ...[
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: onRetryFinish,
+                    icon: const Icon(Icons.save_rounded),
+                    label: Text(strings.retrySave),
+                  ),
+                ),
+                const SizedBox(width: 9),
+                IconButton.filledTonal(
+                  tooltip: strings.discard,
+                  onPressed: onDiscard,
+                  icon: const Icon(Icons.delete_outline_rounded),
+                ),
+              ] else if (!active)
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: state.isCheckingRecovery ? null : onStart,
@@ -608,7 +654,7 @@ class _RecorderPanel extends StatelessWidget {
                   ),
                 ),
               ],
-              if (state.hasRecoveredDraft) ...[
+              if (state.hasRecoveredDraft && !pendingFinalization) ...[
                 const SizedBox(width: 9),
                 IconButton.filledTonal(
                   tooltip: strings.discard,
