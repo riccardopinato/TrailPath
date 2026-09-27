@@ -22,5 +22,7 @@ void main() {
     expect(schema, contains('(select auth.uid()) = user_id'));
     expect(schema, isNot(contains('service_role')));
     expect(main, contains('if (CloudConfig.isConfigured)'));
+    expect(main, contains('continuing local-first'));
+    expect(File('lib/features/profile/application/cloud_sync_controller.dart').readAsStringSync(), contains('CloudConfig.isRuntimeAvailable'));
   });
 }
