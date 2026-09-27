@@ -135,8 +135,8 @@ Goal: make route creation materially closer to Footpath-quality behavior before 
 - [x] add route-drawing tools: eraser-last-segment, undo/redo, loop, out-and-back and reverse.
 - [x] keep the current distance/elevation engine as the reference implementation after Smart Trace matching.
 - [~] **Map layer selector:** Outdoor + Street are live; Satellite + Hybrid are wired as provider-gated styles. Dedicated high-contrast style remains later polish.
-- [~] **Pro satellite layer:** MapTiler Satellite is wired through runtime `MAPTILER_API_KEY`; commercial plan/key and entitlement gate complete in v1.2.
-- [~] **Pro satellite + trails overlay:** Hybrid provider style is wired; entitlement/licensing gate follows in v1.2.
+- [x] **Pro satellite layer:** Satellite requires both a Pro entitlement and runtime `MAPTILER_API_KEY`; no commercial key is committed to source.
+- [x] **Pro satellite + trails overlay:** Hybrid requires both Pro entitlement and configured premium map provider.
 - [ ] evaluate terrain/relief/contours and future 3D terrain without coupling the app to one map vendor.
 - [ ] add explicit map-provider usage/cost telemetry hooks that do not track user routes or precise location analytics.
 
