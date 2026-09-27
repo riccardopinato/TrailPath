@@ -13,6 +13,7 @@ import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/collection_sampling.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
+import 'package:trail_path/core/domain/map_matching.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/services/service_providers.dart';
@@ -43,6 +44,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   bool _routeSelected = false;
   bool _draggingFeature = false;
   bool _traceMode = false;
+  MapMatchMode _traceMatchMode = MapMatchMode.trails;
+  _PlannerMapStyle _plannerMapStyle = _PlannerMapStyle.outdoor;
   bool _traceDrawing = false;
   bool _traceProcessing = false;
   int? _tracePointerId;
@@ -520,6 +523,95 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     ref.read(routePlannerProvider.notifier).insertPointNearRoute(candidate);
   }
 
+  Future<void> _openMapLayers() async {
+    final selected = await showModalBottomSheet<_PlannerMapStyle>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        final strings = AppLocalizations.of(context);
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+                child: Text(
+                  strings.mapLayers,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              for (final style in _PlannerMapStyle.values)
+                ListTile(
+                  leading: Icon(_mapStyleIcon(style)),
+                  title: Text(_mapStyleLabel(strings, style)),
+                  subtitle: style.isPremium
+                      ? Text(
+                          MapConfig.hasPremiumMapProvider
+                              ? strings.proMap
+                              : strings.proMapUnavailable,
+                        )
+                      : null,
+                  trailing: _plannerMapStyle == style
+                      ? const Icon(Icons.check_rounded)
+                      : style.isPremium
+                      ? const Icon(Icons.workspace_premium_outlined)
+                      : null,
+                  enabled:
+                      !style.isPremium || MapConfig.hasPremiumMapProvider,
+                  onTap: () => Navigator.of(context).pop(style),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selected == null || selected == _plannerMapStyle || !mounted) {
+      return;
+    }
+    await _applyMapStyle(selected);
+  }
+
+  Future<void> _applyMapStyle(_PlannerMapStyle style) async {
+    final controller = _mapController;
+    final url = _mapStyleUrl(style);
+    if (controller == null || url == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).proMapUnavailable),
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _plannerMapStyle = style;
+      _styleReady = false;
+      _routeLines = const [];
+      _waypointCircles = const [];
+      _midpointCircles = const [];
+      _candidateCircle = null;
+      _dragPreviewLine = null;
+      _routeVisualKey = null;
+      _waypointVisualKeys = const [];
+      _midpointVisualKeys = const [];
+      _candidateVisualKey = null;
+    });
+    await controller.setStyle(url);
+  }
+
+  String? _mapStyleUrl(_PlannerMapStyle style) {
+    return switch (style) {
+      _PlannerMapStyle.outdoor => MapConfig.plannerStyleUrl,
+      _PlannerMapStyle.street => MapConfig.styleUrl,
+      _PlannerMapStyle.satellite => MapConfig.mapTilerStyleUrl('satellite'),
+      _PlannerMapStyle.hybrid => MapConfig.mapTilerStyleUrl('hybrid'),
+    };
+  }
+
   void _toggleTraceMode() {
     if (_traceProcessing) {
       return;
@@ -630,9 +722,31 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
         return;
       }
 
-      final accepted = ref
-          .read(routePlannerProvider.notifier)
-          .addTrace(geoPoints);
+      final plannerState = ref.read(routePlannerProvider);
+      final plannerController = ref.read(routePlannerProvider.notifier);
+      var accepted = false;
+
+      if (_traceMatchMode == MapMatchMode.free) {
+        accepted = plannerController.addTrace(geoPoints);
+      } else {
+        final matchInput = <GeoPoint>[
+          if (plannerState.points.isNotEmpty) plannerState.points.last,
+          ...geoPoints,
+        ];
+        final match = await ref
+            .read(mapMatchingEngineProvider)
+            .match(
+              TraceMatchRequest(
+                trace: matchInput,
+                profile: plannerState.profile,
+                mode: _traceMatchMode,
+              ),
+            );
+        if (!mounted) {
+          return;
+        }
+        accepted = plannerController.applyMatchedTrace(match);
+      }
       if (!accepted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context).traceTooShort)),
@@ -1496,6 +1610,14 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                     ),
                     const Spacer(),
                     _MapActionButton(
+                      icon: Icons.layers_outlined,
+                      dark: dark,
+                      tooltip: strings.mapLayers,
+                      active: _plannerMapStyle != _PlannerMapStyle.outdoor,
+                      onTap: _openMapLayers,
+                    ),
+                    const SizedBox(width: 8),
+                    _MapActionButton(
                       icon: Icons.draw_rounded,
                       dark: dark,
                       tooltip: strings.traceMode,
@@ -1599,6 +1721,62 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                     dark: dark,
                     busy: _traceProcessing,
                   ),
+                  const SizedBox(height: 7),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Material(
+                      color: dark
+                          ? const Color(0xE61A241E)
+                          : const Color(0xF5FFFFFF),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 5,
+                        ),
+                        child: Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: [
+                            ChoiceChip(
+                              label: Text(strings.traceFollowTrails),
+                              selected:
+                                  _traceMatchMode == MapMatchMode.trails,
+                              onSelected: _traceProcessing
+                                  ? null
+                                  : (_) => setState(
+                                        () => _traceMatchMode =
+                                            MapMatchMode.trails,
+                                      ),
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            ChoiceChip(
+                              label: Text(strings.traceFollowRoads),
+                              selected: _traceMatchMode == MapMatchMode.roads,
+                              onSelected: _traceProcessing
+                                  ? null
+                                  : (_) => setState(
+                                        () => _traceMatchMode =
+                                            MapMatchMode.roads,
+                                      ),
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            ChoiceChip(
+                              label: Text(strings.traceFree),
+                              selected: _traceMatchMode == MapMatchMode.free,
+                              onSelected: _traceProcessing
+                                  ? null
+                                  : (_) => setState(
+                                        () => _traceMatchMode =
+                                            MapMatchMode.free,
+                                      ),
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -1657,6 +1835,31 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       ],
     );
   }
+}
+
+enum _PlannerMapStyle { outdoor, street, satellite, hybrid }
+
+extension on _PlannerMapStyle {
+  bool get isPremium =>
+      this == _PlannerMapStyle.satellite || this == _PlannerMapStyle.hybrid;
+}
+
+String _mapStyleLabel(AppLocalizations strings, _PlannerMapStyle style) {
+  return switch (style) {
+    _PlannerMapStyle.outdoor => strings.mapOutdoor,
+    _PlannerMapStyle.street => strings.mapStreet,
+    _PlannerMapStyle.satellite => strings.mapSatellite,
+    _PlannerMapStyle.hybrid => strings.mapHybrid,
+  };
+}
+
+IconData _mapStyleIcon(_PlannerMapStyle style) {
+  return switch (style) {
+    _PlannerMapStyle.outdoor => Icons.terrain_rounded,
+    _PlannerMapStyle.street => Icons.map_outlined,
+    _PlannerMapStyle.satellite => Icons.satellite_alt_outlined,
+    _PlannerMapStyle.hybrid => Icons.layers_outlined,
+  };
 }
 
 enum _CandidateIntent { start, destination, waypoint }
