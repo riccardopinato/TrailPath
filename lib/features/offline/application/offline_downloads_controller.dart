@@ -9,6 +9,17 @@ import 'package:trail_path/core/domain/offline_region_math.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/settings/application/settings_controller.dart';
 
+bool allowsOfflineDownloadOnConnectivity({
+  required bool wifiOnly,
+  required List<ConnectivityResult> connectivity,
+}) {
+  if (!wifiOnly) {
+    return true;
+  }
+  return connectivity.contains(ConnectivityResult.wifi) ||
+      connectivity.contains(ConnectivityResult.ethernet);
+}
+
 final offlineDownloadsProvider =
     NotifierProvider<OfflineDownloadsController, OfflineDownloadsState>(
       OfflineDownloadsController.new,
@@ -132,18 +143,28 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
       final preferences =
           ref.read(settingsControllerProvider).asData?.value ??
           await ref.read(settingsControllerProvider.future);
-      if (preferences?.wifiOnlyDownloads ?? false) {
-        final connectivity = await Connectivity().checkConnectivity();
-        final allowed =
-            connectivity.contains(ConnectivityResult.wifi) ||
-            connectivity.contains(ConnectivityResult.ethernet);
-        if (!allowed) {
-          throw StateError(
-            'Offline downloads are limited to Wi-Fi by user preference.',
+      final connectivity = preferences?.wifiOnlyDownloads ?? false
+          ? await Connectivity().checkConnectivity()
+          : const <ConnectivityResult>[];
+      if (!allowsOfflineDownloadOnConnectivity(
+        wifiOnly: preferences?.wifiOnlyDownloads ?? false,
+        connectivity: connectivity,
+      )) {
+        if (ref.mounted) {
+          state = state.copyWith(
+            error: 'Offline downloads are limited to Wi-Fi by user preference.',
           );
         }
+        return false;
       }
+    } on Object catch (error) {
+      if (ref.mounted) {
+        state = state.copyWith(error: error.toString());
+      }
+      return false;
+    }
 
+    try {
       final existingRegions = await manager.listRegions();
       OfflineRegion? existing;
       for (final region in existingRegions) {
