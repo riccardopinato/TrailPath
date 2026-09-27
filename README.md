@@ -163,3 +163,21 @@ The v1.1 Dart sources are normalized with the pinned Flutter 3.47.5 formatter be
 - Loop, out-and-back, reverse and erase-last-segment route tools are available inside Smart Trace mode, reusing the planner undo/reroute pipeline.
 
 **v1.1 Smart Trace feature-complete checkpoint:** map matching, Trail/Road/Free modes, map layers, loop, out-and-back, reverse, eraser-last-segment and undo/redo are implemented; exact-head CI/AppLab validation follows this documentation commit.
+
+
+## v1.4 Cloud Sync
+
+The v1.4 staging candidate is **v1.4.0+35**.
+
+- Optional Supabase client, initialized only when `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` are supplied.
+- Google identity remains the user-facing sign-in; native Google tokens establish a Supabase session only when cloud sync is actually used.
+- Local Drift remains the source of truth while offline.
+- Schema v4 adds a coalescing sync outbox.
+- Route/activity deletes are represented as remote tombstones to avoid deleted data reappearing from another device.
+- Routes, completed activities and behavior-backed preferences use last-write-wins timestamps.
+- First cloud enablement seeds the outbox from existing local data.
+- Cloud Sync is a Pro entitlement but planning/recording/navigation remain fully local without it.
+- RLS-safe reference schema is documented in `docs/SUPABASE_CLOUD_SYNC_SCHEMA.sql`.
+- No Supabase service-role/secret key is embedded in the app.
+
+v1.4 Cloud Sync sources are normalized with the pinned Flutter 3.47.5 formatter.

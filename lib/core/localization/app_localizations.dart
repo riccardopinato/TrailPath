@@ -60,6 +60,67 @@ class AppLocalizations {
   String get mapHybrid => _value('mapHybrid');
   String get proMap => _value('proMap');
   String get proMapUnavailable => _value('proMapUnavailable');
+  String get trailPathPro => _value('trailPathPro');
+  String get proSubtitle => _value('proSubtitle');
+  String get proActive => _value('proActive');
+  String get proBenefitMaps => _value('proBenefitMaps');
+  String get proBenefitTrace => _value('proBenefitTrace');
+  String get proBenefitOffline => _value('proBenefitOffline');
+  String get proBenefitStats => _value('proBenefitStats');
+  String get proBenefitCloud => _value('proBenefitCloud');
+  String get proMonthly => _value('proMonthly');
+  String get proYearly => _value('proYearly');
+  String get proMonthlyUnavailable => _value('proMonthlyUnavailable');
+  String get proYearlyUnavailable => _value('proYearlyUnavailable');
+  String get restorePurchases => _value('restorePurchases');
+  String get proStoreUnavailable => _value('proStoreUnavailable');
+  String get proPurchaseError => _value('proPurchaseError');
+  String get proSafetyFree => _value('proSafetyFree');
+  String get profile => _value('profile');
+  String get settings => _value('settings');
+  String get preferences => _value('preferences');
+  String get activitySummary => _value('activitySummary');
+  String get activities => _value('activities');
+  String get totalDistance => _value('totalDistance');
+  String get totalAscent => _value('totalAscent');
+  String get savedRoutesCount => _value('savedRoutesCount');
+  String get outdoorTools => _value('outdoorTools');
+  String get cloudSync => _value('cloudSync');
+  String get cloudSyncAccountHint => _value('cloudSyncAccountHint');
+  String get syncNow => _value('syncNow');
+  String get syncing => _value('syncing');
+  String get syncLast => _value('syncLast');
+  String get syncPending => _value('syncPending');
+  String get syncRequiresPro => _value('syncRequiresPro');
+  String get syncRequiresAccount => _value('syncRequiresAccount');
+  String get syncUnavailable => _value('syncUnavailable');
+  String get syncReady => _value('syncReady');
+  String get syncDone => _value('syncDone');
+  String get syncError => _value('syncError');
+  String get googleAccount => _value('googleAccount');
+  String get signInGoogle => _value('signInGoogle');
+  String get signOut => _value('signOut');
+  String get accountOptional => _value('accountOptional');
+  String get accountNotConfigured => _value('accountNotConfigured');
+  String get appearance => _value('appearance');
+  String get theme => _value('theme');
+  String get systemTheme => _value('systemTheme');
+  String get lightTheme => _value('lightTheme');
+  String get darkTheme => _value('darkTheme');
+  String get routePreferences => _value('routePreferences');
+  String get defaultActivity => _value('defaultActivity');
+  String get defaultMap => _value('defaultMap');
+  String get units => _value('units');
+  String get metricUnits => _value('metricUnits');
+  String get imperialUnits => _value('imperialUnits');
+  String get gpsAndDownloads => _value('gpsAndDownloads');
+  String get voiceGuidance => _value('voiceGuidance');
+  String get voiceGuidanceHint => _value('voiceGuidanceHint');
+  String get wifiOnlyDownloads => _value('wifiOnlyDownloads');
+  String get wifiOnlyDownloadsHint => _value('wifiOnlyDownloadsHint');
+  String get privacyData => _value('privacyData');
+  String get localFirst => _value('localFirst');
+  String get localFirstHint => _value('localFirstHint');
   String get centerLocation => _value('centerLocation');
   String get locationServiceOff => _value('locationServiceOff');
   String get locationUnavailable => _value('locationUnavailable');
@@ -252,6 +313,68 @@ class AppLocalizations {
       'mapHybrid': 'Satellite + strade',
       'proMap': 'Mappa Pro',
       'proMapUnavailable': 'Mappa Pro non configurata',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Mappe e strumenti outdoor avanzati',
+      'proActive': 'TrailPath Pro attivo',
+      'proBenefitMaps': 'Satellite e mappe premium',
+      'proBenefitTrace': 'Smart Trace e strumenti percorso avanzati',
+      'proBenefitOffline': 'Funzioni offline avanzate',
+      'proBenefitStats': 'Statistiche e analisi avanzate',
+      'proBenefitCloud': 'Cloud sync e backup tra dispositivi',
+      'proMonthly': 'Mensile',
+      'proYearly': 'Annuale',
+      'proMonthlyUnavailable': 'Piano mensile non configurato',
+      'proYearlyUnavailable': 'Piano annuale non configurato',
+      'restorePurchases': 'Ripristina acquisti',
+      'proStoreUnavailable': 'Google Play Billing non è disponibile o i prodotti Pro non sono ancora configurati.',
+      'proPurchaseError': 'Non è stato possibile completare l\'acquisto.',
+      'proSafetyFree': 'Registrazione, recovery e funzioni di sicurezza di base restano disponibili anche senza Pro.',
+      'profile': 'Profilo',
+      'settings': 'Impostazioni',
+      'preferences': 'Preferenze dell\'app',
+      'activitySummary': 'Riepilogo attività',
+      'activities': 'Attività',
+      'totalDistance': 'Distanza totale',
+      'totalAscent': 'Dislivello totale',
+      'savedRoutesCount': 'Percorsi salvati',
+      'outdoorTools': 'Strumenti Outdoor',
+      'cloudSync': 'Cloud Sync',
+      'cloudSyncAccountHint': 'Backup e sincronizzazione opzionali con account',
+      'syncNow': 'Sincronizza ora',
+      'syncing': 'Sincronizzazione…',
+      'syncLast': 'Ultima sincronizzazione',
+      'syncPending': 'modifiche in attesa',
+      'syncRequiresPro': 'Richiede TrailPath Pro',
+      'syncRequiresAccount': 'Accedi con Google per sincronizzare',
+      'syncUnavailable': 'Cloud Sync non configurato in questa build',
+      'syncReady': 'Pronto per la sincronizzazione',
+      'syncDone': 'Sincronizzazione completata',
+      'syncError': 'Errore di sincronizzazione',
+      'googleAccount': 'Account Google',
+      'signInGoogle': 'Accedi',
+      'signOut': 'Esci',
+      'accountOptional': 'Account facoltativo: TrailPath funziona anche offline e senza login.',
+      'accountNotConfigured': 'Google Sign-In non configurato in questa build.',
+      'appearance': 'Aspetto',
+      'theme': 'Tema',
+      'systemTheme': 'Sistema',
+      'lightTheme': 'Chiaro',
+      'darkTheme': 'Scuro',
+      'routePreferences': 'Preferenze percorso',
+      'defaultActivity': 'Attività predefinita',
+      'defaultMap': 'Mappa predefinita',
+      'units': 'Unità',
+      'metricUnits': 'Metriche (km, m)',
+      'imperialUnits': 'Imperiali (mi, ft)',
+      'gpsAndDownloads': 'GPS e download',
+      'voiceGuidance': 'Guida vocale',
+      'voiceGuidanceHint': 'Usa la voce durante la navigazione attiva.',
+      'wifiOnlyDownloads': 'Download mappe solo Wi‑Fi',
+      'wifiOnlyDownloadsHint':
+          'Evita di avviare nuovi download offline su rete mobile.',
+      'privacyData': 'Privacy e dati',
+      'localFirst': 'Local-first',
+      'localFirstHint': 'Percorsi e attività restano sul dispositivo salvo sincronizzazione cloud esplicitamente attivata.',
       'centerLocation': 'Centra sulla mia posizione',
       'locationServiceOff': 'Attiva i servizi di localizzazione',
       'locationUnavailable': 'Posizione temporaneamente non disponibile',
@@ -439,6 +562,69 @@ class AppLocalizations {
       'mapHybrid': 'Satellite + roads',
       'proMap': 'Pro map',
       'proMapUnavailable': 'Pro map provider not configured',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Advanced maps and outdoor tools',
+      'proActive': 'TrailPath Pro active',
+      'proBenefitMaps': 'Satellite and premium maps',
+      'proBenefitTrace': 'Advanced Smart Trace and route tools',
+      'proBenefitOffline': 'Advanced offline features',
+      'proBenefitStats': 'Advanced statistics and analysis',
+      'proBenefitCloud': 'Cloud sync and cross-device backup',
+      'proMonthly': 'Monthly',
+      'proYearly': 'Yearly',
+      'proMonthlyUnavailable': 'Monthly plan not configured',
+      'proYearlyUnavailable': 'Yearly plan not configured',
+      'restorePurchases': 'Restore purchases',
+      'proStoreUnavailable': 'Google Play Billing is unavailable or Pro products are not configured yet.',
+      'proPurchaseError': 'The purchase could not be completed.',
+      'proSafetyFree': 'Core recording, recovery and safety features remain available without Pro.',
+      'profile': 'Profile',
+      'settings': 'Settings',
+      'preferences': 'App preferences',
+      'activitySummary': 'Activity summary',
+      'activities': 'Activities',
+      'totalDistance': 'Total distance',
+      'totalAscent': 'Total ascent',
+      'savedRoutesCount': 'Saved routes',
+      'outdoorTools': 'Outdoor tools',
+      'cloudSync': 'Cloud Sync',
+      'cloudSyncAccountHint': 'Optional backup and sync with an account',
+      'syncNow': 'Sync now',
+      'syncing': 'Syncing…',
+      'syncLast': 'Last sync',
+      'syncPending': 'pending changes',
+      'syncRequiresPro': 'Requires TrailPath Pro',
+      'syncRequiresAccount': 'Sign in with Google to sync',
+      'syncUnavailable': 'Cloud Sync is not configured in this build',
+      'syncReady': 'Ready to sync',
+      'syncDone': 'Sync complete',
+      'syncError': 'Sync error',
+      'googleAccount': 'Google account',
+      'signInGoogle': 'Sign in',
+      'signOut': 'Sign out',
+      'accountOptional':
+          'Account is optional: TrailPath works offline and without sign-in.',
+      'accountNotConfigured': 'Google Sign-In is not configured in this build.',
+      'appearance': 'Appearance',
+      'theme': 'Theme',
+      'systemTheme': 'System',
+      'lightTheme': 'Light',
+      'darkTheme': 'Dark',
+      'routePreferences': 'Route preferences',
+      'defaultActivity': 'Default activity',
+      'defaultMap': 'Default map',
+      'units': 'Units',
+      'metricUnits': 'Metric (km, m)',
+      'imperialUnits': 'Imperial (mi, ft)',
+      'gpsAndDownloads': 'GPS and downloads',
+      'voiceGuidance': 'Voice guidance',
+      'voiceGuidanceHint': 'Use spoken feedback during active navigation.',
+      'wifiOnlyDownloads': 'Offline maps on Wi‑Fi only',
+      'wifiOnlyDownloadsHint':
+          'Do not start new offline downloads on mobile data.',
+      'privacyData': 'Privacy and data',
+      'localFirst': 'Local-first',
+      'localFirstHint': 'Routes and activities stay on this device unless cloud sync is explicitly enabled.',
       'centerLocation': 'Center on my location',
       'locationServiceOff': 'Turn on location services',
       'locationUnavailable': 'Location temporarily unavailable',
@@ -626,6 +812,70 @@ class AppLocalizations {
       'mapHybrid': 'Satélite + carreteras',
       'proMap': 'Mapa Pro',
       'proMapUnavailable': 'Proveedor de mapas Pro no configurado',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Mapas y herramientas outdoor avanzadas',
+      'proActive': 'TrailPath Pro activo',
+      'proBenefitMaps': 'Satélite y mapas premium',
+      'proBenefitTrace': 'Smart Trace y herramientas de ruta avanzadas',
+      'proBenefitOffline': 'Funciones offline avanzadas',
+      'proBenefitStats': 'Estadísticas y análisis avanzados',
+      'proBenefitCloud': 'Sincronización cloud y copia entre dispositivos',
+      'proMonthly': 'Mensual',
+      'proYearly': 'Anual',
+      'proMonthlyUnavailable': 'Plan mensual no configurado',
+      'proYearlyUnavailable': 'Plan anual no configurado',
+      'restorePurchases': 'Restaurar compras',
+      'proStoreUnavailable': 'Google Play Billing no está disponible o los productos Pro aún no están configurados.',
+      'proPurchaseError': 'No se pudo completar la compra.',
+      'proSafetyFree': 'La grabación, recuperación y seguridad básicas siguen disponibles sin Pro.',
+      'profile': 'Perfil',
+      'settings': 'Ajustes',
+      'preferences': 'Preferencias de la app',
+      'activitySummary': 'Resumen de actividad',
+      'activities': 'Actividades',
+      'totalDistance': 'Distancia total',
+      'totalAscent': 'Desnivel total',
+      'savedRoutesCount': 'Rutas guardadas',
+      'outdoorTools': 'Herramientas Outdoor',
+      'cloudSync': 'Cloud Sync',
+      'cloudSyncAccountHint':
+          'Copia y sincronización opcionales con una cuenta',
+      'syncNow': 'Sincronizar ahora',
+      'syncing': 'Sincronizando…',
+      'syncLast': 'Última sincronización',
+      'syncPending': 'cambios pendientes',
+      'syncRequiresPro': 'Requiere TrailPath Pro',
+      'syncRequiresAccount': 'Inicia sesión con Google para sincronizar',
+      'syncUnavailable': 'Cloud Sync no está configurado en esta build',
+      'syncReady': 'Listo para sincronizar',
+      'syncDone': 'Sincronización completada',
+      'syncError': 'Error de sincronización',
+      'googleAccount': 'Cuenta de Google',
+      'signInGoogle': 'Acceder',
+      'signOut': 'Cerrar sesión',
+      'accountOptional': 'La cuenta es opcional: TrailPath funciona offline y sin iniciar sesión.',
+      'accountNotConfigured':
+          'Google Sign-In no está configurado en esta build.',
+      'appearance': 'Apariencia',
+      'theme': 'Tema',
+      'systemTheme': 'Sistema',
+      'lightTheme': 'Claro',
+      'darkTheme': 'Oscuro',
+      'routePreferences': 'Preferencias de ruta',
+      'defaultActivity': 'Actividad predeterminada',
+      'defaultMap': 'Mapa predeterminado',
+      'units': 'Unidades',
+      'metricUnits': 'Métricas (km, m)',
+      'imperialUnits': 'Imperiales (mi, ft)',
+      'gpsAndDownloads': 'GPS y descargas',
+      'voiceGuidance': 'Guía por voz',
+      'voiceGuidanceHint': 'Usa avisos hablados durante la navegación.',
+      'wifiOnlyDownloads': 'Mapas offline solo por Wi‑Fi',
+      'wifiOnlyDownloadsHint':
+          'No inicia nuevas descargas offline con datos móviles.',
+      'privacyData': 'Privacidad y datos',
+      'localFirst': 'Local-first',
+      'localFirstHint': 'Las rutas y actividades quedan en el dispositivo salvo que actives expresamente la sincronización cloud.',
       'centerLocation': 'Centrar en mi ubicación',
       'locationServiceOff': 'Activa los servicios de ubicación',
       'locationUnavailable': 'Ubicación temporalmente no disponible',
@@ -815,6 +1065,70 @@ class AppLocalizations {
       'mapHybrid': 'Satellite + routes',
       'proMap': 'Carte Pro',
       'proMapUnavailable': 'Fournisseur de cartes Pro non configuré',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Cartes et outils outdoor avancés',
+      'proActive': 'TrailPath Pro actif',
+      'proBenefitMaps': 'Satellite et cartes premium',
+      'proBenefitTrace': 'Smart Trace et outils de parcours avancés',
+      'proBenefitOffline': 'Fonctions hors ligne avancées',
+      'proBenefitStats': 'Statistiques et analyses avancées',
+      'proBenefitCloud': 'Synchronisation cloud et sauvegarde multi-appareils',
+      'proMonthly': 'Mensuel',
+      'proYearly': 'Annuel',
+      'proMonthlyUnavailable': 'Offre mensuelle non configurée',
+      'proYearlyUnavailable': 'Offre annuelle non configurée',
+      'restorePurchases': 'Restaurer les achats',
+      'proStoreUnavailable': 'Google Play Billing est indisponible ou les produits Pro ne sont pas encore configurés.',
+      'proPurchaseError': 'L’achat n’a pas pu être effectué.',
+      'proSafetyFree': 'L’enregistrement, la récupération et les fonctions de sécurité essentielles restent disponibles sans Pro.',
+      'profile': 'Profil',
+      'settings': 'Réglages',
+      'preferences': 'Préférences de l’application',
+      'activitySummary': 'Résumé d’activité',
+      'activities': 'Activités',
+      'totalDistance': 'Distance totale',
+      'totalAscent': 'Dénivelé total',
+      'savedRoutesCount': 'Parcours enregistrés',
+      'outdoorTools': 'Outils Outdoor',
+      'cloudSync': 'Cloud Sync',
+      'cloudSyncAccountHint':
+          'Sauvegarde et synchronisation facultatives avec un compte',
+      'syncNow': 'Synchroniser',
+      'syncing': 'Synchronisation…',
+      'syncLast': 'Dernière synchronisation',
+      'syncPending': 'modifications en attente',
+      'syncRequiresPro': 'Nécessite TrailPath Pro',
+      'syncRequiresAccount': 'Connectez-vous avec Google pour synchroniser',
+      'syncUnavailable': 'Cloud Sync n’est pas configuré dans cette build',
+      'syncReady': 'Prêt à synchroniser',
+      'syncDone': 'Synchronisation terminée',
+      'syncError': 'Erreur de synchronisation',
+      'googleAccount': 'Compte Google',
+      'signInGoogle': 'Se connecter',
+      'signOut': 'Se déconnecter',
+      'accountOptional': 'Le compte est facultatif : TrailPath fonctionne hors ligne et sans connexion.',
+      'accountNotConfigured':
+          'Google Sign-In n’est pas configuré dans cette build.',
+      'appearance': 'Apparence',
+      'theme': 'Thème',
+      'systemTheme': 'Système',
+      'lightTheme': 'Clair',
+      'darkTheme': 'Sombre',
+      'routePreferences': 'Préférences de parcours',
+      'defaultActivity': 'Activité par défaut',
+      'defaultMap': 'Carte par défaut',
+      'units': 'Unités',
+      'metricUnits': 'Métriques (km, m)',
+      'imperialUnits': 'Impériales (mi, ft)',
+      'gpsAndDownloads': 'GPS et téléchargements',
+      'voiceGuidance': 'Guidage vocal',
+      'voiceGuidanceHint':
+          'Utiliser les annonces vocales pendant la navigation.',
+      'wifiOnlyDownloads': 'Cartes hors ligne uniquement en Wi‑Fi',
+      'wifiOnlyDownloadsHint': 'Ne pas démarrer de nouveau téléchargement hors ligne sur le réseau mobile.',
+      'privacyData': 'Confidentialité et données',
+      'localFirst': 'Local-first',
+      'localFirstHint': 'Les parcours et activités restent sur l’appareil sauf activation explicite de la synchronisation cloud.',
       'centerLocation': 'Centrer sur ma position',
       'locationServiceOff': 'Activez les services de localisation',
       'locationUnavailable': 'Position temporairement indisponible',
@@ -1005,6 +1319,70 @@ class AppLocalizations {
       'mapHybrid': 'Satélite + estradas',
       'proMap': 'Mapa Pro',
       'proMapUnavailable': 'Fornecedor de mapas Pro não configurado',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Mapas e ferramentas outdoor avançadas',
+      'proActive': 'TrailPath Pro ativo',
+      'proBenefitMaps': 'Satélite e mapas premium',
+      'proBenefitTrace': 'Smart Trace e ferramentas de rota avançadas',
+      'proBenefitOffline': 'Funcionalidades offline avançadas',
+      'proBenefitStats': 'Estatísticas e análises avançadas',
+      'proBenefitCloud': 'Sincronização cloud e backup entre dispositivos',
+      'proMonthly': 'Mensal',
+      'proYearly': 'Anual',
+      'proMonthlyUnavailable': 'Plano mensal não configurado',
+      'proYearlyUnavailable': 'Plano anual não configurado',
+      'restorePurchases': 'Restaurar compras',
+      'proStoreUnavailable': 'Google Play Billing não está disponível ou os produtos Pro ainda não estão configurados.',
+      'proPurchaseError': 'Não foi possível concluir a compra.',
+      'proSafetyFree': 'Gravação, recuperação e funcionalidades essenciais de segurança continuam disponíveis sem Pro.',
+      'profile': 'Perfil',
+      'settings': 'Definições',
+      'preferences': 'Preferências da app',
+      'activitySummary': 'Resumo de atividade',
+      'activities': 'Atividades',
+      'totalDistance': 'Distância total',
+      'totalAscent': 'Desnível total',
+      'savedRoutesCount': 'Percursos guardados',
+      'outdoorTools': 'Ferramentas Outdoor',
+      'cloudSync': 'Cloud Sync',
+      'cloudSyncAccountHint': 'Backup e sincronização opcionais com uma conta',
+      'syncNow': 'Sincronizar agora',
+      'syncing': 'A sincronizar…',
+      'syncLast': 'Última sincronização',
+      'syncPending': 'alterações pendentes',
+      'syncRequiresPro': 'Requer TrailPath Pro',
+      'syncRequiresAccount': 'Entre com Google para sincronizar',
+      'syncUnavailable': 'Cloud Sync não está configurado nesta build',
+      'syncReady': 'Pronto para sincronizar',
+      'syncDone': 'Sincronização concluída',
+      'syncError': 'Erro de sincronização',
+      'googleAccount': 'Conta Google',
+      'signInGoogle': 'Entrar',
+      'signOut': 'Terminar sessão',
+      'accountOptional':
+          'A conta é opcional: o TrailPath funciona offline e sem login.',
+      'accountNotConfigured':
+          'Google Sign-In não está configurado nesta build.',
+      'appearance': 'Aparência',
+      'theme': 'Tema',
+      'systemTheme': 'Sistema',
+      'lightTheme': 'Claro',
+      'darkTheme': 'Escuro',
+      'routePreferences': 'Preferências de rota',
+      'defaultActivity': 'Atividade predefinida',
+      'defaultMap': 'Mapa predefinido',
+      'units': 'Unidades',
+      'metricUnits': 'Métricas (km, m)',
+      'imperialUnits': 'Imperiais (mi, ft)',
+      'gpsAndDownloads': 'GPS e downloads',
+      'voiceGuidance': 'Orientação por voz',
+      'voiceGuidanceHint': 'Usa avisos falados durante a navegação.',
+      'wifiOnlyDownloads': 'Mapas offline apenas por Wi‑Fi',
+      'wifiOnlyDownloadsHint':
+          'Não inicia novos downloads offline em dados móveis.',
+      'privacyData': 'Privacidade e dados',
+      'localFirst': 'Local-first',
+      'localFirstHint': 'Percursos e atividades ficam no dispositivo salvo sincronização cloud explicitamente ativada.',
       'centerLocation': 'Centrar na minha localização',
       'locationServiceOff': 'Ative os serviços de localização',
       'locationUnavailable': 'Localização temporariamente indisponível',

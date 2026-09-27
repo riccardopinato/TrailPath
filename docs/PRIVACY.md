@@ -55,3 +55,20 @@ for foreground/background GPS service behavior where Android requires it.
 Android cleartext HTTP traffic is disabled. Signing secrets and keystores are
 excluded from source control and store signing is configured to fail closed when
 explicitly required.
+
+
+## Optional account and cloud sync
+
+TrailPath remains local-first. Google account sign-in and Supabase Cloud Sync are optional and are disabled when their runtime configuration is absent.
+
+When a user explicitly signs in and enables/uses Cloud Sync, TrailPath may send the following to the configured Supabase project under that authenticated user's row-level-security scope:
+
+- saved route metadata, geometry and waypoints;
+- completed activity metadata and recorded geometry;
+- selected app preferences that are intended to follow the user across devices.
+
+Recording drafts, live GPS samples that have not become completed activities, native offline map tiles and the saved Back-to-Car point are not part of the current cloud-sync payload.
+
+The mobile app must use only a Supabase **publishable** client key. A service-role/secret key must never be bundled in the application.
+
+Signing out of Google/Supabase does not delete the local Drift database. Account deletion and server-side data deletion are separate explicit operations that must be provided/configured before public cloud-account rollout.

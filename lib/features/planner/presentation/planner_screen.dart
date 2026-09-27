@@ -11,6 +11,7 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/database/database_providers.dart';
+import 'package:trail_path/core/domain/app_preferences.dart';
 import 'package:trail_path/core/domain/collection_sampling.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/map_matching.dart';
@@ -18,6 +19,9 @@ import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/planner/application/route_planner_controller.dart';
+import 'package:trail_path/features/pro/application/premium_controller.dart';
+import 'package:trail_path/features/pro/presentation/pro_paywall.dart';
+import 'package:trail_path/features/settings/application/settings_controller.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
@@ -77,6 +81,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     _appInForeground =
         lifecycleState == null || lifecycleState == AppLifecycleState.resumed;
     Future<void>.microtask(_initializeLocation);
+    Future<void>.microtask(_applyStoredPlannerPreferences);
   }
 
   @override
@@ -104,6 +109,38 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     _searchController.dispose();
     _mapController?.dispose();
     super.dispose();
+  }
+
+  Future<void> _applyStoredPlannerPreferences() async {
+    try {
+      final preferences = await ref.read(settingsControllerProvider.future);
+      if (!mounted) {
+        return;
+      }
+
+      final planner = ref.read(routePlannerProvider);
+      if (planner.points.isEmpty &&
+          planner.profile != preferences.defaultProfile) {
+        ref
+            .read(routePlannerProvider.notifier)
+            .setProfile(preferences.defaultProfile);
+      }
+
+      var style = _mapStyleFromPreference(preferences.defaultMap);
+      final premium = ref.read(premiumControllerProvider);
+      if (style.isPremium &&
+          (!premium.isPro || !MapConfig.hasPremiumMapProvider)) {
+        style = _PlannerMapStyle.outdoor;
+      }
+
+      if (_styleReady && _mapController != null) {
+        await _applyMapStyle(style);
+      } else if (mounted) {
+        setState(() => _plannerMapStyle = style);
+      }
+    } on Object {
+      // Defaults remain safe when settings are unavailable during startup.
+    }
   }
 
   Future<void> _initializeLocation() async {
@@ -524,11 +561,12 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   }
 
   Future<void> _openMapLayers() async {
+    final premium = ref.read(premiumControllerProvider);
     final selected = await showModalBottomSheet<_PlannerMapStyle>(
       context: context,
       showDragHandle: true,
-      builder: (context) {
-        final strings = AppLocalizations.of(context);
+      builder: (sheetContext) {
+        final strings = AppLocalizations.of(sheetContext);
         return SafeArea(
           child: ListView(
             shrinkWrap: true,
@@ -557,8 +595,27 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                       : style.isPremium
                       ? const Icon(Icons.workspace_premium_outlined)
                       : null,
-                  enabled: !style.isPremium || MapConfig.hasPremiumMapProvider,
-                  onTap: () => Navigator.of(context).pop(style),
+                  onTap: () async {
+                    if (style.isPremium && !premium.isPro) {
+                      Navigator.of(sheetContext).pop();
+                      await Future<void>.delayed(Duration.zero);
+                      if (mounted) {
+                        await showTrailPathProPaywall(context, ref);
+                      }
+                      return;
+                    }
+                    if (style.isPremium && !MapConfig.hasPremiumMapProvider) {
+                      Navigator.of(sheetContext).pop();
+                      await Future<void>.delayed(Duration.zero);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(strings.proMapUnavailable)),
+                        );
+                      }
+                      return;
+                    }
+                    Navigator.of(sheetContext).pop(style);
+                  },
                 ),
             ],
           ),
@@ -1497,7 +1554,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
           child: _runningWidgetTest
               ? _MapTestFallback(dark: dark)
               : MapLibreMap(
-                  styleString: MapConfig.plannerStyleUrl,
+                  styleString:
+                      _mapStyleUrl(_plannerMapStyle) ??
+                      MapConfig.plannerStyleUrl,
                   initialCameraPosition: const CameraPosition(
                     target: _fallbackCenter,
                     zoom: 6.8,
@@ -1934,6 +1993,15 @@ String _mapStyleLabel(AppLocalizations strings, _PlannerMapStyle style) {
     _PlannerMapStyle.street => strings.mapStreet,
     _PlannerMapStyle.satellite => strings.mapSatellite,
     _PlannerMapStyle.hybrid => strings.mapHybrid,
+  };
+}
+
+_PlannerMapStyle _mapStyleFromPreference(DefaultMapPreference preference) {
+  return switch (preference) {
+    DefaultMapPreference.outdoor => _PlannerMapStyle.outdoor,
+    DefaultMapPreference.street => _PlannerMapStyle.street,
+    DefaultMapPreference.satellite => _PlannerMapStyle.satellite,
+    DefaultMapPreference.hybrid => _PlannerMapStyle.hybrid,
   };
 }
 
