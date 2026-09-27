@@ -40,9 +40,11 @@ void main() {
     },
   );
 
-  test('requests alternatives and chooses the shortest two-point route', () async {
-    Uri? requestedUri;
-    final payload = _successPayload();
+  test(
+    'requests alternatives and chooses the shortest two-point route',
+    () async {
+      Uri? requestedUri;
+      final payload = _successPayload();
     (payload['routes'] as List).add({
       'distance': 980.0,
       'duration': 940.0,
@@ -65,10 +67,11 @@ void main() {
 
     final plan = await engine.calculate(_request());
 
-    expect(requestedUri?.queryParameters['alternatives'], '3');
-    expect(requestedUri?.queryParameters['continue_straight'], 'false');
-    expect(plan.distanceMeters, 980);
-  });
+      expect(requestedUri?.queryParameters['alternatives'], '3');
+      expect(requestedUri?.queryParameters['continue_straight'], 'false');
+      expect(plan.distanceMeters, 980);
+    },
+  );
 
   test(
     'honors numeric Retry-After for rate limiting before retrying',
