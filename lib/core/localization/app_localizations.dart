@@ -56,6 +56,7 @@ class AppLocalizations {
   String get mapLayers => _value('mapLayers');
   String get mapOutdoor => _value('mapOutdoor');
   String get mapStreet => _value('mapStreet');
+  String get mapHighContrast => _value('mapHighContrast');
   String get mapSatellite => _value('mapSatellite');
   String get mapHybrid => _value('mapHybrid');
   String get proMap => _value('proMap');
@@ -360,6 +361,7 @@ class AppLocalizations {
       'mapLayers': 'Livelli mappa',
       'mapOutdoor': 'Outdoor',
       'mapStreet': 'Stradale',
+      'mapHighContrast': 'Alto contrasto',
       'mapSatellite': 'Satellite',
       'mapHybrid': 'Satellite + strade',
       'proMap': 'Mappa Pro',
@@ -659,6 +661,7 @@ class AppLocalizations {
       'mapLayers': 'Map layers',
       'mapOutdoor': 'Outdoor',
       'mapStreet': 'Street',
+      'mapHighContrast': 'High contrast',
       'mapSatellite': 'Satellite',
       'mapHybrid': 'Satellite + roads',
       'proMap': 'Pro map',
@@ -958,6 +961,7 @@ class AppLocalizations {
       'mapLayers': 'Capas del mapa',
       'mapOutdoor': 'Outdoor',
       'mapStreet': 'Carreteras',
+      'mapHighContrast': 'Alto contraste',
       'mapSatellite': 'Satélite',
       'mapHybrid': 'Satélite + carreteras',
       'proMap': 'Mapa Pro',
@@ -1259,6 +1263,7 @@ class AppLocalizations {
       'mapLayers': 'Couches de carte',
       'mapOutdoor': 'Outdoor',
       'mapStreet': 'Routes',
+      'mapHighContrast': 'Contraste élevé',
       'mapSatellite': 'Satellite',
       'mapHybrid': 'Satellite + routes',
       'proMap': 'Carte Pro',
@@ -1561,6 +1566,7 @@ class AppLocalizations {
       'mapLayers': 'Camadas do mapa',
       'mapOutdoor': 'Outdoor',
       'mapStreet': 'Estradas',
+      'mapHighContrast': 'Alto contraste',
       'mapSatellite': 'Satélite',
       'mapHybrid': 'Satélite + estradas',
       'proMap': 'Mapa Pro',
