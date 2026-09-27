@@ -8,6 +8,9 @@ abstract final class MapConfig {
   static const String plannerStyleUrl =
       'https://tiles.openfreemap.org/styles/fiord';
 
+  static const String highContrastStyleUrl =
+      'https://tiles.openfreemap.org/styles/bright';
+
   static const String searchEndpoint =
       'https://nominatim.openstreetmap.org/search';
 
