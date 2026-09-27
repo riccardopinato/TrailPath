@@ -32,9 +32,7 @@ class CloudSyncController extends Notifier<CloudSyncSnapshot> {
   CloudSyncSnapshot build() {
     _engine = ref.watch(cloudSyncEngineProvider);
     unawaited(_loadInitialState());
-    return CloudSyncSnapshot(
-      isConfigured: _engine.isConfigured,
-    );
+    return CloudSyncSnapshot(isConfigured: _engine.isConfigured);
   }
 
   Future<void> _loadInitialState() async {
@@ -56,15 +54,10 @@ class CloudSyncController extends Notifier<CloudSyncSnapshot> {
     if (state.isBusy) {
       return;
     }
-    state = state.copyWith(
-      phase: CloudSyncPhase.syncing,
-      clearError: true,
-    );
+    state = state.copyWith(phase: CloudSyncPhase.syncing, clearError: true);
     final result = await _engine.syncNow();
     if (ref.mounted) {
-      state = result.copyWith(
-        lastSyncedAt: result.lastSyncedAt?.toLocal(),
-      );
+      state = result.copyWith(lastSyncedAt: result.lastSyncedAt?.toLocal());
       ref.invalidate(savedRoutesProvider);
       ref.invalidate(completedActivitiesProvider);
       ref.invalidate(settingsControllerProvider);
@@ -75,10 +68,7 @@ class CloudSyncController extends Notifier<CloudSyncSnapshot> {
   Future<void> signOut() async {
     await _engine.signOut();
     if (ref.mounted) {
-      state = state.copyWith(
-        phase: CloudSyncPhase.idle,
-        clearError: true,
-      );
+      state = state.copyWith(phase: CloudSyncPhase.idle, clearError: true);
     }
   }
 }

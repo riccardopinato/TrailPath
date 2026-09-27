@@ -1,10 +1,7 @@
 import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/domain/route_intelligence.dart';
 
-PersonalStats buildPersonalStats(
-  List<Activity> activities, {
-  DateTime? now,
-}) {
+PersonalStats buildPersonalStats(List<Activity> activities, {DateTime? now}) {
   final reference = (now ?? DateTime.now()).toLocal();
   final start7 = reference.subtract(const Duration(days: 7));
   final start30 = reference.subtract(const Duration(days: 30));

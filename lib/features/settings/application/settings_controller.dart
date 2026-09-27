@@ -53,28 +53,32 @@ class SettingsController extends AsyncNotifier<AppPreferences> {
   Future<void> setTheme(ThemePreference value) =>
       _update(_themeKey, value.name, (p) => p.copyWith(theme: value));
 
-  Future<void> setDefaultProfile(RouteProfile value) =>
-      _update(_profileKey, value.name, (p) => p.copyWith(defaultProfile: value));
+  Future<void> setDefaultProfile(RouteProfile value) => _update(
+    _profileKey,
+    value.name,
+    (p) => p.copyWith(defaultProfile: value),
+  );
 
   Future<void> setDefaultMap(DefaultMapPreference value) =>
       _update(_mapKey, value.name, (p) => p.copyWith(defaultMap: value));
 
-  Future<void> setVoiceGuidance(bool value) =>
-      _update(_voiceKey, value.toString(), (p) => p.copyWith(voiceGuidance: value));
+  Future<void> setVoiceGuidance(bool value) => _update(
+    _voiceKey,
+    value.toString(),
+    (p) => p.copyWith(voiceGuidance: value),
+  );
 
-  Future<void> setWifiOnlyDownloads(bool value) =>
-      _update(
-        _wifiKey,
-        value.toString(),
-        (p) => p.copyWith(wifiOnlyDownloads: value),
-      );
+  Future<void> setWifiOnlyDownloads(bool value) => _update(
+    _wifiKey,
+    value.toString(),
+    (p) => p.copyWith(wifiOnlyDownloads: value),
+  );
 
-  Future<void> setAutoReroute(bool value) =>
-      _update(
-        _rerouteKey,
-        value.toString(),
-        (p) => p.copyWith(autoReroute: value),
-      );
+  Future<void> setAutoReroute(bool value) => _update(
+    _rerouteKey,
+    value.toString(),
+    (p) => p.copyWith(autoReroute: value),
+  );
 
   Future<void> _update(
     String key,

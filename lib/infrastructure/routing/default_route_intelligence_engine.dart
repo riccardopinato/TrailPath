@@ -20,13 +20,12 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
   final OutdoorContextService? _context;
 
   @override
-  Set<AlternativeRoutePreference> get supportedAlternativePreferences =>
-      {
-        AlternativeRoutePreference.shortest,
-        AlternativeRoutePreference.leastClimb,
-        if (_context != null) AlternativeRoutePreference.moreTrail,
-        if (_context != null) AlternativeRoutePreference.moreRoad,
-      };
+  Set<AlternativeRoutePreference> get supportedAlternativePreferences => {
+    AlternativeRoutePreference.shortest,
+    AlternativeRoutePreference.leastClimb,
+    if (_context != null) AlternativeRoutePreference.moreTrail,
+    if (_context != null) AlternativeRoutePreference.moreRoad,
+  };
 
   @override
   Future<List<RouteCandidate>> generateCircularRoutes(
@@ -40,23 +39,17 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
       );
     }
 
-    final radius = (request.targetDistanceMeters / (2 * math.pi))
-        .clamp(250.0, 18000.0);
+    final radius = (request.targetDistanceMeters / (2 * math.pi)).clamp(
+      250.0,
+      18000.0,
+    );
     final candidates = <RouteCandidate>[];
 
     for (final heading in const [25.0, 115.0, 205.0, 295.0]) {
       try {
         final p1 = _destination(request.start, radius, heading);
-        final p2 = _destination(
-          request.start,
-          radius * 1.08,
-          heading + 105,
-        );
-        final p3 = _destination(
-          request.start,
-          radius * 0.92,
-          heading + 220,
-        );
+        final p2 = _destination(request.start, radius * 1.08, heading + 105);
+        final p3 = _destination(request.start, radius * 0.92, heading + 220);
 
         final raw = await _routing.calculate(
           RouteRequest(
@@ -171,7 +164,8 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
                     surface.fraction(RouteSurfaceType.dirt) +
                     surface.fraction(RouteSurfaceType.gravel)
               : surface.fraction(RouteSurfaceType.paved);
-          return (1 - preferred) + (1 - known) * 0.35 +
+          return (1 - preferred) +
+              (1 - known) * 0.35 +
               plan.distanceMeters / 1000000;
         } on Object {
           return 2 + plan.distanceMeters / 100000;
@@ -215,18 +209,13 @@ GeoPoint _destination(
 
   final lat2 = math.asin(
     math.sin(lat1) * math.cos(angularDistance) +
-        math.cos(lat1) *
-            math.sin(angularDistance) *
-            math.cos(bearing),
+        math.cos(lat1) * math.sin(angularDistance) * math.cos(bearing),
   );
   final lon2 =
       lon1 +
       math.atan2(
-        math.sin(bearing) *
-            math.sin(angularDistance) *
-            math.cos(lat1),
-        math.cos(angularDistance) -
-            math.sin(lat1) * math.sin(lat2),
+        math.sin(bearing) * math.sin(angularDistance) * math.cos(lat1),
+        math.cos(angularDistance) - math.sin(lat1) * math.sin(lat2),
       );
 
   return GeoPoint(

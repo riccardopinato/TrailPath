@@ -682,7 +682,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     final planner = ref.read(routePlannerProvider);
     if (!_slopeLayerEnabled && !planner.elevationProfile.isAvailable) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).elevationUnavailable)),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).elevationUnavailable),
+        ),
       );
       return;
     }
@@ -729,10 +731,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       );
     }
     await controller.setTerrain(
-      const TerrainProperties(
-        source: sourceId,
-        exaggeration: 1.15,
-      ),
+      const TerrainProperties(source: sourceId, exaggeration: 1.15),
     );
   }
 
@@ -1387,13 +1386,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       }
       _slopeLines = slopeOptions.isEmpty
           ? const []
-          : await controller.addLines(
-              slopeOptions,
-              [
-                for (var index = 0; index < slopeOptions.length; index++)
-                  <String, dynamic>{'kind': 'slope', 'segment': index},
-              ],
-            );
+          : await controller.addLines(slopeOptions, [
+              for (var index = 0; index < slopeOptions.length; index++)
+                <String, dynamic>{'kind': 'slope', 'segment': index},
+            ]);
     }
     _slopeVisualKey = slopeVisualKey;
 
@@ -1724,7 +1720,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
           child: _runningWidgetTest
               ? _MapTestFallback(dark: dark)
               : MapLibreMap(
-                  styleString: _mapStyleUrl(_plannerMapStyle) ?? MapConfig.plannerStyleUrl,
+                  styleString:
+                      _mapStyleUrl(_plannerMapStyle) ??
+                      MapConfig.plannerStyleUrl,
                   initialCameraPosition: const CameraPosition(
                     target: _fallbackCenter,
                     zoom: 6.8,
@@ -2183,9 +2181,7 @@ String _mapStyleLabel(AppLocalizations strings, _PlannerMapStyle style) {
   };
 }
 
-_PlannerMapStyle _mapStyleFromPreference(
-  DefaultMapPreference preference,
-) {
+_PlannerMapStyle _mapStyleFromPreference(DefaultMapPreference preference) {
   return switch (preference) {
     DefaultMapPreference.outdoor => _PlannerMapStyle.outdoor,
     DefaultMapPreference.street => _PlannerMapStyle.street,

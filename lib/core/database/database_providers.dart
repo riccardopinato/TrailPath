@@ -23,7 +23,6 @@ final returnPointProvider = StreamProvider<ReturnPoint?>((ref) {
   return database.watchReturnPoint();
 });
 
-
 final routeCollectionsProvider = StreamProvider<List<RouteCollection>>((ref) {
   final database = ref.watch(appDatabaseProvider);
   return database.watchRouteCollections();

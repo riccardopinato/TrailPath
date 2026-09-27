@@ -69,9 +69,7 @@ class GoogleAccountService implements AccountService {
   }
 
   @override
-  Future<AccountAuthTokens?> authTokens({
-    bool promptIfNeeded = false,
-  }) async {
+  Future<AccountAuthTokens?> authTokens({bool promptIfNeeded = false}) async {
     final account = _account;
     if (account == null) {
       return null;
@@ -89,23 +87,19 @@ class GoogleAccountService implements AccountService {
       return null;
     }
 
-    return AccountAuthTokens(
-      idToken: idToken,
-      accessToken: accessToken,
-    );
+    return AccountAuthTokens(idToken: idToken, accessToken: accessToken);
   }
 
-  Future<String?> _resolveAccessToken({
-    required bool promptIfNeeded,
-  }) async {
+  Future<String?> _resolveAccessToken({required bool promptIfNeeded}) async {
     final account = _account;
     if (account == null) {
       return null;
     }
 
     const scopes = <String>['openid', 'email', 'profile'];
-    GoogleSignInClientAuthorization? authorization =
-        await account.authorizationClient.authorizationForScopes(scopes);
+    GoogleSignInClientAuthorization? authorization = await account
+        .authorizationClient
+        .authorizationForScopes(scopes);
     if (authorization == null && promptIfNeeded) {
       authorization = await account.authorizationClient.authorizeScopes(scopes);
     }

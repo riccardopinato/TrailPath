@@ -135,14 +135,11 @@ class _RouteIntelligenceScreenState
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     DropdownButtonFormField<String>(
-                      initialValue: saved.any(
-                        (route) => route.id == _selectedRouteId,
-                      )
+                      initialValue:
+                          saved.any((route) => route.id == _selectedRouteId)
                           ? _selectedRouteId
                           : saved.first.id,
-                      decoration: InputDecoration(
-                        labelText: strings.route,
-                      ),
+                      decoration: InputDecoration(labelText: strings.route),
                       items: [
                         for (final route in saved)
                           DropdownMenuItem(
@@ -155,8 +152,7 @@ class _RouteIntelligenceScreenState
                       ],
                       onChanged: _busy
                           ? null
-                          : (value) =>
-                              setState(() => _selectedRouteId = value),
+                          : (value) => setState(() => _selectedRouteId = value),
                     ),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<AlternativeRoutePreference>(
@@ -200,8 +196,7 @@ class _RouteIntelligenceScreenState
                       const SizedBox(height: 12),
                       for (var i = 0; i < _alternatives.length; i++) ...[
                         _CandidateCard(
-                          title:
-                              strings.alternative + ' ' + (i + 1).toString(),
+                          title: strings.alternative + ' ' + (i + 1).toString(),
                           candidate: _alternatives[i],
                           onSave: () => _saveCandidate(
                             _alternatives[i],
@@ -232,8 +227,9 @@ class _RouteIntelligenceScreenState
                 ),
                 const SizedBox(height: 10),
                 FilledButton.tonalIcon(
-                  onPressed:
-                      _busy || _selectedRouteId == null ? null : _analyzeRoute,
+                  onPressed: _busy || _selectedRouteId == null
+                      ? null
+                      : _analyzeRoute,
                   icon: const Icon(Icons.travel_explore_rounded),
                   label: Text(strings.analyzeRoute),
                 ),
@@ -384,10 +380,7 @@ class _RouteIntelligenceScreenState
       final plan = database.savedRouteToPlan(route);
       final candidates = await ref
           .read(routeIntelligenceEngineProvider)
-          .alternatives(
-            plan,
-            preference: _alternativePreference,
-          );
+          .alternatives(plan, preference: _alternativePreference);
       if (!mounted) {
         return;
       }
@@ -454,10 +447,7 @@ class _RouteIntelligenceScreenState
     }
   }
 
-  Future<void> _saveCandidate(
-    RouteCandidate candidate,
-    String prefix,
-  ) async {
+  Future<void> _saveCandidate(RouteCandidate candidate, String prefix) async {
     final strings = AppLocalizations.of(context);
     final plan = candidate.plan;
     final geometry = plan.geometry;
@@ -473,20 +463,24 @@ class _RouteIntelligenceScreenState
             geometry.last,
           ];
 
-    await ref.read(appDatabaseProvider).savePlannedRoute(
-      name: prefix + ' ' + DateTime.now().toLocal().toIso8601String().substring(0, 16),
-      profile: plan.profile.name,
-      waypointsData: waypoints,
-      geometryData: geometry,
-      distanceMeters: plan.distanceMeters,
-      ascentMeters: plan.ascentMeters,
-      descentMeters: plan.descentMeters,
-      estimatedDuration: plan.estimatedDuration,
-    );
+    await ref
+        .read(appDatabaseProvider)
+        .savePlannedRoute(
+          name:
+              prefix +
+              ' ' +
+              DateTime.now().toLocal().toIso8601String().substring(0, 16),
+          profile: plan.profile.name,
+          waypointsData: waypoints,
+          geometryData: geometry,
+          distanceMeters: plan.distanceMeters,
+          ascentMeters: plan.ascentMeters,
+          descentMeters: plan.descentMeters,
+          estimatedDuration: plan.estimatedDuration,
+        );
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(strings.routeSaved)),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(strings.routeSaved)));
     }
   }
 }
@@ -561,7 +555,10 @@ class _CandidateCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   _distance(plan.distanceMeters) +
@@ -606,10 +603,7 @@ String _profileLabel(AppLocalizations strings, RouteProfile profile) {
   };
 }
 
-String _surfaceLabel(
-  AppLocalizations strings,
-  RouteSurfaceSummary summary,
-) {
+String _surfaceLabel(AppLocalizations strings, RouteSurfaceSummary summary) {
   final type = summary.dominant;
   final percentage = (summary.fraction(type) * 100).round();
   final label = switch (type) {
@@ -622,8 +616,9 @@ String _surfaceLabel(
   return label + ' · ' + percentage.toString() + '%';
 }
 
-String _distance(double meters) =>
-    meters < 1000 ? meters.round().toString() + ' m' : (meters / 1000).toStringAsFixed(1) + ' km';
+String _distance(double meters) => meters < 1000
+    ? meters.round().toString() + ' m'
+    : (meters / 1000).toStringAsFixed(1) + ' km';
 
 String _duration(Duration duration) {
   final hours = duration.inHours;

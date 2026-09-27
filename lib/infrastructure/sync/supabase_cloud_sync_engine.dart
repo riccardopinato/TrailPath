@@ -65,19 +65,16 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
             ? null
             : await _payloadFor(mutation);
 
-        await client.from(_table).upsert(
-          <String, Object?>{
-            'user_id': user.id,
-            'entity_type': mutation.entityType.name,
-            'entity_id': mutation.entityId,
-            'updated_at': mutation.updatedAt.toUtc().toIso8601String(),
-            'deleted_at': mutation.action == SyncMutationAction.delete
-                ? mutation.updatedAt.toUtc().toIso8601String()
-                : null,
-            'payload': payload,
-          },
-          onConflict: 'user_id,entity_type,entity_id',
-        );
+        await client.from(_table).upsert(<String, Object?>{
+          'user_id': user.id,
+          'entity_type': mutation.entityType.name,
+          'entity_id': mutation.entityId,
+          'updated_at': mutation.updatedAt.toUtc().toIso8601String(),
+          'deleted_at': mutation.action == SyncMutationAction.delete
+              ? mutation.updatedAt.toUtc().toIso8601String()
+              : null,
+          'payload': payload,
+        }, onConflict: 'user_id,entity_type,entity_id');
         await _database.acknowledgeSyncMutation(mutation.id);
       }
 
@@ -90,10 +87,7 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
 
         if (item.deletedAt case final deletedAt?) {
           if (localStamp == null || !localStamp.isAfter(deletedAt)) {
-            await _database.applyRemoteDelete(
-              item.entityType,
-              item.entityId,
-            );
+            await _database.applyRemoteDelete(item.entityType, item.entityId);
           }
           continue;
         }
@@ -123,10 +117,7 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
       }
 
       final now = DateTime.now().toUtc();
-      await _database.setSetting(
-        'last_cloud_sync_at',
-        now.toIso8601String(),
-      );
+      await _database.setSetting('last_cloud_sync_at', now.toIso8601String());
 
       return CloudSyncSnapshot(
         phase: CloudSyncPhase.success,
@@ -167,16 +158,11 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
     SupabaseClient client,
     String userId,
   ) async {
-    final rows = await client
-        .from(_table)
-        .select()
-        .eq('user_id', userId);
+    final rows = await client.from(_table).select().eq('user_id', userId);
 
     final result = <String, _RemoteSyncItem>{};
     for (final raw in rows) {
-      final item = _RemoteSyncItem.fromJson(
-        Map<String, dynamic>.from(raw),
-      );
+      final item = _RemoteSyncItem.fromJson(Map<String, dynamic>.from(raw));
       if (item != null) {
         result[_key(item.entityType, item.entityId)] = item;
       }
@@ -187,16 +173,17 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
   Future<Map<String, Object?>?> _payloadFor(SyncMutation mutation) {
     return switch (mutation.entityType) {
       SyncEntityType.route => _database.routeSyncPayload(mutation.entityId),
-      SyncEntityType.activity =>
-        _database.activitySyncPayload(mutation.entityId),
+      SyncEntityType.activity => _database.activitySyncPayload(
+        mutation.entityId,
+      ),
       SyncEntityType.preferences => _database.preferencesSyncPayload(),
-      SyncEntityType.collection =>
-        _database.collectionSyncPayload(mutation.entityId),
+      SyncEntityType.collection => _database.collectionSyncPayload(
+        mutation.entityId,
+      ),
     };
   }
 
-  String _key(SyncEntityType type, String entityId) =>
-      '${type.name}:$entityId';
+  String _key(SyncEntityType type, String entityId) => '${type.name}:$entityId';
 
   @override
   Future<void> signOut() async {
@@ -247,10 +234,9 @@ class _RemoteSyncItem {
       entityType: type,
       entityId: entityId,
       updatedAt: updatedAt.toUtc(),
-      deletedAt: DateTime.tryParse(json['deleted_at'] as String? ?? '')?.toUtc(),
-      payload: rawPayload is Map
-          ? Map<String, dynamic>.from(rawPayload)
-          : null,
+      deletedAt: DateTime.tryParse(json['deleted_at'] as String? ?? '')
+          ?.toUtc(),
+      payload: rawPayload is Map ? Map<String, dynamic>.from(rawPayload) : null,
     );
   }
 }

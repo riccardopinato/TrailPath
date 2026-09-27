@@ -129,7 +129,8 @@ class AppLocalizations {
   String get generateRoutes => _value('generateRoutes');
   String get routeOption => _value('routeOption');
   String get routeAlternatives => _value('routeAlternatives');
-  String get routeAlternativesUnavailable => _value('routeAlternativesUnavailable');
+  String get routeAlternativesUnavailable =>
+      _value('routeAlternativesUnavailable');
   String get shortestRoute => _value('shortestRoute');
   String get leastClimb => _value('leastClimb');
   String get moreTrail => _value('moreTrail');
@@ -425,18 +426,21 @@ class AppLocalizations {
       'voiceGuidance': 'Guida vocale',
       'voiceGuidanceHint': 'Usa la voce durante la navigazione attiva.',
       'wifiOnlyDownloads': 'Download mappe solo Wi‑Fi',
-      'wifiOnlyDownloadsHint': 'Evita di avviare nuovi download offline su rete mobile.',
+      'wifiOnlyDownloadsHint':
+          'Evita di avviare nuovi download offline su rete mobile.',
       'privacyData': 'Privacy e dati',
       'localFirst': 'Local-first',
       'localFirstHint': 'Percorsi e attività restano sul dispositivo salvo sincronizzazione cloud esplicitamente attivata.',
       'routeLab': 'Route Lab',
-      'routeLabHint': 'Anelli, alternative, POI, meteo e superficie del percorso',
+      'routeLabHint':
+          'Anelli, alternative, POI, meteo e superficie del percorso',
       'circularRoute': 'Percorso circolare',
       'circularRouteHint': 'Genera anelli reali sulle strade e sui sentieri OSM partendo dalla posizione attuale.',
       'generateRoutes': 'Genera percorsi',
       'routeOption': 'Opzione',
       'routeAlternatives': 'Percorsi alternativi',
-      'routeAlternativesUnavailable': 'Alternative temporaneamente non disponibili',
+      'routeAlternativesUnavailable':
+          'Alternative temporaneamente non disponibili',
       'shortestRoute': 'Più breve',
       'leastClimb': 'Meno salita',
       'moreTrail': 'Più sentieri',
@@ -444,13 +448,15 @@ class AppLocalizations {
       'generateAlternatives': 'Genera alternative',
       'alternative': 'Alternativa',
       'routeContext': 'Contesto del percorso',
-      'routeContextHint': 'Analizza POI outdoor, meteo e superficie lungo un percorso salvato.',
+      'routeContextHint':
+          'Analizza POI outdoor, meteo e superficie lungo un percorso salvato.',
       'analyzeRoute': 'Analizza percorso',
       'surface': 'Superficie',
       'weatherAlongRoute': 'Meteo lungo il percorso',
       'outdoorPois': 'POI outdoor',
       'fromRoute': 'dal percorso',
-      'noRouteCandidates': 'Nessun percorso valido trovato per questi parametri.',
+      'noRouteCandidates':
+          'Nessun percorso valido trovato per questi parametri.',
       'routeGenerationFailed': 'Impossibile generare i percorsi.',
       'routeContextFailed': 'Impossibile analizzare il contesto del percorso.',
       'surfacePaved': 'Asfalto/pavimentato',
@@ -464,7 +470,8 @@ class AppLocalizations {
       'collectionName': 'Nome collezione',
       'collectionsUnavailable': 'Collezioni temporaneamente non disponibili',
       'noCollections': 'Nessuna collezione',
-      'noCollectionsHint': 'Crea cartelle per organizzare percorsi, viaggi e attività.',
+      'noCollectionsHint':
+          'Crea cartelle per organizzare percorsi, viaggi e attività.',
       'manageCollection': 'Gestisci percorsi',
       'deleteCollection': 'Eliminare la collezione?',
       'personalStats': 'Statistiche',
@@ -481,7 +488,8 @@ class AppLocalizations {
       'terrain3dHint': 'Rilievo 3D basato sui dati altimetrici della mappa',
       'autoReroute': 'Ricalcolo automatico',
       'autoRerouteHint': 'Calcola un nuovo percorso verso la destinazione quando esci dalla traccia.',
-      'autoRerouteProHint': 'Ricalcolo automatico disponibile con TrailPath Pro.',
+      'autoRerouteProHint':
+          'Ricalcolo automatico disponibile con TrailPath Pro.',
       'centerLocation': 'Centra sulla mia posizione',
       'locationServiceOff': 'Attiva i servizi di localizzazione',
       'locationUnavailable': 'Posizione temporaneamente non disponibile',
@@ -710,7 +718,8 @@ class AppLocalizations {
       'googleAccount': 'Google account',
       'signInGoogle': 'Sign in',
       'signOut': 'Sign out',
-      'accountOptional': 'Account is optional: TrailPath works offline and without sign-in.',
+      'accountOptional':
+          'Account is optional: TrailPath works offline and without sign-in.',
       'accountNotConfigured': 'Google Sign-In is not configured in this build.',
       'appearance': 'Appearance',
       'theme': 'Theme',
@@ -727,7 +736,8 @@ class AppLocalizations {
       'voiceGuidance': 'Voice guidance',
       'voiceGuidanceHint': 'Use spoken feedback during active navigation.',
       'wifiOnlyDownloads': 'Offline maps on Wi‑Fi only',
-      'wifiOnlyDownloadsHint': 'Do not start new offline downloads on mobile data.',
+      'wifiOnlyDownloadsHint':
+          'Do not start new offline downloads on mobile data.',
       'privacyData': 'Privacy and data',
       'localFirst': 'Local-first',
       'localFirstHint': 'Routes and activities stay on this device unless cloud sync is explicitly enabled.',
@@ -738,7 +748,8 @@ class AppLocalizations {
       'generateRoutes': 'Generate routes',
       'routeOption': 'Option',
       'routeAlternatives': 'Route alternatives',
-      'routeAlternativesUnavailable': 'Alternatives are temporarily unavailable',
+      'routeAlternativesUnavailable':
+          'Alternatives are temporarily unavailable',
       'shortestRoute': 'Shortest',
       'leastClimb': 'Less climbing',
       'moreTrail': 'More trail',
@@ -746,7 +757,8 @@ class AppLocalizations {
       'generateAlternatives': 'Generate alternatives',
       'alternative': 'Alternative',
       'routeContext': 'Route context',
-      'routeContextHint': 'Analyze outdoor POIs, weather and surface along a saved route.',
+      'routeContextHint':
+          'Analyze outdoor POIs, weather and surface along a saved route.',
       'analyzeRoute': 'Analyze route',
       'surface': 'Surface',
       'weatherAlongRoute': 'Weather along route',
@@ -766,7 +778,8 @@ class AppLocalizations {
       'collectionName': 'Collection name',
       'collectionsUnavailable': 'Collections are temporarily unavailable',
       'noCollections': 'No collections',
-      'noCollectionsHint': 'Create folders to organize routes, trips and activities.',
+      'noCollectionsHint':
+          'Create folders to organize routes, trips and activities.',
       'manageCollection': 'Manage routes',
       'deleteCollection': 'Delete collection?',
       'personalStats': 'Statistics',
@@ -782,8 +795,10 @@ class AppLocalizations {
       'terrain3d': '3D terrain',
       'terrain3dHint': '3D relief using map elevation data',
       'autoReroute': 'Automatic rerouting',
-      'autoRerouteHint': 'Calculate a new route to the destination when you leave the track.',
-      'autoRerouteProHint': 'Automatic rerouting is available with TrailPath Pro.',
+      'autoRerouteHint':
+          'Calculate a new route to the destination when you leave the track.',
+      'autoRerouteProHint':
+          'Automatic rerouting is available with TrailPath Pro.',
       'centerLocation': 'Center on my location',
       'locationServiceOff': 'Turn on location services',
       'locationUnavailable': 'Location temporarily unavailable',
@@ -998,7 +1013,8 @@ class AppLocalizations {
       'savedRoutesCount': 'Rutas guardadas',
       'outdoorTools': 'Herramientas Outdoor',
       'cloudSync': 'Cloud Sync',
-      'cloudSyncAccountHint': 'Copia y sincronización opcionales con una cuenta',
+      'cloudSyncAccountHint':
+          'Copia y sincronización opcionales con una cuenta',
       'syncNow': 'Sincronizar ahora',
       'syncing': 'Sincronizando…',
       'syncLast': 'Última sincronización',
@@ -1013,7 +1029,8 @@ class AppLocalizations {
       'signInGoogle': 'Acceder',
       'signOut': 'Cerrar sesión',
       'accountOptional': 'La cuenta es opcional: TrailPath funciona offline y sin iniciar sesión.',
-      'accountNotConfigured': 'Google Sign-In no está configurado en esta build.',
+      'accountNotConfigured':
+          'Google Sign-In no está configurado en esta build.',
       'appearance': 'Apariencia',
       'theme': 'Tema',
       'systemTheme': 'Sistema',
@@ -1029,7 +1046,8 @@ class AppLocalizations {
       'voiceGuidance': 'Guía por voz',
       'voiceGuidanceHint': 'Usa avisos hablados durante la navegación.',
       'wifiOnlyDownloads': 'Mapas offline solo por Wi‑Fi',
-      'wifiOnlyDownloadsHint': 'No inicia nuevas descargas offline con datos móviles.',
+      'wifiOnlyDownloadsHint':
+          'No inicia nuevas descargas offline con datos móviles.',
       'privacyData': 'Privacidad y datos',
       'localFirst': 'Local-first',
       'localFirstHint': 'Las rutas y actividades quedan en el dispositivo salvo que actives expresamente la sincronización cloud.',
@@ -1040,7 +1058,8 @@ class AppLocalizations {
       'generateRoutes': 'Generar rutas',
       'routeOption': 'Opción',
       'routeAlternatives': 'Rutas alternativas',
-      'routeAlternativesUnavailable': 'Las alternativas no están disponibles temporalmente',
+      'routeAlternativesUnavailable':
+          'Las alternativas no están disponibles temporalmente',
       'shortestRoute': 'Más corta',
       'leastClimb': 'Menos subida',
       'moreTrail': 'Más sendero',
@@ -1048,13 +1067,15 @@ class AppLocalizations {
       'generateAlternatives': 'Generar alternativas',
       'alternative': 'Alternativa',
       'routeContext': 'Contexto de ruta',
-      'routeContextHint': 'Analiza POI outdoor, tiempo y superficie en una ruta guardada.',
+      'routeContextHint':
+          'Analiza POI outdoor, tiempo y superficie en una ruta guardada.',
       'analyzeRoute': 'Analizar ruta',
       'surface': 'Superficie',
       'weatherAlongRoute': 'Tiempo a lo largo de la ruta',
       'outdoorPois': 'POI outdoor',
       'fromRoute': 'de la ruta',
-      'noRouteCandidates': 'No se encontró una ruta válida con estos parámetros.',
+      'noRouteCandidates':
+          'No se encontró una ruta válida con estos parámetros.',
       'routeGenerationFailed': 'No se pudieron generar las rutas.',
       'routeContextFailed': 'No se pudo analizar el contexto de la ruta.',
       'surfacePaved': 'Pavimentado',
@@ -1066,13 +1087,16 @@ class AppLocalizations {
       'routeCollectionsHint': 'Organiza rutas en carpetas personales',
       'newCollection': 'Nueva colección',
       'collectionName': 'Nombre de la colección',
-      'collectionsUnavailable': 'Las colecciones no están disponibles temporalmente',
+      'collectionsUnavailable':
+          'Las colecciones no están disponibles temporalmente',
       'noCollections': 'Sin colecciones',
-      'noCollectionsHint': 'Crea carpetas para organizar rutas, viajes y actividades.',
+      'noCollectionsHint':
+          'Crea carpetas para organizar rutas, viajes y actividades.',
       'manageCollection': 'Gestionar rutas',
       'deleteCollection': '¿Eliminar la colección?',
       'personalStats': 'Estadísticas',
-      'personalStatsHint': 'Analiza distancia, desnivel y actividad a lo largo del tiempo',
+      'personalStatsHint':
+          'Analiza distancia, desnivel y actividad a lo largo del tiempo',
       'statsUnavailable': 'Las estadísticas no están disponibles temporalmente',
       'last7Days': 'Últimos 7 días',
       'last30Days': 'Últimos 30 días',
@@ -1084,8 +1108,10 @@ class AppLocalizations {
       'terrain3d': 'Terreno 3D',
       'terrain3dHint': 'Relieve 3D basado en datos de elevación del mapa',
       'autoReroute': 'Recálculo automático',
-      'autoRerouteHint': 'Calcula una nueva ruta al destino al salir del trazado.',
-      'autoRerouteProHint': 'El recálculo automático está disponible con TrailPath Pro.',
+      'autoRerouteHint':
+          'Calcula una nueva ruta al destino al salir del trazado.',
+      'autoRerouteProHint':
+          'El recálculo automático está disponible con TrailPath Pro.',
       'centerLocation': 'Centrar en mi ubicación',
       'locationServiceOff': 'Activa los servicios de ubicación',
       'locationUnavailable': 'Ubicación temporalmente no disponible',
@@ -1302,7 +1328,8 @@ class AppLocalizations {
       'savedRoutesCount': 'Parcours enregistrés',
       'outdoorTools': 'Outils Outdoor',
       'cloudSync': 'Cloud Sync',
-      'cloudSyncAccountHint': 'Sauvegarde et synchronisation facultatives avec un compte',
+      'cloudSyncAccountHint':
+          'Sauvegarde et synchronisation facultatives avec un compte',
       'syncNow': 'Synchroniser',
       'syncing': 'Synchronisation…',
       'syncLast': 'Dernière synchronisation',
@@ -1317,7 +1344,8 @@ class AppLocalizations {
       'signInGoogle': 'Se connecter',
       'signOut': 'Se déconnecter',
       'accountOptional': 'Le compte est facultatif : TrailPath fonctionne hors ligne et sans connexion.',
-      'accountNotConfigured': 'Google Sign-In n’est pas configuré dans cette build.',
+      'accountNotConfigured':
+          'Google Sign-In n’est pas configuré dans cette build.',
       'appearance': 'Apparence',
       'theme': 'Thème',
       'systemTheme': 'Système',
@@ -1331,7 +1359,8 @@ class AppLocalizations {
       'imperialUnits': 'Impériales (mi, ft)',
       'gpsAndDownloads': 'GPS et téléchargements',
       'voiceGuidance': 'Guidage vocal',
-      'voiceGuidanceHint': 'Utiliser les annonces vocales pendant la navigation.',
+      'voiceGuidanceHint':
+          'Utiliser les annonces vocales pendant la navigation.',
       'wifiOnlyDownloads': 'Cartes hors ligne uniquement en Wi‑Fi',
       'wifiOnlyDownloadsHint': 'Ne pas démarrer de nouveau téléchargement hors ligne sur le réseau mobile.',
       'privacyData': 'Confidentialité et données',
@@ -1344,7 +1373,8 @@ class AppLocalizations {
       'generateRoutes': 'Générer des parcours',
       'routeOption': 'Option',
       'routeAlternatives': 'Parcours alternatifs',
-      'routeAlternativesUnavailable': 'Les alternatives sont temporairement indisponibles',
+      'routeAlternativesUnavailable':
+          'Les alternatives sont temporairement indisponibles',
       'shortestRoute': 'Plus court',
       'leastClimb': 'Moins de montée',
       'moreTrail': 'Plus de sentiers',
@@ -1367,16 +1397,19 @@ class AppLocalizations {
       'surfaceTrail': 'Sentier/non revêtu',
       'surfaceUnknown': 'Inconnue',
       'routeCollections': 'Collections',
-      'routeCollectionsHint': 'Organisez les parcours dans des dossiers personnels',
+      'routeCollectionsHint':
+          'Organisez les parcours dans des dossiers personnels',
       'newCollection': 'Nouvelle collection',
       'collectionName': 'Nom de la collection',
       'collectionsUnavailable': 'Collections temporairement indisponibles',
       'noCollections': 'Aucune collection',
-      'noCollectionsHint': 'Créez des dossiers pour organiser parcours, voyages et activités.',
+      'noCollectionsHint':
+          'Créez des dossiers pour organiser parcours, voyages et activités.',
       'manageCollection': 'Gérer les parcours',
       'deleteCollection': 'Supprimer la collection ?',
       'personalStats': 'Statistiques',
-      'personalStatsHint': 'Analysez distance, dénivelé et activité dans le temps',
+      'personalStatsHint':
+          'Analysez distance, dénivelé et activité dans le temps',
       'statsUnavailable': 'Statistiques temporairement indisponibles',
       'last7Days': '7 derniers jours',
       'last30Days': '30 derniers jours',
@@ -1389,7 +1422,8 @@ class AppLocalizations {
       'terrain3dHint': 'Relief 3D basé sur les données d’altitude de la carte',
       'autoReroute': 'Recalcul automatique',
       'autoRerouteHint': 'Calcule un nouveau parcours vers la destination en quittant la trace.',
-      'autoRerouteProHint': 'Le recalcul automatique est disponible avec TrailPath Pro.',
+      'autoRerouteProHint':
+          'Le recalcul automatique est disponible avec TrailPath Pro.',
       'centerLocation': 'Centrer sur ma position',
       'locationServiceOff': 'Activez les services de localisation',
       'locationUnavailable': 'Position temporairement indisponible',
@@ -1621,8 +1655,10 @@ class AppLocalizations {
       'googleAccount': 'Conta Google',
       'signInGoogle': 'Entrar',
       'signOut': 'Terminar sessão',
-      'accountOptional': 'A conta é opcional: o TrailPath funciona offline e sem login.',
-      'accountNotConfigured': 'Google Sign-In não está configurado nesta build.',
+      'accountOptional':
+          'A conta é opcional: o TrailPath funciona offline e sem login.',
+      'accountNotConfigured':
+          'Google Sign-In não está configurado nesta build.',
       'appearance': 'Aparência',
       'theme': 'Tema',
       'systemTheme': 'Sistema',
@@ -1638,7 +1674,8 @@ class AppLocalizations {
       'voiceGuidance': 'Orientação por voz',
       'voiceGuidanceHint': 'Usa avisos falados durante a navegação.',
       'wifiOnlyDownloads': 'Mapas offline apenas por Wi‑Fi',
-      'wifiOnlyDownloadsHint': 'Não inicia novos downloads offline em dados móveis.',
+      'wifiOnlyDownloadsHint':
+          'Não inicia novos downloads offline em dados móveis.',
       'privacyData': 'Privacidade e dados',
       'localFirst': 'Local-first',
       'localFirstHint': 'Percursos e atividades ficam no dispositivo salvo sincronização cloud explicitamente ativada.',
@@ -1649,7 +1686,8 @@ class AppLocalizations {
       'generateRoutes': 'Gerar percursos',
       'routeOption': 'Opção',
       'routeAlternatives': 'Percursos alternativos',
-      'routeAlternativesUnavailable': 'As alternativas estão temporariamente indisponíveis',
+      'routeAlternativesUnavailable':
+          'As alternativas estão temporariamente indisponíveis',
       'shortestRoute': 'Mais curto',
       'leastClimb': 'Menos subida',
       'moreTrail': 'Mais trilho',
@@ -1663,7 +1701,8 @@ class AppLocalizations {
       'weatherAlongRoute': 'Meteorologia ao longo do percurso',
       'outdoorPois': 'POI outdoor',
       'fromRoute': 'do percurso',
-      'noRouteCandidates': 'Nenhum percurso válido encontrado para estes parâmetros.',
+      'noRouteCandidates':
+          'Nenhum percurso válido encontrado para estes parâmetros.',
       'routeGenerationFailed': 'Não foi possível gerar os percursos.',
       'routeContextFailed': 'Não foi possível analisar o contexto do percurso.',
       'surfacePaved': 'Pavimentado',
@@ -1677,11 +1716,13 @@ class AppLocalizations {
       'collectionName': 'Nome da coleção',
       'collectionsUnavailable': 'Coleções temporariamente indisponíveis',
       'noCollections': 'Sem coleções',
-      'noCollectionsHint': 'Cria pastas para organizar percursos, viagens e atividades.',
+      'noCollectionsHint':
+          'Cria pastas para organizar percursos, viagens e atividades.',
       'manageCollection': 'Gerir percursos',
       'deleteCollection': 'Eliminar coleção?',
       'personalStats': 'Estatísticas',
-      'personalStatsHint': 'Analisa distância, desnível e atividade ao longo do tempo',
+      'personalStatsHint':
+          'Analisa distância, desnível e atividade ao longo do tempo',
       'statsUnavailable': 'Estatísticas temporariamente indisponíveis',
       'last7Days': 'Últimos 7 dias',
       'last30Days': 'Últimos 30 dias',
@@ -1693,8 +1734,10 @@ class AppLocalizations {
       'terrain3d': 'Terreno 3D',
       'terrain3dHint': 'Relevo 3D baseado nos dados de elevação do mapa',
       'autoReroute': 'Recálculo automático',
-      'autoRerouteHint': 'Calcula um novo percurso até ao destino quando sai da rota.',
-      'autoRerouteProHint': 'O recálculo automático está disponível com TrailPath Pro.',
+      'autoRerouteHint':
+          'Calcula um novo percurso até ao destino quando sai da rota.',
+      'autoRerouteProHint':
+          'O recálculo automático está disponível com TrailPath Pro.',
       'centerLocation': 'Centrar na minha localização',
       'locationServiceOff': 'Ative os serviços de localização',
       'locationUnavailable': 'Localização temporariamente indisponível',

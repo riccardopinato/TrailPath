@@ -75,14 +75,8 @@ class _FakeOutdoorContext implements OutdoorContextService {
     return RouteSurfaceSummary(
       sampleCount: 10,
       counts: isNorthern
-          ? const {
-              RouteSurfaceType.trail: 8,
-              RouteSurfaceType.unknown: 2,
-            }
-          : const {
-              RouteSurfaceType.paved: 8,
-              RouteSurfaceType.unknown: 2,
-            },
+          ? const {RouteSurfaceType.trail: 8, RouteSurfaceType.unknown: 2}
+          : const {RouteSurfaceType.paved: 8, RouteSurfaceType.unknown: 2},
     );
   }
 }

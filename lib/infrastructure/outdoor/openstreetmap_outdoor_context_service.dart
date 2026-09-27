@@ -50,14 +50,28 @@ class OpenStreetMapOutdoorContextService implements OutdoorContextService {
     ].join(',');
     final query =
         '[out:json][timeout:18];('
-        'nwr["amenity"="drinking_water"](' + bbox + ');'
-        'nwr["amenity"="toilets"](' + bbox + ');'
-        'nwr["amenity"="parking"](' + bbox + ');'
-        'nwr["tourism"="viewpoint"](' + bbox + ');'
-        'nwr["tourism"="alpine_hut"](' + bbox + ');'
-        'nwr["tourism"="wilderness_hut"](' + bbox + ');'
-        'nwr["amenity"="shelter"](' + bbox + ');'
-        ');out center tags;';
+            'nwr["amenity"="drinking_water"](' +
+        bbox +
+        ');'
+            'nwr["amenity"="toilets"](' +
+        bbox +
+        ');'
+            'nwr["amenity"="parking"](' +
+        bbox +
+        ');'
+            'nwr["tourism"="viewpoint"](' +
+        bbox +
+        ');'
+            'nwr["tourism"="alpine_hut"](' +
+        bbox +
+        ');'
+            'nwr["tourism"="wilderness_hut"](' +
+        bbox +
+        ');'
+            'nwr["amenity"="shelter"](' +
+        bbox +
+        ');'
+            ');out center tags;';
 
     final response = await _postOverpass(query);
     final decoded = jsonDecode(response.body);
@@ -168,9 +182,7 @@ class OpenStreetMapOutdoorContextService implements OutdoorContextService {
   }
 
   @override
-  Future<RouteSurfaceSummary> surfaceSummary(
-    List<GeoPoint> geometry,
-  ) async {
+  Future<RouteSurfaceSummary> surfaceSummary(List<GeoPoint> geometry) async {
     if (geometry.length < 2) {
       return const RouteSurfaceSummary(
         sampleCount: 0,
@@ -187,7 +199,9 @@ class OpenStreetMapOutdoorContextService implements OutdoorContextService {
     ].join(',');
     final query =
         '[out:json][timeout:18];'
-        'way["highway"](' + bbox + ');out geom tags;';
+            'way["highway"](' +
+        bbox +
+        ');out geom tags;';
 
     final response = await _postOverpass(query);
     final decoded = jsonDecode(response.body);
@@ -229,12 +243,7 @@ class OpenStreetMapOutdoorContextService implements OutdoorContextService {
       final tags = tagsRaw is Map
           ? Map<String, dynamic>.from(tagsRaw)
           : const <String, dynamic>{};
-      ways.add(
-        _SurfaceWay(
-          geometry: points,
-          type: _surfaceType(tags),
-        ),
-      );
+      ways.add(_SurfaceWay(geometry: points, type: _surfaceType(tags)));
     }
 
     final counts = <RouteSurfaceType, int>{};
@@ -350,10 +359,7 @@ class _Bounds {
   final double west;
 }
 
-_Bounds _boundsFor(
-  List<GeoPoint> points, {
-  required double paddingMeters,
-}) {
+_Bounds _boundsFor(List<GeoPoint> points, {required double paddingMeters}) {
   var north = -90.0;
   var south = 90.0;
   var east = -180.0;
@@ -367,10 +373,7 @@ _Bounds _boundsFor(
 
   final centerLat = (north + south) / 2;
   final latPadding = paddingMeters / 111320;
-  final lonScale = math.max(
-    0.15,
-    math.cos(centerLat * math.pi / 180).abs(),
-  );
+  final lonScale = math.max(0.15, math.cos(centerLat * math.pi / 180).abs());
   final lonPadding = paddingMeters / (111320 * lonScale);
   return _Bounds(
     north: math.min(90, north + latPadding),
@@ -447,20 +450,10 @@ RouteSurfaceType _surfaceType(Map<String, dynamic> tags) {
   }.contains(surface)) {
     return RouteSurfaceType.gravel;
   }
-  if (const {
-    'dirt',
-    'earth',
-    'ground',
-    'sand',
-    'mud',
-  }.contains(surface)) {
+  if (const {'dirt', 'earth', 'ground', 'sand', 'mud'}.contains(surface)) {
     return RouteSurfaceType.dirt;
   }
-  if (const {
-        'unpaved',
-        'grass',
-        'woodchips',
-      }.contains(surface) ||
+  if (const {'unpaved', 'grass', 'woodchips'}.contains(surface) ||
       highway == 'path' ||
       highway == 'track' ||
       highway == 'bridleway') {

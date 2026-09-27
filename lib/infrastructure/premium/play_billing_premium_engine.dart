@@ -11,10 +11,7 @@ class PlayBillingPremiumEngine implements PremiumEngine {
   static const String monthlyProductId = 'trailpath_pro_monthly';
   static const String yearlyProductId = 'trailpath_pro_yearly';
 
-  static const Set<String> _productIds = {
-    monthlyProductId,
-    yearlyProductId,
-  };
+  static const Set<String> _productIds = {monthlyProductId, yearlyProductId};
 
   final InAppPurchase _store;
   final StreamController<PremiumSnapshot> _controller =
@@ -65,7 +62,9 @@ class PlayBillingPremiumEngine implements PremiumEngine {
       _products
         ..clear()
         ..addEntries(
-          response.productDetails.map((product) => MapEntry(product.id, product)),
+          response.productDetails.map(
+            (product) => MapEntry(product.id, product),
+          ),
         );
 
       final offers = <PremiumOffer>[
@@ -137,10 +136,7 @@ class PlayBillingPremiumEngine implements PremiumEngine {
       }
     } on Object catch (error) {
       _emit(
-        _snapshot.copyWith(
-          purchasePending: false,
-          error: error.toString(),
-        ),
+        _snapshot.copyWith(purchasePending: false, error: error.toString()),
       );
     }
   }
@@ -160,17 +156,12 @@ class PlayBillingPremiumEngine implements PremiumEngine {
       _emit(_snapshot.copyWith(purchasePending: false, clearError: true));
     } on Object catch (error) {
       _emit(
-        _snapshot.copyWith(
-          purchasePending: false,
-          error: error.toString(),
-        ),
+        _snapshot.copyWith(purchasePending: false, error: error.toString()),
       );
     }
   }
 
-  Future<void> _handlePurchaseUpdates(
-    List<PurchaseDetails> purchases,
-  ) async {
+  Future<void> _handlePurchaseUpdates(List<PurchaseDetails> purchases) async {
     var pro = _snapshot.isPro;
     var verification = _snapshot.verificationLevel;
     var pending = false;

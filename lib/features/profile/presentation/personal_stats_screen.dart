@@ -18,9 +18,8 @@ class PersonalStatsScreen extends ConsumerWidget {
       body: activities.when(
         loading: () =>
             const Center(child: CircularProgressIndicator.adaptive()),
-        error: (error, stackTrace) => Center(
-          child: Text(strings.statsUnavailable),
-        ),
+        error: (error, stackTrace) =>
+            Center(child: Text(strings.statsUnavailable)),
         data: (items) {
           final stats = buildPersonalStats(items);
           return ListView(
@@ -125,11 +124,7 @@ class _HeroStat extends StatelessWidget {
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric({
-    required this.icon,
-    required this.value,
-    required this.label,
-  });
+  const _Metric({required this.icon, required this.value, required this.label});
 
   final IconData icon;
   final String value;
@@ -172,11 +167,14 @@ class _Metric extends StatelessWidget {
   }
 }
 
-String _distance(double meters) =>
-    meters < 1000 ? '${meters.round()} m' : '${(meters / 1000).toStringAsFixed(1)} km';
+String _distance(double meters) => meters < 1000
+    ? '${meters.round()} m'
+    : '${(meters / 1000).toStringAsFixed(1)} km';
 
 String _duration(Duration value) {
   final hours = value.inHours;
   final minutes = value.inMinutes.remainder(60);
-  return hours > 0 ? '$hours h ${minutes.toString().padLeft(2, '0')}' : '$minutes min';
+  return hours > 0
+      ? '$hours h ${minutes.toString().padLeft(2, '0')}'
+      : '$minutes min';
 }

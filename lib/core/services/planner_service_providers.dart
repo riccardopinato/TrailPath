@@ -38,14 +38,15 @@ final placeSearchServiceProvider = Provider<PlaceSearchService>((ref) {
   return service;
 });
 
-
 final outdoorContextServiceProvider = Provider<OutdoorContextService>((ref) {
   final service = OpenStreetMapOutdoorContextService();
   ref.onDispose(service.dispose);
   return service;
 });
 
-final routeIntelligenceEngineProvider = Provider<RouteIntelligenceEngine>((ref) {
+final routeIntelligenceEngineProvider = Provider<RouteIntelligenceEngine>((
+  ref,
+) {
   return DefaultRouteIntelligenceEngine(
     routing: ref.watch(routingEngineProvider),
     elevation: ref.watch(elevationEngineProvider),

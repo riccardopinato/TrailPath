@@ -10,9 +10,7 @@ final accountServiceProvider = Provider<AccountService>(
 );
 
 final accountControllerProvider =
-    NotifierProvider<AccountController, AccountState>(
-      AccountController.new,
-    );
+    NotifierProvider<AccountController, AccountState>(AccountController.new);
 
 class AccountController extends Notifier<AccountState> {
   late AccountService _service;
@@ -21,10 +19,7 @@ class AccountController extends Notifier<AccountState> {
   AccountState build() {
     _service = ref.watch(accountServiceProvider);
     unawaited(_initialize());
-    return AccountState(
-      isLoading: true,
-      isConfigured: _service.isConfigured,
-    );
+    return AccountState(isLoading: true, isConfigured: _service.isConfigured);
   }
 
   Future<void> _initialize() async {

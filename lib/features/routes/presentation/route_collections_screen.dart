@@ -74,7 +74,8 @@ class RouteCollectionsScreen extends ConsumerWidget {
                     .listCollectionRouteIds(collection.id),
                 builder: (context, snapshot) {
                   final routeIds = snapshot.data ?? const <String>[];
-                  final routeNames = routes.asData?.value
+                  final routeNames =
+                      routes.asData?.value
                           .where((route) => routeIds.contains(route.id))
                           .map((route) => route.name)
                           .toList(growable: false) ??
@@ -83,10 +84,8 @@ class RouteCollectionsScreen extends ConsumerWidget {
                     collection: collection,
                     count: routeIds.length,
                     routeNames: routeNames,
-                    onManage: () =>
-                        _manageCollection(context, ref, collection),
-                    onDelete: () =>
-                        _deleteCollection(context, ref, collection),
+                    onManage: () => _manageCollection(context, ref, collection),
+                    onDelete: () => _deleteCollection(context, ref, collection),
                   );
                 },
               );
@@ -97,10 +96,7 @@ class RouteCollectionsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _createCollection(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _createCollection(BuildContext context, WidgetRef ref) async {
     final strings = AppLocalizations.of(context);
     final controller = TextEditingController();
     final name = await showDialog<String>(
@@ -112,8 +108,7 @@ class RouteCollectionsScreen extends ConsumerWidget {
           autofocus: true,
           decoration: InputDecoration(labelText: strings.collectionName),
           textInputAction: TextInputAction.done,
-          onSubmitted: (value) =>
-              Navigator.of(dialogContext).pop(value.trim()),
+          onSubmitted: (value) => Navigator.of(dialogContext).pop(value.trim()),
         ),
         actions: [
           TextButton(
@@ -179,9 +174,7 @@ class RouteCollectionsScreen extends ConsumerWidget {
                             return CheckboxListTile(
                               value: selected.contains(route.id),
                               title: Text(route.name),
-                              subtitle: Text(
-                                _distance(route.distanceMeters),
-                              ),
+                              subtitle: Text(_distance(route.distanceMeters)),
                               onChanged: (value) async {
                                 if (value == true) {
                                   await database.addRouteToCollection(
@@ -290,10 +283,7 @@ class _CollectionCard extends StatelessWidget {
               value: 'manage',
               child: Text(strings.manageCollection),
             ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text(strings.delete),
-            ),
+            PopupMenuItem(value: 'delete', child: Text(strings.delete)),
           ],
         ),
       ),
@@ -301,5 +291,6 @@ class _CollectionCard extends StatelessWidget {
   }
 }
 
-String _distance(double meters) =>
-    meters < 1000 ? '${meters.round()} m' : '${(meters / 1000).toStringAsFixed(1)} km';
+String _distance(double meters) => meters < 1000
+    ? '${meters.round()} m'
+    : '${(meters / 1000).toStringAsFixed(1)} km';

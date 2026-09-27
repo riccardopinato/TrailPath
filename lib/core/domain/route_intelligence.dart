@@ -72,10 +72,7 @@ class RouteWeatherSample {
 enum RouteSurfaceType { paved, gravel, dirt, trail, unknown }
 
 class RouteSurfaceSummary {
-  const RouteSurfaceSummary({
-    required this.sampleCount,
-    required this.counts,
-  });
+  const RouteSurfaceSummary({required this.sampleCount, required this.counts});
 
   final int sampleCount;
   final Map<RouteSurfaceType, int> counts;
@@ -91,9 +88,7 @@ class RouteSurfaceSummary {
     if (counts.isEmpty) {
       return RouteSurfaceType.unknown;
     }
-    return counts.entries
-        .reduce((a, b) => a.value >= b.value ? a : b)
-        .key;
+    return counts.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
   }
 }
 
