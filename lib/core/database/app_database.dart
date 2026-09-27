@@ -531,6 +531,14 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> deleteSavedRoute(String routeId) async {
     final now = DateTime.now();
+    final affectedMemberships =
+        await (select(routeCollectionItems)
+              ..where((row) => row.routeId.equals(routeId)))
+            .get();
+    final affectedCollectionIds = affectedMemberships
+        .map((row) => row.collectionId)
+        .toSet();
+
     await transaction(() async {
       await (delete(
         waypoints,
@@ -539,6 +547,19 @@ class AppDatabase extends _$AppDatabase {
         routeCollectionItems,
       )..where((row) => row.routeId.equals(routeId))).go();
       await (delete(savedRoutes)..where((row) => row.id.equals(routeId))).go();
+
+      for (final collectionId in affectedCollectionIds) {
+        await (update(routeCollections)
+              ..where((row) => row.id.equals(collectionId)))
+            .write(RouteCollectionsCompanion(updatedAt: Value(now)));
+        await _queueSyncMutation(
+          SyncEntityType.collection,
+          collectionId,
+          SyncMutationAction.upsert,
+          updatedAt: now,
+        );
+      }
+
       await _queueSyncMutation(
         SyncEntityType.route,
         routeId,
