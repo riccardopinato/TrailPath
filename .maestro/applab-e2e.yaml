@@ -157,9 +157,15 @@ appId: com.riccardopinato.trail_path
     text: '.*Available offline.*'
 
 - tapOn:
-    text: 'Outdoor\s*Tab 5 of 5'
+    text: 'Profile\s*Tab 5 of 5'
+- assertVisible: "Profile"
+- assertVisible: "TrailPath Pro"
+- assertVisible: "Settings"
+- tapOn: "Outdoor tools"
 - assertVisible: "Outdoor"
 - assertVisible: "Balanced"
+- pressKey: BACK
+- assertVisible: "Profile"
 
 - tapOn:
     text: 'Plan\s*Tab 1 of 5'
