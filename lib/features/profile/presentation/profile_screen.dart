@@ -11,6 +11,9 @@ import 'package:trail_path/features/pro/application/premium_controller.dart';
 import 'package:trail_path/features/pro/presentation/pro_paywall.dart';
 import 'package:trail_path/features/profile/application/account_controller.dart';
 import 'package:trail_path/features/profile/application/cloud_sync_controller.dart';
+import 'package:trail_path/features/profile/presentation/personal_stats_screen.dart';
+import 'package:trail_path/features/routes/presentation/route_collections_screen.dart';
+import 'package:trail_path/features/routes/presentation/route_intelligence_screen.dart';
 import 'package:trail_path/features/settings/presentation/settings_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -110,6 +113,42 @@ class ProfileScreen extends ConsumerWidget {
               MaterialPageRoute<void>(
                 builder: (_) => const SettingsScreen(),
               ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _ActionCard(
+            icon: Icons.auto_awesome_rounded,
+            title: strings.routeLab,
+            subtitle: strings.routeLabHint,
+            onTap: () => _openProFeature(
+              context,
+              ref,
+              premium.isPro,
+              const RouteIntelligenceScreen(),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _ActionCard(
+            icon: Icons.folder_copy_outlined,
+            title: strings.routeCollections,
+            subtitle: strings.routeCollectionsHint,
+            onTap: () => _openProFeature(
+              context,
+              ref,
+              premium.isPro,
+              const RouteCollectionsScreen(),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _ActionCard(
+            icon: Icons.insights_rounded,
+            title: strings.personalStats,
+            subtitle: strings.personalStatsHint,
+            onTap: () => _openProFeature(
+              context,
+              ref,
+              premium.isPro,
+              const PersonalStatsScreen(),
             ),
           ),
           const SizedBox(height: 10),
@@ -285,6 +324,24 @@ class _CloudSyncCard extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _openProFeature(
+  BuildContext context,
+  WidgetRef ref,
+  bool isPro,
+  Widget screen,
+) async {
+  if (!isPro) {
+    await showTrailPathProPaywall(context, ref);
+    return;
+  }
+  if (!context.mounted) {
+    return;
+  }
+  await Navigator.of(context).push(
+    MaterialPageRoute<void>(builder: (_) => screen),
+  );
 }
 
 Future<void> _signOutAll(
