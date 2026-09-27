@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/domain/app_preferences.dart';
 import 'package:trail_path/core/domain/models.dart';
-import 'package:trail_path/features/settings/application/settings_controller.dart';
 
 void main() {
   test('AppPreferences defaults stay local-first and conservative', () {
