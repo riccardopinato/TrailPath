@@ -11,6 +11,7 @@ class AppPreferences {
     this.defaultMap = DefaultMapPreference.outdoor,
     this.voiceGuidance = true,
     this.wifiOnlyDownloads = false,
+    this.autoReroute = false,
   });
 
   final ThemePreference theme;
@@ -18,6 +19,7 @@ class AppPreferences {
   final DefaultMapPreference defaultMap;
   final bool voiceGuidance;
   final bool wifiOnlyDownloads;
+  final bool autoReroute;
 
   AppPreferences copyWith({
     ThemePreference? theme,
@@ -25,6 +27,7 @@ class AppPreferences {
     DefaultMapPreference? defaultMap,
     bool? voiceGuidance,
     bool? wifiOnlyDownloads,
+    bool? autoReroute,
   }) {
     return AppPreferences(
       theme: theme ?? this.theme,
@@ -32,6 +35,7 @@ class AppPreferences {
       defaultMap: defaultMap ?? this.defaultMap,
       voiceGuidance: voiceGuidance ?? this.voiceGuidance,
       wifiOnlyDownloads: wifiOnlyDownloads ?? this.wifiOnlyDownloads,
+      autoReroute: autoReroute ?? this.autoReroute,
     );
   }
 }
