@@ -8,7 +8,10 @@ void main() {
     expect(cloudSyncOwnerMatches('user-a', 'user-a'), isTrue);
   });
 
-  test('cloud sync owner blocks a different account on the same local data', () {
-    expect(cloudSyncOwnerMatches('user-a', 'user-b'), isFalse);
-  });
+  test(
+    'cloud sync owner blocks a different account on the same local data',
+    () {
+      expect(cloudSyncOwnerMatches('user-a', 'user-b'), isFalse);
+    },
+  );
 }
