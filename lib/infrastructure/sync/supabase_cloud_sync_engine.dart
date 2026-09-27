@@ -150,11 +150,17 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
       return null;
     }
 
-    final response = await client.auth.signInWithIdToken(
-      provider: OAuthProvider.google,
-      idToken: tokens.idToken,
-      accessToken: tokens.accessToken,
-    );
+    final accessToken = tokens.accessToken;
+    final response = accessToken == null
+        ? await client.auth.signInWithIdToken(
+            provider: OAuthProvider.google,
+            idToken: tokens.idToken,
+          )
+        : await client.auth.signInWithIdToken(
+            provider: OAuthProvider.google,
+            idToken: tokens.idToken,
+            accessToken: accessToken,
+          );
     return response.user;
   }
 
