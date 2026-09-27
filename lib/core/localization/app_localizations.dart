@@ -99,6 +99,10 @@ class AppLocalizations {
   String get traceFollowTrails => _value('traceFollowTrails');
   String get traceFollowRoads => _value('traceFollowRoads');
   String get traceFree => _value('traceFree');
+  String get traceCloseLoop => _value('traceCloseLoop');
+  String get traceOutAndBack => _value('traceOutAndBack');
+  String get traceReverse => _value('traceReverse');
+  String get traceErase => _value('traceErase');
   String get traceHint => _value('traceHint');
   String get traceDrawing => _value('traceDrawing');
   String get traceProcessing => _value('traceProcessing');
@@ -288,6 +292,10 @@ class AppLocalizations {
       'traceFollowTrails': 'Segui sentieri',
       'traceFollowRoads': 'Segui strade',
       'traceFree': 'Libero',
+      'traceCloseLoop': 'Chiudi anello',
+      'traceOutAndBack': 'Andata e ritorno',
+      'traceReverse': 'Inverti',
+      'traceErase': 'Gomma ultimo tratto',
       'traceHint': 'Modalità Disegna: trascina il dito sulla mappa per seguire il sentiero desiderato.',
       'traceDrawing': 'Continua a disegnare; al rilascio TrailPath aggancerà il tratto alla rete OSM.',
       'traceProcessing': 'Conversione del gesto in percorso reale…',
@@ -472,6 +480,10 @@ class AppLocalizations {
       'traceFollowTrails': 'Follow trails',
       'traceFollowRoads': 'Follow roads',
       'traceFree': 'Free',
+      'traceCloseLoop': 'Close loop',
+      'traceOutAndBack': 'Out & back',
+      'traceReverse': 'Reverse',
+      'traceErase': 'Erase last segment',
       'traceHint': 'Draw mode: drag your finger over the map along the path you want to follow.',
       'traceDrawing': 'Keep drawing; on release TrailPath will snap the trace to the OSM network.',
       'traceProcessing': 'Turning your gesture into a real route…',
@@ -655,6 +667,10 @@ class AppLocalizations {
       'traceFollowTrails': 'Seguir senderos',
       'traceFollowRoads': 'Seguir carreteras',
       'traceFree': 'Libre',
+      'traceCloseLoop': 'Cerrar circuito',
+      'traceOutAndBack': 'Ida y vuelta',
+      'traceReverse': 'Invertir',
+      'traceErase': 'Borrar último tramo',
       'traceHint': 'Modo dibujo: arrastra el dedo por el mapa siguiendo el camino deseado.',
       'traceDrawing': 'Sigue dibujando; al soltar TrailPath ajustará el trazo a la red OSM.',
       'traceProcessing': 'Convirtiendo el gesto en una ruta real…',
@@ -839,6 +855,10 @@ class AppLocalizations {
       'traceFollowTrails': 'Suivre les sentiers',
       'traceFollowRoads': 'Suivre les routes',
       'traceFree': 'Libre',
+      'traceCloseLoop': 'Fermer la boucle',
+      'traceOutAndBack': 'Aller-retour',
+      'traceReverse': 'Inverser',
+      'traceErase': 'Effacer le dernier tronçon',
       'traceHint': 'Mode dessin : faites glisser votre doigt sur la carte le long du chemin souhaité.',
       'traceDrawing': 'Continuez à dessiner ; au relâchement TrailPath accrochera le tracé au réseau OSM.',
       'traceProcessing': 'Conversion du geste en itinéraire réel…',
@@ -1026,6 +1046,10 @@ class AppLocalizations {
       'traceFollowTrails': 'Seguir trilhos',
       'traceFollowRoads': 'Seguir estradas',
       'traceFree': 'Livre',
+      'traceCloseLoop': 'Fechar circuito',
+      'traceOutAndBack': 'Ida e volta',
+      'traceReverse': 'Inverter',
+      'traceErase': 'Apagar último troço',
       'traceHint': 'Modo desenho: arraste o dedo pelo mapa seguindo o caminho pretendido.',
       'traceDrawing': 'Continue a desenhar; ao soltar, o TrailPath ajustará o traço à rede OSM.',
       'traceProcessing': 'A converter o gesto numa rota real…',
