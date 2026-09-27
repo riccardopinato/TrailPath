@@ -279,6 +279,7 @@ String _mapLabel(AppLocalizations strings, DefaultMapPreference map) {
   return switch (map) {
     DefaultMapPreference.outdoor => strings.mapOutdoor,
     DefaultMapPreference.street => strings.mapStreet,
+    DefaultMapPreference.highContrast => strings.mapHighContrast,
     DefaultMapPreference.satellite => strings.mapSatellite,
     DefaultMapPreference.hybrid => strings.mapHybrid,
   };
