@@ -367,15 +367,19 @@ class _ProCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: scheme.primaryContainer,
-      borderRadius: BorderRadius.circular(24),
-      child: InkWell(
+    return Semantics(
+      label: strings.trailPathPro,
+      button: true,
+      container: true,
+      child: Material(
+        color: scheme.primaryContainer,
         borderRadius: BorderRadius.circular(24),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(17),
-          child: Row(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(17),
+            child: Row(
             children: [
               Icon(
                 Icons.workspace_premium_rounded,
@@ -408,6 +412,7 @@ class _ProCard extends StatelessWidget {
                 color: scheme.onPrimaryContainer,
               ),
             ],
+            ),
           ),
         ),
       ),
