@@ -14,7 +14,7 @@ class TrailPathApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
     final preferences =
-        ref.watch(settingsControllerProvider).valueOrNull ??
+        ref.watch(settingsControllerProvider).asData?.value ??
         const AppPreferences();
 
     return MaterialApp.router(
