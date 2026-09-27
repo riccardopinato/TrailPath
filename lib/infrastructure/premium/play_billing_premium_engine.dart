@@ -67,17 +67,23 @@ class PlayBillingPremiumEngine implements PremiumEngine {
           ),
         );
 
-      final offers = <PremiumOffer>[
-        for (final product in response.productDetails)
-          if (_planForProduct(product.id) case final PremiumPlan plan)
-            PremiumOffer(
-              plan: plan,
-              productId: product.id,
-              title: product.title,
-              description: product.description,
-              price: product.price,
-            ),
-      ]..sort((a, b) => a.plan.index.compareTo(b.plan.index));
+      final offers = <PremiumOffer>[];
+      for (final product in response.productDetails) {
+        final plan = _planForProduct(product.id);
+        if (plan == null) {
+          continue;
+        }
+        offers.add(
+          PremiumOffer(
+            plan: plan,
+            productId: product.id,
+            title: product.title,
+            description: product.description,
+            price: product.price,
+          ),
+        );
+      }
+      offers.sort((a, b) => a.plan.index.compareTo(b.plan.index));
 
       final missing = response.notFoundIDs;
       _emit(
