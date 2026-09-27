@@ -724,6 +724,15 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
   }) async {
     final generation = ++_routingGeneration;
     final profile = state.profile;
+    final baselineDistance = state.distanceMeters;
+    final baselineDuration = state.estimatedDuration;
+    final removedDistance = previousLegs
+        .skip(oldLegStart)
+        .take(oldLegRemoveCount)
+        .fold<double>(
+          0,
+          (sum, leg) => sum + calculateRouteDistanceMeters(leg),
+        );
     final spanPoints = List<GeoPoint>.unmodifiable(
       nextPoints.sublist(startWaypoint, endWaypoint + 1),
     );
@@ -786,11 +795,23 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
 
       final geometry = _mergeLegs(_legGeometries);
       final distance = calculateRouteDistanceMeters(geometry);
+      final unaffectedDistance = (baselineDistance - removedDistance)
+          .clamp(0.0, double.infinity)
+          .toDouble();
+      final baselineMillis = baselineDuration.inMilliseconds;
+      final unaffectedMillis = baselineDistance > 0 && baselineMillis > 0
+          ? baselineMillis * unaffectedDistance / baselineDistance
+          : _estimateDuration(unaffectedDistance, profile).inMilliseconds
+                .toDouble();
+      final mergedDuration = Duration(
+        milliseconds:
+            (unaffectedMillis + plan.estimatedDuration.inMilliseconds).round(),
+      );
       state = state.copyWith(
         points: stablePoints,
         geometry: geometry,
         distanceMeters: distance,
-        estimatedDuration: _estimateDuration(distance, profile),
+        estimatedDuration: mergedDuration,
         isRouting: false,
         isSnapped: true,
         routingSource: plan.routingSource,
@@ -828,12 +849,20 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     _legGeometries = [for (final leg in legs) List<GeoPoint>.unmodifiable(leg)];
     final geometry = _mergeLegs(_legGeometries);
     final distance = calculateRouteDistanceMeters(geometry);
+    final baselineDistance = state.distanceMeters;
+    final baselineMillis = state.estimatedDuration.inMilliseconds;
+    final duration = baselineDistance > 0 && baselineMillis > 0
+        ? Duration(
+            milliseconds: (baselineMillis * distance / baselineDistance)
+                .round(),
+          )
+        : _estimateDuration(distance, state.profile);
 
     state = state.copyWith(
       points: List<GeoPoint>.unmodifiable(points),
       geometry: geometry,
       distanceMeters: distance,
-      estimatedDuration: _estimateDuration(distance, state.profile),
+      estimatedDuration: duration,
       canUndo: _undoStack.isNotEmpty,
       canRedo: _redoStack.isNotEmpty,
       isRouting: false,
