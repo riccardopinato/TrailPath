@@ -919,10 +919,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       final pixelRatio = View.of(context).devicePixelRatio;
       for (final offset in sampled) {
         final coordinates = await controller.toLatLng(
-          math.Point<double>(
-            offset.dx * pixelRatio,
-            offset.dy * pixelRatio,
-          ),
+          math.Point<double>(offset.dx * pixelRatio, offset.dy * pixelRatio),
         );
         geoPoints.add(
           GeoPoint(
