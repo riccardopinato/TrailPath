@@ -54,4 +54,33 @@ void main() {
     );
     expect(await database.listCollectionRouteIds(collectionId), isEmpty);
   });
+  test('remote route deletion removes collection membership', () async {
+    final database = AppDatabase.memory();
+    addTearDown(database.close);
+
+    final routeId = await database.savePlannedRoute(
+      name: 'Remote delete route',
+      profile: RouteProfile.walking.name,
+      waypointsData: const [
+        GeoPoint(latitude: 45.0, longitude: 11.0),
+        GeoPoint(latitude: 45.001, longitude: 11.001),
+      ],
+      geometryData: const [
+        GeoPoint(latitude: 45.0, longitude: 11.0),
+        GeoPoint(latitude: 45.001, longitude: 11.001),
+      ],
+      distanceMeters: 150,
+      ascentMeters: 3,
+      descentMeters: 2,
+      estimatedDuration: const Duration(minutes: 3),
+    );
+    final collectionId = await database.createRouteCollection('Cloud');
+    await database.addRouteToCollection(collectionId, routeId);
+
+    await database.applyRemoteDelete(SyncEntityType.route, routeId);
+
+    expect(await database.getSavedRoute(routeId), isNull);
+    expect(await database.listCollectionRouteIds(collectionId), isEmpty);
+  });
+
 }
