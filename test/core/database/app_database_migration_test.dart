@@ -5,7 +5,7 @@ import 'package:trail_path/core/domain/models.dart';
 
 void main() {
   for (final legacyVersion in [1, 2]) {
-    test('migrates schema v$legacyVersion to v4 without data loss', () async {
+    test('migrates schema v$legacyVersion to v5 without data loss', () async {
       final executor = _legacyDatabase(legacyVersion);
       final database = AppDatabase.forTesting(executor);
       addTearDown(database.close);
@@ -13,7 +13,7 @@ void main() {
       // Opening the first query executes Drift's migration strategy.
       const versionPragma = 'PRAGMA user_version';
       final versionRow = await database.customSelect(versionPragma).getSingle();
-      expect(versionRow.read<int>('user_version'), 4);
+      expect(versionRow.read<int>('user_version'), 5);
 
       final completed = await database.watchCompletedActivities().first;
       expect(completed, hasLength(1));
