@@ -191,3 +191,15 @@ TrailPath Pro is implemented behind a provider-agnostic Premium Engine.
 - Satellite and Hybrid map layers require both an active Pro entitlement and a configured `MAPTILER_API_KEY`.
 - Core planning, recording, navigation, recovery and safety remain outside the paywall.
 - Current entitlement evidence is the Google Play receipt exposed by the store plugin; server-side receipt verification is intentionally deferred to the cloud/backend phase before production billing launch.
+
+
+## v1.2 Pro development train
+
+TrailPath Pro is implemented behind a provider-agnostic `PremiumEngine`.
+
+- Google Play Billing uses Flutter's official `in_app_purchase` plugin.
+- Product IDs: `trailpath_pro_monthly` and `trailpath_pro_yearly`.
+- Purchase restore and pending purchase states are supported.
+- Satellite and Hybrid planner maps require both a valid Pro entitlement and a configured commercial map provider key.
+- Free planning, recording, navigation, GPX, elevation, recovery and safety remain available without Pro.
+- Current entitlement verification accepts a non-empty Google Play store receipt locally; server-side purchase verification is intentionally deferred to the account/cloud step before production subscription launch.
