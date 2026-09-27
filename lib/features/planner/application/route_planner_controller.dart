@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/domain/elevation_math.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
+import 'package:trail_path/core/domain/map_matching.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/planner_service_providers.dart';
 
@@ -145,6 +146,80 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     }
 
     _applyPoints(next);
+  }
+
+  bool applyMatchedTrace(TraceMatchResult match) {
+    if (match.geometry.length < 2) {
+      return false;
+    }
+
+    final previousPoints = List<GeoPoint>.unmodifiable(state.points);
+    final previousGeometry = List<GeoPoint>.unmodifiable(state.geometry);
+    final previousLegs = _copyLegCache();
+    final canAppendLeg = _hasLegCacheFor(previousPoints);
+    final matched = List<GeoPoint>.unmodifiable(match.geometry);
+
+    _pushUndo();
+    _redoStack.clear();
+    final generation = ++_routingGeneration;
+    _elevationGeneration++;
+
+    late final List<GeoPoint> nextPoints;
+    late final List<GeoPoint> nextGeometry;
+    late final Duration nextDuration;
+
+    if (previousPoints.isEmpty) {
+      nextPoints = List<GeoPoint>.unmodifiable([matched.first, matched.last]);
+      nextGeometry = matched;
+      nextDuration = match.estimatedDuration;
+      _legGeometries = [matched];
+    } else {
+      nextPoints = List<GeoPoint>.unmodifiable([
+        ...previousPoints,
+        matched.last,
+      ]);
+
+      final baseGeometry = previousGeometry.length >= 2
+          ? previousGeometry
+          : previousPoints;
+      final seamDistance = baseGeometry.isEmpty
+          ? double.infinity
+          : haversineMeters(baseGeometry.last, matched.first);
+      nextGeometry = List<GeoPoint>.unmodifiable([
+        ...baseGeometry,
+        ...(seamDistance <= 25 ? matched.skip(1) : matched),
+      ]);
+      nextDuration = state.estimatedDuration + match.estimatedDuration;
+
+      if (canAppendLeg) {
+        _legGeometries = [...previousLegs, matched];
+      } else {
+        _legGeometries = const [];
+      }
+    }
+
+    final distance = calculateRouteDistanceMeters(nextGeometry);
+    state = state.copyWith(
+      points: nextPoints,
+      geometry: nextGeometry,
+      distanceMeters: distance,
+      estimatedDuration: nextDuration == Duration.zero
+          ? _estimateDuration(distance, state.profile)
+          : nextDuration,
+      canUndo: _undoStack.isNotEmpty,
+      canRedo: false,
+      isRouting: false,
+      isSnapped: true,
+      routingSource: match.source,
+      elevationProfile: const ElevationProfile.unavailable(),
+      isElevationLoading: true,
+      editHandles: _buildEditHandles(_legGeometries),
+      clearImportedName: true,
+      clearRoutingError: true,
+    );
+
+    unawaited(_refreshElevation(generation, nextGeometry));
+    return true;
   }
 
   bool addTrace(List<GeoPoint> rawTrace) {
