@@ -2,7 +2,7 @@ import 'package:trail_path/core/domain/models.dart';
 
 enum ThemePreference { system, light, dark }
 
-enum DefaultMapPreference { outdoor, street, satellite, hybrid }
+enum DefaultMapPreference { outdoor, street, highContrast, satellite, hybrid }
 
 class AppPreferences {
   const AppPreferences({
