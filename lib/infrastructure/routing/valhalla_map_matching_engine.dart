@@ -71,11 +71,11 @@ class ValhallaMapMatchingEngine implements MapMatchingEngine {
       'directions_type': 'none',
       'units': 'km',
       'trace_options': <String, Object?>{
-        'gps_accuracy': 18,
-        'search_radius': request.mode == MapMatchMode.trails ? 45 : 60,
-        'turn_penalty_factor': request.mode == MapMatchMode.trails ? 450 : 250,
-        'breakage_distance': 1200,
-        'interpolation_distance': 8,
+        'gps_accuracy': 10,
+        'search_radius': request.mode == MapMatchMode.trails ? 32 : 26,
+        'turn_penalty_factor': request.mode == MapMatchMode.trails ? 700 : 550,
+        'breakage_distance': 800,
+        'interpolation_distance': 5,
       },
       if (costing == 'bicycle')
         'costing_options': <String, Object?>{
@@ -131,6 +131,8 @@ class ValhallaMapMatchingEngine implements MapMatchingEngine {
       );
     }
 
+    _validateTraceFidelity(sampled, geometry, request.mode);
+
     final summary = trip['summary'];
     final summaryMap = summary is Map
         ? Map<String, dynamic>.from(summary)
@@ -147,6 +149,31 @@ class ValhallaMapMatchingEngine implements MapMatchingEngine {
       estimatedDuration: Duration(seconds: durationSeconds ?? 0),
       source: engineId,
     );
+  }
+
+  void _validateTraceFidelity(
+    List<GeoPoint> trace,
+    List<GeoPoint> geometry,
+    MapMatchMode mode,
+  ) {
+    final traceLimitMeters = mode == MapMatchMode.trails ? 60.0 : 45.0;
+    final geometryLimitMeters = mode == MapMatchMode.trails ? 90.0 : 70.0;
+
+    for (final point in _sampleGeoPoints(trace, maxItems: 48)) {
+      if (distanceToPolylineMeters(point, geometry) > traceLimitMeters) {
+        throw const MapMatchingException(
+          'Matched route moved too far away from the drawn trace.',
+        );
+      }
+    }
+
+    for (final point in _sampleGeoPoints(geometry, maxItems: 64)) {
+      if (distanceToPolylineMeters(point, trace) > geometryLimitMeters) {
+        throw const MapMatchingException(
+          'Matched route contains a detour outside the drawn corridor.',
+        );
+      }
+    }
   }
 
   List<GeoPoint> _decodeShape(Object? raw) {
@@ -241,6 +268,24 @@ class ValhallaMapMatchingEngine implements MapMatchingEngine {
           maxDelay: maxRetryDelay,
         );
   }
+}
+
+List<GeoPoint> _sampleGeoPoints(
+  List<GeoPoint> points, {
+  required int maxItems,
+}) {
+  if (points.length <= maxItems) {
+    return points;
+  }
+  return <GeoPoint>[
+    for (var i = 0; i < maxItems; i++)
+      points[
+        (i * (points.length - 1) / (maxItems - 1))
+            .round()
+            .clamp(0, points.length - 1)
+            .toInt()
+      ],
+  ];
 }
 
 List<GeoPoint> decodeValhallaPolyline6(String encoded) {
