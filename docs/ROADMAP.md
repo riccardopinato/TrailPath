@@ -132,7 +132,7 @@ Goal: make route creation materially closer to Footpath-quality behavior before 
 - [x] evaluated Valhalla/OSRM/GraphHopper direction; `MapMatchingEngine` keeps the implementation swappable and v1.1 uses Valhalla `trace_route` as the first provider.
 - [x] preserve gesture samples as the map-matching trace while returning matched OSM network geometry.
 - [x] add drawing modes: Follow trails / Follow roads / Free.
-- [ ] add route-drawing tools: eraser, undo, loop, out-and-back, reverse.
+- [x] add route-drawing tools: eraser-last-segment, undo/redo, loop, out-and-back and reverse.
 - [x] keep the current distance/elevation engine as the reference implementation after Smart Trace matching.
 - [~] **Map layer selector:** Outdoor + Street are live; Satellite + Hybrid are wired as provider-gated styles. Dedicated high-contrast style remains later polish.
 - [~] **Pro satellite layer:** MapTiler Satellite is wired through runtime `MAPTILER_API_KEY`; commercial plan/key and entitlement gate complete in v1.2.
