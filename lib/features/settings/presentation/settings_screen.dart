@@ -117,33 +117,6 @@ class SettingsScreen extends ConsumerWidget {
                       }
                     },
                   ),
-                  const Divider(height: 1),
-                  DropdownButtonFormField<DistanceUnitPreference>(
-                    initialValue: prefs.units,
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      labelText: strings.units,
-                    ),
-                    items: [
-                      DropdownMenuItem(
-                        value: DistanceUnitPreference.metric,
-                        child: Text(strings.metricUnits),
-                      ),
-                      DropdownMenuItem(
-                        value: DistanceUnitPreference.imperial,
-                        child: Text(strings.imperialUnits),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        unawaited(
-                          ref
-                              .read(settingsControllerProvider.notifier)
-                              .setUnits(value),
-                        );
-                      }
-                    },
-                  ),
                 ],
               ),
             ),
