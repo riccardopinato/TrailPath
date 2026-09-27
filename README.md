@@ -248,3 +248,5 @@ The final Profile keeps TrailPath Pro above account details so entitlement state
 AppLab now follows the v1.3+ navigation model through **Profile → Outdoor tools** instead of targeting the removed Outdoor bottom-navigation tab.
 
 Back to Car accuracy rendering uses the shared measurement formatter with valid localized composition in the v1.5 final candidate.
+
+Circular-route unit conversion is captured before async GPS/routing work, keeping the final v1.5 analyzer clean without crossing BuildContext over async gaps.
