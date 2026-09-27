@@ -250,3 +250,5 @@ AppLab now follows the v1.3+ navigation model through **Profile → Outdoor tool
 Back to Car accuracy rendering uses the shared measurement formatter with valid localized composition in the v1.5 final candidate.
 
 Circular-route unit conversion is captured before async GPS/routing work, keeping the final v1.5 analyzer clean without crossing BuildContext over async gaps.
+
+The final Route Intelligence source is normalized with the pinned Flutter 3.47.5 formatter before exact-head CI/AppLab validation.
