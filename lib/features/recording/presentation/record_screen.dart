@@ -8,6 +8,7 @@ import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/features/recording/application/recording_controller.dart';
 
 class RecordScreen extends ConsumerStatefulWidget {
@@ -499,12 +500,12 @@ class _RecorderPanel extends StatelessWidget {
                 ),
               ),
               _RecordingMetric(
-                value: _formatDistance(snapshot.distanceMeters),
+                value: context.formatDistance(snapshot.distanceMeters, decimals: 2),
                 label: strings.distance,
               ),
               const SizedBox(width: 18),
               _RecordingMetric(
-                value: '+${snapshot.ascentMeters.round()} m',
+                value: context.formatElevation(snapshot.ascentMeters, signed: true),
                 label: strings.ascent,
               ),
             ],
@@ -514,7 +515,7 @@ class _RecorderPanel extends StatelessWidget {
             children: [
               Expanded(
                 child: _RecordingMetric(
-                  value: _formatPace(snapshot),
+                  value: context.formatPace(elapsed: snapshot.elapsed, distanceMeters: snapshot.distanceMeters),
                   label: strings.currentPace,
                 ),
               ),
@@ -523,7 +524,7 @@ class _RecorderPanel extends StatelessWidget {
                 child: _RecordingMetric(
                   value: snapshot.accuracyMeters == null
                       ? '--'
-                      : '±${snapshot.accuracyMeters!.round()} m',
+                      : context.formatAccuracy(snapshot.accuracyMeters!),
                   label: strings.gpsAccuracy,
                 ),
               ),
@@ -708,24 +709,6 @@ String _formatElapsed(Duration duration) {
   return '${hours.toString().padLeft(2, '0')}:'
       '${minutes.toString().padLeft(2, '0')}:'
       '${seconds.toString().padLeft(2, '0')}';
-}
-
-String _formatDistance(double meters) {
-  if (meters < 1000) {
-    return '${meters.round()} m';
-  }
-  return '${(meters / 1000).toStringAsFixed(2)} km';
-}
-
-String _formatPace(TrackRecorderSnapshot snapshot) {
-  if (snapshot.distanceMeters < 50 || snapshot.elapsed.inSeconds <= 0) {
-    return '--';
-  }
-  final secondsPerKm =
-      snapshot.elapsed.inSeconds / (snapshot.distanceMeters / 1000);
-  final minutes = secondsPerKm ~/ 60;
-  final seconds = (secondsPerKm % 60).round().clamp(0, 59);
-  return '$minutes:${seconds.toString().padLeft(2, '0')}/km';
 }
 
 String _profileLabel(AppLocalizations strings, RouteProfile profile) {
