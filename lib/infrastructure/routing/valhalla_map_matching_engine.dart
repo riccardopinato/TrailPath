@@ -57,6 +57,7 @@ class ValhallaMapMatchingEngine implements MapMatchingEngine {
                 (i * (request.trace.length - 1) / 94)
                     .round()
                     .clamp(0, request.trace.length - 1)
+                    .toInt()
               ],
           ];
 
