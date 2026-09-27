@@ -41,12 +41,12 @@ class ProfileScreen extends ConsumerWidget {
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 16),
-          const _AccountCard(),
-          const SizedBox(height: 12),
           _ProCard(
             isPro: premium.isPro,
             onTap: () => showTrailPathProPaywall(context, ref),
           ),
+          const SizedBox(height: 12),
+          const _AccountCard(),
           const SizedBox(height: 16),
           Text(
             strings.activitySummary,
