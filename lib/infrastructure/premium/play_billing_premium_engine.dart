@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:trail_path/core/config/premium_config.dart';
 import 'package:trail_path/core/domain/premium.dart';
 import 'package:trail_path/core/services/premium_engine.dart';
 
@@ -31,6 +32,16 @@ class PlayBillingPremiumEngine implements PremiumEngine {
       return _snapshot;
     }
     _initialized = true;
+
+    if (PremiumConfig.internalPreviewEnabled) {
+      _emit(
+        const PremiumSnapshot(
+          isPro: true,
+          verificationLevel: PremiumVerificationLevel.internalPreview,
+        ),
+      );
+      return _snapshot;
+    }
 
     _purchaseSubscription = _store.purchaseStream.listen(
       _handlePurchaseUpdates,
