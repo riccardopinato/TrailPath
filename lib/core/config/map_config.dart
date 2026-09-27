@@ -14,6 +14,12 @@ abstract final class MapConfig {
   static const String mapMatchingEndpoint =
       'https://valhalla1.openstreetmap.de/trace_route';
 
+  static const String overpassEndpoint =
+      'https://overpass-api.de/api/interpreter';
+
+  static const String weatherEndpoint =
+      'https://api.open-meteo.com/v1/forecast';
+
   static const String mapTilerApiKey = String.fromEnvironment(
     'MAPTILER_API_KEY',
   );
