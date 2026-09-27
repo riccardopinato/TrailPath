@@ -157,3 +157,5 @@ The post-v1 branch starts at **v1.1.0+32** with Smart Trace and multi-map founda
 - Satellite/Hybrid are provider-gated through `MAPTILER_API_KEY`; no commercial map key is committed to source.
 - Existing distance/elevation pipeline remains the source of truth after matched geometry is accepted.
 - The Valhalla public demo endpoint is development/fair-use infrastructure only; production provider strategy remains an explicit release decision.
+
+The v1.1 Dart sources are normalized with the pinned Flutter 3.47.5 formatter before CI validation.
