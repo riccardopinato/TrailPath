@@ -13,6 +13,7 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
   });
 
   static const String _table = 'trailpath_sync_items';
+  static const String _ownerKey = 'cloud_sync_owner_user_id';
 
   final AppDatabase _database;
   final AccountService _accountService;
@@ -41,6 +42,20 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
           pendingChanges: await _database.pendingSyncCount(),
           error: 'Sign in with Google before enabling cloud sync.',
         );
+      }
+
+      final owner = await _database.getSetting(_ownerKey);
+      if (!cloudSyncOwnerMatches(owner, user.id)) {
+        return CloudSyncSnapshot(
+          phase: CloudSyncPhase.error,
+          isConfigured: true,
+          pendingChanges: await _database.pendingSyncCount(),
+          error:
+              'Cloud Sync on this device is already linked to a different account.',
+        );
+      }
+      if (owner == null || owner.trim().isEmpty) {
+        await _database.setSetting(_ownerKey, user.id);
       }
 
       await _database.ensureInitialSyncOutbox();
@@ -201,6 +216,11 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
       await _client!.auth.signOut();
     }
   }
+}
+
+bool cloudSyncOwnerMatches(String? ownerUserId, String currentUserId) {
+  final owner = ownerUserId?.trim();
+  return owner == null || owner.isEmpty || owner == currentUserId;
 }
 
 class _RemoteSyncItem {
