@@ -36,6 +36,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   static const _fallbackCenter = LatLng(45.232, 11.750);
 
   MapLibreMapController? _mapController;
+  final GlobalKey _mapViewportKey = GlobalKey();
   StreamSubscription<PositionSample>? _positionSubscription;
   PositionSample? _position;
   bool _permissionGranted = false;
@@ -824,10 +825,14 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
         ref.read(routePlannerProvider).isRouting) {
       return;
     }
+    final mapPosition = _pointerPositionInMap(event);
+    if (mapPosition == null) {
+      return;
+    }
     _tracePointerId = event.pointer;
     setState(() {
       _traceDrawing = true;
-      _traceScreenPoints = [event.localPosition];
+      _traceScreenPoints = [mapPosition];
     });
     unawaited(HapticFeedback.selectionClick());
   }
@@ -839,11 +844,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
         _traceScreenPoints.isEmpty) {
       return;
     }
-    if ((event.localPosition - _traceScreenPoints.last).distance < 5) {
+    final mapPosition = _pointerPositionInMap(event);
+    if (mapPosition == null ||
+        (mapPosition - _traceScreenPoints.last).distance < 3) {
       return;
     }
     setState(() {
-      _traceScreenPoints = [..._traceScreenPoints, event.localPosition];
+      _traceScreenPoints = [..._traceScreenPoints, mapPosition];
     });
   }
 
@@ -852,8 +859,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       return;
     }
     final points = List<Offset>.of(_traceScreenPoints);
-    if (points.isEmpty || (event.localPosition - points.last).distance >= 2) {
-      points.add(event.localPosition);
+    final mapPosition = _pointerPositionInMap(event);
+    if (mapPosition != null &&
+        (points.isEmpty || (mapPosition - points.last).distance >= 2)) {
+      points.add(mapPosition);
     }
     _tracePointerId = null;
     setState(() {
@@ -876,13 +885,30 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     }
   }
 
+  Offset? _pointerPositionInMap(PointerEvent event) {
+    final mapContext = _mapViewportKey.currentContext;
+    final renderBox = mapContext?.findRenderObject();
+    if (renderBox is! RenderBox || !renderBox.hasSize) {
+      return event.localPosition;
+    }
+
+    final local = renderBox.globalToLocal(event.position);
+    if (local.dx < 0 ||
+        local.dy < 0 ||
+        local.dx > renderBox.size.width ||
+        local.dy > renderBox.size.height) {
+      return null;
+    }
+    return local;
+  }
+
   Future<void> _commitTrace(List<Offset> screenPoints) async {
     final controller = _mapController;
     if (controller == null || screenPoints.length < 2 || _traceProcessing) {
       return;
     }
 
-    final sampled = sampleEvenly(screenPoints, maxItems: 56);
+    final sampled = sampleEvenly(screenPoints, maxItems: 90);
     if (sampled.length < 2) {
       return;
     }
@@ -890,9 +916,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     setState(() => _traceProcessing = true);
     try {
       final geoPoints = <GeoPoint>[];
+      final pixelRatio = View.of(context).devicePixelRatio;
       for (final offset in sampled) {
         final coordinates = await controller.toLatLng(
-          math.Point<double>(offset.dx, offset.dy),
+          math.Point<double>(
+            offset.dx * pixelRatio,
+            offset.dy * pixelRatio,
+          ),
         );
         geoPoints.add(
           GeoPoint(
@@ -1739,6 +1769,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
           child: _runningWidgetTest
               ? _MapTestFallback(dark: dark)
               : MapLibreMap(
+                  key: _mapViewportKey,
                   styleString:
                       _mapStyleUrl(_plannerMapStyle) ??
                       MapConfig.plannerStyleUrl,
