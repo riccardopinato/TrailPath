@@ -310,6 +310,15 @@ class _RouteIntelligenceScreenState
 
   Future<void> _generateCircular() async {
     final strings = AppLocalizations.of(context);
+    final units = context.distanceUnits;
+    final minimumTarget = units == DistanceUnitPreference.imperial ? 2.0 : 3.0;
+    final maximumTarget = units == DistanceUnitPreference.imperial ? 25.0 : 40.0;
+    final displayTarget = _targetDistance
+        .clamp(minimumTarget, maximumTarget)
+        .toDouble();
+    final targetDistanceMeters = displayTarget *
+        (units == DistanceUnitPreference.imperial ? 1609.344 : 1000.0);
+
     setState(() {
       _busy = true;
       _error = null;
@@ -335,18 +344,7 @@ class _RouteIntelligenceScreenState
           .generateCircularRoutes(
             CircularRouteRequest(
               start: current.point,
-              targetDistanceMeters: context.targetDistanceMeters(
-                _targetDistance
-                    .clamp(
-                      context.distanceUnits == DistanceUnitPreference.imperial
-                          ? 2.0
-                          : 3.0,
-                      context.distanceUnits == DistanceUnitPreference.imperial
-                          ? 25.0
-                          : 40.0,
-                    )
-                    .toDouble(),
-              ),
+              targetDistanceMeters: targetDistanceMeters,
               profile: _profile,
             ),
           );
