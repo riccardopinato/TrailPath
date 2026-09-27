@@ -40,6 +40,9 @@ class _RouteIntelligenceScreenState
     final imperial = context.distanceUnits == DistanceUnitPreference.imperial;
     final minimumTarget = imperial ? 2.0 : 3.0;
     final maximumTarget = imperial ? 25.0 : 40.0;
+    final targetDistance = _targetDistance
+        .clamp(minimumTarget, maximumTarget)
+        .toDouble();
 
     return Scaffold(
       appBar: AppBar(title: Text(strings.routeLab)),
@@ -60,18 +63,18 @@ class _RouteIntelligenceScreenState
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  context.formatTargetDistance(_targetDistance),
+                  context.formatTargetDistance(targetDistance),
                   style: const TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 22,
                   ),
                 ),
                 Slider(
-                  value: _targetDistance.clamp(minimumTarget, maximumTarget),
+                  value: targetDistance,
                   min: minimumTarget,
                   max: maximumTarget,
                   divisions: (maximumTarget - minimumTarget).round(),
-                  label: context.formatTargetDistance(_targetDistance),
+                  label: context.formatTargetDistance(targetDistance),
                   onChanged: _busy
                       ? null
                       : (value) => setState(() => _targetDistance = value),
@@ -331,7 +334,16 @@ class _RouteIntelligenceScreenState
           .generateCircularRoutes(
             CircularRouteRequest(
               start: current.point,
-              targetDistanceMeters: context.targetDistanceMeters(_targetDistance),
+              targetDistanceMeters: context.targetDistanceMeters(
+                _targetDistance.clamp(
+                  context.distanceUnits == DistanceUnitPreference.imperial
+                      ? 2.0
+                      : 3.0,
+                  context.distanceUnits == DistanceUnitPreference.imperial
+                      ? 25.0
+                      : 40.0,
+                ).toDouble(),
+              ),
               profile: _profile,
             ),
           );
