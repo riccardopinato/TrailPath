@@ -163,3 +163,17 @@ The v1.1 Dart sources are normalized with the pinned Flutter 3.47.5 formatter be
 - Loop, out-and-back, reverse and erase-last-segment route tools are available inside Smart Trace mode, reusing the planner undo/reroute pipeline.
 
 **v1.1 Smart Trace feature-complete checkpoint:** map matching, Trail/Road/Free modes, map layers, loop, out-and-back, reverse, eraser-last-segment and undo/redo are implemented; exact-head CI/AppLab validation follows this documentation commit.
+
+
+## v1.2 TrailPath Pro
+
+The v1.2 staging candidate is **v1.2.0+33**.
+
+- Provider-agnostic `PremiumEngine` with Riverpod state.
+- Google Play Billing through Flutter's official `in_app_purchase` package.
+- Monthly/yearly product IDs: `trailpath_pro_monthly` and `trailpath_pro_yearly`.
+- Purchase restore and completion handling are implemented.
+- Satellite/Hybrid maps open the Pro paywall for free users.
+- Paid map styles still fail closed when the commercial map provider key is absent.
+- Core planning, recording, recovery and safety remain free.
+- Entitlement verification is currently local-store-receipt level; server verification is reserved for the cloud/backend hardening step.
