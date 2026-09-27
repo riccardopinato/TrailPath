@@ -4,6 +4,11 @@ abstract final class CloudConfig {
     'SUPABASE_PUBLISHABLE_KEY',
   );
 
+  static bool supabaseInitialized = false;
+
   static bool get isConfigured =>
       supabaseUrl.trim().isNotEmpty && supabasePublishableKey.trim().isNotEmpty;
+
+  static bool get isRuntimeAvailable =>
+      isConfigured && supabaseInitialized;
 }
