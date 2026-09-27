@@ -185,3 +185,5 @@ The v1.3 source formatting is normalized with the pinned Flutter 3.47.5 formatte
 AppLab now enters Outdoor tools through the Profile hub and verifies the v1.3 Settings/Pro entry points before returning to the planner.
 
 Profile keeps the TrailPath Pro card above account details so subscription state and management remain immediately discoverable on small screens and in AppLab.
+
+Profile Pro card exposes an explicit accessibility semantic label; AppLab now scrolls to Settings rather than assuming every Profile action fits the initial viewport.
