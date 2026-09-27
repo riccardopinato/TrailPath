@@ -187,7 +187,7 @@ The full approved post-v1 development train reaches **v1.5.0+36**.
 
 Implemented:
 - Circular Route Generator using the existing routing + elevation engines and ranked loop candidates.
-- Route alternatives for **shortest** and **least climb**. TrailPath does not invent unsupported “scenic” quality without data.
+- Route alternatives for **shortest**, **least climb**, **more trail** and **more road**, with OSM surface-aware ranking where data is available.
 - Pro **Slope Map** rendered from the existing elevation/grade profile.
 - Pro **3D Terrain** using a runtime-configured MapTiler Terrain DEM.
 - OSM/Overpass route-surface analysis with explicit unknown coverage where tagging is insufficient.
@@ -200,3 +200,22 @@ Implemented:
 - Pro access remains centralized through the Premium Engine; basic route ownership, recording, recovery and safety functions remain free.
 
 Provider-dependent functionality stays fail-safe: no MapTiler key means no Satellite/Hybrid/3D terrain; no cloud configuration means the app remains local-first; Overpass/Open-Meteo failures do not invalidate saved local routes.
+
+
+## v1.2 TrailPath Pro
+
+TrailPath Pro is implemented behind a provider-agnostic Premium Engine using the official Flutter Google Play Billing integration.
+
+- Monthly and yearly products: `trailpath_pro_monthly` / `trailpath_pro_yearly`.
+- Non-blocking paywall with purchase, restore and purchase-completion handling.
+- Satellite/Hybrid maps and later premium tools consume one entitlement state.
+- Basic planning, route ownership, recording, recovery and safety remain available without Pro.
+- Runtime map provider keys are never committed to source.
+
+## v1.3 Settings, Profile & Account
+
+- Settings are behavior-backed: theme, default activity/map, battery mode, voice guidance and Wi-Fi-only offline downloads.
+- Profile is the app/account hub and keeps Outdoor tools available without expanding bottom navigation.
+- Google Sign-In is optional and runtime-configured through `GOOGLE_SERVER_CLIENT_ID`.
+- Sign-out does not remove local TrailPath routes, activities or preferences.
+- A global km/mi preference is not exposed yet because every metric surface must convert consistently before shipping it.
