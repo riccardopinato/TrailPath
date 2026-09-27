@@ -176,16 +176,16 @@ Goal: make TrailPath feel like a complete product without forcing account creati
 
 Approved ideas to implement after Smart Trace + Pro foundation:
 
-- [ ] **Circular Route Generator:** choose start + target distance/activity and generate loop options.
-- [ ] **Alternative Routes:** shorter / less climb / more trail / more road, only where routing data supports the distinction.
-- [ ] **Slope Map / grade overlay** as a Pro layer.
-- [ ] **Surface-aware route info:** asphalt / gravel / trail / road where OSM tagging is reliable.
-- [ ] **Outdoor POIs along route:** water, huts, parking, viewpoints, toilets, shelters/bivouacs.
-- [ ] **Weather along route** rather than only weather at one coordinate.
-- [ ] **Route Collections:** folders/lists for trips, sports or personal organization.
-- [ ] **Personal stats:** weekly/monthly distance, elevation gain, duration, activity counts and personal bests.
-- [ ] **Automatic rerouting** when off-route, separate from the current warning-only behavior.
-- [ ] evaluate **3D terrain** as a Pro visualization after performance/cost validation.
+- [x] **Circular Route Generator:** choose current start + target distance/activity and generate ranked snapped loop options using the existing routing/elevation engines.
+- [x] **Alternative Routes:** shortest and least-climb strategies are implemented; unsupported semantics such as “more scenic” are intentionally not fabricated.
+- [x] **Slope Map / grade overlay:** Pro overlay colors route segments from the existing elevation-grade samples.
+- [x] **Surface-aware route info:** OSM/Overpass route-corridor sampling reports paved / gravel / dirt / trail / unknown with unknown preserved when tags are insufficient.
+- [x] **Outdoor POIs along route:** drinking water, huts/shelters, parking, viewpoints and toilets from OSM/Overpass, filtered by route distance.
+- [x] **Weather along route:** Open-Meteo samples multiple positions along the selected route.
+- [x] **Route Collections:** local folders with route membership, Drift v5 persistence and cloud-sync support.
+- [x] **Personal stats:** totals, 7/30-day distance, moving time, longest activity and highest-ascent activity.
+- [x] **Automatic rerouting:** optional Pro preference recalculates from live position to destination after off-route events, with cooldown and safe failure fallback.
+- [x] **3D terrain:** Pro MapLibre terrain path is implemented behind configured MapTiler DEM/runtime entitlement; provider cost/performance remains a production acceptance gate.
 
 ### Product principles for the approved roadmap
 
