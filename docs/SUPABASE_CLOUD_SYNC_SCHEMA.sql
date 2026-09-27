@@ -5,7 +5,7 @@
 create table if not exists public.trailpath_sync_items (
   user_id uuid not null references auth.users(id) on delete cascade,
   entity_type text not null check (
-    entity_type in ('route', 'activity', 'preferences')
+    entity_type in ('route', 'activity', 'preferences', 'collection')
   ),
   entity_id text not null,
   updated_at timestamptz not null,
