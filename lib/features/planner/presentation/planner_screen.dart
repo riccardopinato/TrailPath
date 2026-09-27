@@ -17,6 +17,7 @@ import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/map_matching.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/planner/application/route_planner_controller.dart';
 import 'package:trail_path/features/pro/application/premium_controller.dart';
@@ -2388,7 +2389,7 @@ class _RouteSummaryBar extends StatelessWidget {
             children: [
               _CompactMetric(
                 label: strings.distance,
-                value: _formatDistance(planner.distanceMeters),
+                value: context.formatDistance(planner.distanceMeters),
               ),
               const SizedBox(width: 14),
               _CompactMetric(
@@ -2399,7 +2400,7 @@ class _RouteSummaryBar extends StatelessWidget {
               _CompactMetric(
                 label: strings.ascent,
                 value: planner.hasElevation
-                    ? '+${planner.ascentMeters.round()} m'
+                    ? context.formatElevation(planner.ascentMeters, signed: true)
                     : '--',
               ),
               const Spacer(),
@@ -2644,7 +2645,7 @@ class _PlannerCard extends StatelessWidget {
               Expanded(
                 child: _Metric(
                   label: strings.distance,
-                  value: _formatDistance(planner.distanceMeters),
+                  value: context.formatDistance(planner.distanceMeters),
                 ),
               ),
               Expanded(
@@ -2690,7 +2691,7 @@ class _PlannerCard extends StatelessWidget {
               ),
               if (accuracy != null)
                 Text(
-                  '±${accuracy.round()} m',
+                  context.formatAccuracy(accuracy),
                   style: TextStyle(
                     color: scheme.onSurfaceVariant,
                     fontSize: 11,
@@ -2760,13 +2761,6 @@ String _profileLabel(AppLocalizations strings, RouteProfile profile) {
     RouteProfile.cycling => strings.profileCycling,
     RouteProfile.dogWalk => strings.profileDogWalk,
   };
-}
-
-String _formatDistance(double meters) {
-  if (meters < 1000) {
-    return '${meters.round()} m';
-  }
-  return '${(meters / 1000).toStringAsFixed(1)} km';
 }
 
 String _formatDuration(Duration duration) {
@@ -2890,7 +2884,7 @@ class _ElevationPanelState extends State<_ElevationPanel> {
                 ),
               ),
               Text(
-                '+${profile.ascentMeters.round()} m',
+                context.formatElevation(profile.ascentMeters, signed: true),
                 style: TextStyle(
                   color: scheme.primary,
                   fontSize: 12,
@@ -2899,7 +2893,7 @@ class _ElevationPanelState extends State<_ElevationPanel> {
               ),
               const SizedBox(width: 10),
               Text(
-                '−${profile.descentMeters.round()} m',
+                '-${context.formatElevation(profile.descentMeters)}',
                 style: TextStyle(
                   color: scheme.onSurfaceVariant,
                   fontSize: 12,
@@ -2941,12 +2935,12 @@ class _ElevationPanelState extends State<_ElevationPanel> {
             children: [
               _ElevationValue(
                 label: widget.strings.elevation,
-                value: '${selected.point.elevationMeters?.round() ?? 0} m',
+                value: context.formatElevation(selected.point.elevationMeters ?? 0),
               ),
               const SizedBox(width: 16),
               _ElevationValue(
                 label: widget.strings.distance,
-                value: _formatDistance(selected.distanceMeters),
+                value: context.formatDistance(selected.distanceMeters),
               ),
               const SizedBox(width: 16),
               _ElevationValue(
