@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/cloud_sync.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/features/outdoor/presentation/outdoor_screen.dart';
 import 'package:trail_path/features/pro/application/premium_controller.dart';
 import 'package:trail_path/features/pro/presentation/pro_paywall.dart';
@@ -72,7 +73,7 @@ class ProfileScreen extends ConsumerWidget {
               Expanded(
                 child: _StatCard(
                   icon: Icons.route_rounded,
-                  value: _formatDistance(totalDistance),
+                  value: context.formatDistance(totalDistance),
                   label: strings.totalDistance,
                 ),
               ),
@@ -80,7 +81,7 @@ class ProfileScreen extends ConsumerWidget {
               Expanded(
                 child: _StatCard(
                   icon: Icons.trending_up_rounded,
-                  value: '+${totalAscent.round()} m',
+                  value: context.formatElevation(totalAscent, signed: true),
                   label: strings.totalAscent,
                 ),
               ),
@@ -492,9 +493,3 @@ class _ActionCard extends StatelessWidget {
   }
 }
 
-String _formatDistance(double meters) {
-  if (meters < 1000) {
-    return '${meters.round()} m';
-  }
-  return '${(meters / 1000).toStringAsFixed(1)} km';
-}
