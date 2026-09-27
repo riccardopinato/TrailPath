@@ -37,6 +37,15 @@ Native offline map regions, incomplete recording drafts and Back-to-Car position
 
 After Google/Supabase authentication, remote records newer than local state are imported into Drift. Offline maps are not transferred and must be downloaded again on the new device.
 
+## Account binding safety
+
+The local Cloud Sync state is bound to the first authenticated Supabase user
+that syncs it. Signing out does not remove this binding. A different Google
+account cannot upload or merge the existing local database until the user
+explicitly resolves the local-data/account ownership boundary. This prevents
+pending mutations or previously local-only routes from being uploaded to the
+wrong account.
+
 ## Sign-out
 
 Sign-out:
