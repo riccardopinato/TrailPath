@@ -159,35 +159,36 @@ class _RouteIntelligenceScreenState
                               setState(() => _selectedRouteId = value),
                     ),
                     const SizedBox(height: 10),
-                    SegmentedButton<AlternativeRoutePreference>(
-                      segments: [
-                        ButtonSegment(
+                    DropdownButtonFormField<AlternativeRoutePreference>(
+                      initialValue: _alternativePreference,
+                      decoration: InputDecoration(
+                        labelText: strings.routeAlternatives,
+                      ),
+                      items: [
+                        DropdownMenuItem(
                           value: AlternativeRoutePreference.shortest,
-                          label: Text(strings.shortestRoute),
-                          icon: const Icon(Icons.straighten_rounded),
+                          child: Text(strings.shortestRoute),
                         ),
-                        ButtonSegment(
+                        DropdownMenuItem(
                           value: AlternativeRoutePreference.leastClimb,
-                          label: Text(strings.leastClimb),
-                          icon: const Icon(Icons.trending_down_rounded),
+                          child: Text(strings.leastClimb),
                         ),
-                        ButtonSegment(
+                        DropdownMenuItem(
                           value: AlternativeRoutePreference.moreTrail,
-                          label: Text(strings.moreTrail),
-                          icon: const Icon(Icons.terrain_rounded),
+                          child: Text(strings.moreTrail),
                         ),
-                        ButtonSegment(
+                        DropdownMenuItem(
                           value: AlternativeRoutePreference.moreRoad,
-                          label: Text(strings.moreRoad),
-                          icon: const Icon(Icons.add_road_rounded),
+                          child: Text(strings.moreRoad),
                         ),
                       ],
-                      selected: {_alternativePreference},
-                      onSelectionChanged: _busy
+                      onChanged: _busy
                           ? null
-                          : (values) => setState(
-                                () => _alternativePreference = values.first,
-                              ),
+                          : (value) {
+                              if (value != null) {
+                                setState(() => _alternativePreference = value);
+                              }
+                            },
                     ),
                     const SizedBox(height: 10),
                     FilledButton.tonalIcon(
