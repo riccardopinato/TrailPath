@@ -4,7 +4,13 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v1.0.0 - Planner UX Hardening (build 31)
+Stable certification baseline: **v1.0.0+31**  
+Post-v1 cumulative development candidate: **v1.5.0+36**
+
+### Post-v1 cumulative candidate
+
+The v1.5 branch contains the approved v1.1→v1.5 train: Smart Trace/map layers, TrailPath Pro, Settings/Profile/optional Google account, optional Supabase Cloud Sync, Route Lab, Collections, personal statistics, slope/terrain layers and automatic rerouting. Runtime/provider features remain fail-safe when their commercial configuration is absent.
+
 
 TrailPath v1.0.0 is the first stable Android release candidate. No new product scope is added here: the milestone is limited to final regression, artifact certification, release evidence and production-readiness gates.
 
@@ -225,3 +231,12 @@ v1.5 Outdoor Intelligence sources and tests are normalized with the pinned Flutt
 The v1.5 analyzer fixes are normalized with the pinned Flutter 3.47.5 toolchain before full CI/AppLab validation.
 
 Surface analysis uses bounded route-corridor probes against Overpass instead of querying the full route bounding box, keeping long-route requests controlled while preserving explicit unknown coverage.
+
+### v1.5 hardening notes
+
+- Cloud/collection conflict hardening removes collection membership when a route tombstone arrives and applies collection records after route state.
+- Remote collections ignore route IDs that are not present locally, preventing stale cloud references from resurrecting deleted memberships.
+- Google ID token is sufficient for Supabase authentication; a secondary Google access token is optional rather than a sync blocker.
+- Invalid/unavailable Supabase initialization cannot prevent TrailPath startup: the app continues local-first.
+- Drift migration coverage now includes v1, v2, v3 and v4 databases upgrading to schema v5.
+- Surface analysis uses bounded route-corridor Overpass probes rather than a potentially huge full-route bounding box.
