@@ -18,9 +18,15 @@ void main() {
     expect(database, contains('ensureInitialSyncOutbox'));
     expect(engine, contains("onConflict: 'user_id,entity_type,entity_id'"));
     expect(engine, contains('signInWithIdToken'));
+    expect(engine, contains('accessToken == null'));
     expect(schema, contains('enable row level security'));
     expect(schema, contains('(select auth.uid()) = user_id'));
     expect(schema, isNot(contains('service_role')));
     expect(main, contains('if (CloudConfig.isConfigured)'));
+    expect(main, contains('continuing local-first'));
+    final controller = File(
+      'lib/features/profile/application/cloud_sync_controller.dart',
+    ).readAsStringSync();
+    expect(controller, contains('CloudConfig.isRuntimeAvailable'));
   });
 }
