@@ -177,3 +177,5 @@ The v1.2 staging candidate is **v1.2.0+33**.
 - Paid map styles still fail closed when the commercial map provider key is absent.
 - Core planning, recording, recovery and safety remain free.
 - Entitlement verification is currently local-store-receipt level; server verification is reserved for the cloud/backend hardening step.
+
+v1.2 Pro sources are normalized with the pinned Flutter 3.47.5 formatter.
