@@ -422,7 +422,6 @@ class AppDatabase extends _$AppDatabase {
     await (update(savedRoutes)..where((row) => row.id.equals(routeId))).write(
       SavedRoutesCompanion(
         isOfflineReady: Value(isReady),
-        updatedAt: Value(DateTime.now()),
       ),
     );
   }
