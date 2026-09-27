@@ -179,3 +179,5 @@ The v1.3 staging candidate is **v1.3.0+34**.
 - TrailPath remains fully usable without account/login.
 
 v1.3 Settings/Profile sources are normalized with the pinned Flutter 3.47.5 formatter.
+
+The v1.3 source formatting is normalized with the pinned Flutter 3.47.5 formatter before the exact-head CI/AppLab gate.
