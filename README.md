@@ -179,3 +179,5 @@ The v1.4 staging candidate is **v1.4.0+35**.
 - Cloud Sync is a Pro entitlement but planning/recording/navigation remain fully local without it.
 - RLS-safe reference schema is documented in `docs/SUPABASE_CLOUD_SYNC_SCHEMA.sql`.
 - No Supabase service-role/secret key is embedded in the app.
+
+v1.4 Cloud Sync sources are normalized with the pinned Flutter 3.47.5 formatter.
