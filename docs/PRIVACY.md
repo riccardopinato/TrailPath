@@ -7,8 +7,10 @@ Back to Car position and app settings are stored on the device in the local Drif
 database. The Android app disables platform backup and device-transfer extraction
 for this user data.
 
-TrailPath currently has no account system, advertising SDK, analytics SDK or
-cloud sync.
+TrailPath v1.0 has no account, advertising SDK, analytics SDK or cloud sync.
+The post-v1 development train adds optional Google account + Supabase Cloud Sync,
+both disabled when runtime configuration is absent. There is still no advertising
+or analytics SDK.
 
 ## Location
 
@@ -65,7 +67,8 @@ When a user explicitly signs in and enables/uses Cloud Sync, TrailPath may send 
 
 - saved route metadata, geometry and waypoints;
 - completed activity metadata and recorded geometry;
-- selected app preferences that are intended to follow the user across devices.
+- selected app preferences that are intended to follow the user across devices;
+- Route Collections and their saved-route membership.
 
 Recording drafts, live GPS samples that have not become completed activities, native offline map tiles and the saved Back-to-Car point are not part of the current cloud-sync payload.
 
