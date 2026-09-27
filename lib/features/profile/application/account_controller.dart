@@ -79,5 +79,6 @@ class AccountController extends Notifier<AccountState> {
     }
   }
 
-  Future<String?> idToken() => _service.idToken();
+  Future<AccountAuthTokens?> authTokens({bool promptIfNeeded = false}) =>
+      _service.authTokens(promptIfNeeded: promptIfNeeded);
 }
