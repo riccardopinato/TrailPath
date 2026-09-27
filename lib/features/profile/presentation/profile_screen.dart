@@ -9,6 +9,7 @@ import 'package:trail_path/features/outdoor/presentation/outdoor_screen.dart';
 import 'package:trail_path/features/pro/application/premium_controller.dart';
 import 'package:trail_path/features/pro/presentation/pro_paywall.dart';
 import 'package:trail_path/features/profile/application/account_controller.dart';
+import 'package:trail_path/features/profile/application/cloud_sync_controller.dart';
 import 'package:trail_path/features/settings/presentation/settings_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -18,6 +19,8 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final strings = AppLocalizations.of(context);
     final premium = ref.watch(premiumControllerProvider);
+    final account = ref.watch(accountControllerProvider);
+    final cloud = ref.watch(cloudSyncControllerProvider);
     final routes = ref.watch(savedRoutesProvider);
     final activities = ref.watch(completedActivitiesProvider);
 
@@ -109,11 +112,21 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 10),
-          _ActionCard(
-            icon: Icons.cloud_outlined,
-            title: strings.cloudSync,
-            subtitle: strings.cloudSyncAccountHint,
-            onTap: null,
+          _CloudSyncCard(
+            snapshot: cloud,
+            isPro: premium.isPro,
+            isSignedIn: account.isSignedIn,
+            onTap: () async {
+              if (!premium.isPro) {
+                await showTrailPathProPaywall(context, ref);
+                return;
+              }
+              if (!account.isSignedIn) {
+                await ref.read(accountControllerProvider.notifier).signIn();
+                return;
+              }
+              await ref.read(cloudSyncControllerProvider.notifier).syncNow();
+            },
           ),
         ],
       ),
@@ -199,7 +212,7 @@ class _AccountCard extends ConsumerWidget {
             else
               IconButton(
                 tooltip: strings.signOut,
-                onPressed: () => unawaited(controller.signOut()),
+                onPressed: () => unawaited(_signOutAll(ref, controller)),
                 icon: const Icon(Icons.logout_rounded),
               ),
           ],
@@ -207,6 +220,85 @@ class _AccountCard extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _CloudSyncCard extends StatelessWidget {
+  const _CloudSyncCard({
+    required this.snapshot,
+    required this.isPro,
+    required this.isSignedIn,
+    required this.onTap,
+  });
+
+  final dynamic snapshot;
+  final bool isPro;
+  final bool isSignedIn;
+  final Future<void> Function() onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
+    final configured = snapshot.isConfigured == true;
+    final busy = snapshot.isBusy == true;
+    final lastSync = snapshot.lastSyncedAt as DateTime?;
+    final pending = snapshot.pendingChanges as int? ?? 0;
+
+    late final String subtitle;
+    if (!configured) {
+      subtitle = strings.syncUnavailable;
+    } else if (!isPro) {
+      subtitle = strings.syncRequiresPro;
+    } else if (!isSignedIn) {
+      subtitle = strings.syncRequiresAccount;
+    } else if (busy) {
+      subtitle = strings.syncing;
+    } else if (snapshot.error != null) {
+      subtitle = strings.syncError;
+    } else if (lastSync != null) {
+      subtitle =
+          '${strings.syncLast}: ${_formatSyncTime(lastSync)} · ${strings.syncPending}: $pending';
+    } else {
+      subtitle = strings.syncReady;
+    }
+
+    return Material(
+      color: Theme.of(context).colorScheme.surface,
+      borderRadius: BorderRadius.circular(20),
+      child: ListTile(
+        leading: busy
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+              )
+            : const Icon(Icons.cloud_sync_outlined),
+        title: Text(
+          strings.cloudSync,
+          style: const TextStyle(fontWeight: FontWeight.w800),
+        ),
+        subtitle: Text(subtitle),
+        trailing: configured
+            ? const Icon(Icons.chevron_right_rounded)
+            : const Icon(Icons.cloud_off_outlined),
+        onTap: configured && !busy ? () => unawaited(onTap()) : null,
+      ),
+    );
+  }
+}
+
+Future<void> _signOutAll(
+  WidgetRef ref,
+  AccountController accountController,
+) async {
+  await ref.read(cloudSyncControllerProvider.notifier).signOut();
+  await accountController.signOut();
+}
+
+String _formatSyncTime(DateTime value) {
+  final local = value.toLocal();
+  final hour = local.hour.toString().padLeft(2, '0');
+  final minute = local.minute.toString().padLeft(2, '0');
+  return '${local.day}/${local.month} $hour:$minute';
 }
 
 class _ProCard extends StatelessWidget {
