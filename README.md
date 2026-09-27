@@ -224,7 +224,7 @@ TrailPath Pro is implemented behind a provider-agnostic Premium Engine using the
 - Profile is the app/account hub and keeps Outdoor tools available without expanding bottom navigation.
 - Google Sign-In is optional and runtime-configured through `GOOGLE_SERVER_CLIENT_ID`.
 - Sign-out does not remove local TrailPath routes, activities or preferences.
-- A global km/mi preference is not exposed yet because every metric surface must convert consistently before shipping it.
+- Metric/Imperial preference is exposed and uses the shared measurement formatter across planner, recording, routes, navigation, Back to Car, Profile/Stats, Collections and Route Lab.
 
 v1.5 Outdoor Intelligence sources and tests are normalized with the pinned Flutter 3.47.5 formatter before staging CI.
 
@@ -252,3 +252,7 @@ Back to Car accuracy rendering uses the shared measurement formatter with valid 
 Circular-route unit conversion is captured before async GPS/routing work, keeping the final v1.5 analyzer clean without crossing BuildContext over async gaps.
 
 The final Route Intelligence source is normalized with the pinned Flutter 3.47.5 formatter before exact-head CI/AppLab validation.
+
+Recording finalization now distinguishes **saved / too short / save failed**, keeps a failed final snapshot retryable in-session, and no longer misreports a database save failure as a short activity.
+
+The v1.5 final AppLab path uses explicit Profile/Pro semantics and scroll-aware access to Outdoor tools on compact viewports.
