@@ -183,3 +183,5 @@ v1.3 Settings/Profile sources are normalized with the pinned Flutter 3.47.5 form
 The v1.3 source formatting is normalized with the pinned Flutter 3.47.5 formatter before the exact-head CI/AppLab gate.
 
 AppLab now enters Outdoor tools through the Profile hub and verifies the v1.3 Settings/Pro entry points before returning to the planner.
+
+Profile keeps the TrailPath Pro card above account details so subscription state and management remain immediately discoverable on small screens and in AppLab.
