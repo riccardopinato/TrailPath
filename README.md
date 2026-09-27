@@ -144,3 +144,16 @@ After v1.0 certification, approved development moves in this order: **Smart Trac
 The current v1.0 release remains feature-frozen. The approved post-v1 scope is tracked in `docs/ROADMAP.md`; satellite/provider licensing and recurring service cost must be validated before any paid map layer is shipped.
 
 See docs/ARCHITECTURE.md and docs/ROADMAP.md.
+
+
+## v1.1 development train
+
+The post-v1 branch starts at **v1.1.0+32** with Smart Trace and multi-map foundations.
+
+- Smart Trace uses a dedicated `MapMatchingEngine` and Valhalla `trace_route` map matching for Trail/Road modes instead of converting the finger gesture directly into ordinary route waypoints.
+- Free mode preserves the previous trace behavior for deliberate free-form planning.
+- Cycling/MTB matching switches between mountain/path-biased and road-biased Valhalla bicycle costing.
+- Planner exposes Outdoor, Street, Satellite and Hybrid map choices.
+- Satellite/Hybrid are provider-gated through `MAPTILER_API_KEY`; no commercial map key is committed to source.
+- Existing distance/elevation pipeline remains the source of truth after matched geometry is accepted.
+- The Valhalla public demo endpoint is development/fair-use infrastructure only; production provider strategy remains an explicit release decision.
