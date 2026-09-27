@@ -54,6 +54,12 @@ class AppLocalizations {
   String get noRoutesHint => _value('noRoutesHint');
   String get foundationReady => _value('foundationReady');
   String get mapLayers => _value('mapLayers');
+  String get mapOutdoor => _value('mapOutdoor');
+  String get mapStreet => _value('mapStreet');
+  String get mapSatellite => _value('mapSatellite');
+  String get mapHybrid => _value('mapHybrid');
+  String get proMap => _value('proMap');
+  String get proMapUnavailable => _value('proMapUnavailable');
   String get centerLocation => _value('centerLocation');
   String get locationServiceOff => _value('locationServiceOff');
   String get locationUnavailable => _value('locationUnavailable');
@@ -90,6 +96,9 @@ class AppLocalizations {
   String get routeEditActive => _value('routeEditActive');
   String get routeDragActive => _value('routeDragActive');
   String get traceMode => _value('traceMode');
+  String get traceFollowTrails => _value('traceFollowTrails');
+  String get traceFollowRoads => _value('traceFollowRoads');
+  String get traceFree => _value('traceFree');
   String get traceHint => _value('traceHint');
   String get traceDrawing => _value('traceDrawing');
   String get traceProcessing => _value('traceProcessing');
@@ -233,6 +242,12 @@ class AppLocalizations {
       'noRoutesHint': 'I percorsi pianificati compariranno qui.',
       'foundationReady': 'Mappa e posizione attive',
       'mapLayers': 'Livelli mappa',
+      'mapOutdoor': 'Outdoor',
+      'mapStreet': 'Stradale',
+      'mapSatellite': 'Satellite',
+      'mapHybrid': 'Satellite + strade',
+      'proMap': 'Mappa Pro',
+      'proMapUnavailable': 'Mappa Pro non configurata',
       'centerLocation': 'Centra sulla mia posizione',
       'locationServiceOff': 'Attiva i servizi di localizzazione',
       'locationUnavailable': 'Posizione temporaneamente non disponibile',
@@ -270,6 +285,9 @@ class AppLocalizations {
       'routeEditActive': 'Modifica attiva: trascina i punti bianchi tra le tappe per inserirne di nuovi.',
       'routeDragActive': 'Spostamento in corso: rilascia per ricalcolare solo il tratto modificato.',
       'traceMode': 'Disegna percorso',
+      'traceFollowTrails': 'Segui sentieri',
+      'traceFollowRoads': 'Segui strade',
+      'traceFree': 'Libero',
       'traceHint': 'Modalità Disegna: trascina il dito sulla mappa per seguire il sentiero desiderato.',
       'traceDrawing': 'Continua a disegnare; al rilascio TrailPath aggancerà il tratto alla rete OSM.',
       'traceProcessing': 'Conversione del gesto in percorso reale…',
@@ -407,6 +425,12 @@ class AppLocalizations {
       'noRoutesHint': 'Routes you plan will appear here.',
       'foundationReady': 'Map and location active',
       'mapLayers': 'Map layers',
+      'mapOutdoor': 'Outdoor',
+      'mapStreet': 'Street',
+      'mapSatellite': 'Satellite',
+      'mapHybrid': 'Satellite + roads',
+      'proMap': 'Pro map',
+      'proMapUnavailable': 'Pro map provider not configured',
       'centerLocation': 'Center on my location',
       'locationServiceOff': 'Turn on location services',
       'locationUnavailable': 'Location temporarily unavailable',
@@ -445,6 +469,9 @@ class AppLocalizations {
       'routeDragActive':
           'Dragging: release to recalculate only the edited span.',
       'traceMode': 'Draw route',
+      'traceFollowTrails': 'Follow trails',
+      'traceFollowRoads': 'Follow roads',
+      'traceFree': 'Free',
       'traceHint': 'Draw mode: drag your finger over the map along the path you want to follow.',
       'traceDrawing': 'Keep drawing; on release TrailPath will snap the trace to the OSM network.',
       'traceProcessing': 'Turning your gesture into a real route…',
@@ -581,6 +608,12 @@ class AppLocalizations {
       'noRoutesHint': 'Las rutas planificadas aparecerán aquí.',
       'foundationReady': 'Mapa y ubicación activos',
       'mapLayers': 'Capas del mapa',
+      'mapOutdoor': 'Outdoor',
+      'mapStreet': 'Carreteras',
+      'mapSatellite': 'Satélite',
+      'mapHybrid': 'Satélite + carreteras',
+      'proMap': 'Mapa Pro',
+      'proMapUnavailable': 'Proveedor de mapas Pro no configurado',
       'centerLocation': 'Centrar en mi ubicación',
       'locationServiceOff': 'Activa los servicios de ubicación',
       'locationUnavailable': 'Ubicación temporalmente no disponible',
@@ -619,6 +652,9 @@ class AppLocalizations {
       'routeDragActive':
           'Arrastrando: suelta para recalcular solo el tramo modificado.',
       'traceMode': 'Dibujar ruta',
+      'traceFollowTrails': 'Seguir senderos',
+      'traceFollowRoads': 'Seguir carreteras',
+      'traceFree': 'Libre',
       'traceHint': 'Modo dibujo: arrastra el dedo por el mapa siguiendo el camino deseado.',
       'traceDrawing': 'Sigue dibujando; al soltar TrailPath ajustará el trazo a la red OSM.',
       'traceProcessing': 'Convirtiendo el gesto en una ruta real…',
@@ -757,6 +793,12 @@ class AppLocalizations {
       'noRoutesHint': 'Vos parcours planifiés apparaîtront ici.',
       'foundationReady': 'Carte et position actives',
       'mapLayers': 'Couches de carte',
+      'mapOutdoor': 'Outdoor',
+      'mapStreet': 'Routes',
+      'mapSatellite': 'Satellite',
+      'mapHybrid': 'Satellite + routes',
+      'proMap': 'Carte Pro',
+      'proMapUnavailable': 'Fournisseur de cartes Pro non configuré',
       'centerLocation': 'Centrer sur ma position',
       'locationServiceOff': 'Activez les services de localisation',
       'locationUnavailable': 'Position temporairement indisponible',
@@ -794,6 +836,9 @@ class AppLocalizations {
       'routeEditActive': 'Modification active : faites glisser les points blancs entre les étapes pour en insérer.',
       'routeDragActive': 'Déplacement en cours : relâchez pour recalculer uniquement le tronçon modifié.',
       'traceMode': 'Dessiner l’itinéraire',
+      'traceFollowTrails': 'Suivre les sentiers',
+      'traceFollowRoads': 'Suivre les routes',
+      'traceFree': 'Libre',
       'traceHint': 'Mode dessin : faites glisser votre doigt sur la carte le long du chemin souhaité.',
       'traceDrawing': 'Continuez à dessiner ; au relâchement TrailPath accrochera le tracé au réseau OSM.',
       'traceProcessing': 'Conversion du geste en itinéraire réel…',
@@ -934,6 +979,12 @@ class AppLocalizations {
       'noRoutesHint': 'Os percursos planeados aparecerão aqui.',
       'foundationReady': 'Mapa e localização ativos',
       'mapLayers': 'Camadas do mapa',
+      'mapOutdoor': 'Outdoor',
+      'mapStreet': 'Estradas',
+      'mapSatellite': 'Satélite',
+      'mapHybrid': 'Satélite + estradas',
+      'proMap': 'Mapa Pro',
+      'proMapUnavailable': 'Fornecedor de mapas Pro não configurado',
       'centerLocation': 'Centrar na minha localização',
       'locationServiceOff': 'Ative os serviços de localização',
       'locationUnavailable': 'Localização temporariamente indisponível',
@@ -972,6 +1023,9 @@ class AppLocalizations {
       'routeDragActive':
           'A arrastar: solte para recalcular apenas o troço alterado.',
       'traceMode': 'Desenhar rota',
+      'traceFollowTrails': 'Seguir trilhos',
+      'traceFollowRoads': 'Seguir estradas',
+      'traceFree': 'Livre',
       'traceHint': 'Modo desenho: arraste o dedo pelo mapa seguindo o caminho pretendido.',
       'traceDrawing': 'Continue a desenhar; ao soltar, o TrailPath ajustará o traço à rede OSM.',
       'traceProcessing': 'A converter o gesto numa rota real…',
