@@ -179,3 +179,24 @@ The v1.4 staging candidate is **v1.4.0+35**.
 - Cloud Sync is a Pro entitlement but planning/recording/navigation remain fully local without it.
 - RLS-safe reference schema is documented in `docs/SUPABASE_CLOUD_SYNC_SCHEMA.sql`.
 - No Supabase service-role/secret key is embedded in the app.
+
+
+## v1.5 Outdoor Intelligence
+
+The full approved post-v1 development train reaches **v1.5.0+36**.
+
+Implemented:
+- Circular Route Generator using the existing routing + elevation engines and ranked loop candidates.
+- Route alternatives for **shortest** and **least climb**. TrailPath does not invent unsupported “scenic” quality without data.
+- Pro **Slope Map** rendered from the existing elevation/grade profile.
+- Pro **3D Terrain** using a runtime-configured MapTiler Terrain DEM.
+- OSM/Overpass route-surface analysis with explicit unknown coverage where tagging is insufficient.
+- Outdoor POIs along the route: drinking water, shelters/huts, parking, viewpoints and toilets.
+- Open-Meteo weather sampling along multiple route positions.
+- Route Collections persisted in Drift schema v5 and included in optional cloud sync.
+- Personal statistics: totals, 7/30-day distance, moving time, longest activity and highest ascent.
+- Optional Pro automatic rerouting after off-route events, with cooldown and non-destructive failure behavior.
+- High-contrast map style as an additional free map option.
+- Pro access remains centralized through the Premium Engine; basic route ownership, recording, recovery and safety functions remain free.
+
+Provider-dependent functionality stays fail-safe: no MapTiler key means no Satellite/Hybrid/3D terrain; no cloud configuration means the app remains local-first; Overpass/Open-Meteo failures do not invalidate saved local routes.
