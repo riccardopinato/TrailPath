@@ -19,6 +19,8 @@ void main() {
     expect(engine, contains("onConflict: 'user_id,entity_type,entity_id'"));
     expect(engine, contains('signInWithIdToken'));
     expect(engine, contains('accessToken == null'));
+    expect(engine, contains('cloud_sync_owner_user_id'));
+    expect(engine, contains('cloudSyncOwnerMatches'));
     expect(schema, contains('enable row level security'));
     expect(schema, contains('(select auth.uid()) = user_id'));
     expect(schema, isNot(contains('service_role')));
