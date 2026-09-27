@@ -54,3 +54,17 @@ Public account rollout requires an explicit server-side account deletion action 
 5. asks separately whether local device data should also be erased.
 
 Local deletion must never be implicit merely because a remote account was removed.
+
+## Runtime failure behavior
+
+Cloud provider startup is fail-safe. If Supabase configuration is absent, invalid or initialization fails, TrailPath continues in local-first mode and planning/recording/navigation remain usable.
+
+Collection sync processes route state before collection membership and removes memberships for route tombstones so cross-device deletion cannot silently recreate references to deleted routes.
+
+## External production configuration gates
+
+The code path is implemented, but public account/cloud rollout still requires:
+- a production Google OAuth configuration;
+- a production Supabase project with the documented RLS schema applied;
+- privacy/security review of that project's storage/at-rest configuration;
+- an authenticated server-side account/cloud-data deletion endpoint.
