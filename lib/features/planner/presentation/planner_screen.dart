@@ -1771,6 +1771,83 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                             ),
                           ],
                         ),
+                        if (planner.points.length >= 2) ...[
+                          const SizedBox(height: 5),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: [
+                              ActionChip(
+                                avatar: const Icon(
+                                  Icons.all_inclusive_rounded,
+                                  size: 17,
+                                ),
+                                label: Text(strings.traceCloseLoop),
+                                onPressed: _traceProcessing
+                                    ? null
+                                    : () {
+                                        ref
+                                            .read(
+                                              routePlannerProvider.notifier,
+                                            )
+                                            .closeLoop();
+                                      },
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              ActionChip(
+                                avatar: const Icon(
+                                  Icons.swap_horiz_rounded,
+                                  size: 17,
+                                ),
+                                label: Text(strings.traceOutAndBack),
+                                onPressed: _traceProcessing
+                                    ? null
+                                    : () {
+                                        ref
+                                            .read(
+                                              routePlannerProvider.notifier,
+                                            )
+                                            .makeOutAndBack();
+                                      },
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              ActionChip(
+                                avatar: const Icon(
+                                  Icons.swap_calls_rounded,
+                                  size: 17,
+                                ),
+                                label: Text(strings.traceReverse),
+                                onPressed: _traceProcessing
+                                    ? null
+                                    : () {
+                                        ref
+                                            .read(
+                                              routePlannerProvider.notifier,
+                                            )
+                                            .reverseRoute();
+                                      },
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              ActionChip(
+                                avatar: const Icon(
+                                  Icons.auto_fix_off_rounded,
+                                  size: 17,
+                                ),
+                                label: Text(strings.traceErase),
+                                onPressed: _traceProcessing
+                                    ? null
+                                    : () {
+                                        ref
+                                            .read(
+                                              routePlannerProvider.notifier,
+                                            )
+                                            .eraseLastSegment();
+                                      },
+                                visualDensity: VisualDensity.compact,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),
