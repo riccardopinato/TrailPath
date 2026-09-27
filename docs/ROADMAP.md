@@ -157,7 +157,7 @@ Goal: introduce monetization only after the planner/map experience is strong eno
 
 Goal: make TrailPath feel like a complete product without forcing account creation.
 
-- [~] create a real **Settings** screen: default map/activity, GPS mode, theme, voice, Wi-Fi download policy, auto-reroute and privacy are behavior-backed. Global km/mi conversion remains intentionally deferred until every metric surface can switch consistently.
+- [x] create a real **Settings** screen: Metric/Imperial units, default map/activity, GPS mode, theme, voice, Wi-Fi download policy, auto-reroute and privacy are behavior-backed; route/weather/pace displays use the shared measurement scope.
 - [x] create a useful **Profile** hub with account state, Pro status, activity/route summary, Outdoor tools, Settings, Route Lab, Collections, Stats and Cloud Sync.
 - [x] keep TrailPath fully usable local-first without login.
 - [x] optional **Google Sign-In** is config-gated and used only for account-backed Cloud Sync.
