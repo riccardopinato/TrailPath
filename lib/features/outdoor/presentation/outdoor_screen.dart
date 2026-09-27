@@ -5,6 +5,7 @@ import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/outdoor/application/battery_mode_controller.dart';
 import 'package:trail_path/features/outdoor/presentation/back_to_car_screen.dart';
@@ -312,7 +313,7 @@ class _BatteryModeCard extends StatelessWidget {
               const SizedBox(width: 7),
               Expanded(
                 child: Text(
-                  _modeTechnicalLabel(strings, mode),
+                  _modeTechnicalLabel(context, strings, mode),
                   style: TextStyle(
                     color: scheme.onSurfaceVariant,
                     fontSize: 11,
@@ -355,7 +356,7 @@ class _BackToCarCard extends StatelessWidget {
       subtitle: point == null
           ? strings.backToCarHint
           : '${strings.carSavedAt} ${_formatSavedTime(context, point.savedAt)} · '
-                '±${point.accuracyMeters.round()} m',
+                context.formatAccuracy(point.accuracyMeters),
       child: Row(
         children: [
           Expanded(
@@ -667,11 +668,15 @@ String _modeHint(AppLocalizations strings, BatteryMode mode) {
   };
 }
 
-String _modeTechnicalLabel(AppLocalizations strings, BatteryMode mode) {
+String _modeTechnicalLabel(
+  BuildContext context,
+  AppLocalizations strings,
+  BatteryMode mode,
+) {
   final policy = batteryModePolicy(mode);
   return '${strings.gpsEvery} '
       '${policy.interval.inSeconds}s · '
-      '${policy.distanceFilterMeters} m';
+      context.formatDistance(policy.distanceFilterMeters.toDouble());
 }
 
 String _formatSavedTime(BuildContext context, DateTime value) {
