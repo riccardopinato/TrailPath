@@ -181,3 +181,5 @@ The v1.3 staging candidate is **v1.3.0+34**.
 v1.3 Settings/Profile sources are normalized with the pinned Flutter 3.47.5 formatter.
 
 The v1.3 source formatting is normalized with the pinned Flutter 3.47.5 formatter before the exact-head CI/AppLab gate.
+
+AppLab now enters Outdoor tools through the Profile hub and verifies the v1.3 Settings/Pro entry points before returning to the planner.
