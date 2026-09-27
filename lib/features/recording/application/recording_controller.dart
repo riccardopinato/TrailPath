@@ -329,7 +329,9 @@ class RecordingController extends Notifier<RecordingState> {
         return RecordingFinishResult.tooShort;
       }
 
-      final finalName = name.trim().isEmpty ? 'TrailPath activity' : name.trim();
+      final finalName = name.trim().isEmpty
+          ? 'TrailPath activity'
+          : name.trim();
       _pendingFinalName = finalName;
       await _database.completeActivity(
         activityId: activityId,

@@ -2400,7 +2400,10 @@ class _RouteSummaryBar extends StatelessWidget {
               _CompactMetric(
                 label: strings.ascent,
                 value: planner.hasElevation
-                    ? context.formatElevation(planner.ascentMeters, signed: true)
+                    ? context.formatElevation(
+                        planner.ascentMeters,
+                        signed: true,
+                      )
                     : '--',
               ),
               const Spacer(),
@@ -2935,7 +2938,9 @@ class _ElevationPanelState extends State<_ElevationPanel> {
             children: [
               _ElevationValue(
                 label: widget.strings.elevation,
-                value: context.formatElevation(selected.point.elevationMeters ?? 0),
+                value: context.formatElevation(
+                  selected.point.elevationMeters ?? 0,
+                ),
               ),
               const SizedBox(width: 16),
               _ElevationValue(

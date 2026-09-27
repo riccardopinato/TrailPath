@@ -729,10 +729,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     final removedDistance = previousLegs
         .skip(oldLegStart)
         .take(oldLegRemoveCount)
-        .fold<double>(
-          0,
-          (sum, leg) => sum + calculateRouteDistanceMeters(leg),
-        );
+        .fold<double>(0, (sum, leg) => sum + calculateRouteDistanceMeters(leg));
     final spanPoints = List<GeoPoint>.unmodifiable(
       nextPoints.sublist(startWaypoint, endWaypoint + 1),
     );
@@ -801,11 +798,13 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       final baselineMillis = baselineDuration.inMilliseconds;
       final unaffectedMillis = baselineDistance > 0 && baselineMillis > 0
           ? baselineMillis * unaffectedDistance / baselineDistance
-          : _estimateDuration(unaffectedDistance, profile).inMilliseconds
-                .toDouble();
+          : _estimateDuration(
+              unaffectedDistance,
+              profile,
+            ).inMilliseconds.toDouble();
       final mergedDuration = Duration(
-        milliseconds:
-            (unaffectedMillis + plan.estimatedDuration.inMilliseconds).round(),
+        milliseconds: (unaffectedMillis + plan.estimatedDuration.inMilliseconds)
+            .round(),
       );
       state = state.copyWith(
         points: stablePoints,

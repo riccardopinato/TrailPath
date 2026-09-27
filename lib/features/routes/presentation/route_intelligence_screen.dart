@@ -336,14 +336,16 @@ class _RouteIntelligenceScreenState
             CircularRouteRequest(
               start: current.point,
               targetDistanceMeters: context.targetDistanceMeters(
-                _targetDistance.clamp(
-                  context.distanceUnits == DistanceUnitPreference.imperial
-                      ? 2.0
-                      : 3.0,
-                  context.distanceUnits == DistanceUnitPreference.imperial
-                      ? 25.0
-                      : 40.0,
-                ).toDouble(),
+                _targetDistance
+                    .clamp(
+                      context.distanceUnits == DistanceUnitPreference.imperial
+                          ? 2.0
+                          : 3.0,
+                      context.distanceUnits == DistanceUnitPreference.imperial
+                          ? 25.0
+                          : 40.0,
+                    )
+                    .toDouble(),
               ),
               profile: _profile,
             ),

@@ -18,7 +18,8 @@ class MeasurementScope extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(MeasurementScope oldWidget) => units != oldWidget.units;
+  bool updateShouldNotify(MeasurementScope oldWidget) =>
+      units != oldWidget.units;
 }
 
 extension TrailPathMeasurements on BuildContext {
@@ -67,12 +68,12 @@ extension TrailPathMeasurements on BuildContext {
     final unitMeters = distanceUnits == DistanceUnitPreference.imperial
         ? 1609.344
         : 1000.0;
-    final secondsPerUnit =
-        elapsed.inSeconds / (distanceMeters / unitMeters);
+    final secondsPerUnit = elapsed.inSeconds / (distanceMeters / unitMeters);
     final minutes = secondsPerUnit ~/ 60;
     final seconds = secondsPerUnit.round().remainder(60);
-    final suffix =
-        distanceUnits == DistanceUnitPreference.imperial ? '/mi' : '/km';
+    final suffix = distanceUnits == DistanceUnitPreference.imperial
+        ? '/mi'
+        : '/km';
     return '$minutes:${seconds.toString().padLeft(2, '0')} $suffix';
   }
 

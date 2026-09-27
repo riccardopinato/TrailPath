@@ -429,7 +429,6 @@ double _cameraZoomForDistance(double meters) {
   return 10.5;
 }
 
-
 String _cardinalDirection(double bearing) {
   const labels = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
   final normalized = normalizeDegrees(bearing);

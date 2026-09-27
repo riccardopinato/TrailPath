@@ -175,7 +175,9 @@ class RouteCollectionsScreen extends ConsumerWidget {
                             return CheckboxListTile(
                               value: selected.contains(route.id),
                               title: Text(route.name),
-                              subtitle: Text(context.formatDistance(route.distanceMeters)),
+                              subtitle: Text(
+                                context.formatDistance(route.distanceMeters),
+                              ),
                               onChanged: (value) async {
                                 if (value == true) {
                                   await database.addRouteToCollection(
@@ -291,4 +293,3 @@ class _CollectionCard extends StatelessWidget {
     );
   }
 }
-

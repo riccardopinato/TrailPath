@@ -474,4 +474,3 @@ class _NavMetric extends StatelessWidget {
     );
   }
 }
-

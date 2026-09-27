@@ -45,17 +45,24 @@ class PersonalStatsScreen extends ConsumerWidget {
                   ),
                   _Metric(
                     icon: Icons.trending_up_rounded,
-                    value: context.formatElevation(stats.totalAscentMeters, signed: true),
+                    value: context.formatElevation(
+                      stats.totalAscentMeters,
+                      signed: true,
+                    ),
                     label: strings.totalAscent,
                   ),
                   _Metric(
                     icon: Icons.calendar_view_week_rounded,
-                    value: context.formatDistance(stats.last7DaysDistanceMeters),
+                    value: context.formatDistance(
+                      stats.last7DaysDistanceMeters,
+                    ),
                     label: strings.last7Days,
                   ),
                   _Metric(
                     icon: Icons.calendar_month_rounded,
-                    value: context.formatDistance(stats.last30DaysDistanceMeters),
+                    value: context.formatDistance(
+                      stats.last30DaysDistanceMeters,
+                    ),
                     label: strings.last30Days,
                   ),
                   _Metric(
@@ -65,7 +72,10 @@ class PersonalStatsScreen extends ConsumerWidget {
                   ),
                   _Metric(
                     icon: Icons.landscape_rounded,
-                    value: context.formatElevation(stats.highestAscentMeters, signed: true),
+                    value: context.formatElevation(
+                      stats.highestAscentMeters,
+                      signed: true,
+                    ),
                     label: strings.highestAscent,
                   ),
                   _Metric(
@@ -166,7 +176,6 @@ class _Metric extends StatelessWidget {
     );
   }
 }
-
 
 String _duration(Duration value) {
   final hours = value.inHours;

@@ -879,7 +879,8 @@ class AppLocalizations {
       'recoveredRecordingHint': 'An interrupted recording was found. You can resume it or discard it.',
       'activityName': 'Activity name',
       'activitySaved': 'Activity saved',
-      'activitySaveFailed': 'Activity save failed. Your track is still recoverable.',
+      'activitySaveFailed':
+          'Activity save failed. Your track is still recoverable.',
       'retrySave': 'Retry save',
       'savePending': 'Save pending',
       'activityTooShort': 'Track is too short to save',
@@ -1195,7 +1196,8 @@ class AppLocalizations {
       'recoveredRecordingHint': 'Se encontró un registro interrumpido. Puedes reanudarlo o descartarlo.',
       'activityName': 'Nombre de actividad',
       'activitySaved': 'Actividad guardada',
-      'activitySaveFailed': 'No se pudo guardar la actividad. La ruta sigue siendo recuperable.',
+      'activitySaveFailed':
+          'No se pudo guardar la actividad. La ruta sigue siendo recuperable.',
       'retrySave': 'Reintentar guardado',
       'savePending': 'Guardado pendiente',
       'activityTooShort': 'La ruta es demasiado corta para guardarla',
@@ -1827,7 +1829,8 @@ class AppLocalizations {
       'recoveredRecordingHint': 'Foi encontrada uma gravação interrompida. Pode retomá-la ou descartá-la.',
       'activityName': 'Nome da atividade',
       'activitySaved': 'Atividade guardada',
-      'activitySaveFailed': 'Falha ao guardar a atividade. O percurso continua recuperável.',
+      'activitySaveFailed':
+          'Falha ao guardar a atividade. O percurso continua recuperável.',
       'retrySave': 'Tentar guardar novamente',
       'savePending': 'Guardado pendente',
       'activityTooShort': 'Percurso demasiado curto para guardar',

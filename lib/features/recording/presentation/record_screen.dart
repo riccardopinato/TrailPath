@@ -244,13 +244,11 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
-        content: Text(
-          switch (result) {
-            RecordingFinishResult.saved => strings.activitySaved,
-            RecordingFinishResult.tooShort => strings.activityTooShort,
-            RecordingFinishResult.saveFailed => strings.activitySaveFailed,
-          },
-        ),
+        content: Text(switch (result) {
+          RecordingFinishResult.saved => strings.activitySaved,
+          RecordingFinishResult.tooShort => strings.activityTooShort,
+          RecordingFinishResult.saveFailed => strings.activitySaveFailed,
+        }),
         action: result == RecordingFinishResult.saveFailed
             ? SnackBarAction(
                 label: strings.retrySave,
@@ -532,12 +530,18 @@ class _RecorderPanel extends StatelessWidget {
                 ),
               ),
               _RecordingMetric(
-                value: context.formatDistance(snapshot.distanceMeters, decimals: 2),
+                value: context.formatDistance(
+                  snapshot.distanceMeters,
+                  decimals: 2,
+                ),
                 label: strings.distance,
               ),
               const SizedBox(width: 18),
               _RecordingMetric(
-                value: context.formatElevation(snapshot.ascentMeters, signed: true),
+                value: context.formatElevation(
+                  snapshot.ascentMeters,
+                  signed: true,
+                ),
                 label: strings.ascent,
               ),
             ],
@@ -547,7 +551,10 @@ class _RecorderPanel extends StatelessWidget {
             children: [
               Expanded(
                 child: _RecordingMetric(
-                  value: context.formatPace(elapsed: snapshot.elapsed, distanceMeters: snapshot.distanceMeters),
+                  value: context.formatPace(
+                    elapsed: snapshot.elapsed,
+                    distanceMeters: snapshot.distanceMeters,
+                  ),
                   label: strings.currentPace,
                 ),
               ),
