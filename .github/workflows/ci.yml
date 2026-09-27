@@ -20,6 +20,11 @@ jobs:
     outputs:
       app_version: ${{ steps.app-version.outputs.app_version }}
       store_signing_available: ${{ steps.store-signing.outputs.available }}
+    env:
+      GOOGLE_SERVER_CLIENT_ID: ${{ secrets.GOOGLE_SERVER_CLIENT_ID || vars.GOOGLE_SERVER_CLIENT_ID }}
+      MAPTILER_API_KEY: ${{ secrets.MAPTILER_API_KEY || vars.MAPTILER_API_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY || vars.SUPABASE_PUBLISHABLE_KEY }}
 
     steps:
       - name: Checkout
@@ -62,6 +67,12 @@ jobs:
           test -n "$APP_VERSION"
           echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Report optional runtime configuration
+        run: |
+          [ -n "$GOOGLE_SERVER_CLIENT_ID" ] && echo "Google Sign-In: configured" || echo "Google Sign-In: not configured"
+          [ -n "$MAPTILER_API_KEY" ] && echo "MapTiler: configured" || echo "MapTiler: not configured"
+          [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_PUBLISHABLE_KEY" ] && echo "Supabase: configured" || echo "Supabase: not configured"
+
       - name: Resolve dependencies
         run: flutter pub get
 
@@ -98,13 +109,27 @@ jobs:
           fi
 
       - name: Build ARM64 optimized release
-        run: flutter build apk --release --target-platform android-arm64 --split-per-abi
+        run: |
+          flutter build apk --release --target-platform android-arm64 --split-per-abi \
+            --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
+            --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
 
       - name: Build x86_64 optimized release runtime gate
-        run: flutter build apk --release --target-platform android-x64 --split-per-abi
+        run: |
+          flutter build apk --release --target-platform android-x64 --split-per-abi \
+            --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
+            --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
 
       - name: Build release AAB structure gate
-        run: flutter build appbundle --release
+        run: flutter build appbundle --release \
+          --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
+          --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
+          --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+          --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
 
       - name: Upload CI-only AAB structure artifact
         uses: actions/upload-artifact@v6
@@ -128,7 +153,11 @@ jobs:
           STORE_FILE="$RUNNER_TEMP/trailpath-upload.jks"
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$STORE_FILE"
           test -s "$STORE_FILE"
-          TRAILPATH_STORE_FILE="$STORE_FILE" flutter build appbundle --release
+          TRAILPATH_STORE_FILE="$STORE_FILE" flutter build appbundle --release \
+          --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
+          --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
+          --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+          --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
           jarsigner -verify build/app/outputs/bundle/release/app-release.aab
 
       - name: Upload store-signed AAB
@@ -162,6 +191,25 @@ jobs:
           name: TrailPath-v${{ steps.app-version.outputs.app_version }}-arm64-release
           path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
           if-no-files-found: error
+
+      - name: Build ARM64 internal Pro QA release
+        run: |
+          flutter build apk --release --target-platform android-arm64 --split-per-abi \
+            --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
+            --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
+            --dart-define=TRAILPATH_INTERNAL_PRO=true
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
+            build/app/outputs/flutter-apk/TrailPath-internal-pro-arm64.apk
+
+      - name: Upload ARM64 internal Pro QA APK
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-v${{ steps.app-version.outputs.app_version }}-internal-pro-arm64
+          path: build/app/outputs/flutter-apk/TrailPath-internal-pro-arm64.apk
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Upload x86_64 release runtime APK
         uses: actions/upload-artifact@v6
