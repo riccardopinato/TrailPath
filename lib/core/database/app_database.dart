@@ -92,6 +92,30 @@ class AppSettings extends Table {
   Set<Column<Object>> get primaryKey => {key};
 }
 
+class RouteCollections extends Table {
+  TextColumn get id => text()();
+
+  TextColumn get name => text().withLength(min: 1, max: 120)();
+
+  DateTimeColumn get createdAt => dateTime()();
+
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class RouteCollectionItems extends Table {
+  TextColumn get collectionId => text()();
+
+  TextColumn get routeId => text()();
+
+  DateTimeColumn get addedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {collectionId, routeId};
+}
+
 class SyncOutboxEntries extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -130,6 +154,8 @@ class Waypoints extends Table {
     Waypoints,
     SavedReturnPoints,
     AppSettings,
+    RouteCollections,
+    RouteCollectionItems,
     SyncOutboxEntries,
   ],
 )
@@ -144,7 +170,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase._(executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -162,6 +188,10 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 4) {
         await migrator.createTable(syncOutboxEntries);
+      }
+      if (from < 5) {
+        await migrator.createTable(routeCollections);
+        await migrator.createTable(routeCollectionItems);
       }
     },
   );
@@ -503,6 +533,9 @@ class AppDatabase extends _$AppDatabase {
       await (delete(
         waypoints,
       )..where((row) => row.routeId.equals(routeId))).go();
+      await (delete(
+        routeCollectionItems,
+      )..where((row) => row.routeId.equals(routeId))).go();
       await (delete(savedRoutes)..where((row) => row.id.equals(routeId))).go();
       await _queueSyncMutation(
         SyncEntityType.route,
@@ -510,6 +543,200 @@ class AppDatabase extends _$AppDatabase {
         SyncMutationAction.delete,
         updatedAt: now,
       );
+    });
+  }
+
+  Stream<List<RouteCollection>> watchRouteCollections() {
+    return (select(routeCollections)
+          ..orderBy([(row) => OrderingTerm.asc(row.name)]))
+        .watch();
+  }
+
+  Future<List<RouteCollection>> listRouteCollections() {
+    return (select(routeCollections)
+          ..orderBy([(row) => OrderingTerm.asc(row.name)]))
+        .get();
+  }
+
+  Future<List<String>> listCollectionRouteIds(String collectionId) async {
+    final rows =
+        await (select(routeCollectionItems)
+              ..where((row) => row.collectionId.equals(collectionId))
+              ..orderBy([(row) => OrderingTerm.asc(row.addedAt)]))
+            .get();
+    return rows.map((row) => row.routeId).toList(growable: false);
+  }
+
+  Future<String> createRouteCollection(String name) async {
+    final normalized = name.trim();
+    if (normalized.isEmpty) {
+      throw ArgumentError.value(name, 'name', 'Collection name is required.');
+    }
+    final now = DateTime.now();
+    final id = 'collection-' + now.microsecondsSinceEpoch.toString();
+    await transaction(() async {
+      await into(routeCollections).insert(
+        RouteCollectionsCompanion.insert(
+          id: id,
+          name: normalized,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+      await _queueSyncMutation(
+        SyncEntityType.collection,
+        id,
+        SyncMutationAction.upsert,
+        updatedAt: now,
+      );
+    });
+    return id;
+  }
+
+  Future<void> renameRouteCollection(String id, String name) async {
+    final normalized = name.trim();
+    if (normalized.isEmpty) {
+      throw ArgumentError.value(name, 'name', 'Collection name is required.');
+    }
+    final now = DateTime.now();
+    await transaction(() async {
+      await (update(routeCollections)..where((row) => row.id.equals(id))).write(
+        RouteCollectionsCompanion(
+          name: Value(normalized),
+          updatedAt: Value(now),
+        ),
+      );
+      await _queueSyncMutation(
+        SyncEntityType.collection,
+        id,
+        SyncMutationAction.upsert,
+        updatedAt: now,
+      );
+    });
+  }
+
+  Future<void> addRouteToCollection(
+    String collectionId,
+    String routeId,
+  ) async {
+    final now = DateTime.now();
+    await transaction(() async {
+      await into(routeCollectionItems).insertOnConflictUpdate(
+        RouteCollectionItemsCompanion.insert(
+          collectionId: collectionId,
+          routeId: routeId,
+          addedAt: now,
+        ),
+      );
+      await (update(routeCollections)
+            ..where((row) => row.id.equals(collectionId)))
+          .write(RouteCollectionsCompanion(updatedAt: Value(now)));
+      await _queueSyncMutation(
+        SyncEntityType.collection,
+        collectionId,
+        SyncMutationAction.upsert,
+        updatedAt: now,
+      );
+    });
+  }
+
+  Future<void> removeRouteFromCollection(
+    String collectionId,
+    String routeId,
+  ) async {
+    final now = DateTime.now();
+    await transaction(() async {
+      await (delete(routeCollectionItems)
+            ..where((row) => row.collectionId.equals(collectionId))
+            ..where((row) => row.routeId.equals(routeId)))
+          .go();
+      await (update(routeCollections)
+            ..where((row) => row.id.equals(collectionId)))
+          .write(RouteCollectionsCompanion(updatedAt: Value(now)));
+      await _queueSyncMutation(
+        SyncEntityType.collection,
+        collectionId,
+        SyncMutationAction.upsert,
+        updatedAt: now,
+      );
+    });
+  }
+
+  Future<void> deleteRouteCollection(String id) async {
+    final now = DateTime.now();
+    await transaction(() async {
+      await (delete(
+        routeCollectionItems,
+      )..where((row) => row.collectionId.equals(id))).go();
+      await (delete(routeCollections)..where((row) => row.id.equals(id))).go();
+      await _queueSyncMutation(
+        SyncEntityType.collection,
+        id,
+        SyncMutationAction.delete,
+        updatedAt: now,
+      );
+    });
+  }
+
+  Future<Map<String, Object?>?> collectionSyncPayload(
+    String collectionId,
+  ) async {
+    final collection =
+        await (select(routeCollections)
+              ..where((row) => row.id.equals(collectionId))
+              ..limit(1))
+            .getSingleOrNull();
+    if (collection == null) {
+      return null;
+    }
+    final routeIds = await listCollectionRouteIds(collectionId);
+    return <String, Object?>{
+      'id': collection.id,
+      'name': collection.name,
+      'created_at': collection.createdAt.toUtc().toIso8601String(),
+      'updated_at': collection.updatedAt.toUtc().toIso8601String(),
+      'route_ids': routeIds,
+    };
+  }
+
+  Future<void> applyRemoteCollection(Map<String, dynamic> payload) async {
+    final id = payload['id'] as String?;
+    final name = payload['name'] as String?;
+    final createdAt = DateTime.tryParse(payload['created_at'] as String? ?? '');
+    final updatedAt = DateTime.tryParse(payload['updated_at'] as String? ?? '');
+    final routeIdsRaw = payload['route_ids'];
+    if (id == null ||
+        name == null ||
+        createdAt == null ||
+        updatedAt == null ||
+        routeIdsRaw is! List) {
+      throw const FormatException('Remote collection payload is incomplete.');
+    }
+
+    await transaction(() async {
+      await into(routeCollections).insertOnConflictUpdate(
+        RouteCollectionsCompanion.insert(
+          id: id,
+          name: name,
+          createdAt: createdAt.toLocal(),
+          updatedAt: updatedAt.toLocal(),
+        ),
+      );
+      await (delete(
+        routeCollectionItems,
+      )..where((row) => row.collectionId.equals(id))).go();
+      final now = updatedAt.toLocal();
+      final items = <RouteCollectionItemsCompanion>[
+        for (final routeId in routeIdsRaw.whereType<String>())
+          RouteCollectionItemsCompanion.insert(
+            collectionId: id,
+            routeId: routeId,
+            addedAt: now,
+          ),
+      ];
+      if (items.isNotEmpty) {
+        await batch((batch) => batch.insertAll(routeCollectionItems, items));
+      }
     });
   }
 
@@ -562,6 +789,7 @@ class AppDatabase extends _$AppDatabase {
 
     final routes = await listSavedRoutes();
     final completed = await listCompletedActivities();
+    final collections = await listRouteCollections();
     final preferences = await listCloudPreferences();
     await transaction(() async {
       for (final route in routes) {
@@ -579,6 +807,14 @@ class AppDatabase extends _$AppDatabase {
           SyncMutationAction.upsert,
           updatedAt:
               activity.updatedAt ?? activity.endedAt ?? activity.startedAt,
+        );
+      }
+      for (final collection in collections) {
+        await _queueSyncMutation(
+          SyncEntityType.collection,
+          collection.id,
+          SyncMutationAction.upsert,
+          updatedAt: collection.updatedAt,
         );
       }
       if (preferences.isNotEmpty) {
@@ -845,6 +1081,16 @@ class AppDatabase extends _$AppDatabase {
         break;
       case SyncEntityType.preferences:
         break;
+      case SyncEntityType.collection:
+        await transaction(() async {
+          await (delete(
+            routeCollectionItems,
+          )..where((row) => row.collectionId.equals(entityId))).go();
+          await (delete(
+            routeCollections,
+          )..where((row) => row.id.equals(entityId))).go();
+        });
+        break;
     }
   }
 
@@ -861,6 +1107,13 @@ class AppDatabase extends _$AppDatabase {
             ?.toUtc();
       case SyncEntityType.preferences:
         return cloudPreferencesUpdatedAt();
+      case SyncEntityType.collection:
+        final collection =
+            await (select(routeCollections)
+                  ..where((row) => row.id.equals(entityId))
+                  ..limit(1))
+                .getSingleOrNull();
+        return collection?.updatedAt.toUtc();
     }
   }
 
