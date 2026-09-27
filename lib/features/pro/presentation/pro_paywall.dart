@@ -122,7 +122,9 @@ class TrailPathProSheet extends ConsumerWidget {
                 child: Text(strings.restorePurchases),
               ),
             ],
-            if (!premium.storeAvailable && !premium.isLoading) ...[
+            if (!premium.isPro &&
+                !premium.storeAvailable &&
+                !premium.isLoading) ...[
               const SizedBox(height: 8),
               Text(
                 strings.proStoreUnavailable,
