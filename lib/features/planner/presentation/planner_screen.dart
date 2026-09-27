@@ -1742,113 +1742,117 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                               runSpacing: 4,
                               children: [
                                 ChoiceChip(
-                              label: Text(strings.traceFollowTrails),
-                              selected: _traceMatchMode == MapMatchMode.trails,
-                              onSelected: _traceProcessing
-                                  ? null
-                                  : (_) => setState(
-                                      () =>
-                                          _traceMatchMode = MapMatchMode.trails,
-                                    ),
-                              visualDensity: VisualDensity.compact,
-                            ),
-                            ChoiceChip(
-                              label: Text(strings.traceFollowRoads),
-                              selected: _traceMatchMode == MapMatchMode.roads,
-                              onSelected: _traceProcessing
-                                  ? null
-                                  : (_) => setState(
-                                      () =>
-                                          _traceMatchMode = MapMatchMode.roads,
-                                    ),
-                              visualDensity: VisualDensity.compact,
-                            ),
-                            ChoiceChip(
-                              label: Text(strings.traceFree),
-                              selected: _traceMatchMode == MapMatchMode.free,
-                              onSelected: _traceProcessing
-                                  ? null
-                                  : (_) => setState(
-                                      () => _traceMatchMode = MapMatchMode.free,
-                                    ),
-                              visualDensity: VisualDensity.compact,
+                                  label: Text(strings.traceFollowTrails),
+                                  selected:
+                                      _traceMatchMode == MapMatchMode.trails,
+                                  onSelected: _traceProcessing
+                                      ? null
+                                      : (_) => setState(
+                                          () => _traceMatchMode =
+                                              MapMatchMode.trails,
+                                        ),
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                ChoiceChip(
+                                  label: Text(strings.traceFollowRoads),
+                                  selected:
+                                      _traceMatchMode == MapMatchMode.roads,
+                                  onSelected: _traceProcessing
+                                      ? null
+                                      : (_) => setState(
+                                          () => _traceMatchMode =
+                                              MapMatchMode.roads,
+                                        ),
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                ChoiceChip(
+                                  label: Text(strings.traceFree),
+                                  selected:
+                                      _traceMatchMode == MapMatchMode.free,
+                                  onSelected: _traceProcessing
+                                      ? null
+                                      : (_) => setState(
+                                          () => _traceMatchMode =
+                                              MapMatchMode.free,
+                                        ),
+                                  visualDensity: VisualDensity.compact,
                                 ),
                               ],
                             ),
                             if (planner.points.length >= 2) ...[
-                          const SizedBox(height: 5),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: [
-                              ActionChip(
-                                avatar: const Icon(
-                                  Icons.all_inclusive_rounded,
-                                  size: 17,
-                                ),
-                                label: Text(strings.traceCloseLoop),
-                                onPressed: _traceProcessing
-                                    ? null
-                                    : () {
-                                        ref
-                                            .read(
-                                              routePlannerProvider.notifier,
-                                            )
-                                            .closeLoop();
-                                      },
-                                visualDensity: VisualDensity.compact,
-                              ),
-                              ActionChip(
-                                avatar: const Icon(
-                                  Icons.swap_horiz_rounded,
-                                  size: 17,
-                                ),
-                                label: Text(strings.traceOutAndBack),
-                                onPressed: _traceProcessing
-                                    ? null
-                                    : () {
-                                        ref
-                                            .read(
-                                              routePlannerProvider.notifier,
-                                            )
-                                            .makeOutAndBack();
-                                      },
-                                visualDensity: VisualDensity.compact,
-                              ),
-                              ActionChip(
-                                avatar: const Icon(
-                                  Icons.swap_calls_rounded,
-                                  size: 17,
-                                ),
-                                label: Text(strings.traceReverse),
-                                onPressed: _traceProcessing
-                                    ? null
-                                    : () {
-                                        ref
-                                            .read(
-                                              routePlannerProvider.notifier,
-                                            )
-                                            .reverseRoute();
-                                      },
-                                visualDensity: VisualDensity.compact,
-                              ),
-                              ActionChip(
-                                avatar: const Icon(
-                                  Icons.auto_fix_off_rounded,
-                                  size: 17,
-                                ),
-                                label: Text(strings.traceErase),
-                                onPressed: _traceProcessing
-                                    ? null
-                                    : () {
-                                        ref
-                                            .read(
-                                              routePlannerProvider.notifier,
-                                            )
-                                            .eraseLastSegment();
-                                      },
-                                visualDensity: VisualDensity.compact,
-                              ),
+                              const SizedBox(height: 5),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                children: [
+                                  ActionChip(
+                                    avatar: const Icon(
+                                      Icons.all_inclusive_rounded,
+                                      size: 17,
+                                    ),
+                                    label: Text(strings.traceCloseLoop),
+                                    onPressed: _traceProcessing
+                                        ? null
+                                        : () {
+                                            ref
+                                                .read(
+                                                  routePlannerProvider.notifier,
+                                                )
+                                                .closeLoop();
+                                          },
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                  ActionChip(
+                                    avatar: const Icon(
+                                      Icons.swap_horiz_rounded,
+                                      size: 17,
+                                    ),
+                                    label: Text(strings.traceOutAndBack),
+                                    onPressed: _traceProcessing
+                                        ? null
+                                        : () {
+                                            ref
+                                                .read(
+                                                  routePlannerProvider.notifier,
+                                                )
+                                                .makeOutAndBack();
+                                          },
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                  ActionChip(
+                                    avatar: const Icon(
+                                      Icons.swap_calls_rounded,
+                                      size: 17,
+                                    ),
+                                    label: Text(strings.traceReverse),
+                                    onPressed: _traceProcessing
+                                        ? null
+                                        : () {
+                                            ref
+                                                .read(
+                                                  routePlannerProvider.notifier,
+                                                )
+                                                .reverseRoute();
+                                          },
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                  ActionChip(
+                                    avatar: const Icon(
+                                      Icons.auto_fix_off_rounded,
+                                      size: 17,
+                                    ),
+                                    label: Text(strings.traceErase),
+                                    onPressed: _traceProcessing
+                                        ? null
+                                        : () {
+                                            ref
+                                                .read(
+                                                  routePlannerProvider.notifier,
+                                                )
+                                                .eraseLastSegment();
+                                          },
+                                    visualDensity: VisualDensity.compact,
+                                  ),
                                 ],
                               ),
                             ],
