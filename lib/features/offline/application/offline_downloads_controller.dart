@@ -132,7 +132,7 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
       final preferences =
           ref.read(settingsControllerProvider).asData?.value ??
           await ref.read(settingsControllerProvider.future);
-      if (preferences.wifiOnlyDownloads) {
+      if (preferences?.wifiOnlyDownloads ?? false) {
         final connectivity = await Connectivity().checkConnectivity();
         final allowed =
             connectivity.contains(ConnectivityResult.wifi) ||
