@@ -30,10 +30,13 @@ services:
 - map style/tile requests to the configured OpenFreeMap endpoint;
 - place-search text and language to the configured Nominatim endpoint;
 - selected route waypoints to the configured OpenStreetMap routing endpoint;
-- sampled route coordinates to Open-Meteo for elevation lookup.
+- sampled Smart Trace coordinates to the configured Valhalla map-matching endpoint;
+- sampled route coordinates to Open-Meteo for elevation lookup and, when Route Lab is used, weather along the route;
+- bounded route-corridor queries to the configured Overpass endpoint for outdoor POIs and surface classification;
+- when the user enables Pro provider-backed maps, map styles/tiles and optional terrain DEM requests to the configured commercial map provider (currently MapTiler).
 
 These services receive the request information required to answer the operation.
-TrailPath does not add an account identifier to those requests.
+TrailPath does not add a TrailPath/Google account identifier to map, routing, map-matching, elevation, weather or Overpass requests.
 
 ## Sharing
 
@@ -63,7 +66,7 @@ explicitly required.
 
 TrailPath remains local-first. Google account sign-in and Supabase Cloud Sync are optional and are disabled when their runtime configuration is absent.
 
-When a user explicitly signs in and enables/uses Cloud Sync, TrailPath may send the following to the configured Supabase project under that authenticated user's row-level-security scope:
+When a user explicitly signs in and enables/uses Cloud Sync, Google identity tokens are used only to establish the configured Supabase authenticated session. TrailPath may then send the following to that Supabase project under the authenticated user's row-level-security scope:
 
 - saved route metadata, geometry and waypoints;
 - completed activity metadata and recorded geometry;
