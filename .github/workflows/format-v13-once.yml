@@ -1,0 +1,31 @@
+name: TrailPath v1.3 one-shot formatter
+
+on:
+  push:
+    branches:
+      - feature/v1.1-v1.5
+
+permissions:
+  contents: write
+
+jobs:
+  format-and-self-remove:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/v1.1-v1.5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.5"
+          channel: stable
+          cache: true
+      - run: dart format lib/features/navigation/presentation/navigation_screen.dart
+      - run: |
+          rm .github/workflows/format-v13-once.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/features/navigation/presentation/navigation_screen.dart .github/workflows/format-v13-once.yml
+          git commit -m "style: format v1.3 settings integration"
+          git push origin HEAD:feature/v1.1-v1.5
