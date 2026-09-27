@@ -10,20 +10,24 @@ final settingsControllerProvider =
 
 class SettingsController extends AsyncNotifier<AppPreferences> {
   static const _themeKey = 'preference_theme';
+  static const _unitsKey = 'preference_units';
   static const _profileKey = 'preference_default_profile';
   static const _mapKey = 'preference_default_map';
   static const _voiceKey = 'preference_voice_guidance';
   static const _wifiKey = 'preference_wifi_only_downloads';
+  static const _rerouteKey = 'preference_auto_reroute';
 
   @override
   Future<AppPreferences> build() async {
     final database = ref.read(appDatabaseProvider);
     final values = await Future.wait<String?>([
       database.getSetting(_themeKey),
+      database.getSetting(_unitsKey),
       database.getSetting(_profileKey),
       database.getSetting(_mapKey),
       database.getSetting(_voiceKey),
       database.getSetting(_wifiKey),
+      database.getSetting(_rerouteKey),
     ]);
 
     return AppPreferences(
@@ -32,23 +36,32 @@ class SettingsController extends AsyncNotifier<AppPreferences> {
         values[0],
         ThemePreference.system,
       ),
+      units: _enumByName(
+        DistanceUnitPreference.values,
+        values[1],
+        DistanceUnitPreference.metric,
+      ),
       defaultProfile: _enumByName(
         RouteProfile.values,
-        values[1],
+        values[2],
         RouteProfile.hiking,
       ),
       defaultMap: _enumByName(
         DefaultMapPreference.values,
-        values[2],
+        values[3],
         DefaultMapPreference.outdoor,
       ),
-      voiceGuidance: _boolValue(values[3], fallback: true),
-      wifiOnlyDownloads: _boolValue(values[4], fallback: false),
+      voiceGuidance: _boolValue(values[4], fallback: true),
+      wifiOnlyDownloads: _boolValue(values[5], fallback: false),
+      autoReroute: _boolValue(values[6], fallback: false),
     );
   }
 
   Future<void> setTheme(ThemePreference value) =>
       _update(_themeKey, value.name, (p) => p.copyWith(theme: value));
+
+  Future<void> setUnits(DistanceUnitPreference value) =>
+      _update(_unitsKey, value.name, (p) => p.copyWith(units: value));
 
   Future<void> setDefaultProfile(RouteProfile value) => _update(
     _profileKey,
@@ -69,6 +82,12 @@ class SettingsController extends AsyncNotifier<AppPreferences> {
     _wifiKey,
     value.toString(),
     (p) => p.copyWith(wifiOnlyDownloads: value),
+  );
+
+  Future<void> setAutoReroute(bool value) => _update(
+    _rerouteKey,
+    value.toString(),
+    (p) => p.copyWith(autoReroute: value),
   );
 
   Future<void> _update(

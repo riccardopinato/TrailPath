@@ -8,6 +8,7 @@ import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/features/recording/application/recording_controller.dart';
 
 class RecordScreen extends ConsumerStatefulWidget {
@@ -207,29 +208,53 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
       return;
     }
 
-    final saved = await recordingController.finish(name);
+    final result = await recordingController.finish(name);
+    await _handleFinishResult(result);
+  }
 
+  Future<void> _retryFinalization() async {
+    final result = await ref
+        .read(recordingControllerProvider.notifier)
+        .retryFinish();
+    await _handleFinishResult(result);
+  }
+
+  Future<void> _handleFinishResult(RecordingFinishResult result) async {
     if (!mounted) {
       return;
     }
 
-    await _syncTrack(
-      const TrackRecorderSnapshot(
-        status: TrackRecorderStatus.idle,
-        points: [],
-        distanceMeters: 0,
-        elapsed: Duration.zero,
-      ),
-      follow: false,
-    );
-
-    if (!mounted) {
-      return;
+    if (result != RecordingFinishResult.saveFailed) {
+      await _syncTrack(
+        const TrackRecorderSnapshot(
+          status: TrackRecorderStatus.idle,
+          points: [],
+          distanceMeters: 0,
+          elapsed: Duration.zero,
+        ),
+        follow: false,
+      );
+      if (!mounted) {
+        return;
+      }
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    final strings = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
       SnackBar(
-        content: Text(saved ? strings.activitySaved : strings.activityTooShort),
+        content: Text(switch (result) {
+          RecordingFinishResult.saved => strings.activitySaved,
+          RecordingFinishResult.tooShort => strings.activityTooShort,
+          RecordingFinishResult.saveFailed => strings.activitySaveFailed,
+        }),
+        action: result == RecordingFinishResult.saveFailed
+            ? SnackBarAction(
+                label: strings.retrySave,
+                onPressed: () => unawaited(_retryFinalization()),
+              )
+            : null,
       ),
     );
   }
@@ -344,7 +369,9 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        snapshot.status == TrackRecorderStatus.recording
+                        state.hasPendingFinalization
+                            ? strings.savePending
+                            : snapshot.status == TrackRecorderStatus.recording
                             ? strings.recording
                             : snapshot.status == TrackRecorderStatus.paused
                             ? strings.paused
@@ -396,6 +423,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
               onPause: ref.read(recordingControllerProvider.notifier).pause,
               onResume: ref.read(recordingControllerProvider.notifier).resume,
               onFinish: _finishRecording,
+              onRetryFinish: _retryFinalization,
               onDiscard: _discardRecording,
             ),
           ),
@@ -414,6 +442,7 @@ class _RecorderPanel extends StatelessWidget {
     required this.onPause,
     required this.onResume,
     required this.onFinish,
+    required this.onRetryFinish,
     required this.onDiscard,
   });
 
@@ -424,6 +453,7 @@ class _RecorderPanel extends StatelessWidget {
   final Future<void> Function() onPause;
   final Future<void> Function() onResume;
   final Future<void> Function() onFinish;
+  final Future<void> Function() onRetryFinish;
   final Future<void> Function() onDiscard;
 
   @override
@@ -431,6 +461,7 @@ class _RecorderPanel extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final snapshot = state.snapshot;
     final active = state.isActive;
+    final pendingFinalization = state.hasPendingFinalization;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 15),
@@ -499,12 +530,18 @@ class _RecorderPanel extends StatelessWidget {
                 ),
               ),
               _RecordingMetric(
-                value: _formatDistance(snapshot.distanceMeters),
+                value: context.formatDistance(
+                  snapshot.distanceMeters,
+                  decimals: 2,
+                ),
                 label: strings.distance,
               ),
               const SizedBox(width: 18),
               _RecordingMetric(
-                value: '+${snapshot.ascentMeters.round()} m',
+                value: context.formatElevation(
+                  snapshot.ascentMeters,
+                  signed: true,
+                ),
                 label: strings.ascent,
               ),
             ],
@@ -514,7 +551,10 @@ class _RecorderPanel extends StatelessWidget {
             children: [
               Expanded(
                 child: _RecordingMetric(
-                  value: _formatPace(snapshot),
+                  value: context.formatPace(
+                    elapsed: snapshot.elapsed,
+                    distanceMeters: snapshot.distanceMeters,
+                  ),
                   label: strings.currentPace,
                 ),
               ),
@@ -523,7 +563,7 @@ class _RecorderPanel extends StatelessWidget {
                 child: _RecordingMetric(
                   value: snapshot.accuracyMeters == null
                       ? '--'
-                      : '±${snapshot.accuracyMeters!.round()} m',
+                      : context.formatAccuracy(snapshot.accuracyMeters!),
                   label: strings.gpsAccuracy,
                 ),
               ),
@@ -536,7 +576,7 @@ class _RecorderPanel extends StatelessWidget {
               ),
             ],
           ),
-          if (!active) ...[
+          if (!active && !pendingFinalization) ...[
             const SizedBox(height: 12),
             SizedBox(
               height: 38,
@@ -572,7 +612,21 @@ class _RecorderPanel extends StatelessWidget {
             ),
           Row(
             children: [
-              if (!active)
+              if (pendingFinalization) ...[
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: onRetryFinish,
+                    icon: const Icon(Icons.save_rounded),
+                    label: Text(strings.retrySave),
+                  ),
+                ),
+                const SizedBox(width: 9),
+                IconButton.filledTonal(
+                  tooltip: strings.discard,
+                  onPressed: onDiscard,
+                  icon: const Icon(Icons.delete_outline_rounded),
+                ),
+              ] else if (!active)
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: state.isCheckingRecovery ? null : onStart,
@@ -607,7 +661,7 @@ class _RecorderPanel extends StatelessWidget {
                   ),
                 ),
               ],
-              if (state.hasRecoveredDraft) ...[
+              if (state.hasRecoveredDraft && !pendingFinalization) ...[
                 const SizedBox(width: 9),
                 IconButton.filledTonal(
                   tooltip: strings.discard,
@@ -708,24 +762,6 @@ String _formatElapsed(Duration duration) {
   return '${hours.toString().padLeft(2, '0')}:'
       '${minutes.toString().padLeft(2, '0')}:'
       '${seconds.toString().padLeft(2, '0')}';
-}
-
-String _formatDistance(double meters) {
-  if (meters < 1000) {
-    return '${meters.round()} m';
-  }
-  return '${(meters / 1000).toStringAsFixed(2)} km';
-}
-
-String _formatPace(TrackRecorderSnapshot snapshot) {
-  if (snapshot.distanceMeters < 50 || snapshot.elapsed.inSeconds <= 0) {
-    return '--';
-  }
-  final secondsPerKm =
-      snapshot.elapsed.inSeconds / (snapshot.distanceMeters / 1000);
-  final minutes = secondsPerKm ~/ 60;
-  final seconds = (secondsPerKm % 60).round().clamp(0, 59);
-  return '$minutes:${seconds.toString().padLeft(2, '0')}/km';
 }
 
 String _profileLabel(AppLocalizations strings, RouteProfile profile) {

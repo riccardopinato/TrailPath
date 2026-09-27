@@ -6,6 +6,8 @@ import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/outdoor/application/battery_mode_controller.dart';
+import 'package:trail_path/features/pro/application/premium_controller.dart';
+import 'package:trail_path/features/settings/application/settings_controller.dart';
 
 final activeNavigationProvider =
     NotifierProvider<ActiveNavigationController, ActiveNavigationState>(
@@ -45,6 +47,8 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
   StreamSubscription<NavigationEvent>? _subscription;
   NavigationEngine? _engine;
   NavigationFeedback? _feedback;
+  bool _rerouteInFlight = false;
+  DateTime? _lastRerouteAt;
 
   @override
   ActiveNavigationState build() {
@@ -132,6 +136,7 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
               if (voiceGuidance) {
                 unawaited(_safeSpeak(feedback, voice.offRoute));
               }
+              unawaited(_maybeAutoReroute(event));
             case NavigationEventType.backOnRoute:
               if (voiceGuidance) {
                 unawaited(_safeSpeak(feedback, voice.backOnRoute));
@@ -171,11 +176,77 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
     }
   }
 
+  Future<void> _maybeAutoReroute(NavigationEvent event) async {
+    if (_rerouteInFlight || !state.isActive) {
+      return;
+    }
+    final currentPoint = event.currentPoint;
+    final activeRoute = state.route;
+    if (currentPoint == null ||
+        activeRoute == null ||
+        activeRoute.geometry.length < 2) {
+      return;
+    }
+
+    try {
+      final preferences = await ref.read(settingsControllerProvider.future);
+      final premium = ref.read(premiumControllerProvider);
+      if (!preferences.autoReroute || !premium.isPro || !ref.mounted) {
+        return;
+      }
+
+      final now = DateTime.now();
+      final last = _lastRerouteAt;
+      if (last != null && now.difference(last) < const Duration(seconds: 45)) {
+        return;
+      }
+
+      _rerouteInFlight = true;
+      final destination = activeRoute.geometry.last;
+      final rerouted = await ref
+          .read(routingEngineProvider)
+          .calculate(
+            RouteRequest(
+              points: [currentPoint, destination],
+              profile: activeRoute.profile,
+              snapToNetwork: true,
+            ),
+          );
+
+      if (!ref.mounted ||
+          !state.isActive ||
+          !rerouted.isSnapped ||
+          rerouted.geometry.length < 2) {
+        return;
+      }
+
+      final engine = _engine;
+      if (engine == null) {
+        return;
+      }
+      final batteryMode = await ref.read(batteryModeProvider.future);
+      if (!ref.mounted || !state.isActive) {
+        return;
+      }
+
+      _lastRerouteAt = now;
+      state = state.copyWith(route: rerouted, clearError: true);
+      await engine.start(rerouted, mode: batteryMode);
+    } on Object {
+      // Automatic rerouting is opportunistic. Keep the original route and
+      // existing off-route guidance when routing/network is unavailable.
+    } finally {
+      _rerouteInFlight = false;
+    }
+  }
+
   Future<void> stop() async {
     final engine = _engine;
     final feedback = _feedback;
     final subscription = _subscription;
     _subscription = null;
+    _rerouteInFlight = false;
+    _lastRerouteAt = null;
 
     if (engine != null) {
       await engine.stop();

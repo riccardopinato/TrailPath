@@ -7,6 +7,8 @@ import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/features/outdoor/application/battery_mode_controller.dart';
+import 'package:trail_path/features/pro/application/premium_controller.dart';
+import 'package:trail_path/features/pro/presentation/pro_paywall.dart';
 import 'package:trail_path/features/settings/application/settings_controller.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -17,6 +19,7 @@ class SettingsScreen extends ConsumerWidget {
     final strings = AppLocalizations.of(context);
     final preferences = ref.watch(settingsControllerProvider);
     final batteryMode = ref.watch(batteryModeProvider);
+    final premium = ref.watch(premiumControllerProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(strings.settings)),
@@ -89,6 +92,33 @@ class SettingsScreen extends ConsumerWidget {
                           ref
                               .read(settingsControllerProvider.notifier)
                               .setDefaultProfile(value),
+                        );
+                      }
+                    },
+                  ),
+                  const Divider(height: 1),
+                  DropdownButtonFormField<DistanceUnitPreference>(
+                    initialValue: prefs.units,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      labelText: strings.units,
+                    ),
+                    items: [
+                      DropdownMenuItem(
+                        value: DistanceUnitPreference.metric,
+                        child: Text(strings.metricUnits),
+                      ),
+                      DropdownMenuItem(
+                        value: DistanceUnitPreference.imperial,
+                        child: Text(strings.imperialUnits),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        unawaited(
+                          ref
+                              .read(settingsControllerProvider.notifier)
+                              .setUnits(value),
                         );
                       }
                     },
@@ -184,6 +214,28 @@ class SettingsScreen extends ConsumerWidget {
                       );
                     },
                   ),
+                  const Divider(height: 1),
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(strings.autoReroute),
+                    subtitle: Text(
+                      premium.isPro
+                          ? strings.autoRerouteHint
+                          : strings.autoRerouteProHint,
+                    ),
+                    value: premium.isPro && prefs.autoReroute,
+                    onChanged: (value) {
+                      if (!premium.isPro) {
+                        unawaited(showTrailPathProPaywall(context, ref));
+                        return;
+                      }
+                      unawaited(
+                        ref
+                            .read(settingsControllerProvider.notifier)
+                            .setAutoReroute(value),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -251,6 +303,7 @@ String _mapLabel(AppLocalizations strings, DefaultMapPreference map) {
   return switch (map) {
     DefaultMapPreference.outdoor => strings.mapOutdoor,
     DefaultMapPreference.street => strings.mapStreet,
+    DefaultMapPreference.highContrast => strings.mapHighContrast,
     DefaultMapPreference.satellite => strings.mapSatellite,
     DefaultMapPreference.hybrid => strings.mapHybrid,
   };

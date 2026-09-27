@@ -4,7 +4,13 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 
 ## Current version
 
-v1.0.0 - Planner UX Hardening (build 31)
+Stable certification baseline: **v1.0.0+31**  
+Post-v1 cumulative development candidate: **v1.5.0+36**
+
+### Post-v1 cumulative candidate
+
+The v1.5 branch contains the approved v1.1→v1.5 train: Smart Trace/map layers, TrailPath Pro, Settings/Profile/optional Google account, optional Supabase Cloud Sync, Route Lab, Collections, personal statistics, slope/terrain layers and automatic rerouting. Runtime/provider features remain fail-safe when their commercial configuration is absent.
+
 
 TrailPath v1.0.0 is the first stable Android release candidate. No new product scope is added here: the milestone is limited to final regression, artifact certification, release evidence and production-readiness gates.
 
@@ -165,27 +171,90 @@ The v1.1 Dart sources are normalized with the pinned Flutter 3.47.5 formatter be
 **v1.1 Smart Trace feature-complete checkpoint:** map matching, Trail/Road/Free modes, map layers, loop, out-and-back, reverse, eraser-last-segment and undo/redo are implemented; exact-head CI/AppLab validation follows this documentation commit.
 
 
+## v1.4 Cloud Sync
+
+The v1.4 staging candidate is **v1.4.0+35**.
+
+- Optional Supabase client, initialized only when `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` are supplied.
+- Google identity remains the user-facing sign-in; native Google tokens establish a Supabase session only when cloud sync is actually used.
+- Local Drift remains the source of truth while offline.
+- Schema v4 adds a coalescing sync outbox.
+- Route/activity deletes are represented as remote tombstones to avoid deleted data reappearing from another device.
+- Routes, completed activities and behavior-backed preferences use last-write-wins timestamps.
+- First cloud enablement seeds the outbox from existing local data.
+- Cloud Sync is a Pro entitlement but planning/recording/navigation remain fully local without it.
+- RLS-safe reference schema is documented in `docs/SUPABASE_CLOUD_SYNC_SCHEMA.sql`.
+- No Supabase service-role/secret key is embedded in the app.
+
+
+## v1.5 Outdoor Intelligence
+
+The full approved post-v1 development train reaches **v1.5.0+36**.
+
+Implemented:
+- Circular Route Generator using the existing routing + elevation engines and ranked loop candidates.
+- Route alternatives for **shortest**, **least climb**, **more trail** and **more road**, with OSM surface-aware ranking where data is available.
+- Pro **Slope Map** rendered from the existing elevation/grade profile.
+- Pro **3D Terrain** using a runtime-configured MapTiler Terrain DEM.
+- OSM/Overpass route-surface analysis with explicit unknown coverage where tagging is insufficient.
+- Outdoor POIs along the route: drinking water, shelters/huts, parking, viewpoints and toilets.
+- Open-Meteo weather sampling along multiple route positions.
+- Route Collections persisted in Drift schema v5 and included in optional cloud sync.
+- Personal statistics: totals, 7/30-day distance, moving time, longest activity and highest ascent.
+- Optional Pro automatic rerouting after off-route events, with cooldown and non-destructive failure behavior.
+- High-contrast map style as an additional free map option.
+- Pro access remains centralized through the Premium Engine; basic route ownership, recording, recovery and safety functions remain free.
+
+Provider-dependent functionality stays fail-safe: no MapTiler key means no Satellite/Hybrid/3D terrain; no cloud configuration means the app remains local-first; Overpass/Open-Meteo failures do not invalidate saved local routes.
+
+
+## v1.2 TrailPath Pro
+
+TrailPath Pro is implemented behind a provider-agnostic Premium Engine using the official Flutter Google Play Billing integration.
+
+- Monthly and yearly products: `trailpath_pro_monthly` / `trailpath_pro_yearly`.
+- Non-blocking paywall with purchase, restore and purchase-completion handling.
+- Satellite/Hybrid maps and later premium tools consume one entitlement state.
+- Basic planning, route ownership, recording, recovery and safety remain available without Pro.
+- Runtime map provider keys are never committed to source.
+
 ## v1.3 Settings, Profile & Account
 
-The v1.3 staging candidate is **v1.3.0+34**.
+- Settings are behavior-backed: theme, Metric/Imperial units, default activity/map, battery mode, voice guidance, Wi-Fi-only offline downloads and automatic rerouting.
+- Profile is the app/account hub and keeps Outdoor tools available without expanding bottom navigation.
+- Google Sign-In is optional and runtime-configured through `GOOGLE_SERVER_CLIENT_ID`.
+- Sign-out does not remove local TrailPath routes, activities or preferences.
+- Metric/Imperial preference is exposed and uses the shared measurement formatter across planner, recording, routes, navigation, Back to Car, Profile/Stats, Collections and Route Lab.
 
-- Profile becomes the fifth primary navigation destination and the hub for account, Pro, activity summary, Outdoor tools, Settings and future Cloud Sync.
-- Settings persist theme, default activity, default map, voice guidance and Wi-Fi-only offline download policy through the local Drift settings store.
-- Theme preference is applied globally.
-- Default activity/map preferences are applied when a new planner session starts.
-- Voice guidance preference is passed into active navigation.
-- Wi-Fi-only preference is enforced before starting new offline downloads.
-- Google Sign-In uses the current singleton API and remains optional/config-gated through `GOOGLE_SERVER_CLIENT_ID`.
-- TrailPath remains fully usable without account/login.
+v1.5 Outdoor Intelligence sources and tests are normalized with the pinned Flutter 3.47.5 formatter before staging CI.
 
-v1.3 Settings/Profile sources are normalized with the pinned Flutter 3.47.5 formatter.
+The v1.5 analyzer fixes are normalized with the pinned Flutter 3.47.5 toolchain before full CI/AppLab validation.
 
-The v1.3 source formatting is normalized with the pinned Flutter 3.47.5 formatter before the exact-head CI/AppLab gate.
+Surface analysis uses bounded route-corridor probes against Overpass instead of querying the full route bounding box, keeping long-route requests controlled while preserving explicit unknown coverage.
 
-AppLab now enters Outdoor tools through the Profile hub and verifies the v1.3 Settings/Pro entry points before returning to the planner.
+### v1.5 hardening notes
 
-Profile keeps the TrailPath Pro card above account details so subscription state and management remain immediately discoverable on small screens and in AppLab.
+- Cloud/collection conflict hardening removes collection membership when a route tombstone arrives and applies collection records after route state.
+- Remote collections ignore route IDs that are not present locally, preventing stale cloud references from resurrecting deleted memberships.
+- Google ID token is sufficient for Supabase authentication; a secondary Google access token is optional rather than a sync blocker.
+- Invalid/unavailable Supabase initialization cannot prevent TrailPath startup: the app continues local-first.
+- Drift migration coverage now includes v1, v2, v3 and v4 databases upgrading to schema v5.
+- Surface analysis uses bounded route-corridor Overpass probes rather than a potentially huge full-route bounding box.
 
-Profile Pro card exposes an explicit accessibility semantic label; AppLab now scrolls to Settings rather than assuming every Profile action fits the initial viewport.
+Metric/Imperial formatting is shared across planner, elevation, recording pace/GPS accuracy, saved routes, navigation, Back to Car, Profile/Stats, Collections, Route Lab POIs and route weather.
 
-The v1.3 Profile sources are formatter-normalized with the pinned Flutter 3.47.5 toolchain before exact-head CI/AppLab validation.
+The final Profile keeps TrailPath Pro above account details so entitlement state stays visible without scrolling on compact devices and in AppLab.
+
+AppLab now follows the v1.3+ navigation model through **Profile → Outdoor tools** instead of targeting the removed Outdoor bottom-navigation tab.
+
+Back to Car accuracy rendering uses the shared measurement formatter with valid localized composition in the v1.5 final candidate.
+
+Circular-route unit conversion is captured before async GPS/routing work, keeping the final v1.5 analyzer clean without crossing BuildContext over async gaps.
+
+The final Route Intelligence source is normalized with the pinned Flutter 3.47.5 formatter before exact-head CI/AppLab validation.
+
+Recording finalization now distinguishes **saved / too short / save failed**, keeps a failed final snapshot retryable in-session, and no longer misreports a database save failure as a short activity.
+
+The v1.5 final AppLab path uses explicit Profile/Pro semantics and scroll-aware access to Outdoor tools on compact viewports.
+
+The final Profile accessibility patch is normalized with the pinned Flutter 3.47.5 formatter before exact-head certification.

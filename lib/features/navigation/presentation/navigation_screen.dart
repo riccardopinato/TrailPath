@@ -8,6 +8,7 @@ import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/features/navigation/application/active_navigation_controller.dart';
 import 'package:trail_path/features/settings/application/settings_controller.dart';
 
@@ -386,7 +387,7 @@ class _NavigationPanel extends StatelessWidget {
               Expanded(
                 child: _NavMetric(
                   label: strings.remainingDistance,
-                  value: _formatDistance(remaining),
+                  value: context.formatDistance(remaining),
                 ),
               ),
               Expanded(
@@ -398,7 +399,7 @@ class _NavigationPanel extends StatelessWidget {
               Expanded(
                 child: _NavMetric(
                   label: strings.distanceFromRoute,
-                  value: _formatDistance(distanceToRoute),
+                  value: context.formatDistance(distanceToRoute),
                 ),
               ),
             ],
@@ -472,9 +473,4 @@ class _NavMetric extends StatelessWidget {
       ],
     );
   }
-}
-
-String _formatDistance(double meters) {
-  if (meters < 1000) return '${meters.round()} m';
-  return '${(meters / 1000).toStringAsFixed(1)} km';
 }

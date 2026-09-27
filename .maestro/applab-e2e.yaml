@@ -164,10 +164,9 @@ appId: com.riccardopinato.trail_path
     timeout: 15000
 - scrollUntilVisible:
     element:
-      text: "Settings"
+      text: "Outdoor tools"
     direction: DOWN
     timeout: 15000
-- assertVisible: "Settings"
 - tapOn: "Outdoor tools"
 - assertVisible: "Outdoor"
 - assertVisible: "Balanced"

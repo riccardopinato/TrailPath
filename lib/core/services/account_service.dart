@@ -9,5 +9,5 @@ abstract interface class AccountService {
 
   Future<void> signOut();
 
-  Future<String?> idToken();
+  Future<AccountAuthTokens?> authTokens({bool promptIfNeeded = false});
 }

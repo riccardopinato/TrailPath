@@ -5,6 +5,7 @@ import 'package:trail_path/app/router.dart';
 import 'package:trail_path/app/theme/app_theme.dart';
 import 'package:trail_path/core/domain/app_preferences.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/features/settings/application/settings_controller.dart';
 
 class TrailPathApp extends ConsumerWidget {
@@ -28,6 +29,10 @@ class TrailPathApp extends ConsumerWidget {
         ThemePreference.light => ThemeMode.light,
         ThemePreference.dark => ThemeMode.dark,
       },
+      builder: (context, child) => MeasurementScope(
+        units: preferences.units,
+        child: child ?? const SizedBox.shrink(),
+      ),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
         AppLocalizations.delegate,

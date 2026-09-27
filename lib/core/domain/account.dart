@@ -45,3 +45,10 @@ class AccountState {
     );
   }
 }
+
+class AccountAuthTokens {
+  const AccountAuthTokens({required this.idToken, this.accessToken});
+
+  final String idToken;
+  final String? accessToken;
+}

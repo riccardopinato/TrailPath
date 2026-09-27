@@ -101,8 +101,8 @@ Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current f
 - [ ] complete exact-artifact ARM64 physical QA, store signing, Play metadata/screenshots and rollout review.
 
 ### P2 — correctness, resilience and technical debt
-- [ ] keep ETA semantics consistent after partial reroute: patched legs currently recompute ETA with local static profile speed instead of provider duration;
-- [ ] harden recording finalization failure handling: a database completion failure after recorder stop must remain retryable/recoverable and must not surface as “activity too short”;
+- [x] keep ETA semantics consistent after partial reroute: unaffected duration is retained proportionally and the replacement span uses the routing provider duration;
+- [x] harden recording finalization failure handling: final snapshots remain retryable after database failure and UI distinguishes save failure from a genuinely short activity;
 - [ ] replace raw `error.toString()` surfaces with localized user-safe categories while preserving technical detail in structured logs;
 - [ ] localize foreground-service notification text and remaining hardcoded UI/support strings;
 - [ ] add explicit cancel semantics for long offline downloads and document/review download-size behavior;
@@ -134,58 +134,63 @@ Goal: make route creation materially closer to Footpath-quality behavior before 
 - [x] add drawing modes: Follow trails / Follow roads / Free.
 - [x] add route-drawing tools: eraser-last-segment, undo/redo, loop, out-and-back and reverse.
 - [x] keep the current distance/elevation engine as the reference implementation after Smart Trace matching.
-- [~] **Map layer selector:** Outdoor + Street are live; Satellite + Hybrid are wired as provider-gated styles. Dedicated high-contrast style remains later polish.
-- [~] **Pro satellite layer:** MapTiler Satellite is wired through runtime `MAPTILER_API_KEY`; commercial plan/key and entitlement gate complete in v1.2.
-- [~] **Pro satellite + trails overlay:** Hybrid provider style is wired; entitlement/licensing gate follows in v1.2.
-- [ ] evaluate terrain/relief/contours and future 3D terrain without coupling the app to one map vendor.
-- [ ] add explicit map-provider usage/cost telemetry hooks that do not track user routes or precise location analytics.
+- [x] **Map layer selector:** Outdoor, Street and High Contrast are free; Satellite and Hybrid are provider-gated Pro styles.
+- [x] **Pro satellite layer:** current MapTiler Satellite style is wired through runtime `MAPTILER_API_KEY` and Premium entitlement.
+- [x] **Pro satellite + trails overlay:** MapTiler Hybrid is wired behind Premium entitlement and runtime provider configuration.
+- [x] evaluate terrain/relief/contours without coupling core planner state to one vendor; v1.5 implements Pro Slope Map from TrailPath elevation data and optional MapLibre 3D terrain from a configured DEM provider.
+- [~] map-provider cost telemetry remains intentionally local/no-op until a privacy-reviewed aggregate backend exists; no route or precise-location analytics are introduced.
 
 ### v1.2 — TrailPath Pro
 
 Goal: introduce monetization only after the planner/map experience is strong enough to justify payment.
 
 - [x] implement a **Premium Engine** behind feature entitlements, provider-agnostic and testable.
-- [x] integrate Google Play Billing through the official `in_app_purchase` API behind `PremiumEngine`; no RevenueCat dependency is required for the current scope.
-- [x] billing products are modeled as monthly/yearly plans; proposed launch pricing remains **€2.99/month / €19.99/year** pending Play Console configuration.
+- [x] integrate official Google Play Billing via `in_app_purchase` behind `PremiumEngine`; RevenueCat is not required by the current architecture.
+- [x] monthly/yearly Play products are implemented; proposed launch pricing remains **€2.99/month / €19.99/year** pending Play Console product configuration.
 - [x] no Lifetime at launch while satellite/cloud providers create recurring operating cost.
-- [x] build a non-blocking paywall with monthly/yearly offers, restore purchases, purchase completion and transparent feature benefits.
-- [x] Free remains useful: route planning, GPS recording, elevation, GPX basics, standard maps and basic navigation.
-- [ ] Pro candidates: satellite layers, satellite + trails, advanced offline maps, advanced Smart Trace tools, advanced stats, cloud sync, route collections, route generator, terrain/slope layers and future premium map providers.
+- [x] build a non-blocking paywall with monthly/yearly products, restore purchases and transparent Pro benefits.
+- [x] Free remains useful: planning, GPS recording, elevation, GPX, standard/high-contrast maps and basic navigation.
+- [x] Pro entitlement now gates Satellite/Hybrid, Route Lab, Collections, Personal Stats, Cloud Sync, Slope Map, 3D Terrain and automatic rerouting; safety/recovery remain free.
 - [x] keep critical safety/recovery features outside the Pro paywall.
 
 ### v1.3 — Settings, Profile & Account Foundation
 
 Goal: make TrailPath feel like a complete product without forcing account creation.
 
-- [~] create a real **Settings** screen: map/activity defaults, GPS battery mode, theme, voice, Wi-Fi download policy and local-first privacy are live; global km/mi conversion remains deferred until every metric surface can switch consistently.
-- [x] create a useful **Profile** hub with account state, Pro status, activity/saved-route summary, Outdoor tools, Settings and Cloud Sync entry point.
+- [x] create a real **Settings** screen: Metric/Imperial units, default map/activity, GPS mode, theme, voice, Wi-Fi download policy, auto-reroute and privacy are behavior-backed; route/weather/pace displays use the shared measurement scope.
+- [x] create a useful **Profile** hub with account state, Pro status, activity/route summary, Outdoor tools, Settings, Route Lab, Collections, Stats and Cloud Sync.
 - [x] keep TrailPath fully usable local-first without login.
-- [x] add optional/config-gated **Google Sign-In** using the current `GoogleSignIn.instance` API; account remains optional.
-- [x] identity/auth is separate from the local Drift store; Google sign-out does not delete local routes/activities.
-- [x] add account/local/cloud data lifecycle documentation before production account enablement (`docs/ACCOUNT_DATA_LIFECYCLE.md`).
+- [x] optional **Google Sign-In** is config-gated and used only for account-backed Cloud Sync.
+- [x] separate identity/auth from local outdoor data; sign-out never silently deletes routes/activities/preferences.
+- [x] document account sign-out/local-data retention/cloud deletion lifecycle before production account enablement.
 
 ### v1.4 — Cloud Sync & Cross-device
 
-- [ ] optional backup/sync for routes, activities, preferences and collections.
-- [ ] design conflict resolution, offline-first queueing and explicit sync status before implementation.
-- [ ] encrypt transport and define at-rest policy for cloud-stored route/location history.
-- [ ] restore on new device and sign-out behavior must be deterministic and tested.
-- [ ] no mandatory cloud dependency for route recording/navigation.
+- [x] optional backup/sync covers routes + waypoints, completed activities, behavior-backed preferences and Route Collections.
+- [x] implement last-write-wins conflict resolution, local outbox queueing, remote tombstones and explicit Profile sync status.
+- [~] TLS transport is provided by Supabase HTTPS; cloud at-rest handling follows the selected Supabase project/storage policy and must be reviewed before production enablement.
+- [x] remote-newer records restore into local Drift, deletions propagate through tombstones, and Google/Supabase sign-out does not delete local data.
+- [x] route tombstones remove collection membership deterministically and collection records are applied after route state to prevent stale cross-device references.
+- [x] no mandatory cloud dependency for planning, recording or navigation; Supabase is runtime-config gated.
+- [x] Drift migration regression covers **v1/v2/v3/v4 → v5** while preserving legacy activity data.
+- [x] Google ID-token auth does not require a secondary access token; optional token enrichment cannot block cloud authentication.
+- [x] Supabase initialization fails closed to local-first availability instead of blocking app startup.
 
 ### v1.5 — Premium Outdoor Intelligence
 
 Approved ideas to implement after Smart Trace + Pro foundation:
 
-- [ ] **Circular Route Generator:** choose start + target distance/activity and generate loop options.
-- [ ] **Alternative Routes:** shorter / less climb / more trail / more road, only where routing data supports the distinction.
-- [ ] **Slope Map / grade overlay** as a Pro layer.
-- [ ] **Surface-aware route info:** asphalt / gravel / trail / road where OSM tagging is reliable.
-- [ ] **Outdoor POIs along route:** water, huts, parking, viewpoints, toilets, shelters/bivouacs.
-- [ ] **Weather along route** rather than only weather at one coordinate.
-- [ ] **Route Collections:** folders/lists for trips, sports or personal organization.
-- [ ] **Personal stats:** weekly/monthly distance, elevation gain, duration, activity counts and personal bests.
-- [ ] **Automatic rerouting** when off-route, separate from the current warning-only behavior.
-- [ ] evaluate **3D terrain** as a Pro visualization after performance/cost validation.
+- [x] **Circular Route Generator:** choose current start + target distance/activity and generate ranked snapped loop options using the existing routing/elevation engines.
+- [x] **Alternative Routes:** shortest, least-climb, more-trail and more-road strategies are implemented; surface-aware ranking uses OSM data and preserves unknown coverage.
+- [x] **Slope Map / grade overlay:** Pro overlay colors route segments from the existing elevation-grade samples.
+- [x] **Surface-aware route info:** OSM/Overpass route-corridor sampling reports paved / gravel / dirt / trail / unknown with unknown preserved when tags are insufficient.
+- [x] **Outdoor POIs along route:** drinking water, huts/shelters, parking, viewpoints and toilets from OSM/Overpass, filtered by route distance.
+- [x] **Weather along route:** Open-Meteo samples multiple positions along the selected route.
+- [x] **Route Collections:** local folders with route membership, Drift v5 persistence and cloud-sync support.
+- [x] **Personal stats:** totals, 7/30-day distance, moving time, longest activity and highest-ascent activity.
+- [x] recording finalization distinguishes saved / too-short / save-failed and keeps failed finalization retryable without discarding the captured track.
+- [x] **Automatic rerouting:** optional Pro preference recalculates from live position to destination after off-route events, with cooldown and safe failure fallback.
+- [x] **3D terrain:** Pro MapLibre terrain path is implemented behind configured MapTiler DEM/runtime entitlement; provider cost/performance remains a production acceptance gate.
 
 ### Product principles for the approved roadmap
 
