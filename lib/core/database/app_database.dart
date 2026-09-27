@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:trail_path/core/domain/cloud_sync.dart';
 import 'package:trail_path/core/domain/models.dart';
 
 part 'app_database.g.dart';
@@ -91,6 +92,18 @@ class AppSettings extends Table {
   Set<Column<Object>> get primaryKey => {key};
 }
 
+class SyncOutboxEntries extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get entityType => text()();
+
+  TextColumn get entityId => text()();
+
+  TextColumn get action => text()();
+
+  DateTimeColumn get updatedAt => dateTime()();
+}
+
 class Waypoints extends Table {
   TextColumn get id => text()();
 
@@ -111,7 +124,14 @@ class Waypoints extends Table {
 }
 
 @DriftDatabase(
-  tables: [SavedRoutes, Activities, Waypoints, SavedReturnPoints, AppSettings],
+  tables: [
+    SavedRoutes,
+    Activities,
+    Waypoints,
+    SavedReturnPoints,
+    AppSettings,
+    SyncOutboxEntries,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase._(super.executor);
@@ -124,7 +144,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase._(executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -139,6 +159,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 3) {
         await migrator.createTable(savedReturnPoints);
         await migrator.createTable(appSettings);
+      }
+      if (from < 4) {
+        await migrator.createTable(syncOutboxEntries);
       }
     },
   );
@@ -214,6 +237,12 @@ class AppDatabase extends _$AppDatabase {
             ),
         ]);
       });
+      await _queueSyncMutation(
+        SyncEntityType.route,
+        id,
+        SyncMutationAction.upsert,
+        updatedAt: now,
+      );
     });
 
     return id;
@@ -313,22 +342,51 @@ class AppDatabase extends _$AppDatabase {
     required String name,
     required TrackRecorderSnapshot snapshot,
   }) async {
-    await (update(activities)..where((row) => row.id.equals(activityId))).write(
-      ActivitiesCompanion(
-        name: Value(name),
-        endedAt: Value(DateTime.now()),
-        updatedAt: Value(DateTime.now()),
-        distanceMeters: Value(snapshot.distanceMeters),
-        ascentMeters: Value(snapshot.ascentMeters),
-        movingSeconds: Value(snapshot.elapsed.inSeconds),
-        encodedGeometry: Value(_encodePoints(snapshot.points)),
-        isPaused: const Value(false),
-      ),
-    );
+    final now = DateTime.now();
+    await transaction(() async {
+      await (update(
+        activities,
+      )..where((row) => row.id.equals(activityId))).write(
+        ActivitiesCompanion(
+          name: Value(name),
+          endedAt: Value(now),
+          updatedAt: Value(now),
+          distanceMeters: Value(snapshot.distanceMeters),
+          ascentMeters: Value(snapshot.ascentMeters),
+          movingSeconds: Value(snapshot.elapsed.inSeconds),
+          encodedGeometry: Value(_encodePoints(snapshot.points)),
+          isPaused: const Value(false),
+        ),
+      );
+      await _queueSyncMutation(
+        SyncEntityType.activity,
+        activityId,
+        SyncMutationAction.upsert,
+        updatedAt: now,
+      );
+    });
   }
 
   Future<void> discardActivity(String activityId) async {
-    await (delete(activities)..where((row) => row.id.equals(activityId))).go();
+    final existing =
+        await (select(activities)
+              ..where((row) => row.id.equals(activityId))
+              ..limit(1))
+            .getSingleOrNull();
+    final now = DateTime.now();
+    await transaction(() async {
+      await (delete(
+        activities,
+      )..where((row) => row.id.equals(activityId))).go();
+      if (existing?.endedAt != null) {
+        await _queueSyncMutation(
+          SyncEntityType.activity,
+          activityId,
+          SyncMutationAction.delete,
+          updatedAt: now,
+        );
+      }
+    });
   }
 
   Future<Activity?> latestRecoverableActivity() {
@@ -366,10 +424,7 @@ class AppDatabase extends _$AppDatabase {
     required bool isReady,
   }) async {
     await (update(savedRoutes)..where((row) => row.id.equals(routeId))).write(
-      SavedRoutesCompanion(
-        isOfflineReady: Value(isReady),
-        updatedAt: Value(DateTime.now()),
-      ),
+      SavedRoutesCompanion(isOfflineReady: Value(isReady)),
     );
   }
 
@@ -413,9 +468,26 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> setSetting(String key, String value) async {
-    await into(appSettings).insertOnConflictUpdate(
-      AppSettingsCompanion.insert(key: key, value: value),
-    );
+    final now = DateTime.now();
+    await transaction(() async {
+      await into(appSettings).insertOnConflictUpdate(
+        AppSettingsCompanion.insert(key: key, value: value),
+      );
+      if (_isCloudPreferenceKey(key)) {
+        await into(appSettings).insertOnConflictUpdate(
+          AppSettingsCompanion.insert(
+            key: 'cloud_preferences_updated_at',
+            value: now.toUtc().toIso8601String(),
+          ),
+        );
+        await _queueSyncMutation(
+          SyncEntityType.preferences,
+          'preferences',
+          SyncMutationAction.upsert,
+          updatedAt: now,
+        );
+      }
+    });
   }
 
   Future<String?> getSetting(String key) async {
@@ -428,12 +500,390 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> deleteSavedRoute(String routeId) async {
+    final now = DateTime.now();
     await transaction(() async {
       await (delete(
         waypoints,
       )..where((row) => row.routeId.equals(routeId))).go();
       await (delete(savedRoutes)..where((row) => row.id.equals(routeId))).go();
+      await _queueSyncMutation(
+        SyncEntityType.route,
+        routeId,
+        SyncMutationAction.delete,
+        updatedAt: now,
+      );
     });
+  }
+
+  Future<List<Activity>> listCompletedActivities() {
+    return (select(activities)
+          ..where((row) => row.endedAt.isNotNull())
+          ..orderBy([(row) => OrderingTerm.desc(row.startedAt)]))
+        .get();
+  }
+
+  Future<SavedRoute?> getSavedRoute(String routeId) {
+    return (select(savedRoutes)
+          ..where((row) => row.id.equals(routeId))
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
+  Future<List<Waypoint>> listRouteWaypoints(String routeId) {
+    return (select(waypoints)
+          ..where((row) => row.routeId.equals(routeId))
+          ..orderBy([(row) => OrderingTerm.asc(row.sortIndex)]))
+        .get();
+  }
+
+  Future<Activity?> getActivity(String activityId) {
+    return (select(activities)
+          ..where((row) => row.id.equals(activityId))
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
+  Future<Map<String, String>> listCloudPreferences() async {
+    final rows = await select(appSettings).get();
+    return <String, String>{
+      for (final row in rows)
+        if (_isCloudPreferenceKey(row.key)) row.key: row.value,
+    };
+  }
+
+  Future<DateTime?> cloudPreferencesUpdatedAt() async {
+    final value = await getSetting('cloud_preferences_updated_at');
+    return value == null ? null : DateTime.tryParse(value)?.toUtc();
+  }
+
+  Future<void> ensureInitialSyncOutbox() async {
+    final bootstrapped = await getSetting('cloud_sync_bootstrapped');
+    if (bootstrapped == 'true') {
+      return;
+    }
+
+    final routes = await listSavedRoutes();
+    final completed = await listCompletedActivities();
+    final preferences = await listCloudPreferences();
+    await transaction(() async {
+      for (final route in routes) {
+        await _queueSyncMutation(
+          SyncEntityType.route,
+          route.id,
+          SyncMutationAction.upsert,
+          updatedAt: route.updatedAt,
+        );
+      }
+      for (final activity in completed) {
+        await _queueSyncMutation(
+          SyncEntityType.activity,
+          activity.id,
+          SyncMutationAction.upsert,
+          updatedAt:
+              activity.updatedAt ?? activity.endedAt ?? activity.startedAt,
+        );
+      }
+      if (preferences.isNotEmpty) {
+        final updatedAt = await cloudPreferencesUpdatedAt() ?? DateTime.now();
+        await _queueSyncMutation(
+          SyncEntityType.preferences,
+          'preferences',
+          SyncMutationAction.upsert,
+          updatedAt: updatedAt,
+        );
+      }
+      await into(appSettings).insertOnConflictUpdate(
+        AppSettingsCompanion.insert(
+          key: 'cloud_sync_bootstrapped',
+          value: 'true',
+        ),
+      );
+    });
+  }
+
+  Future<List<SyncMutation>> listSyncMutations() async {
+    final rows = await (select(
+      syncOutboxEntries,
+    )..orderBy([(row) => OrderingTerm.asc(row.updatedAt)])).get();
+    return rows
+        .map(
+          (row) => SyncMutation(
+            id: row.id,
+            entityType: SyncEntityType.values.firstWhere(
+              (value) => value.name == row.entityType,
+            ),
+            entityId: row.entityId,
+            action: SyncMutationAction.values.firstWhere(
+              (value) => value.name == row.action,
+            ),
+            updatedAt: row.updatedAt.toUtc(),
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  Future<int> pendingSyncCount() async {
+    final rows = await select(syncOutboxEntries).get();
+    return rows.length;
+  }
+
+  Future<void> acknowledgeSyncMutation(int mutationId) {
+    return (delete(
+      syncOutboxEntries,
+    )..where((row) => row.id.equals(mutationId))).go();
+  }
+
+  Future<Map<String, Object?>?> routeSyncPayload(String routeId) async {
+    final route = await getSavedRoute(routeId);
+    if (route == null) {
+      return null;
+    }
+    final routeWaypoints = await listRouteWaypoints(routeId);
+    return <String, Object?>{
+      'id': route.id,
+      'name': route.name,
+      'created_at': route.createdAt.toUtc().toIso8601String(),
+      'updated_at': route.updatedAt.toUtc().toIso8601String(),
+      'distance_meters': route.distanceMeters,
+      'ascent_meters': route.ascentMeters,
+      'descent_meters': route.descentMeters,
+      'duration_seconds': route.durationSeconds,
+      'profile': route.profile,
+      'encoded_geometry': route.encodedGeometry,
+      'waypoints': [
+        for (final point in routeWaypoints)
+          <String, Object?>{
+            'id': point.id,
+            'sort_index': point.sortIndex,
+            'latitude': point.latitude,
+            'longitude': point.longitude,
+            'elevation_meters': point.elevationMeters,
+            'name': point.name,
+          },
+      ],
+    };
+  }
+
+  Future<Map<String, Object?>?> activitySyncPayload(String activityId) async {
+    final activity = await getActivity(activityId);
+    if (activity == null || activity.endedAt == null) {
+      return null;
+    }
+    return <String, Object?>{
+      'id': activity.id,
+      'name': activity.name,
+      'route_id': activity.routeId,
+      'started_at': activity.startedAt.toUtc().toIso8601String(),
+      'ended_at': activity.endedAt?.toUtc().toIso8601String(),
+      'updated_at':
+          (activity.updatedAt ?? activity.endedAt ?? activity.startedAt)
+              .toUtc()
+              .toIso8601String(),
+      'distance_meters': activity.distanceMeters,
+      'ascent_meters': activity.ascentMeters,
+      'moving_seconds': activity.movingSeconds,
+      'profile': activity.profile,
+      'encoded_geometry': activity.encodedGeometry,
+    };
+  }
+
+  Future<Map<String, Object?>> preferencesSyncPayload() async {
+    final values = await listCloudPreferences();
+    return <String, Object?>{'values': values};
+  }
+
+  Future<void> applyRemoteRoute(Map<String, dynamic> payload) async {
+    final id = payload['id'] as String?;
+    final name = payload['name'] as String?;
+    final createdAt = DateTime.tryParse(payload['created_at'] as String? ?? '');
+    final updatedAt = DateTime.tryParse(payload['updated_at'] as String? ?? '');
+    final profile = payload['profile'] as String?;
+    final rawWaypoints = payload['waypoints'];
+    if (id == null ||
+        name == null ||
+        createdAt == null ||
+        updatedAt == null ||
+        profile == null ||
+        rawWaypoints is! List) {
+      throw const FormatException('Remote route payload is incomplete.');
+    }
+
+    await transaction(() async {
+      await into(savedRoutes).insertOnConflictUpdate(
+        SavedRoutesCompanion.insert(
+          id: id,
+          name: name,
+          createdAt: createdAt.toLocal(),
+          updatedAt: updatedAt.toLocal(),
+          profile: profile,
+          distanceMeters: Value(
+            (payload['distance_meters'] as num?)?.toDouble() ?? 0,
+          ),
+          ascentMeters: Value(
+            (payload['ascent_meters'] as num?)?.toDouble() ?? 0,
+          ),
+          descentMeters: Value(
+            (payload['descent_meters'] as num?)?.toDouble() ?? 0,
+          ),
+          durationSeconds: Value(
+            (payload['duration_seconds'] as num?)?.toInt() ?? 0,
+          ),
+          encodedGeometry: Value(payload['encoded_geometry'] as String?),
+          isOfflineReady: const Value(false),
+        ),
+      );
+      await (delete(waypoints)..where((row) => row.routeId.equals(id))).go();
+      final rows = <WaypointsCompanion>[];
+      for (final raw in rawWaypoints) {
+        if (raw is! Map) {
+          continue;
+        }
+        final item = Map<String, dynamic>.from(raw);
+        final latitude = item['latitude'];
+        final longitude = item['longitude'];
+        final sortIndex = item['sort_index'];
+        if (latitude is! num || longitude is! num || sortIndex is! num) {
+          continue;
+        }
+        rows.add(
+          WaypointsCompanion.insert(
+            id: item['id'] as String? ?? '$id-wp-${sortIndex.toInt()}',
+            routeId: id,
+            sortIndex: sortIndex.toInt(),
+            latitude: latitude.toDouble(),
+            longitude: longitude.toDouble(),
+            elevationMeters: Value(
+              (item['elevation_meters'] as num?)?.toDouble(),
+            ),
+            name: Value(item['name'] as String?),
+          ),
+        );
+      }
+      if (rows.isNotEmpty) {
+        await batch((batch) => batch.insertAll(waypoints, rows));
+      }
+    });
+  }
+
+  Future<void> applyRemoteActivity(Map<String, dynamic> payload) async {
+    final id = payload['id'] as String?;
+    final startedAt = DateTime.tryParse(payload['started_at'] as String? ?? '');
+    final endedAt = DateTime.tryParse(payload['ended_at'] as String? ?? '');
+    final updatedAt = DateTime.tryParse(payload['updated_at'] as String? ?? '');
+    if (id == null ||
+        startedAt == null ||
+        endedAt == null ||
+        updatedAt == null) {
+      throw const FormatException('Remote activity payload is incomplete.');
+    }
+    await into(activities).insertOnConflictUpdate(
+      ActivitiesCompanion.insert(
+        id: id,
+        startedAt: startedAt.toLocal(),
+        name: Value(payload['name'] as String?),
+        routeId: Value(payload['route_id'] as String?),
+        endedAt: Value(endedAt.toLocal()),
+        updatedAt: Value(updatedAt.toLocal()),
+        distanceMeters: Value(
+          (payload['distance_meters'] as num?)?.toDouble() ?? 0,
+        ),
+        ascentMeters: Value(
+          (payload['ascent_meters'] as num?)?.toDouble() ?? 0,
+        ),
+        movingSeconds: Value((payload['moving_seconds'] as num?)?.toInt() ?? 0),
+        profile: Value(payload['profile'] as String? ?? 'hiking'),
+        encodedGeometry: Value(payload['encoded_geometry'] as String?),
+        isPaused: const Value(false),
+      ),
+    );
+  }
+
+  Future<void> applyRemotePreferences(
+    Map<String, dynamic> payload,
+    DateTime updatedAt,
+  ) async {
+    final raw = payload['values'];
+    if (raw is! Map) {
+      return;
+    }
+    await transaction(() async {
+      for (final entry in raw.entries) {
+        final key = entry.key.toString();
+        final value = entry.value;
+        if (_isCloudPreferenceKey(key) && value is String) {
+          await into(appSettings).insertOnConflictUpdate(
+            AppSettingsCompanion.insert(key: key, value: value),
+          );
+        }
+      }
+      await into(appSettings).insertOnConflictUpdate(
+        AppSettingsCompanion.insert(
+          key: 'cloud_preferences_updated_at',
+          value: updatedAt.toUtc().toIso8601String(),
+        ),
+      );
+    });
+  }
+
+  Future<void> applyRemoteDelete(
+    SyncEntityType entityType,
+    String entityId,
+  ) async {
+    switch (entityType) {
+      case SyncEntityType.route:
+        await transaction(() async {
+          await (delete(
+            waypoints,
+          )..where((row) => row.routeId.equals(entityId))).go();
+          await (delete(
+            savedRoutes,
+          )..where((row) => row.id.equals(entityId))).go();
+        });
+        break;
+      case SyncEntityType.activity:
+        await (delete(
+          activities,
+        )..where((row) => row.id.equals(entityId))).go();
+        break;
+      case SyncEntityType.preferences:
+        break;
+    }
+  }
+
+  Future<DateTime?> localSyncTimestamp(
+    SyncEntityType entityType,
+    String entityId,
+  ) async {
+    switch (entityType) {
+      case SyncEntityType.route:
+        return (await getSavedRoute(entityId))?.updatedAt.toUtc();
+      case SyncEntityType.activity:
+        final activity = await getActivity(entityId);
+        return (activity?.updatedAt ?? activity?.endedAt ?? activity?.startedAt)
+            ?.toUtc();
+      case SyncEntityType.preferences:
+        return cloudPreferencesUpdatedAt();
+    }
+  }
+
+  Future<void> _queueSyncMutation(
+    SyncEntityType entityType,
+    String entityId,
+    SyncMutationAction action, {
+    required DateTime updatedAt,
+  }) async {
+    await (delete(syncOutboxEntries)
+          ..where((row) => row.entityType.equals(entityType.name))
+          ..where((row) => row.entityId.equals(entityId)))
+        .go();
+    await into(syncOutboxEntries).insert(
+      SyncOutboxEntriesCompanion.insert(
+        entityType: entityType.name,
+        entityId: entityId,
+        action: action.name,
+        updatedAt: updatedAt,
+      ),
+    );
   }
 }
 
@@ -517,4 +967,8 @@ RouteProfile _routeProfileFromName(String value) {
     }
   }
   return RouteProfile.hiking;
+}
+
+bool _isCloudPreferenceKey(String key) {
+  return key == 'battery_mode' || key.startsWith('preference_');
 }
