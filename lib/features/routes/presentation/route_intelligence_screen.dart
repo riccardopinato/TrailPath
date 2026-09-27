@@ -171,6 +171,16 @@ class _RouteIntelligenceScreenState
                           label: Text(strings.leastClimb),
                           icon: const Icon(Icons.trending_down_rounded),
                         ),
+                        ButtonSegment(
+                          value: AlternativeRoutePreference.moreTrail,
+                          label: Text(strings.moreTrail),
+                          icon: const Icon(Icons.terrain_rounded),
+                        ),
+                        ButtonSegment(
+                          value: AlternativeRoutePreference.moreRoad,
+                          label: Text(strings.moreRoad),
+                          icon: const Icon(Icons.add_road_rounded),
+                        ),
                       ],
                       selected: {_alternativePreference},
                       onSelectionChanged: _busy
