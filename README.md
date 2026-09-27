@@ -258,3 +258,5 @@ Recording finalization now distinguishes **saved / too short / save failed**, ke
 The v1.5 final AppLab path uses explicit Profile/Pro semantics and scroll-aware access to Outdoor tools on compact viewports.
 
 The final Profile accessibility patch is normalized with the pinned Flutter 3.47.5 formatter before exact-head certification.
+
+AppLab planner start transition now accepts the explicit `Start here` candidate step when surfaced while still requiring the canonical one-start-point `Choose destination` state before destination selection; this removes a MapLibre/emulator timing race without bypassing route-state validation.
