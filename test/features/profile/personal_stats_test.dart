@@ -44,7 +44,7 @@ void main() {
       ),
     );
 
-    final activities = await database.listCompletedActivities();
+    final activities = await database.watchCompletedActivities().first;
     final now = DateTime.now().add(const Duration(minutes: 1));
     final stats = buildPersonalStats(activities, now: now);
 
