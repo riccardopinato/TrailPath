@@ -1,3 +1,4 @@
+import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/domain/route_intelligence.dart';
 
 PersonalStats buildPersonalStats(List<Activity> activities, {DateTime? now}) {
