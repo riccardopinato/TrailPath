@@ -144,14 +144,14 @@ Goal: make route creation materially closer to Footpath-quality behavior before 
 
 Goal: introduce monetization only after the planner/map experience is strong enough to justify payment.
 
-- [ ] implement a **Premium Engine** behind feature entitlements, provider-agnostic and testable.
-- [ ] integrate Google Play Billing through a stable abstraction; evaluate RevenueCat only if it materially reduces subscription/restore complexity.
-- [ ] proposed launch pricing to validate: **€2.99/month / €19.99/year**.
-- [ ] no Lifetime at launch while satellite/cloud providers create recurring operating cost.
-- [ ] build a clear, non-blocking paywall with restore purchases and transparent feature comparison.
-- [ ] Free remains useful: route planning, GPS recording, elevation, GPX basics, standard maps, basic navigation.
+- [x] implement a **Premium Engine** behind feature entitlements, provider-agnostic and testable.
+- [x] integrate Google Play Billing through the official `in_app_purchase` API behind `PremiumEngine`; no RevenueCat dependency is required for the current scope.
+- [x] billing products are modeled as monthly/yearly plans; proposed launch pricing remains **€2.99/month / €19.99/year** pending Play Console configuration.
+- [x] no Lifetime at launch while satellite/cloud providers create recurring operating cost.
+- [x] build a non-blocking paywall with monthly/yearly offers, restore purchases, purchase completion and transparent feature benefits.
+- [x] Free remains useful: route planning, GPS recording, elevation, GPX basics, standard maps and basic navigation.
 - [ ] Pro candidates: satellite layers, satellite + trails, advanced offline maps, advanced Smart Trace tools, advanced stats, cloud sync, route collections, route generator, terrain/slope layers and future premium map providers.
-- [ ] keep critical safety/recovery features out of an aggressive paywall.
+- [x] keep critical safety/recovery features outside the Pro paywall.
 
 ### v1.3 — Settings, Profile & Account Foundation
 
@@ -162,7 +162,7 @@ Goal: make TrailPath feel like a complete product without forcing account creati
 - [x] keep TrailPath fully usable local-first without login.
 - [x] add optional/config-gated **Google Sign-In** using the current `GoogleSignIn.instance` API; account remains optional.
 - [x] identity/auth is separate from the local Drift store; Google sign-out does not delete local routes/activities.
-- [ ] add export/delete-account/data lifecycle documentation before account release.
+- [x] add account/local/cloud data lifecycle documentation before production account enablement (`docs/ACCOUNT_DATA_LIFECYCLE.md`).
 
 ### v1.4 — Cloud Sync & Cross-device
 
