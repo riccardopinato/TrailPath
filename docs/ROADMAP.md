@@ -192,6 +192,7 @@ Approved ideas to implement after Smart Trace + Pro foundation:
 - [x] **Automatic rerouting:** optional Pro preference recalculates from live position to destination after off-route events, with cooldown and safe failure fallback.
 - [x] **3D terrain:** Pro MapLibre terrain path is implemented behind configured MapTiler DEM/runtime entitlement; provider cost/performance remains a production acceptance gate.
 - [x] harden planner start-state E2E timing while preserving the required `Choose destination` state before second-point routing.
+- [x] harden final AppLab semantics/timing: Pro-card matching follows the combined accessibility node and destination confirmation is exercised when surfaced without failing a run that has already reached the valid savable route state.
 
 ### Product principles for the approved roadmap
 
