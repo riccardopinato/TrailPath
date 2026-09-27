@@ -9,6 +9,7 @@ class GoogleAccountService implements AccountService {
 
   final GoogleSignIn _signIn;
   GoogleSignInAccount? _account;
+  String? _accessToken;
   bool _initialized = false;
 
   @override
@@ -32,6 +33,7 @@ class GoogleAccountService implements AccountService {
     }
     try {
       _account = await attempt;
+      await _resolveAccessToken(promptIfNeeded: false);
       return _profile(_account);
     } on GoogleSignInException {
       return null;
@@ -55,6 +57,7 @@ class GoogleAccountService implements AccountService {
       );
     }
     _account = await _signIn.authenticate();
+    await _resolveAccessToken(promptIfNeeded: true);
     return _profile(_account);
   }
 
@@ -62,15 +65,52 @@ class GoogleAccountService implements AccountService {
   Future<void> signOut() async {
     await _signIn.signOut();
     _account = null;
+    _accessToken = null;
   }
 
   @override
-  Future<String?> idToken() async {
+  Future<AccountAuthTokens?> authTokens({
+    bool promptIfNeeded = false,
+  }) async {
     final account = _account;
     if (account == null) {
       return null;
     }
-    return account.authentication.idToken;
+
+    final idToken = account.authentication.idToken;
+    if (idToken == null || idToken.isEmpty) {
+      return null;
+    }
+
+    final accessToken =
+        _accessToken ??
+        await _resolveAccessToken(promptIfNeeded: promptIfNeeded);
+    if (accessToken == null || accessToken.isEmpty) {
+      return null;
+    }
+
+    return AccountAuthTokens(
+      idToken: idToken,
+      accessToken: accessToken,
+    );
+  }
+
+  Future<String?> _resolveAccessToken({
+    required bool promptIfNeeded,
+  }) async {
+    final account = _account;
+    if (account == null) {
+      return null;
+    }
+
+    const scopes = <String>['openid', 'email', 'profile'];
+    GoogleSignInClientAuthorization? authorization =
+        await account.authorizationClient.authorizationForScopes(scopes);
+    if (authorization == null && promptIfNeeded) {
+      authorization = await account.authorizationClient.authorizeScopes(scopes);
+    }
+    _accessToken = authorization?.accessToken;
+    return _accessToken;
   }
 
   AccountProfile? _profile(GoogleSignInAccount? account) {
