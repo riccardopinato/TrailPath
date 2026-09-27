@@ -1,6 +1,6 @@
 import 'package:trail_path/core/domain/models.dart';
 
-enum AlternativeRoutePreference { shortest, leastClimb }
+enum AlternativeRoutePreference { shortest, leastClimb, moreTrail, moreRoad }
 
 class RouteCandidate {
   const RouteCandidate({
