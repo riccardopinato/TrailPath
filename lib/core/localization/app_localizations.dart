@@ -165,6 +165,13 @@ class AppLocalizations {
   String get longestActivity => _value('longestActivity');
   String get highestAscent => _value('highestAscent');
   String get movingTime => _value('movingTime');
+  String get slopeMap => _value('slopeMap');
+  String get slopeMapHint => _value('slopeMapHint');
+  String get terrain3d => _value('terrain3d');
+  String get terrain3dHint => _value('terrain3dHint');
+  String get autoReroute => _value('autoReroute');
+  String get autoRerouteHint => _value('autoRerouteHint');
+  String get autoRerouteProHint => _value('autoRerouteProHint');
   String get centerLocation => _value('centerLocation');
   String get locationServiceOff => _value('locationServiceOff');
   String get locationUnavailable => _value('locationUnavailable');
@@ -462,6 +469,13 @@ class AppLocalizations {
       'longestActivity': 'Attività più lunga',
       'highestAscent': 'Dislivello massimo',
       'movingTime': 'Tempo in movimento',
+      'slopeMap': 'Mappa pendenza',
+      'slopeMapHint': 'Colora il percorso in base alla pendenza',
+      'terrain3d': 'Terreno 3D',
+      'terrain3dHint': 'Rilievo 3D basato sui dati altimetrici della mappa',
+      'autoReroute': 'Ricalcolo automatico',
+      'autoRerouteHint': 'Calcola un nuovo percorso verso la destinazione quando esci dalla traccia.',
+      'autoRerouteProHint': 'Ricalcolo automatico disponibile con TrailPath Pro.',
       'centerLocation': 'Centra sulla mia posizione',
       'locationServiceOff': 'Attiva i servizi di localizzazione',
       'locationUnavailable': 'Posizione temporaneamente non disponibile',
@@ -754,6 +768,13 @@ class AppLocalizations {
       'longestActivity': 'Longest activity',
       'highestAscent': 'Highest ascent',
       'movingTime': 'Moving time',
+      'slopeMap': 'Slope map',
+      'slopeMapHint': 'Color the route by grade',
+      'terrain3d': '3D terrain',
+      'terrain3dHint': '3D relief using map elevation data',
+      'autoReroute': 'Automatic rerouting',
+      'autoRerouteHint': 'Calculate a new route to the destination when you leave the track.',
+      'autoRerouteProHint': 'Automatic rerouting is available with TrailPath Pro.',
       'centerLocation': 'Center on my location',
       'locationServiceOff': 'Turn on location services',
       'locationUnavailable': 'Location temporarily unavailable',
@@ -1046,6 +1067,13 @@ class AppLocalizations {
       'longestActivity': 'Actividad más larga',
       'highestAscent': 'Mayor desnivel',
       'movingTime': 'Tiempo en movimiento',
+      'slopeMap': 'Mapa de pendiente',
+      'slopeMapHint': 'Colorea la ruta según la pendiente',
+      'terrain3d': 'Terreno 3D',
+      'terrain3dHint': 'Relieve 3D basado en datos de elevación del mapa',
+      'autoReroute': 'Recálculo automático',
+      'autoRerouteHint': 'Calcula una nueva ruta al destino al salir del trazado.',
+      'autoRerouteProHint': 'El recálculo automático está disponible con TrailPath Pro.',
       'centerLocation': 'Centrar en mi ubicación',
       'locationServiceOff': 'Activa los servicios de ubicación',
       'locationUnavailable': 'Ubicación temporalmente no disponible',
@@ -1340,6 +1368,13 @@ class AppLocalizations {
       'longestActivity': 'Activité la plus longue',
       'highestAscent': 'Dénivelé maximal',
       'movingTime': 'Temps en mouvement',
+      'slopeMap': 'Carte des pentes',
+      'slopeMapHint': 'Colore le parcours selon la pente',
+      'terrain3d': 'Terrain 3D',
+      'terrain3dHint': 'Relief 3D basé sur les données d’altitude de la carte',
+      'autoReroute': 'Recalcul automatique',
+      'autoRerouteHint': 'Calcule un nouveau parcours vers la destination en quittant la trace.',
+      'autoRerouteProHint': 'Le recalcul automatique est disponible avec TrailPath Pro.',
       'centerLocation': 'Centrer sur ma position',
       'locationServiceOff': 'Activez les services de localisation',
       'locationUnavailable': 'Position temporairement indisponible',
@@ -1635,6 +1670,13 @@ class AppLocalizations {
       'longestActivity': 'Atividade mais longa',
       'highestAscent': 'Maior desnível',
       'movingTime': 'Tempo em movimento',
+      'slopeMap': 'Mapa de inclinação',
+      'slopeMapHint': 'Colore o percurso conforme a inclinação',
+      'terrain3d': 'Terreno 3D',
+      'terrain3dHint': 'Relevo 3D baseado nos dados de elevação do mapa',
+      'autoReroute': 'Recálculo automático',
+      'autoRerouteHint': 'Calcula um novo percurso até ao destino quando sai da rota.',
+      'autoRerouteProHint': 'O recálculo automático está disponível com TrailPath Pro.',
       'centerLocation': 'Centrar na minha localização',
       'locationServiceOff': 'Ative os serviços de localização',
       'locationUnavailable': 'Localização temporariamente indisponível',
