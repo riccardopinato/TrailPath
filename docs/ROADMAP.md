@@ -150,7 +150,7 @@ Goal: introduce monetization only after the planner/map experience is strong eno
 - [x] no Lifetime at launch while satellite/cloud providers create recurring operating cost.
 - [x] build a clear, non-blocking paywall with monthly/yearly offers, restore purchases and feature comparison.
 - [x] Free remains useful: route planning, GPS recording, elevation, GPX basics, standard maps, basic navigation.
-- [ ] Pro candidates: satellite layers, satellite + trails, advanced offline maps, advanced Smart Trace tools, advanced stats, cloud sync, route collections, route generator, terrain/slope layers and future premium map providers.
+- [~] Pro entitlement is live for Satellite/Hybrid map layers; additional premium candidates are connected progressively through v1.3–v1.5.
 - [x] keep critical safety/recovery features out of the paywall.
 
 ### v1.3 — Settings, Profile & Account Foundation
