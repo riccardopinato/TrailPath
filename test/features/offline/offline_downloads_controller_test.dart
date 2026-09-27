@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trail_path/core/database/app_database.dart';
@@ -8,6 +9,30 @@ import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/offline/application/offline_downloads_controller.dart';
 
 void main() {
+  test('Wi-Fi-only policy blocks mobile connectivity', () {
+    expect(
+      allowsOfflineDownloadOnConnectivity(
+        wifiOnly: true,
+        connectivity: const [ConnectivityResult.mobile],
+      ),
+      isFalse,
+    );
+    expect(
+      allowsOfflineDownloadOnConnectivity(
+        wifiOnly: true,
+        connectivity: const [ConnectivityResult.wifi],
+      ),
+      isTrue,
+    );
+    expect(
+      allowsOfflineDownloadOnConnectivity(
+        wifiOnly: false,
+        connectivity: const [ConnectivityResult.mobile],
+      ),
+      isTrue,
+    );
+  });
+
   test(
     'reconcile restores native offline state and repairs database flag',
     () async {
