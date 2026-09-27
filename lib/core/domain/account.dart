@@ -47,8 +47,8 @@ class AccountState {
 }
 
 class AccountAuthTokens {
-  const AccountAuthTokens({required this.idToken, required this.accessToken});
+  const AccountAuthTokens({required this.idToken, this.accessToken});
 
   final String idToken;
-  final String accessToken;
+  final String? accessToken;
 }
