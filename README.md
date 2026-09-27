@@ -246,3 +246,5 @@ Metric/Imperial formatting is shared across planner, elevation, recording pace/G
 The final Profile keeps TrailPath Pro above account details so entitlement state stays visible without scrolling on compact devices and in AppLab.
 
 AppLab now follows the v1.3+ navigation model through **Profile → Outdoor tools** instead of targeting the removed Outdoor bottom-navigation tab.
+
+Back to Car accuracy rendering uses the shared measurement formatter with valid localized composition in the v1.5 final candidate.
