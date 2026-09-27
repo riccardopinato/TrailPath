@@ -14,9 +14,7 @@ final premiumEngineProvider = Provider<PremiumEngine>((ref) {
 });
 
 final premiumControllerProvider =
-    NotifierProvider<PremiumController, PremiumSnapshot>(
-      PremiumController.new,
-    );
+    NotifierProvider<PremiumController, PremiumSnapshot>(PremiumController.new);
 
 class PremiumController extends Notifier<PremiumSnapshot> {
   StreamSubscription<PremiumSnapshot>? _subscription;
