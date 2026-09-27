@@ -256,8 +256,14 @@ void main() {
     expect(engine.requests, hasLength(1));
     expect(engine.requests.single.points, hasLength(3));
     expect(container.read(routePlannerProvider).points, hasLength(4));
-    expect(container.read(routePlannerProvider).editHandles, hasLength(3));
-    expect(container.read(routePlannerProvider).canSave, isTrue);
+    final rerouted = container.read(routePlannerProvider);
+    expect(rerouted.editHandles, hasLength(3));
+    expect(rerouted.canSave, isTrue);
+    expect(
+      (rerouted.estimatedDuration.inSeconds - rerouted.distanceMeters).abs(),
+      lessThan(2),
+      reason: 'Partial reroute should preserve provider-derived ETA semantics.',
+    );
   });
 
   test('inserting a point near the route reroutes only one old leg', () async {
