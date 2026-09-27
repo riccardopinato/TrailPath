@@ -6,6 +6,7 @@ import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/cloud_sync.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/features/outdoor/presentation/outdoor_screen.dart';
 import 'package:trail_path/features/pro/application/premium_controller.dart';
 import 'package:trail_path/features/pro/presentation/pro_paywall.dart';
@@ -48,12 +49,12 @@ class ProfileScreen extends ConsumerWidget {
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 16),
-          const _AccountCard(),
-          const SizedBox(height: 12),
           _ProCard(
             isPro: premium.isPro,
             onTap: () => showTrailPathProPaywall(context, ref),
           ),
+          const SizedBox(height: 12),
+          const _AccountCard(),
           const SizedBox(height: 16),
           Text(
             strings.activitySummary,
@@ -73,7 +74,7 @@ class ProfileScreen extends ConsumerWidget {
               Expanded(
                 child: _StatCard(
                   icon: Icons.route_rounded,
-                  value: _formatDistance(totalDistance),
+                  value: context.formatDistance(totalDistance),
                   label: strings.totalDistance,
                 ),
               ),
@@ -81,7 +82,7 @@ class ProfileScreen extends ConsumerWidget {
               Expanded(
                 child: _StatCard(
                   icon: Icons.trending_up_rounded,
-                  value: '+${totalAscent.round()} m',
+                  value: context.formatElevation(totalAscent, signed: true),
                   label: strings.totalAscent,
                 ),
               ),
@@ -366,47 +367,52 @@ class _ProCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: scheme.primaryContainer,
-      borderRadius: BorderRadius.circular(24),
-      child: InkWell(
+    return Semantics(
+      label: strings.trailPathPro,
+      button: true,
+      container: true,
+      child: Material(
+        color: scheme.primaryContainer,
         borderRadius: BorderRadius.circular(24),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(17),
-          child: Row(
-            children: [
-              Icon(
-                Icons.workspace_premium_rounded,
-                color: scheme.onPrimaryContainer,
-                size: 30,
-              ),
-              const SizedBox(width: 13),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      strings.trailPathPro,
-                      style: TextStyle(
-                        color: scheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 17,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      isPro ? strings.proActive : strings.proSubtitle,
-                      style: TextStyle(color: scheme.onPrimaryContainer),
-                    ),
-                  ],
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(17),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.workspace_premium_rounded,
+                  color: scheme.onPrimaryContainer,
+                  size: 30,
                 ),
-              ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: scheme.onPrimaryContainer,
-              ),
-            ],
+                const SizedBox(width: 13),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        strings.trailPathPro,
+                        style: TextStyle(
+                          color: scheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 17,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        isPro ? strings.proActive : strings.proSubtitle,
+                        style: TextStyle(color: scheme.onPrimaryContainer),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: scheme.onPrimaryContainer,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -491,11 +497,4 @@ class _ActionCard extends StatelessWidget {
       ),
     );
   }
-}
-
-String _formatDistance(double meters) {
-  if (meters < 1000) {
-    return '${meters.round()} m';
-  }
-  return '${(meters / 1000).toStringAsFixed(1)} km';
 }

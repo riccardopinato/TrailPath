@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/navigation/presentation/navigation_screen.dart';
 import 'package:trail_path/features/offline/application/offline_downloads_controller.dart';
@@ -283,7 +284,7 @@ class _RouteCard extends StatelessWidget {
       icon: Icons.route_rounded,
       title: route.name,
       subtitle:
-          '${_formatDistance(route.distanceMeters)} · '
+          '${context.formatDistance(route.distanceMeters)} · '
           '${_formatDuration(duration)} · '
           '${_profileName(strings, route.profile)}',
       onPrimary: onNavigate,
@@ -316,9 +317,9 @@ class _ActivityCard extends StatelessWidget {
       icon: Icons.directions_walk_rounded,
       title: name,
       subtitle:
-          '${_formatDistance(activity.distanceMeters)} · '
+          '${context.formatDistance(activity.distanceMeters)} · '
           '${_formatDuration(duration)} · '
-          '+${activity.ascentMeters.round()} m · '
+          '${context.formatElevation(activity.ascentMeters, signed: true)} · '
           '${_profileName(strings, activity.profile)}',
       onShare: onShare,
       onDelete: onDelete,
@@ -599,13 +600,6 @@ class _RoutesMessage extends StatelessWidget {
       ),
     );
   }
-}
-
-String _formatDistance(double meters) {
-  if (meters < 1000) {
-    return '${meters.round()} m';
-  }
-  return '${(meters / 1000).toStringAsFixed(1)} km';
 }
 
 String _formatDuration(Duration duration) {

@@ -220,11 +220,11 @@ TrailPath Pro is implemented behind a provider-agnostic Premium Engine using the
 
 ## v1.3 Settings, Profile & Account
 
-- Settings are behavior-backed: theme, default activity/map, battery mode, voice guidance and Wi-Fi-only offline downloads.
+- Settings are behavior-backed: theme, Metric/Imperial units, default activity/map, battery mode, voice guidance, Wi-Fi-only offline downloads and automatic rerouting.
 - Profile is the app/account hub and keeps Outdoor tools available without expanding bottom navigation.
 - Google Sign-In is optional and runtime-configured through `GOOGLE_SERVER_CLIENT_ID`.
 - Sign-out does not remove local TrailPath routes, activities or preferences.
-- A global km/mi preference is not exposed yet because every metric surface must convert consistently before shipping it.
+- Metric/Imperial preference is exposed and uses the shared measurement formatter across planner, recording, routes, navigation, Back to Car, Profile/Stats, Collections and Route Lab.
 
 v1.5 Outdoor Intelligence sources and tests are normalized with the pinned Flutter 3.47.5 formatter before staging CI.
 
@@ -240,3 +240,21 @@ Surface analysis uses bounded route-corridor probes against Overpass instead of 
 - Invalid/unavailable Supabase initialization cannot prevent TrailPath startup: the app continues local-first.
 - Drift migration coverage now includes v1, v2, v3 and v4 databases upgrading to schema v5.
 - Surface analysis uses bounded route-corridor Overpass probes rather than a potentially huge full-route bounding box.
+
+Metric/Imperial formatting is shared across planner, elevation, recording pace/GPS accuracy, saved routes, navigation, Back to Car, Profile/Stats, Collections, Route Lab POIs and route weather.
+
+The final Profile keeps TrailPath Pro above account details so entitlement state stays visible without scrolling on compact devices and in AppLab.
+
+AppLab now follows the v1.3+ navigation model through **Profile → Outdoor tools** instead of targeting the removed Outdoor bottom-navigation tab.
+
+Back to Car accuracy rendering uses the shared measurement formatter with valid localized composition in the v1.5 final candidate.
+
+Circular-route unit conversion is captured before async GPS/routing work, keeping the final v1.5 analyzer clean without crossing BuildContext over async gaps.
+
+The final Route Intelligence source is normalized with the pinned Flutter 3.47.5 formatter before exact-head CI/AppLab validation.
+
+Recording finalization now distinguishes **saved / too short / save failed**, keeps a failed final snapshot retryable in-session, and no longer misreports a database save failure as a short activity.
+
+The v1.5 final AppLab path uses explicit Profile/Pro semantics and scroll-aware access to Outdoor tools on compact viewports.
+
+The final Profile accessibility patch is normalized with the pinned Flutter 3.47.5 formatter before exact-head certification.

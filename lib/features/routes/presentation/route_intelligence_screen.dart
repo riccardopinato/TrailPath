@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/database/database_providers.dart';
+import 'package:trail_path/core/domain/app_preferences.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/domain/route_intelligence.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 
 class RouteIntelligenceScreen extends ConsumerStatefulWidget {
@@ -19,7 +21,7 @@ class RouteIntelligenceScreen extends ConsumerStatefulWidget {
 
 class _RouteIntelligenceScreenState
     extends ConsumerState<RouteIntelligenceScreen> {
-  double _targetKm = 10;
+  double _targetDistance = 10;
   RouteProfile _profile = RouteProfile.hiking;
   bool _busy = false;
   List<RouteCandidate> _circularCandidates = const [];
@@ -36,6 +38,12 @@ class _RouteIntelligenceScreenState
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final routes = ref.watch(savedRoutesProvider);
+    final imperial = context.distanceUnits == DistanceUnitPreference.imperial;
+    final minimumTarget = imperial ? 2.0 : 3.0;
+    final maximumTarget = imperial ? 25.0 : 40.0;
+    final targetDistance = _targetDistance
+        .clamp(minimumTarget, maximumTarget)
+        .toDouble();
 
     return Scaffold(
       appBar: AppBar(title: Text(strings.routeLab)),
@@ -56,21 +64,21 @@ class _RouteIntelligenceScreenState
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  '${_targetKm.toStringAsFixed(0)} km',
+                  context.formatTargetDistance(targetDistance),
                   style: const TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 22,
                   ),
                 ),
                 Slider(
-                  value: _targetKm,
-                  min: 3,
-                  max: 40,
-                  divisions: 37,
-                  label: '${_targetKm.toStringAsFixed(0)} km',
+                  value: targetDistance,
+                  min: minimumTarget,
+                  max: maximumTarget,
+                  divisions: (maximumTarget - minimumTarget).round(),
+                  label: context.formatTargetDistance(targetDistance),
                   onChanged: _busy
                       ? null
-                      : (value) => setState(() => _targetKm = value),
+                      : (value) => setState(() => _targetDistance = value),
                 ),
                 DropdownButtonFormField<RouteProfile>(
                   initialValue: _profile,
@@ -254,7 +262,7 @@ class _RouteIntelligenceScreenState
                         Chip(
                           avatar: const Icon(Icons.cloud_outlined, size: 17),
                           label: Text(
-                            '${sample.temperatureCelsius.toStringAsFixed(0)}° · ${sample.precipitationMm.toStringAsFixed(1)} mm · ${sample.windKmh.toStringAsFixed(0)} km/h',
+                            '${context.formatTemperature(sample.temperatureCelsius)} · ${context.formatPrecipitation(sample.precipitationMm)} · ${context.formatSpeed(sample.windKmh)}',
                           ),
                         ),
                     ],
@@ -274,7 +282,7 @@ class _RouteIntelligenceScreenState
                       leading: Icon(_poiIcon(poi.type)),
                       title: Text(poi.name),
                       subtitle: Text(
-                        '${poi.distanceFromRouteMeters.round()} m ${strings.fromRoute}',
+                        '${context.formatDistance(poi.distanceFromRouteMeters)} ${strings.fromRoute}',
                       ),
                     ),
                 ],
@@ -302,6 +310,18 @@ class _RouteIntelligenceScreenState
 
   Future<void> _generateCircular() async {
     final strings = AppLocalizations.of(context);
+    final units = context.distanceUnits;
+    final minimumTarget = units == DistanceUnitPreference.imperial ? 2.0 : 3.0;
+    final maximumTarget = units == DistanceUnitPreference.imperial
+        ? 25.0
+        : 40.0;
+    final displayTarget = _targetDistance
+        .clamp(minimumTarget, maximumTarget)
+        .toDouble();
+    final targetDistanceMeters =
+        displayTarget *
+        (units == DistanceUnitPreference.imperial ? 1609.344 : 1000.0);
+
     setState(() {
       _busy = true;
       _error = null;
@@ -327,7 +347,7 @@ class _RouteIntelligenceScreenState
           .generateCircularRoutes(
             CircularRouteRequest(
               start: current.point,
-              targetDistanceMeters: _targetKm * 1000,
+              targetDistanceMeters: targetDistanceMeters,
               profile: _profile,
             ),
           );
@@ -551,7 +571,7 @@ class _CandidateCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${_distance(plan.distanceMeters)} · +${plan.ascentMeters.round()} m · ${_duration(plan.estimatedDuration)}',
+                  '${context.formatDistance(plan.distanceMeters)} · ${context.formatElevation(plan.ascentMeters, signed: true)} · ${_duration(plan.estimatedDuration)}',
                 ),
               ],
             ),
@@ -601,10 +621,6 @@ String _surfaceLabel(AppLocalizations strings, RouteSurfaceSummary summary) {
   };
   return '$label · $percentage%';
 }
-
-String _distance(double meters) => meters < 1000
-    ? '${meters.round()} m'
-    : '${(meters / 1000).toStringAsFixed(1)} km';
 
 String _duration(Duration duration) {
   final hours = duration.inHours;
