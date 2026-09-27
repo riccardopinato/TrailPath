@@ -3,7 +3,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/app/router.dart';
 import 'package:trail_path/app/theme/app_theme.dart';
+import 'package:trail_path/core/domain/app_preferences.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/features/settings/application/settings_controller.dart';
 
 class TrailPathApp extends ConsumerWidget {
   const TrailPathApp({super.key});
@@ -11,6 +13,8 @@ class TrailPathApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    final preferences = ref.watch(settingsControllerProvider).valueOrNull ??
+        const AppPreferences();
 
     return MaterialApp.router(
       title: 'TrailPath',
@@ -18,7 +22,11 @@ class TrailPathApp extends ConsumerWidget {
       routerConfig: router,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.system,
+      themeMode: switch (preferences.theme) {
+        ThemePreference.system => ThemeMode.system,
+        ThemePreference.light => ThemeMode.light,
+        ThemePreference.dark => ThemeMode.dark,
+      },
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
         AppLocalizations.delegate,
