@@ -132,6 +132,8 @@ class AppLocalizations {
   String get routeAlternativesUnavailable => _value('routeAlternativesUnavailable');
   String get shortestRoute => _value('shortestRoute');
   String get leastClimb => _value('leastClimb');
+  String get moreTrail => _value('moreTrail');
+  String get moreRoad => _value('moreRoad');
   String get generateAlternatives => _value('generateAlternatives');
   String get alternative => _value('alternative');
   String get routeContext => _value('routeContext');
@@ -437,6 +439,8 @@ class AppLocalizations {
       'routeAlternativesUnavailable': 'Alternative temporaneamente non disponibili',
       'shortestRoute': 'Più breve',
       'leastClimb': 'Meno salita',
+      'moreTrail': 'Più sentieri',
+      'moreRoad': 'Più strada',
       'generateAlternatives': 'Genera alternative',
       'alternative': 'Alternativa',
       'routeContext': 'Contesto del percorso',
@@ -737,6 +741,8 @@ class AppLocalizations {
       'routeAlternativesUnavailable': 'Alternatives are temporarily unavailable',
       'shortestRoute': 'Shortest',
       'leastClimb': 'Less climbing',
+      'moreTrail': 'More trail',
+      'moreRoad': 'More road',
       'generateAlternatives': 'Generate alternatives',
       'alternative': 'Alternative',
       'routeContext': 'Route context',
@@ -1037,6 +1043,8 @@ class AppLocalizations {
       'routeAlternativesUnavailable': 'Las alternativas no están disponibles temporalmente',
       'shortestRoute': 'Más corta',
       'leastClimb': 'Menos subida',
+      'moreTrail': 'Más sendero',
+      'moreRoad': 'Más carretera',
       'generateAlternatives': 'Generar alternativas',
       'alternative': 'Alternativa',
       'routeContext': 'Contexto de ruta',
@@ -1339,6 +1347,8 @@ class AppLocalizations {
       'routeAlternativesUnavailable': 'Les alternatives sont temporairement indisponibles',
       'shortestRoute': 'Plus court',
       'leastClimb': 'Moins de montée',
+      'moreTrail': 'Plus de sentiers',
+      'moreRoad': 'Plus de route',
       'generateAlternatives': 'Générer des alternatives',
       'alternative': 'Alternative',
       'routeContext': 'Contexte du parcours',
@@ -1642,6 +1652,8 @@ class AppLocalizations {
       'routeAlternativesUnavailable': 'As alternativas estão temporariamente indisponíveis',
       'shortestRoute': 'Mais curto',
       'leastClimb': 'Menos subida',
+      'moreTrail': 'Mais trilho',
+      'moreRoad': 'Mais estrada',
       'generateAlternatives': 'Gerar alternativas',
       'alternative': 'Alternativa',
       'routeContext': 'Contexto do percurso',
