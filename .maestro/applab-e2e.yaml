@@ -159,7 +159,14 @@ appId: com.riccardopinato.trail_path
 - tapOn:
     text: 'Profile\s*Tab 5 of 5'
 - assertVisible: "Profile"
-- assertVisible: "TrailPath Pro"
+- extendedWaitUntil:
+    visible: "TrailPath Pro"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      text: "Outdoor tools"
+    direction: DOWN
+    timeout: 15000
 - tapOn: "Outdoor tools"
 - assertVisible: "Outdoor"
 - assertVisible: "Balanced"
