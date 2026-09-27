@@ -772,6 +772,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     return switch (style) {
       _PlannerMapStyle.outdoor => MapConfig.plannerStyleUrl,
       _PlannerMapStyle.street => MapConfig.styleUrl,
+      _PlannerMapStyle.highContrast => MapConfig.highContrastStyleUrl,
       _PlannerMapStyle.satellite => MapConfig.mapTilerStyleUrl('satellite'),
       _PlannerMapStyle.hybrid => MapConfig.mapTilerStyleUrl('hybrid'),
     };
@@ -2165,7 +2166,7 @@ String _gradeColor(double grade) {
   return '#7B1FA2';
 }
 
-enum _PlannerMapStyle { outdoor, street, satellite, hybrid }
+enum _PlannerMapStyle { outdoor, street, highContrast, satellite, hybrid }
 
 extension on _PlannerMapStyle {
   bool get isPremium =>
@@ -2176,6 +2177,7 @@ String _mapStyleLabel(AppLocalizations strings, _PlannerMapStyle style) {
   return switch (style) {
     _PlannerMapStyle.outdoor => strings.mapOutdoor,
     _PlannerMapStyle.street => strings.mapStreet,
+    _PlannerMapStyle.highContrast => strings.mapHighContrast,
     _PlannerMapStyle.satellite => strings.mapSatellite,
     _PlannerMapStyle.hybrid => strings.mapHybrid,
   };
@@ -2187,6 +2189,7 @@ _PlannerMapStyle _mapStyleFromPreference(
   return switch (preference) {
     DefaultMapPreference.outdoor => _PlannerMapStyle.outdoor,
     DefaultMapPreference.street => _PlannerMapStyle.street,
+    DefaultMapPreference.highContrast => _PlannerMapStyle.highContrast,
     DefaultMapPreference.satellite => _PlannerMapStyle.satellite,
     DefaultMapPreference.hybrid => _PlannerMapStyle.hybrid,
   };
@@ -2196,6 +2199,7 @@ IconData _mapStyleIcon(_PlannerMapStyle style) {
   return switch (style) {
     _PlannerMapStyle.outdoor => Icons.terrain_rounded,
     _PlannerMapStyle.street => Icons.map_outlined,
+    _PlannerMapStyle.highContrast => Icons.contrast_rounded,
     _PlannerMapStyle.satellite => Icons.satellite_alt_outlined,
     _PlannerMapStyle.hybrid => Icons.layers_outlined,
   };
