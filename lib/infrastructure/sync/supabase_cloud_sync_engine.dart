@@ -50,8 +50,7 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
           phase: CloudSyncPhase.error,
           isConfigured: true,
           pendingChanges: await _database.pendingSyncCount(),
-          error:
-              'Cloud Sync on this device is already linked to a different account.',
+          error: 'Cloud Sync on this device is already linked to a different account.',
         );
       }
       if (owner == null || owner.trim().isEmpty) {
