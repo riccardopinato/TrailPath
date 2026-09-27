@@ -68,7 +68,6 @@ final safetyServiceProvider = Provider<SafetyService>(
   ),
 );
 
-
 final providerUsageTrackerProvider = Provider<ProviderUsageTracker>(
   (ref) => LocalProviderUsageTracker(ref.watch(appDatabaseProvider)),
 );

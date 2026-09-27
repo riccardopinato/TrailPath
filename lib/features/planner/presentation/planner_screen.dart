@@ -735,10 +735,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       const TerrainProperties(source: sourceId, exaggeration: 1.15),
     );
     unawaited(
-      ref.read(providerUsageTrackerProvider).record(
-        provider: 'maptiler',
-        capability: 'terrain_3d',
-      ),
+      ref
+          .read(providerUsageTrackerProvider)
+          .record(provider: 'maptiler', capability: 'terrain_3d'),
     );
   }
 
@@ -780,10 +779,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     };
     if (capability != null) {
       unawaited(
-        ref.read(providerUsageTrackerProvider).record(
-          provider: 'maptiler',
-          capability: capability,
-        ),
+        ref
+            .read(providerUsageTrackerProvider)
+            .record(provider: 'maptiler', capability: capability),
       );
     }
   }

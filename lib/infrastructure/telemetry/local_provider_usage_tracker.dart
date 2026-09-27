@@ -26,10 +26,10 @@ class LocalProviderUsageTracker implements ProviderUsageTracker {
   }
 
   String _normalize(String value) {
-    final normalized = value
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+    final normalized = value.trim().toLowerCase().replaceAll(
+      RegExp(r'[^a-z0-9]+'),
+      '_',
+    );
     return normalized.isEmpty ? 'unknown' : normalized;
   }
 }
