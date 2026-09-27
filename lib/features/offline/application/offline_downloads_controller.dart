@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/models.dart';
@@ -126,6 +128,21 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
     final database = ref.read(appDatabaseProvider);
 
     try {
+      final preferences =
+          ref.read(settingsControllerProvider).valueOrNull ??
+          await ref.read(settingsControllerProvider.future);
+      if (preferences.wifiOnlyDownloads) {
+        final connectivity = await Connectivity().checkConnectivity();
+        final allowed =
+            connectivity.contains(ConnectivityResult.wifi) ||
+            connectivity.contains(ConnectivityResult.ethernet);
+        if (!allowed) {
+          throw const StateError(
+            'Offline downloads are limited to Wi-Fi by user preference.',
+          );
+        }
+      }
+
       final existingRegions = await manager.listRegions();
       OfflineRegion? existing;
       for (final region in existingRegions) {
