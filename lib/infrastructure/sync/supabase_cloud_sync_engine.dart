@@ -109,10 +109,13 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
         switch (item.entityType) {
           case SyncEntityType.route:
             await _database.applyRemoteRoute(payload);
+            break;
           case SyncEntityType.activity:
             await _database.applyRemoteActivity(payload);
+            break;
           case SyncEntityType.preferences:
             await _database.applyRemotePreferences(payload, item.updatedAt);
+            break;
         }
       }
 
