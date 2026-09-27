@@ -406,6 +406,61 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     _applyPoints(next);
   }
 
+  void reverseRoute() {
+    if (state.points.length < 2) {
+      return;
+    }
+    _pushUndo();
+    _redoStack.clear();
+    _applyPoints(
+      List<GeoPoint>.unmodifiable(state.points.reversed),
+    );
+  }
+
+  bool closeLoop() {
+    if (state.points.length < 2) {
+      return false;
+    }
+    final first = state.points.first;
+    final last = state.points.last;
+    if (haversineMeters(first, last) <= 5) {
+      return false;
+    }
+
+    _pushUndo();
+    _redoStack.clear();
+    _applyPoints(
+      List<GeoPoint>.unmodifiable([...state.points, first]),
+    );
+    return true;
+  }
+
+  bool makeOutAndBack() {
+    if (state.points.length < 2) {
+      return false;
+    }
+
+    final returnPoints = state.points.reversed.skip(1).toList(growable: false);
+    if (returnPoints.isEmpty) {
+      return false;
+    }
+
+    _pushUndo();
+    _redoStack.clear();
+    _applyPoints(
+      List<GeoPoint>.unmodifiable([...state.points, ...returnPoints]),
+    );
+    return true;
+  }
+
+  bool eraseLastSegment() {
+    if (state.points.length < 2) {
+      return false;
+    }
+    removePoint(state.points.length - 1);
+    return true;
+  }
+
   void clear() {
     if (state.points.isEmpty) {
       return;
