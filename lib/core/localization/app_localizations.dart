@@ -77,6 +77,7 @@ class AppLocalizations {
   String get proStoreUnavailable => _value('proStoreUnavailable');
   String get proPurchaseError => _value('proPurchaseError');
   String get proSafetyFree => _value('proSafetyFree');
+  String get proRenewalNotice => _value('proRenewalNotice');
   String get profile => _value('profile');
   String get settings => _value('settings');
   String get preferences => _value('preferences');
@@ -388,6 +389,7 @@ class AppLocalizations {
       'proStoreUnavailable': 'Google Play Billing non è disponibile o i prodotti Pro non sono ancora configurati.',
       'proPurchaseError': 'Non è stato possibile completare l\'acquisto.',
       'proSafetyFree': 'Registrazione, recovery e funzioni di sicurezza di base restano disponibili anche senza Pro.',
+      'proRenewalNotice': 'L’abbonamento si rinnova automaticamente al periodo selezionato finché non viene annullato da Google Play.',
       'profile': 'Profilo',
       'settings': 'Impostazioni',
       'preferences': 'Preferenze dell\'app',
@@ -700,6 +702,7 @@ class AppLocalizations {
       'proStoreUnavailable': 'Google Play Billing is unavailable or Pro products are not configured yet.',
       'proPurchaseError': 'The purchase could not be completed.',
       'proSafetyFree': 'Core recording, recovery and safety features remain available without Pro.',
+      'proRenewalNotice': 'The subscription renews automatically for the selected period until cancelled through Google Play.',
       'profile': 'Profile',
       'settings': 'Settings',
       'preferences': 'App preferences',
@@ -1013,6 +1016,7 @@ class AppLocalizations {
       'proStoreUnavailable': 'Google Play Billing no está disponible o los productos Pro aún no están configurados.',
       'proPurchaseError': 'No se pudo completar la compra.',
       'proSafetyFree': 'La grabación, recuperación y seguridad básicas siguen disponibles sin Pro.',
+      'proRenewalNotice': 'La suscripción se renueva automáticamente por el periodo seleccionado hasta que se cancele en Google Play.',
       'profile': 'Perfil',
       'settings': 'Ajustes',
       'preferences': 'Preferencias de la app',
@@ -1332,6 +1336,7 @@ class AppLocalizations {
       'proStoreUnavailable': 'Google Play Billing est indisponible ou les produits Pro ne sont pas encore configurés.',
       'proPurchaseError': 'L’achat n’a pas pu être effectué.',
       'proSafetyFree': 'L’enregistrement, la récupération et les fonctions de sécurité essentielles restent disponibles sans Pro.',
+      'proRenewalNotice': 'L’abonnement est renouvelé automatiquement pour la période choisie jusqu’à son annulation via Google Play.',
       'profile': 'Profil',
       'settings': 'Réglages',
       'preferences': 'Préférences de l’application',
@@ -1648,6 +1653,7 @@ class AppLocalizations {
       'proStoreUnavailable': 'Google Play Billing não está disponível ou os produtos Pro ainda não estão configurados.',
       'proPurchaseError': 'Não foi possível concluir a compra.',
       'proSafetyFree': 'Gravação, recuperação e funcionalidades essenciais de segurança continuam disponíveis sem Pro.',
+      'proRenewalNotice': 'A subscrição renova-se automaticamente pelo período selecionado até ser cancelada no Google Play.',
       'profile': 'Perfil',
       'settings': 'Definições',
       'preferences': 'Preferências da app',
