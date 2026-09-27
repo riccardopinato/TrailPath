@@ -260,3 +260,10 @@ The v1.5 final AppLab path uses explicit Profile/Pro semantics and scroll-aware 
 The final Profile accessibility patch is normalized with the pinned Flutter 3.47.5 formatter before exact-head certification.
 
 AppLab planner start transition now accepts the explicit `Start here` candidate step when surfaced while still requiring the canonical one-start-point `Choose destination` state before destination selection; this removes a MapLibre/emulator timing race without bypassing route-state validation.
+
+
+### Provider usage and cloud security boundaries
+
+- Privacy-safe provider usage counters are local-only and record only provider/capability counts plus the last-use timestamp for MapTiler Satellite, Hybrid and 3D Terrain. No route geometry, coordinates or precise-location analytics are written or transmitted.
+- Cloud Sync uses Supabase HTTPS/TLS, RLS and authenticated user-scoped rows with only runtime publishable credentials in the client. TrailPath does not embed a service-role key.
+- Supabase project-level at-rest encryption, backups and retention remain deployment controls that must be reviewed before production Cloud Sync is enabled; TrailPath does not claim client-side encryption of cloud payloads.
