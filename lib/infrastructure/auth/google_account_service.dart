@@ -33,7 +33,6 @@ class GoogleAccountService implements AccountService {
     }
     try {
       _account = await attempt;
-      await _resolveAccessToken(promptIfNeeded: false);
       return _profile(_account);
     } on GoogleSignInException {
       return null;
@@ -57,7 +56,6 @@ class GoogleAccountService implements AccountService {
       );
     }
     _account = await _signIn.authenticate();
-    await _resolveAccessToken(promptIfNeeded: true);
     return _profile(_account);
   }
 
@@ -83,11 +81,11 @@ class GoogleAccountService implements AccountService {
     final accessToken =
         _accessToken ??
         await _resolveAccessToken(promptIfNeeded: promptIfNeeded);
-    if (accessToken == null || accessToken.isEmpty) {
-      return null;
-    }
 
-    return AccountAuthTokens(idToken: idToken, accessToken: accessToken);
+    return AccountAuthTokens(
+      idToken: idToken,
+      accessToken: accessToken?.trim().isEmpty == true ? null : accessToken,
+    );
   }
 
   Future<String?> _resolveAccessToken({required bool promptIfNeeded}) async {
