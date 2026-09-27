@@ -161,3 +161,5 @@ The post-v1 branch starts at **v1.1.0+32** with Smart Trace and multi-map founda
 The v1.1 Dart sources are normalized with the pinned Flutter 3.47.5 formatter before CI validation.
 
 - Loop, out-and-back, reverse and erase-last-segment route tools are available inside Smart Trace mode, reusing the planner undo/reroute pipeline.
+
+**v1.1 Smart Trace feature-complete checkpoint:** map matching, Trail/Road/Free modes, map layers, loop, out-and-back, reverse, eraser-last-segment and undo/redo are implemented; exact-head CI/AppLab validation follows this documentation commit.
