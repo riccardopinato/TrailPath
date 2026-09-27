@@ -191,6 +191,7 @@ Approved ideas to implement after Smart Trace + Pro foundation:
 - [x] recording finalization distinguishes saved / too-short / save-failed and keeps failed finalization retryable without discarding the captured track.
 - [x] **Automatic rerouting:** optional Pro preference recalculates from live position to destination after off-route events, with cooldown and safe failure fallback.
 - [x] **3D terrain:** Pro MapLibre terrain path is implemented behind configured MapTiler DEM/runtime entitlement; provider cost/performance remains a production acceptance gate.
+- [x] harden planner start-state E2E timing while preserving the required `Choose destination` state before second-point routing.
 
 ### Product principles for the approved roadmap
 
