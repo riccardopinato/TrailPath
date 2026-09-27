@@ -85,7 +85,11 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
     }
   }
 
-  Future<void> start(RoutePlan route, String languageCode) async {
+  Future<void> start(
+    RoutePlan route,
+    String languageCode, {
+    bool voiceGuidance = true,
+  }) async {
     await _subscription?.cancel();
     if (!ref.mounted) {
       return;
@@ -95,11 +99,13 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
     try {
       final feedback = ref.read(navigationFeedbackProvider);
       _feedback = feedback;
-      try {
-        await feedback.configure(languageCode);
-      } on Object {
-        // Voice feedback is optional. Navigation must continue if TTS is
-        // unavailable or the device has no matching voice installed.
+      if (voiceGuidance) {
+        try {
+          await feedback.configure(languageCode);
+        } on Object {
+          // Voice feedback is optional. Navigation must continue if TTS is
+          // unavailable or the device has no matching voice installed.
+        }
       }
       final voice = _voiceMessages(languageCode);
 
@@ -123,12 +129,18 @@ class ActiveNavigationController extends Notifier<ActiveNavigationState> {
           switch (event.type) {
             case NavigationEventType.offRoute:
               unawaited(_safeAlert(feedback));
-              unawaited(_safeSpeak(feedback, voice.offRoute));
+              if (voiceGuidance) {
+                unawaited(_safeSpeak(feedback, voice.offRoute));
+              }
             case NavigationEventType.backOnRoute:
-              unawaited(_safeSpeak(feedback, voice.backOnRoute));
+              if (voiceGuidance) {
+                unawaited(_safeSpeak(feedback, voice.backOnRoute));
+              }
             case NavigationEventType.arrived:
               unawaited(_safeAlert(feedback));
-              unawaited(_safeSpeak(feedback, voice.arrived));
+              if (voiceGuidance) {
+                unawaited(_safeSpeak(feedback, voice.arrived));
+              }
             case NavigationEventType.started:
             case NavigationEventType.instruction:
             case NavigationEventType.stopped:
