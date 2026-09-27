@@ -151,11 +151,28 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
     }
 
     final routes = payload['routes'];
-    if (routes is! List || routes.isEmpty || routes.first is! Map) {
+    if (routes is! List || routes.isEmpty) {
       throw const RoutingException('No route found.');
     }
 
-    final route = Map<String, dynamic>.from(routes.first as Map);
+    final routeCandidates = <Map<String, dynamic>>[
+      for (final rawRoute in routes)
+        if (rawRoute is Map) Map<String, dynamic>.from(rawRoute),
+    ];
+    if (routeCandidates.isEmpty) {
+      throw const RoutingException('No route found.');
+    }
+
+    final route = request.points.length == 2 && routeCandidates.length > 1
+        ? routeCandidates.reduce((best, candidate) {
+            final bestDistance =
+                (best['distance'] as num?)?.toDouble() ?? double.infinity;
+            final candidateDistance =
+                (candidate['distance'] as num?)?.toDouble() ??
+                double.infinity;
+            return candidateDistance < bestDistance ? candidate : best;
+          })
+        : routeCandidates.first;
     final geometryJson = route['geometry'];
     if (geometryJson is! Map) {
       throw const RoutingException('Missing route geometry.');
@@ -244,10 +261,12 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
       'https://routing.openstreetmap.de/'
       '$service/route/v1/driving/$coordinates',
     ).replace(
-      queryParameters: const {
+      queryParameters: {
         'overview': 'full',
         'geometries': 'geojson',
         'steps': 'false',
+        'continue_straight': 'false',
+        'alternatives': request.points.length == 2 ? '3' : 'false',
       },
     );
   }
