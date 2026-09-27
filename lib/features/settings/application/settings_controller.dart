@@ -14,6 +14,7 @@ class SettingsController extends AsyncNotifier<AppPreferences> {
   static const _mapKey = 'preference_default_map';
   static const _voiceKey = 'preference_voice_guidance';
   static const _wifiKey = 'preference_wifi_only_downloads';
+  static const _rerouteKey = 'preference_auto_reroute';
 
   @override
   Future<AppPreferences> build() async {
@@ -24,6 +25,7 @@ class SettingsController extends AsyncNotifier<AppPreferences> {
       database.getSetting(_mapKey),
       database.getSetting(_voiceKey),
       database.getSetting(_wifiKey),
+      database.getSetting(_rerouteKey),
     ]);
 
     return AppPreferences(
@@ -44,6 +46,7 @@ class SettingsController extends AsyncNotifier<AppPreferences> {
       ),
       voiceGuidance: _boolValue(values[3], fallback: true),
       wifiOnlyDownloads: _boolValue(values[4], fallback: false),
+      autoReroute: _boolValue(values[5], fallback: false),
     );
   }
 
@@ -60,7 +63,18 @@ class SettingsController extends AsyncNotifier<AppPreferences> {
       _update(_voiceKey, value.toString(), (p) => p.copyWith(voiceGuidance: value));
 
   Future<void> setWifiOnlyDownloads(bool value) =>
-      _update(_wifiKey, value.toString(), (p) => p.copyWith(wifiOnlyDownloads: value));
+      _update(
+        _wifiKey,
+        value.toString(),
+        (p) => p.copyWith(wifiOnlyDownloads: value),
+      );
+
+  Future<void> setAutoReroute(bool value) =>
+      _update(
+        _rerouteKey,
+        value.toString(),
+        (p) => p.copyWith(autoReroute: value),
+      );
 
   Future<void> _update(
     String key,
