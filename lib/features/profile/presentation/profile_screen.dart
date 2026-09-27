@@ -21,8 +21,8 @@ class ProfileScreen extends ConsumerWidget {
     final routes = ref.watch(savedRoutesProvider);
     final activities = ref.watch(completedActivitiesProvider);
 
-    final routeCount = routes.value?.length ?? 0;
-    final completed = activities.value ?? const <Activity>[];
+    final routeCount = routes.asData?.value.length ?? 0;
+    final completed = activities.asData?.value ?? const <Activity>[];
     final totalDistance = completed.fold<double>(
       0,
       (sum, activity) => sum + activity.distanceMeters,
