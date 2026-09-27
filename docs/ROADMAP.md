@@ -138,7 +138,7 @@ Goal: make route creation materially closer to Footpath-quality behavior before 
 - [x] **Pro satellite layer:** current MapTiler Satellite style is wired through runtime `MAPTILER_API_KEY` and Premium entitlement.
 - [x] **Pro satellite + trails overlay:** MapTiler Hybrid is wired behind Premium entitlement and runtime provider configuration.
 - [x] evaluate terrain/relief/contours without coupling core planner state to one vendor; v1.5 implements Pro Slope Map from TrailPath elevation data and optional MapLibre 3D terrain from a configured DEM provider.
-- [~] map-provider cost telemetry remains intentionally local/no-op until a privacy-reviewed aggregate backend exists; no route or precise-location analytics are introduced.
+- [x] **Privacy-safe provider usage hooks:** local aggregate counters/timestamps cover MapTiler Satellite, Hybrid and 3D Terrain sessions; no coordinates, routes or precise-location analytics are stored or transmitted.
 
 ### v1.2 — TrailPath Pro
 
@@ -168,7 +168,7 @@ Goal: make TrailPath feel like a complete product without forcing account creati
 
 - [x] optional backup/sync covers routes + waypoints, completed activities, behavior-backed preferences and Route Collections.
 - [x] implement last-write-wins conflict resolution, local outbox queueing, remote tombstones and explicit Profile sync status.
-- [~] TLS transport is provided by Supabase HTTPS; cloud at-rest handling follows the selected Supabase project/storage policy and must be reviewed before production enablement.
+- [x] **Cloud security boundary:** Supabase HTTPS/TLS, RLS, authenticated-only table access and publishable client credentials are implemented/documented; provider-managed at-rest encryption/retention is an explicit production-environment approval gate, not falsely claimed as app-side encryption.
 - [x] remote-newer records restore into local Drift, deletions propagate through tombstones, and Google/Supabase sign-out does not delete local data.
 - [x] route tombstones remove collection membership deterministically and collection records are applied after route state to prevent stale cross-device references.
 - [x] no mandatory cloud dependency for planning, recording or navigation; Supabase is runtime-config gated.
