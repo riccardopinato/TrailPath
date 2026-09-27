@@ -45,27 +45,27 @@ void main() {
     () async {
       Uri? requestedUri;
       final payload = _successPayload();
-    (payload['routes'] as List).add({
-      'distance': 980.0,
-      'duration': 940.0,
-      'geometry': {
-        'coordinates': [
-          [11.0, 45.0],
-          [11.004, 45.004],
-          [11.01, 45.01],
-        ],
-      },
-    });
-    final engine = OpenStreetMapRoutingEngine(
-      client: MockClient((request) async {
-        requestedUri = request.url;
-        return http.Response(jsonEncode(payload), 200);
-      }),
-      maxRetries: 0,
-    );
-    addTearDown(engine.dispose);
+      (payload['routes'] as List).add({
+        'distance': 980.0,
+        'duration': 940.0,
+        'geometry': {
+          'coordinates': [
+            [11.0, 45.0],
+            [11.004, 45.004],
+            [11.01, 45.01],
+          ],
+        },
+      });
+      final engine = OpenStreetMapRoutingEngine(
+        client: MockClient((request) async {
+          requestedUri = request.url;
+          return http.Response(jsonEncode(payload), 200);
+        }),
+        maxRetries: 0,
+      );
+      addTearDown(engine.dispose);
 
-    final plan = await engine.calculate(_request());
+      final plan = await engine.calculate(_request());
 
       expect(requestedUri?.queryParameters['alternatives'], '3');
       expect(requestedUri?.queryParameters['continue_straight'], 'false');
