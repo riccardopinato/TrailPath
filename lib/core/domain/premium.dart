@@ -14,7 +14,12 @@ enum PremiumFeature {
 
 enum PremiumPlan { monthly, yearly }
 
-enum PremiumVerificationLevel { none, localStoreReceipt, serverVerified }
+enum PremiumVerificationLevel {
+  none,
+  internalPreview,
+  localStoreReceipt,
+  serverVerified,
+}
 
 class PremiumOffer {
   const PremiumOffer({
