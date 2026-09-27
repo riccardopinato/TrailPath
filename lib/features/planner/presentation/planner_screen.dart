@@ -734,6 +734,12 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     await controller.setTerrain(
       const TerrainProperties(source: sourceId, exaggeration: 1.15),
     );
+    unawaited(
+      ref.read(providerUsageTrackerProvider).record(
+        provider: 'maptiler',
+        capability: 'terrain_3d',
+      ),
+    );
   }
 
   Future<void> _applyMapStyle(_PlannerMapStyle style) async {
@@ -766,6 +772,20 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       _candidateVisualKey = null;
     });
     await controller.setStyle(url);
+
+    final capability = switch (style) {
+      _PlannerMapStyle.satellite => 'satellite',
+      _PlannerMapStyle.hybrid => 'hybrid',
+      _ => null,
+    };
+    if (capability != null) {
+      unawaited(
+        ref.read(providerUsageTrackerProvider).record(
+          provider: 'maptiler',
+          capability: capability,
+        ),
+      );
+    }
   }
 
   String? _mapStyleUrl(_PlannerMapStyle style) {
