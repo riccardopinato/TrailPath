@@ -77,7 +77,13 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
       }
 
       remote = await _fetchRemote(client, user.id);
-      for (final item in remote.values) {
+      final orderedRemote = remote.values.toList(growable: false)
+        ..sort((a, b) {
+          final aCollection = a.entityType == SyncEntityType.collection ? 1 : 0;
+          final bCollection = b.entityType == SyncEntityType.collection ? 1 : 0;
+          return aCollection.compareTo(bCollection);
+        });
+      for (final item in orderedRemote) {
         final localStamp = await _database.localSyncTimestamp(
           item.entityType,
           item.entityId,
