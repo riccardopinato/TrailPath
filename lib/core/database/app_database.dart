@@ -746,14 +746,24 @@ class AppDatabase extends _$AppDatabase {
         routeCollectionItems,
       )..where((row) => row.collectionId.equals(id))).go();
       final now = updatedAt.toLocal();
-      final items = <RouteCollectionItemsCompanion>[
-        for (final routeId in routeIdsRaw.whereType<String>())
+      final items = <RouteCollectionItemsCompanion>[];
+      for (final routeId in routeIdsRaw.whereType<String>()) {
+        final routeExists =
+            await (select(savedRoutes)
+                  ..where((row) => row.id.equals(routeId))
+                  ..limit(1))
+                .getSingleOrNull();
+        if (routeExists == null) {
+          continue;
+        }
+        items.add(
           RouteCollectionItemsCompanion.insert(
             collectionId: id,
             routeId: routeId,
             addedAt: now,
           ),
-      ];
+        );
+      }
       if (items.isNotEmpty) {
         await batch((batch) => batch.insertAll(routeCollectionItems, items));
       }
@@ -1088,6 +1098,9 @@ class AppDatabase extends _$AppDatabase {
         await transaction(() async {
           await (delete(
             waypoints,
+          )..where((row) => row.routeId.equals(entityId))).go();
+          await (delete(
+            routeCollectionItems,
           )..where((row) => row.routeId.equals(entityId))).go();
           await (delete(
             savedRoutes,
