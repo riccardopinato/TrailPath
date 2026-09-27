@@ -31,6 +31,8 @@ void main() {
     expect(profile, contains('PersonalStatsScreen'));
     expect(routeLab, contains('generateCircularRoutes'));
     expect(routeLab, contains('generateAlternatives'));
+    expect(routeLab, contains('AlternativeRoutePreference.moreTrail'));
+    expect(routeLab, contains('AlternativeRoutePreference.moreRoad'));
     expect(outdoor, contains('poisAlongRoute'));
     expect(outdoor, contains('weatherAlongRoute'));
     expect(outdoor, contains('surfaceSummary'));
