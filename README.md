@@ -256,3 +256,5 @@ The final Route Intelligence source is normalized with the pinned Flutter 3.47.5
 Recording finalization now distinguishes **saved / too short / save failed**, keeps a failed final snapshot retryable in-session, and no longer misreports a database save failure as a short activity.
 
 The v1.5 final AppLab path uses explicit Profile/Pro semantics and scroll-aware access to Outdoor tools on compact viewports.
+
+The final Profile accessibility patch is normalized with the pinned Flutter 3.47.5 formatter before exact-head certification.
