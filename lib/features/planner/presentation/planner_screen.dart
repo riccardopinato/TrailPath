@@ -18,6 +18,8 @@ import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/planner/application/route_planner_controller.dart';
+import 'package:trail_path/features/pro/application/premium_controller.dart';
+import 'package:trail_path/features/pro/presentation/pro_paywall.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
@@ -524,11 +526,12 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   }
 
   Future<void> _openMapLayers() async {
+    final premium = ref.read(premiumControllerProvider);
     final selected = await showModalBottomSheet<_PlannerMapStyle>(
       context: context,
       showDragHandle: true,
-      builder: (context) {
-        final strings = AppLocalizations.of(context);
+      builder: (sheetContext) {
+        final strings = AppLocalizations.of(sheetContext);
         return SafeArea(
           child: ListView(
             shrinkWrap: true,
@@ -557,8 +560,27 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                       : style.isPremium
                       ? const Icon(Icons.workspace_premium_outlined)
                       : null,
-                  enabled: !style.isPremium || MapConfig.hasPremiumMapProvider,
-                  onTap: () => Navigator.of(context).pop(style),
+                  onTap: () async {
+                    if (style.isPremium && !premium.isPro) {
+                      Navigator.of(sheetContext).pop();
+                      await Future<void>.delayed(Duration.zero);
+                      if (mounted) {
+                        await showTrailPathProPaywall(context, ref);
+                      }
+                      return;
+                    }
+                    if (style.isPremium && !MapConfig.hasPremiumMapProvider) {
+                      Navigator.of(sheetContext).pop();
+                      await Future<void>.delayed(Duration.zero);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(strings.proMapUnavailable)),
+                        );
+                      }
+                      return;
+                    }
+                    Navigator.of(sheetContext).pop(style);
+                  },
                 ),
             ],
           ),
