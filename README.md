@@ -181,3 +181,5 @@ The v1.4 staging candidate is **v1.4.0+35**.
 - No Supabase service-role/secret key is embedded in the app.
 
 v1.4 Cloud Sync sources are normalized with the pinned Flutter 3.47.5 formatter.
+
+v1.4 Cloud sources are normalized with the pinned Flutter 3.47.5 formatter before staging CI.
