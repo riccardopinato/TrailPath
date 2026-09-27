@@ -312,11 +312,14 @@ class _RouteIntelligenceScreenState
     final strings = AppLocalizations.of(context);
     final units = context.distanceUnits;
     final minimumTarget = units == DistanceUnitPreference.imperial ? 2.0 : 3.0;
-    final maximumTarget = units == DistanceUnitPreference.imperial ? 25.0 : 40.0;
+    final maximumTarget = units == DistanceUnitPreference.imperial
+        ? 25.0
+        : 40.0;
     final displayTarget = _targetDistance
         .clamp(minimumTarget, maximumTarget)
         .toDouble();
-    final targetDistanceMeters = displayTarget *
+    final targetDistanceMeters =
+        displayTarget *
         (units == DistanceUnitPreference.imperial ? 1609.344 : 1000.0);
 
     setState(() {
