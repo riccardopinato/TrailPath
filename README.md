@@ -242,3 +242,5 @@ Surface analysis uses bounded route-corridor probes against Overpass instead of 
 - Surface analysis uses bounded route-corridor Overpass probes rather than a potentially huge full-route bounding box.
 
 Metric/Imperial formatting is shared across planner, elevation, recording pace/GPS accuracy, saved routes, navigation, Back to Car, Profile/Stats, Collections, Route Lab POIs and route weather.
+
+The final Profile keeps TrailPath Pro above account details so entitlement state stays visible without scrolling on compact devices and in AppLab.
