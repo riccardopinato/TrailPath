@@ -7,6 +7,8 @@ import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/features/outdoor/application/battery_mode_controller.dart';
+import 'package:trail_path/features/pro/application/premium_controller.dart';
+import 'package:trail_path/features/pro/presentation/pro_paywall.dart';
 import 'package:trail_path/features/settings/application/settings_controller.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -17,6 +19,7 @@ class SettingsScreen extends ConsumerWidget {
     final strings = AppLocalizations.of(context);
     final preferences = ref.watch(settingsControllerProvider);
     final batteryMode = ref.watch(batteryModeProvider);
+    final premium = ref.watch(premiumControllerProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(strings.settings)),
@@ -181,6 +184,28 @@ class SettingsScreen extends ConsumerWidget {
                         ref
                             .read(settingsControllerProvider.notifier)
                             .setWifiOnlyDownloads(value),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1),
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(strings.autoReroute),
+                    subtitle: Text(
+                      premium.isPro
+                          ? strings.autoRerouteHint
+                          : strings.autoRerouteProHint,
+                    ),
+                    value: premium.isPro && prefs.autoReroute,
+                    onChanged: (value) {
+                      if (!premium.isPro) {
+                        unawaited(showTrailPathProPaywall(context, ref));
+                        return;
+                      }
+                      unawaited(
+                        ref
+                            .read(settingsControllerProvider.notifier)
+                            .setAutoReroute(value),
                       );
                     },
                   ),
