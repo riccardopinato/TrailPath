@@ -168,8 +168,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
             final bestDistance =
                 (best['distance'] as num?)?.toDouble() ?? double.infinity;
             final candidateDistance =
-                (candidate['distance'] as num?)?.toDouble() ??
-                double.infinity;
+                (candidate['distance'] as num?)?.toDouble() ?? double.infinity;
             return candidateDistance < bestDistance ? candidate : best;
           })
         : routeCandidates.first;
