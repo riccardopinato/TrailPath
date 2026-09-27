@@ -279,12 +279,10 @@ List<GeoPoint> _sampleGeoPoints(
   }
   return <GeoPoint>[
     for (var i = 0; i < maxItems; i++)
-      points[
-        (i * (points.length - 1) / (maxItems - 1))
-            .round()
-            .clamp(0, points.length - 1)
-            .toInt()
-      ],
+      points[(i * (points.length - 1) / (maxItems - 1))
+          .round()
+          .clamp(0, points.length - 1)
+          .toInt()],
   ];
 }
 
