@@ -188,6 +188,7 @@ Approved ideas to implement after Smart Trace + Pro foundation:
 - [x] **Weather along route:** Open-Meteo samples multiple positions along the selected route.
 - [x] **Route Collections:** local folders with route membership, Drift v5 persistence and cloud-sync support.
 - [x] **Personal stats:** totals, 7/30-day distance, moving time, longest activity and highest-ascent activity.
+- [x] recording finalization distinguishes saved / too-short / save-failed and keeps failed finalization retryable without discarding the captured track.
 - [x] **Automatic rerouting:** optional Pro preference recalculates from live position to destination after off-route events, with cooldown and safe failure fallback.
 - [x] **3D terrain:** Pro MapLibre terrain path is implemented behind configured MapTiler DEM/runtime entitlement; provider cost/performance remains a production acceptance gate.
 
