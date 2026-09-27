@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/features/profile/application/personal_stats.dart';
 
 class PersonalStatsScreen extends ConsumerWidget {
@@ -25,7 +26,7 @@ class PersonalStatsScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 28),
             children: [
               _HeroStat(
-                value: _distance(stats.totalDistanceMeters),
+                value: context.formatDistance(stats.totalDistanceMeters),
                 label: strings.totalDistance,
               ),
               const SizedBox(height: 12),
@@ -44,27 +45,27 @@ class PersonalStatsScreen extends ConsumerWidget {
                   ),
                   _Metric(
                     icon: Icons.trending_up_rounded,
-                    value: '+${stats.totalAscentMeters.round()} m',
+                    value: context.formatElevation(stats.totalAscentMeters, signed: true),
                     label: strings.totalAscent,
                   ),
                   _Metric(
                     icon: Icons.calendar_view_week_rounded,
-                    value: _distance(stats.last7DaysDistanceMeters),
+                    value: context.formatDistance(stats.last7DaysDistanceMeters),
                     label: strings.last7Days,
                   ),
                   _Metric(
                     icon: Icons.calendar_month_rounded,
-                    value: _distance(stats.last30DaysDistanceMeters),
+                    value: context.formatDistance(stats.last30DaysDistanceMeters),
                     label: strings.last30Days,
                   ),
                   _Metric(
                     icon: Icons.straighten_rounded,
-                    value: _distance(stats.longestActivityMeters),
+                    value: context.formatDistance(stats.longestActivityMeters),
                     label: strings.longestActivity,
                   ),
                   _Metric(
                     icon: Icons.landscape_rounded,
-                    value: '+${stats.highestAscentMeters.round()} m',
+                    value: context.formatElevation(stats.highestAscentMeters, signed: true),
                     label: strings.highestAscent,
                   ),
                   _Metric(
@@ -166,9 +167,6 @@ class _Metric extends StatelessWidget {
   }
 }
 
-String _distance(double meters) => meters < 1000
-    ? '${meters.round()} m'
-    : '${(meters / 1000).toStringAsFixed(1)} km';
 
 String _duration(Duration value) {
   final hours = value.inHours;
