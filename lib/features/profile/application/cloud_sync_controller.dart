@@ -6,7 +6,9 @@ import 'package:trail_path/core/config/cloud_config.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/cloud_sync.dart';
 import 'package:trail_path/core/services/cloud_sync_engine.dart';
+import 'package:trail_path/features/outdoor/application/battery_mode_controller.dart';
 import 'package:trail_path/features/profile/application/account_controller.dart';
+import 'package:trail_path/features/settings/application/settings_controller.dart';
 import 'package:trail_path/infrastructure/sync/supabase_cloud_sync_engine.dart';
 
 final cloudSyncEngineProvider = Provider<CloudSyncEngine>((ref) {
@@ -65,6 +67,8 @@ class CloudSyncController extends Notifier<CloudSyncSnapshot> {
       );
       ref.invalidate(savedRoutesProvider);
       ref.invalidate(completedActivitiesProvider);
+      ref.invalidate(settingsControllerProvider);
+      ref.invalidate(batteryModeProvider);
     }
   }
 
