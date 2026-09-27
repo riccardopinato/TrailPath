@@ -12,11 +12,21 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   unawaited(MapLibreMap.preWarm());
   if (CloudConfig.isConfigured) {
-    await Supabase.initialize(
-      url: CloudConfig.supabaseUrl,
-      publishableKey: CloudConfig.supabasePublishableKey,
-      debug: false,
-    );
+    try {
+      await Supabase.initialize(
+        url: CloudConfig.supabaseUrl,
+        publishableKey: CloudConfig.supabasePublishableKey,
+        debug: false,
+      );
+      CloudConfig.supabaseInitialized = true;
+    } on Object catch (error, stackTrace) {
+      CloudConfig.supabaseInitialized = false;
+      AppLogger.error(
+        'Optional cloud sync initialization failed; continuing local-first.',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
   AppLogger.info('TrailPath bootstrap');
   runApp(const ProviderScope(child: TrailPathApp()));
