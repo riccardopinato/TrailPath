@@ -3,49 +3,51 @@
 Status values are limited to **Pass**, **Fail**, **N/A** and **Not Tested**.
 Historical predecessor evidence is not counted as current-candidate evidence.
 
-Current candidate: **v1.0.0+31**  
+Audited runtime candidate: **v1.0.0+31**  
+Audited runtime source: **8cb9f2be11ddd7eddc39b73cb7a6f1932b7cbcd1**  
+TrailPath CI: **#395 — PASS**  
 Pinned AppLab harness: **16271b3ffa34982a0f04fd118565047e7c09e743**
 
 | Area | Status | Evidence / requirement |
 | --- | --- | --- |
-| Product scope | Pass | v1.0 remains feature-frozen; changes are certification/release hardening only. |
-| Versioning | Pass | pubspec 1.0.0+31 and MapConfig 1.0.0. |
-| Evidence Bundle truthfulness | Pass | Automated validation is derived from actual build/API29/AppLab results and regression-checked in CI. |
-| AppLab harness identity | Pass | Workflow is pinned to the exact SHA above and records it in the Evidence Bundle. |
-| Saved-route deletion lifecycle | Pass | Route deletion now removes the linked native offline region before deleting route/waypoints; regression test added. |
-| Planner foreground GPS lifecycle contract | Pass | Source regression test exists; runtime certification still required below. |
-| Formatting | Not Tested | Build 31 certification run pending. |
-| Static analysis | Not Tested | Build 31 certification run pending. |
-| Full Flutter tests | Not Tested | Build 31 certification run pending. |
-| ARM64 release APK | Not Tested | Build 31 artifact pending. |
-| x86_64 R8 runtime APK | Not Tested | Build 31 artifact pending. |
-| Release AAB structure | Not Tested | Build 31 certification run pending. |
-| ARM64 size budget | Pass | 33,638,317 bytes; below 40 MiB gate. |
-| Android API 29 release smoke | Not Tested | Build 31 certification run pending. |
-| API 35 AppLab full gate | Not Tested | Fresh build-31 run pending on pinned harness 16271b3ffa34982a0f04fd118565047e7c09e743. |
-| Network & Offline Lab | Not Tested | Fresh build-31 run pending on pinned harness 16271b3ffa34982a0f04fd118565047e7c09e743. |
-| Focused no-network navigation gate | Not Tested | Fresh build-31 run pending on pinned harness 16271b3ffa34982a0f04fd118565047e7c09e743. |
-| Background/Doze recovery | Not Tested | Fresh build-31 run pending on pinned harness 16271b3ffa34982a0f04fd118565047e7c09e743. |
-| Database migrations v1/v2 → v3 | Pass | Migration tests passed in full Flutter suite. |
-| Android backup/device transfer | Pass | Backup disabled and extraction rules exclude app data. |
-| Cleartext HTTP | Pass | Explicitly disabled in Android manifest. |
-| Privacy documentation | Pass | Current local/network behavior documented. |
-| Store-signing configuration | Pass | External signing supported and explicit store mode fails closed. |
-| Store-signed AAB | Not Tested | GitHub signing secrets still required. |
-| Accessibility custom planner controls | Pass | Semantics/Tooltip/48×48 contract exists. |
-| Full-app accessibility QA | Not Tested | TalkBack/large text/full critical-flow evidence not yet recorded. |
-| Dependency freshness | Pass | permission_handler major upgrade deliberately deferred beyond RC. |
-| Performance baseline | Not Tested | Physical ARM64 profiling still required. |
-| Exact ARM64 physical QA | Not Tested | Must use exact candidate SHA/hash. |
-| Play Store listing/screenshots | Not Tested | Final exact-build review required. |
-| Staged rollout / rollback review | Not Tested | Approval file must be completed for exact candidate. |
+| Product scope | Pass | v1.0 remains focused on outdoor planning/recording/navigation; no social scope. |
+| Versioning | Pass | pubspec 1.0.0+31; semantic UI version 1.0.0. |
+| Evidence Bundle truthfulness | Pass | Automated PASS + external BLOCKED status derived from actual gates. |
+| AppLab harness identity | Pass | Exact harness SHA pinned and recorded. |
+| Formatting | Pass | CI #395, 72 files / 0 changed. |
+| Static analysis | Pass | CI #395, no issues found. |
+| Full Flutter tests | Pass | CI #395, 77 tests passed. |
+| ARM64 release APK | Pass | 33,704,085 bytes; SHA-256 14e198503f1fe4568a2cf4abb69dc4ba7271a6f9985643e7c7185a582f06c38a. |
+| x86_64 R8 runtime APK | Pass | AppLab artifact produced/tested. |
+| Release AAB structure | Pass | CI #395. |
+| ARM64 size budget | Pass | 33.7 MB < 40 MiB gate. |
+| Android API 29 release smoke | Pass | install / launch / restart. |
+| API 35 AppLab full gate | Pass | complete E2E PASS. |
+| Network & Offline Lab | Pass | errors 0 / warnings 0. |
+| Persistence & Restart Lab | Pass | 2 cycles, errors 0 / warnings 0. |
+| Configuration & Lifecycle | Pass | 6 stages, errors 0 / warnings 0. |
+| Background/Doze recovery | Pass | errors 0 / warnings 0. |
+| Smart Visual QA | Pass | errors 0 / warnings 0. |
+| Visual regression baseline | Not Tested | NO_BASELINE; accept only after physical UI approval. |
+| Upgrade/migration AppLab baseline | Not Tested | previous release artifact baseline absent. |
+| Database migrations v1/v2 → v3 | Pass | dedicated Flutter migration tests. |
+| Saved-route/offline deletion lifecycle | Pass | coordinated native region + DB deletion with regression test. |
+| Planner foreground GPS lifecycle | Pass | source regression + API35 lifecycle/background gate. |
+| Android backup/device transfer | Pass | disabled/excluded. |
+| Cleartext HTTP | Pass | explicitly disabled. |
+| Privacy documentation | Pass | current local/network behavior documented. |
+| Store-signing configuration | Pass | explicit store mode fails closed. |
+| Store-signed AAB | Not Tested | GitHub signing secrets absent. |
+| Accessibility custom planner controls | Pass | Semantics/Tooltip/48×48 contract. |
+| Full-app accessibility QA | Not Tested | TalkBack/large text/small-screen evidence absent. |
+| Physical ARM64 performance baseline | Not Tested | AppLab emulator Performance Lab is WARN/NO_BASELINE. |
+| Exact ARM64 physical QA | Not Tested | must use exact evidence hash. |
+| Resolved Android SDK/merged FGS artifact evidence | Not Tested | source uses Flutter-resolved values; exact artifact evidence not recorded. |
+| Play Store listing/screenshots | Not Tested | final exact-build review required. |
+| Staged rollout / rollback review | Not Tested | explicit approval still required. |
 
 ## Certification rule
 
-The generated Evidence Bundle for the exact candidate SHA is the authoritative automated verdict. Build 31 is a new runtime candidate. Build 30 remains historical PASS evidence only; build 31 has no automated verdict until its full certification run completes.
+The audited build-31 runtime has **automated validation PASS**. Production remains **BLOCKED** until store signing and every required external production gate are PASS.
 
-- Any required automated failure → **NOT CERTIFIED**.
-- All automated gates pass but external production evidence is incomplete → **BLOCKED**.
-- Automated gates + store signing + every required external production gate pass → **CERTIFIED**.
-
-No public v1.0.0 tag/release may be created while the verdict is NOT CERTIFIED or BLOCKED.
+A documentation-only audit commit changes the branch SHA and therefore triggers a fresh exact-head CI/evidence cycle. Runtime findings above remain tied to the audited runtime source SHA until the new exact-head run completes.

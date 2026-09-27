@@ -59,3 +59,16 @@ recording, TTS and native offline regions.
 Presentation may adapt to each platform, but waypoint mutations, profile
 selection, partial rerouting, undo/redo, route geometry, elevation and search
 must not be reimplemented in a parallel Web state machine.
+
+
+## Known v1.0 Web presentation parity gap
+
+The shared planner **domain** remains cross-platform, but the build-31 native planner
+introduced a candidate-preview/confirmation UX and MapLibre annotation caching
+that `lib/web_preview.dart` has not yet adopted. The Web Preview still mutates
+route points directly on map click and uses a separate search-marker/add flow.
+
+This is tracked as P1 release-quality debt. It does not invalidate the Android
+runtime certification, but the project must not claim full presentation/UX parity
+until Web uses the same point-selection state machine and comparable map-update
+coalescing.

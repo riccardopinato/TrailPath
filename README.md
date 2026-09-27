@@ -10,21 +10,15 @@ TrailPath v1.0.0 is the first stable Android release candidate. No new product s
 
 ### Current certification status
 
-**CURRENT RUNTIME CANDIDATE — v1.0.0+31.** Build 31 introduces the physical-feedback planner overhaul: map-first empty state, destination preview/confirmation, shared map/search point-selection flow, compact route summary with expandable details and annotation-update coalescing/caching for smoother MapLibre interaction.
+**AUTOMATED VALIDATION PASS — v1.0.0+31.** TrailPath CI #395 completed successfully on audited runtime source `8cb9f2be11ddd7eddc39b73cb7a6f1932b7cbcd1`: format, analyze, 77 Flutter tests, ARM64/x86_64 release builds, AAB structure/size gate, API 29 smoke and the complete API 35 AppLab E2E matrix are green.
 
-The previous build 30 remains the last fully green automated baseline. Build 31 must pass the complete certification matrix before replacing it as the validated candidate. Production remains blocked by exact-artifact physical ARM64 QA, store signing, Play Store assets/review and staged-rollout approval.
+The generated Evidence Bundle verdict is still **BLOCKED**, not CERTIFIED, because store-signing credentials are absent and the exact ARM64 candidate still requires physical-device QA, Play Store listing/screenshots review and staged-rollout/rollback approval.
 
-Pinned AppLab harness remains `16271b3ffa34982a0f04fd118565047e7c09e743`.
+Exact audited ARM64 candidate: **33,704,085 bytes**, SHA-256 `14e198503f1fe4568a2cf4abb69dc4ba7271a6f9985643e7c7185a582f06c38a`.
 
-The pinned AppLab harness now includes Configuration/Lifecycle recovery for Android-allowed process reclaim during repeated background/foreground stress while still failing on target ANR/fatal evidence.
+Pinned AppLab harness: `16271b3ffa34982a0f04fd118565047e7c09e743`.
 
-Build 31 planner sources and regression tests are normalized with the same Dart formatter shipped by the pinned Flutter 3.47.5 CI toolchain.
-
-Widget boot regression now matches the map-first empty state: no synthetic `0 m` summary is expected before a route exists.
-
-The planner shell regression now asserts the search field semantically via the `TextField` widget instead of treating its `InputDecoration` hint as a standalone `Text` widget.
-
-AppLab planner journey now follows the explicit Start / Destination confirmation flow introduced in build 31 instead of assuming two raw map taps immediately create a savable route.
+The 2026-09-27 deep audit found no code-level P0 crash/data-loss blocker in the automated path. Remaining release-quality work is explicit: physical ARM64 map/selection performance validation, restoration of Web Preview UX parity with the build-31 planner flow, full-app accessibility/small-screen validation, resolved Android SDK/merged foreground-service evidence and a production routing-provider decision. See `docs/FULL_AUDIT_v1.0.0.md`.
 
 ### Included
 
@@ -66,7 +60,7 @@ AppLab planner journey now follows the explicit Start / Destination confirmation
 - route line, undo/redo and clear controls
 - activity profiles with foot/bike routing profiles
 - asynchronous snap-to-network routing through routing.openstreetmap.de
-- shared Android/Web routing implementation with persistent HTTP client reuse
+- shared Android/Web routing engine and planner domain core with persistent HTTP client reuse; Web Preview presentation currently lags the build-31 mobile preview/confirmation UX and is tracked as P1 parity debt
 - bounded retry/backoff for HTTP 408/425/429/5xx and transient network timeouts
 - Retry-After handling and strict snapped-waypoint response validation
 - explicit routing failure state when network routing is unavailable; no silent straight-line route can be saved

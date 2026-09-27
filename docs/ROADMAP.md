@@ -73,44 +73,48 @@ Replace duplicated Web preview planner state with the real shared planner/domain
 First-run onboarding, accessibility hardening, fail-closed Play Store signing, AAB validation, privacy/security configuration, true no-network AppLab navigation, migration/offline regression evidence, dependency and size review, and final release-candidate audit.
 
 ## v1.0 - Certification & Release
-Current runtime candidate: **v1.0.0+31**. Build 30 is the last fully green automated baseline; build 31 implements the physical-device UX hardening and is awaiting full re-certification. Production is therefore **BLOCKED** by planner/map fluidity, destination-selection UX, map-space usage and the remaining external release gates (store signing, exact ARM64 physical QA, Play Store assets/review and rollout approval). No new social/community scope is introduced.
+Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current fully green automated baseline for runtime source `8cb9f2be11ddd7eddc39b73cb7a6f1932b7cbcd1`. Automated validation is **PASS**; the Evidence Bundle remains **BLOCKED** by external production gates: store signing, exact ARM64 physical QA, Play Store listing/screenshots review and staged rollout/rollback approval.
 
 ### P0 — certification integrity
-- [x] harden AppLab active-connectivity detection and preserve dedicated network-stage Logcat evidence;
-- [x] make Evidence Bundle automated-validation status reflect actual gate results;
-- [x] pin the AppLab harness to an exact SHA and record it in evidence;
-- [x] keep release checklist status tied only to the exact candidate;
-- [x] keep remediation clean under the strict Dart formatting gate;
-- [x] fix AppLab Network Lab active-connectivity parsing and cold-relaunch `pidof` stabilization;
-- [x] rerun the complete AppLab sequence: Network/Offline PASS, Persistence/Restart PASS, Configuration/Lifecycle PASS, Background/Doze PASS and focused no-network Maestro PASS on build 30.
-- [x] complete the build-30 full audit: no remaining code-level P0 blocker; automated certification PASS, production still BLOCKED only by external gates.
+- [x] fail closed on automated build/test/AppLab failures and distinguish BLOCKED external evidence from CERTIFIED;
+- [x] pin AppLab to `16271b3ffa34982a0f04fd118565047e7c09e743` and record harness identity in evidence;
+- [x] keep Network/Offline, Persistence/Restart, Configuration/Lifecycle and Background/Doze gates fail-safe;
+- [x] run format, analyze, **77 Flutter tests**, ARM64/x86_64 release builds, AAB structure/size gate, API 29 smoke and full API 35 AppLab on build 31;
+- [x] build exact Evidence Bundle with ARM64/x86_64 SHA-256 identity;
+- [x] complete the 2026-09-27 deep audit: no code-level P0 crash/data-loss blocker found in the automated path.
 
-### P1 — Map-first UX, fluidity & release hardening
-- [x] cascade native offline-region deletion when a saved route is deleted, with regression coverage;
-- [x] widget boot regression aligned with the map-first empty state (no pre-route `0 m` summary expected);
-- [x] planner shell test now validates the search field semantically instead of matching an `InputDecoration` hint as standalone text;
-- [x] AppLab planner E2E aligned with the build-31 confirmation state machine (`Start here` → `Choose destination` → `Destination` → save);
-- [x] pin AppLab `16271b3ffa34982a0f04fd118565047e7c09e743` with bounded Configuration/Lifecycle process-reclaim recovery after a transient foreground-return race; ANR/fatal evidence still fails closed;
-- [x] **Planner map-first layout:** remove the permanently visible full PlannerCard from the empty/home state. Keep the map dominant. Before a route exists, show only lightweight floating controls; after the first confirmed point use a compact prompt; show the route summary only after a confirmed destination/valid route exists;
-- [x] **Progressive bottom sheet:** replace the fixed large summary card with hidden / compact / expanded states. Compact mode exposes only essential route stats/actions; elevation, profile details, GPS diagnostics and secondary actions move to the expanded sheet; save dialogs are launched after sheet dismissal to preserve correct navigation lifecycle;
-- [x] **Destination-selection rewrite:** a map tap must create a temporary preview pin, not immediately mutate the route. Use one consistent confirmation flow for map tap, search result and POI: `Start here`, `Destination`, or `Add waypoint`. Recalculate only after confirmation;
-- [~] **Selection accuracy:** candidate pin and confirmed start/destination/waypoints now retain the exact user-selected coordinates even when routing geometry snaps to OSM; physical QA must still verify bottom-edge visibility/camera padding and accidental-tap behavior on real devices;
-- [x] **Search-to-route parity:** selecting a search result must enter the same preview/confirmation state as tapping the map instead of merely centering a separate marker;
-- [~] **Waypoint editing parity:** existing drag/route-line editing is preserved and candidate selection no longer interferes with normal point selection; further reorder/context-action simplification remains after physical QA;
-- [x] **Planner fluidity pass — first runtime pass:** profile MapLibre/platform-channel work, reduce sequential per-annotation updates, batch/coalesce redraws, throttle high-frequency syncs and investigate style source/layer rendering for route geometry while keeping interactive annotations only where needed;
-- [ ] **Map interaction frame budget:** physical ARM64 map pan/zoom/drag/point-selection must remain responsive during route editing; establish frame-time and startup baselines on a representative mid-range Android device and fail the release gate on reproducible severe jank;
-- [~] **Toolbar declutter:** the largest permanent UI block has been removed and secondary route details moved off-map; top toolbar simplification remains a follow-up if physical testing still finds it crowded;
-- [x] **Reference-app parity review:** map-first/progressive-detail and unified selection patterns from the documented Komoot, AllTrails, Wikiloc and Organic Maps benchmark are now represented in the planner without importing community/social scope;
-- [ ] rerun targeted widget/domain tests, API 29 smoke, full API 35 AppLab, visual checks and exact ARM64 physical QA after the UX/performance changes;
-- [ ] establish performance/visual baselines and validate ARM64 performance on a physical device;
-- [ ] record resolved Android SDK/merged foreground-service contract in release evidence;
-- [ ] decide/accept a production routing-provider reliability strategy;
+### P1 — release-quality hardening
+- [x] **Planner map-first layout:** empty planner no longer carries the permanent full summary card;
+- [x] **Progressive route details:** hidden/compact/expanded states keep the map primary;
+- [x] **Destination confirmation:** map tap/search create a temporary candidate before Start/Destination/Add waypoint;
+- [x] **Exact selected coordinates:** confirmed markers stay on user-selected coordinates while only route geometry snaps to OSM;
+- [x] **Search-to-route parity on mobile:** search and map tap use the same candidate/confirmation state;
+- [x] **Planner fluidity first pass:** coalesced annotation sync and visual caching reduce redundant MapLibre platform-channel updates;
+- [x] **AppLab planner E2E:** new confirmation flow, save, navigation, offline and restart sequence passes;
+- [~] **Selection accuracy / camera padding:** exact coordinates are fixed, but physical QA must verify bottom-edge pin visibility, sheet occlusion and accidental taps on the exact ARM64 artifact;
+- [ ] **Physical ARM64 frame budget:** validate startup, pan/zoom, point preview, route editing and waypoint drag on a representative real Android device; emulator Performance Lab is advisory only;
+- [ ] **Web Preview UX parity:** migrate `lib/web_preview.dart` from immediate tap mutation/separate search marker to the same preview/confirmation flow as mobile and carry over annotation caching/coalescing;
+- [ ] **Full-app accessibility + small-screen pass:** TalkBack, large text, contrast, compact route summary and candidate actions across critical screens;
+- [ ] **Android release contract evidence:** record resolved compile/min/target SDK and merged foreground-location service declarations from the release artifact;
+- [ ] **Production routing-provider decision:** explicitly accept the public routing.openstreetmap.de dependency or switch/self-host behind the existing `RoutingEngine` contract;
+- [ ] **Visual regression baseline:** promote an accepted physical/visual checkpoint only after the build-31 UI is approved;
 - [ ] complete exact-artifact ARM64 physical QA, store signing, Play metadata/screenshots and rollout review.
 
-### P2/P3 — post-blocker quality
-- broaden accessibility and safe interaction coverage;
-- replace raw exception strings with localized user-facing errors;
-- upgrade permission_handler after v1 certification with regression tests;
-- decide whether local route/activity history requires app-level encryption.
+### P2 — correctness, resilience and technical debt
+- [ ] keep ETA semantics consistent after partial reroute: patched legs currently recompute ETA with local static profile speed instead of provider duration;
+- [ ] harden recording finalization failure handling: a database completion failure after recorder stop must remain retryable/recoverable and must not surface as “activity too short”;
+- [ ] replace raw `error.toString()` surfaces with localized user-safe categories while preserving technical detail in structured logs;
+- [ ] localize foreground-service notification text and remaining hardcoded UI/support strings;
+- [ ] add explicit cancel semantics for long offline downloads and document/review download-size behavior;
+- [ ] decide whether route/activity/Back-to-Car coordinates require app-level encryption at rest;
+- [ ] upgrade `permission_handler` 12.x → 13.x in a dedicated post-RC compatibility step with permission/background regression;
+- [ ] remove duplicated semantic version source (`MapConfig.appVersion` vs pubspec) or generate it from one source of truth;
+- [ ] broaden behavioral widget coverage for candidate selection and destructive/error states; current architecture string-contract tests are useful but brittle;
+- [ ] establish upgrade/migration AppLab baseline from a real previous release artifact.
+
+### P3 — polish
+- [ ] finish top-toolbar declutter if physical testing still finds the map chrome crowded;
+- [ ] localize OSM search attribution/support copy;
+- [ ] revisit generic Safe Interaction Crawler discoverability; current crawler finds only one safe action.
 
 Full detail: `docs/FULL_AUDIT_v1.0.0.md`.
