@@ -344,7 +344,9 @@ class AppDatabase extends _$AppDatabase {
   }) async {
     final now = DateTime.now();
     await transaction(() async {
-      await (update(activities)..where((row) => row.id.equals(activityId))).write(
+      await (update(
+        activities,
+      )..where((row) => row.id.equals(activityId))).write(
         ActivitiesCompanion(
           name: Value(name),
           endedAt: Value(now),
@@ -373,7 +375,9 @@ class AppDatabase extends _$AppDatabase {
             .getSingleOrNull();
     final now = DateTime.now();
     await transaction(() async {
-      await (delete(activities)..where((row) => row.id.equals(activityId))).go();
+      await (delete(
+        activities,
+      )..where((row) => row.id.equals(activityId))).go();
       if (existing?.endedAt != null) {
         await _queueSyncMutation(
           SyncEntityType.activity,
@@ -420,9 +424,7 @@ class AppDatabase extends _$AppDatabase {
     required bool isReady,
   }) async {
     await (update(savedRoutes)..where((row) => row.id.equals(routeId))).write(
-      SavedRoutesCompanion(
-        isOfflineReady: Value(isReady),
-      ),
+      SavedRoutesCompanion(isOfflineReady: Value(isReady)),
     );
   }
 
@@ -600,10 +602,9 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<List<SyncMutation>> listSyncMutations() async {
-    final rows =
-        await (select(syncOutboxEntries)
-              ..orderBy([(row) => OrderingTerm.asc(row.updatedAt)]))
-            .get();
+    final rows = await (select(
+      syncOutboxEntries,
+    )..orderBy([(row) => OrderingTerm.asc(row.updatedAt)])).get();
     return rows
         .map(
           (row) => SyncMutation(
@@ -769,7 +770,10 @@ class AppDatabase extends _$AppDatabase {
     final startedAt = DateTime.tryParse(payload['started_at'] as String? ?? '');
     final endedAt = DateTime.tryParse(payload['ended_at'] as String? ?? '');
     final updatedAt = DateTime.tryParse(payload['updated_at'] as String? ?? '');
-    if (id == null || startedAt == null || endedAt == null || updatedAt == null) {
+    if (id == null ||
+        startedAt == null ||
+        endedAt == null ||
+        updatedAt == null) {
       throw const FormatException('Remote activity payload is incomplete.');
     }
     await into(activities).insertOnConflictUpdate(
@@ -786,9 +790,7 @@ class AppDatabase extends _$AppDatabase {
         ascentMeters: Value(
           (payload['ascent_meters'] as num?)?.toDouble() ?? 0,
         ),
-        movingSeconds: Value(
-          (payload['moving_seconds'] as num?)?.toInt() ?? 0,
-        ),
+        movingSeconds: Value((payload['moving_seconds'] as num?)?.toInt() ?? 0),
         profile: Value(payload['profile'] as String? ?? 'hiking'),
         encodedGeometry: Value(payload['encoded_geometry'] as String?),
         isPaused: const Value(false),
@@ -967,8 +969,6 @@ RouteProfile _routeProfileFromName(String value) {
   return RouteProfile.hiking;
 }
 
-
 bool _isCloudPreferenceKey(String key) {
-  return key == 'battery_mode' ||
-      key.startsWith('preference_');
+  return key == 'battery_mode' || key.startsWith('preference_');
 }

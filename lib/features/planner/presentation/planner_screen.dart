@@ -1554,7 +1554,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
           child: _runningWidgetTest
               ? _MapTestFallback(dark: dark)
               : MapLibreMap(
-                  styleString: _mapStyleUrl(_plannerMapStyle) ?? MapConfig.plannerStyleUrl,
+                  styleString:
+                      _mapStyleUrl(_plannerMapStyle) ??
+                      MapConfig.plannerStyleUrl,
                   initialCameraPosition: const CameraPosition(
                     target: _fallbackCenter,
                     zoom: 6.8,
@@ -1994,9 +1996,7 @@ String _mapStyleLabel(AppLocalizations strings, _PlannerMapStyle style) {
   };
 }
 
-_PlannerMapStyle _mapStyleFromPreference(
-  DefaultMapPreference preference,
-) {
+_PlannerMapStyle _mapStyleFromPreference(DefaultMapPreference preference) {
   return switch (preference) {
     DefaultMapPreference.outdoor => _PlannerMapStyle.outdoor,
     DefaultMapPreference.street => _PlannerMapStyle.street,

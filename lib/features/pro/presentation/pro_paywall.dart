@@ -58,9 +58,7 @@ class TrailPathProSheet extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        premium.isPro
-                            ? strings.proActive
-                            : strings.proSubtitle,
+                        premium.isPro ? strings.proActive : strings.proSubtitle,
                       ),
                     ],
                   ),
@@ -68,11 +66,23 @@ class TrailPathProSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 20),
-            _Benefit(icon: Icons.satellite_alt_rounded, text: strings.proBenefitMaps),
+            _Benefit(
+              icon: Icons.satellite_alt_rounded,
+              text: strings.proBenefitMaps,
+            ),
             _Benefit(icon: Icons.draw_rounded, text: strings.proBenefitTrace),
-            _Benefit(icon: Icons.download_for_offline_rounded, text: strings.proBenefitOffline),
-            _Benefit(icon: Icons.insights_rounded, text: strings.proBenefitStats),
-            _Benefit(icon: Icons.cloud_sync_rounded, text: strings.proBenefitCloud),
+            _Benefit(
+              icon: Icons.download_for_offline_rounded,
+              text: strings.proBenefitOffline,
+            ),
+            _Benefit(
+              icon: Icons.insights_rounded,
+              text: strings.proBenefitStats,
+            ),
+            _Benefit(
+              icon: Icons.cloud_sync_rounded,
+              text: strings.proBenefitCloud,
+            ),
             const SizedBox(height: 18),
             if (premium.isLoading)
               const Center(child: CircularProgressIndicator.adaptive())

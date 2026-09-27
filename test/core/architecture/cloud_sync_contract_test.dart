@@ -4,15 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('v1.4 cloud sync is optional, offline-first and RLS-scoped', () {
-    final database = File(
-      'lib/core/database/app_database.dart',
-    ).readAsStringSync();
+    final database = File('lib/core/database/app_database.dart')
+        .readAsStringSync();
     final engine = File(
       'lib/infrastructure/sync/supabase_cloud_sync_engine.dart',
     ).readAsStringSync();
-    final schema = File(
-      'docs/SUPABASE_CLOUD_SYNC_SCHEMA.sql',
-    ).readAsStringSync();
+    final schema = File('docs/SUPABASE_CLOUD_SYNC_SCHEMA.sql')
+        .readAsStringSync();
     final main = File('lib/main.dart').readAsStringSync();
 
     expect(database, contains('SyncOutboxEntries'));

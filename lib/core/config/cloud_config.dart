@@ -5,6 +5,5 @@ abstract final class CloudConfig {
   );
 
   static bool get isConfigured =>
-      supabaseUrl.trim().isNotEmpty &&
-      supabasePublishableKey.trim().isNotEmpty;
+      supabaseUrl.trim().isNotEmpty && supabasePublishableKey.trim().isNotEmpty;
 }

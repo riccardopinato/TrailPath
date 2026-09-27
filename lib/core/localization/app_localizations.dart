@@ -370,7 +370,8 @@ class AppLocalizations {
       'voiceGuidance': 'Guida vocale',
       'voiceGuidanceHint': 'Usa la voce durante la navigazione attiva.',
       'wifiOnlyDownloads': 'Download mappe solo Wi‑Fi',
-      'wifiOnlyDownloadsHint': 'Evita di avviare nuovi download offline su rete mobile.',
+      'wifiOnlyDownloadsHint':
+          'Evita di avviare nuovi download offline su rete mobile.',
       'privacyData': 'Privacy e dati',
       'localFirst': 'Local-first',
       'localFirstHint': 'Percorsi e attività restano sul dispositivo salvo sincronizzazione cloud esplicitamente attivata.',
@@ -601,7 +602,8 @@ class AppLocalizations {
       'googleAccount': 'Google account',
       'signInGoogle': 'Sign in',
       'signOut': 'Sign out',
-      'accountOptional': 'Account is optional: TrailPath works offline and without sign-in.',
+      'accountOptional':
+          'Account is optional: TrailPath works offline and without sign-in.',
       'accountNotConfigured': 'Google Sign-In is not configured in this build.',
       'appearance': 'Appearance',
       'theme': 'Theme',
@@ -618,7 +620,8 @@ class AppLocalizations {
       'voiceGuidance': 'Voice guidance',
       'voiceGuidanceHint': 'Use spoken feedback during active navigation.',
       'wifiOnlyDownloads': 'Offline maps on Wi‑Fi only',
-      'wifiOnlyDownloadsHint': 'Do not start new offline downloads on mobile data.',
+      'wifiOnlyDownloadsHint':
+          'Do not start new offline downloads on mobile data.',
       'privacyData': 'Privacy and data',
       'localFirst': 'Local-first',
       'localFirstHint': 'Routes and activities stay on this device unless cloud sync is explicitly enabled.',
@@ -835,7 +838,8 @@ class AppLocalizations {
       'savedRoutesCount': 'Rutas guardadas',
       'outdoorTools': 'Herramientas Outdoor',
       'cloudSync': 'Cloud Sync',
-      'cloudSyncAccountHint': 'Copia y sincronización opcionales con una cuenta',
+      'cloudSyncAccountHint':
+          'Copia y sincronización opcionales con una cuenta',
       'syncNow': 'Sincronizar ahora',
       'syncing': 'Sincronizando…',
       'syncLast': 'Última sincronización',
@@ -850,7 +854,8 @@ class AppLocalizations {
       'signInGoogle': 'Acceder',
       'signOut': 'Cerrar sesión',
       'accountOptional': 'La cuenta es opcional: TrailPath funciona offline y sin iniciar sesión.',
-      'accountNotConfigured': 'Google Sign-In no está configurado en esta build.',
+      'accountNotConfigured':
+          'Google Sign-In no está configurado en esta build.',
       'appearance': 'Apariencia',
       'theme': 'Tema',
       'systemTheme': 'Sistema',
@@ -866,7 +871,8 @@ class AppLocalizations {
       'voiceGuidance': 'Guía por voz',
       'voiceGuidanceHint': 'Usa avisos hablados durante la navegación.',
       'wifiOnlyDownloads': 'Mapas offline solo por Wi‑Fi',
-      'wifiOnlyDownloadsHint': 'No inicia nuevas descargas offline con datos móviles.',
+      'wifiOnlyDownloadsHint':
+          'No inicia nuevas descargas offline con datos móviles.',
       'privacyData': 'Privacidad y datos',
       'localFirst': 'Local-first',
       'localFirstHint': 'Las rutas y actividades quedan en el dispositivo salvo que actives expresamente la sincronización cloud.',
@@ -1085,7 +1091,8 @@ class AppLocalizations {
       'savedRoutesCount': 'Parcours enregistrés',
       'outdoorTools': 'Outils Outdoor',
       'cloudSync': 'Cloud Sync',
-      'cloudSyncAccountHint': 'Sauvegarde et synchronisation facultatives avec un compte',
+      'cloudSyncAccountHint':
+          'Sauvegarde et synchronisation facultatives avec un compte',
       'syncNow': 'Synchroniser',
       'syncing': 'Synchronisation…',
       'syncLast': 'Dernière synchronisation',
@@ -1100,7 +1107,8 @@ class AppLocalizations {
       'signInGoogle': 'Se connecter',
       'signOut': 'Se déconnecter',
       'accountOptional': 'Le compte est facultatif : TrailPath fonctionne hors ligne et sans connexion.',
-      'accountNotConfigured': 'Google Sign-In n’est pas configuré dans cette build.',
+      'accountNotConfigured':
+          'Google Sign-In n’est pas configuré dans cette build.',
       'appearance': 'Apparence',
       'theme': 'Thème',
       'systemTheme': 'Système',
@@ -1114,7 +1122,8 @@ class AppLocalizations {
       'imperialUnits': 'Impériales (mi, ft)',
       'gpsAndDownloads': 'GPS et téléchargements',
       'voiceGuidance': 'Guidage vocal',
-      'voiceGuidanceHint': 'Utiliser les annonces vocales pendant la navigation.',
+      'voiceGuidanceHint':
+          'Utiliser les annonces vocales pendant la navigation.',
       'wifiOnlyDownloads': 'Cartes hors ligne uniquement en Wi‑Fi',
       'wifiOnlyDownloadsHint': 'Ne pas démarrer de nouveau téléchargement hors ligne sur le réseau mobile.',
       'privacyData': 'Confidentialité et données',
@@ -1350,8 +1359,10 @@ class AppLocalizations {
       'googleAccount': 'Conta Google',
       'signInGoogle': 'Entrar',
       'signOut': 'Terminar sessão',
-      'accountOptional': 'A conta é opcional: o TrailPath funciona offline e sem login.',
-      'accountNotConfigured': 'Google Sign-In não está configurado nesta build.',
+      'accountOptional':
+          'A conta é opcional: o TrailPath funciona offline e sem login.',
+      'accountNotConfigured':
+          'Google Sign-In não está configurado nesta build.',
       'appearance': 'Aparência',
       'theme': 'Tema',
       'systemTheme': 'Sistema',
@@ -1367,7 +1378,8 @@ class AppLocalizations {
       'voiceGuidance': 'Orientação por voz',
       'voiceGuidanceHint': 'Usa avisos falados durante a navegação.',
       'wifiOnlyDownloads': 'Mapas offline apenas por Wi‑Fi',
-      'wifiOnlyDownloadsHint': 'Não inicia novos downloads offline em dados móveis.',
+      'wifiOnlyDownloadsHint':
+          'Não inicia novos downloads offline em dados móveis.',
       'privacyData': 'Privacidade e dados',
       'localFirst': 'Local-first',
       'localFirstHint': 'Percursos e atividades ficam no dispositivo salvo sincronização cloud explicitamente ativada.',

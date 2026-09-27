@@ -107,9 +107,7 @@ class ProfileScreen extends ConsumerWidget {
             title: strings.settings,
             subtitle: strings.preferences,
             onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const SettingsScreen(),
-              ),
+              MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
             ),
           ),
           const SizedBox(height: 10),
@@ -428,10 +426,7 @@ class _ActionCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
       child: ListTile(
         leading: Icon(icon),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w800),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
         subtitle: Text(subtitle),
         trailing: onTap == null
             ? const Icon(Icons.lock_clock_outlined)
