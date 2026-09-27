@@ -165,17 +165,17 @@ The v1.1 Dart sources are normalized with the pinned Flutter 3.47.5 formatter be
 **v1.1 Smart Trace feature-complete checkpoint:** map matching, Trail/Road/Free modes, map layers, loop, out-and-back, reverse, eraser-last-segment and undo/redo are implemented; exact-head CI/AppLab validation follows this documentation commit.
 
 
-## v1.2 TrailPath Pro
+## v1.3 Settings, Profile & Account
 
-The v1.2 staging candidate is **v1.2.0+33**.
+The v1.3 staging candidate is **v1.3.0+34**.
 
-- Provider-agnostic `PremiumEngine` with Riverpod state.
-- Google Play Billing through Flutter's official `in_app_purchase` package.
-- Monthly/yearly product IDs: `trailpath_pro_monthly` and `trailpath_pro_yearly`.
-- Purchase restore and completion handling are implemented.
-- Satellite/Hybrid maps open the Pro paywall for free users.
-- Paid map styles still fail closed when the commercial map provider key is absent.
-- Core planning, recording, recovery and safety remain free.
-- Entitlement verification is currently local-store-receipt level; server verification is reserved for the cloud/backend hardening step.
+- Profile becomes the fifth primary navigation destination and the hub for account, Pro, activity summary, Outdoor tools, Settings and future Cloud Sync.
+- Settings persist theme, default activity, default map, voice guidance and Wi-Fi-only offline download policy through the local Drift settings store.
+- Theme preference is applied globally.
+- Default activity/map preferences are applied when a new planner session starts.
+- Voice guidance preference is passed into active navigation.
+- Wi-Fi-only preference is enforced before starting new offline downloads.
+- Google Sign-In uses the current singleton API and remains optional/config-gated through `GOOGLE_SERVER_CLIENT_ID`.
+- TrailPath remains fully usable without account/login.
 
-v1.2 Pro sources are normalized with the pinned Flutter 3.47.5 formatter.
+v1.3 Settings/Profile sources are normalized with the pinned Flutter 3.47.5 formatter.
