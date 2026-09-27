@@ -20,7 +20,8 @@ The app never embeds a Supabase service-role/secret key.
 The current sync scope is:
 - saved routes + waypoints;
 - completed activities;
-- behavior-backed cross-device preferences.
+- behavior-backed cross-device preferences;
+- Route Collections and route membership.
 
 Native offline map regions, incomplete recording drafts and Back-to-Car position are device-local.
 
@@ -29,7 +30,7 @@ Native offline map regions, incomplete recording drafts and Back-to-Car position
 - local edits are written to a Drift outbox first;
 - sync can fail without losing the local mutation;
 - newer timestamps win;
-- route/activity deletion creates a remote tombstone so another offline device cannot silently resurrect deleted data;
+- route/activity/collection deletion creates a remote tombstone so another offline device cannot silently resurrect deleted data;
 - downloaded offline-map readiness is device-local and does not advance the route-content sync timestamp.
 
 ## New-device restore
@@ -41,7 +42,7 @@ After Google/Supabase authentication, remote records newer than local state are 
 Sign-out:
 - closes the Supabase session;
 - signs out Google when the user requests account sign-out;
-- leaves local routes/activities/preferences intact.
+- leaves local routes/activities/preferences/collections intact.
 
 ## Account deletion before production rollout
 
