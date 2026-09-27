@@ -118,3 +118,81 @@ Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current f
 - [ ] revisit generic Safe Interaction Crawler discoverability; current crawler finds only one safe action.
 
 Full detail: `docs/FULL_AUDIT_v1.0.0.md`.
+
+
+## Post-v1 approved product roadmap
+
+The following items are **approved product scope** after the 2026-09-27 product review. They are not part of the v1.0 release candidate and must not delay certification of the current build unless explicitly promoted to a blocker.
+
+### v1.1 — Smart Trace & Map Experience
+
+Goal: make route creation materially closer to Footpath-quality behavior before adding account/cloud complexity.
+
+- [ ] **Smart Trace / Map Matching Engine:** replace the current gesture→sampled-waypoints approximation with a real map-matching pipeline that follows roads/trails closely.
+- [ ] evaluate **Valhalla Meili** first, then OSRM Match / GraphHopper Map Matching as alternatives; keep provider abstraction swappable.
+- [ ] preserve exact user gesture intent while snapping to the OSM trail/road graph.
+- [ ] add drawing modes: Follow trails / Follow roads / Free.
+- [ ] add route-drawing tools: eraser, undo, loop, out-and-back, reverse.
+- [ ] keep current distance/elevation engine as the reference implementation unless testing finds a regression.
+- [ ] **Map layer selector:** standard/outdoor map, road-focused map and high-contrast map.
+- [ ] **Pro satellite layer:** aerial/satellite imagery, with licensing/cost controls suitable for commercial use.
+- [ ] **Pro satellite + trails overlay** where provider terms and map-style licensing allow it.
+- [ ] evaluate terrain/relief/contours and future 3D terrain without coupling the app to one map vendor.
+- [ ] add explicit map-provider usage/cost telemetry hooks that do not track user routes or precise location analytics.
+
+### v1.2 — TrailPath Pro
+
+Goal: introduce monetization only after the planner/map experience is strong enough to justify payment.
+
+- [ ] implement a **Premium Engine** behind feature entitlements, provider-agnostic and testable.
+- [ ] integrate Google Play Billing through a stable abstraction; evaluate RevenueCat only if it materially reduces subscription/restore complexity.
+- [ ] proposed launch pricing to validate: **€2.99/month / €19.99/year**.
+- [ ] no Lifetime at launch while satellite/cloud providers create recurring operating cost.
+- [ ] build a clear, non-blocking paywall with restore purchases and transparent feature comparison.
+- [ ] Free remains useful: route planning, GPS recording, elevation, GPX basics, standard maps, basic navigation.
+- [ ] Pro candidates: satellite layers, satellite + trails, advanced offline maps, advanced Smart Trace tools, advanced stats, cloud sync, route collections, route generator, terrain/slope layers and future premium map providers.
+- [ ] keep critical safety/recovery features out of an aggressive paywall.
+
+### v1.3 — Settings, Profile & Account Foundation
+
+Goal: make TrailPath feel like a complete product without forcing account creation.
+
+- [ ] create a real **Settings** screen for map preference, activity default, units, GPS mode, theme, voice/navigation, download policy and privacy/data controls.
+- [ ] create a useful **Profile** surface: account state, Pro status, activity summary, saved-route summary, sync/backup entry point and subscription management.
+- [ ] keep TrailPath fully usable local-first without login.
+- [ ] optional **Google Sign-In** only when account-backed value exists.
+- [ ] separate identity/auth from stored outdoor data so account removal does not silently delete local data.
+- [ ] add export/delete-account/data lifecycle documentation before account release.
+
+### v1.4 — Cloud Sync & Cross-device
+
+- [ ] optional backup/sync for routes, activities, preferences and collections.
+- [ ] design conflict resolution, offline-first queueing and explicit sync status before implementation.
+- [ ] encrypt transport and define at-rest policy for cloud-stored route/location history.
+- [ ] restore on new device and sign-out behavior must be deterministic and tested.
+- [ ] no mandatory cloud dependency for route recording/navigation.
+
+### v1.5 — Premium Outdoor Intelligence
+
+Approved ideas to implement after Smart Trace + Pro foundation:
+
+- [ ] **Circular Route Generator:** choose start + target distance/activity and generate loop options.
+- [ ] **Alternative Routes:** shorter / less climb / more trail / more road, only where routing data supports the distinction.
+- [ ] **Slope Map / grade overlay** as a Pro layer.
+- [ ] **Surface-aware route info:** asphalt / gravel / trail / road where OSM tagging is reliable.
+- [ ] **Outdoor POIs along route:** water, huts, parking, viewpoints, toilets, shelters/bivouacs.
+- [ ] **Weather along route** rather than only weather at one coordinate.
+- [ ] **Route Collections:** folders/lists for trips, sports or personal organization.
+- [ ] **Personal stats:** weekly/monthly distance, elevation gain, duration, activity counts and personal bests.
+- [ ] **Automatic rerouting** when off-route, separate from the current warning-only behavior.
+- [ ] evaluate **3D terrain** as a Pro visualization after performance/cost validation.
+
+### Product principles for the approved roadmap
+
+- REUSE-FIRST: reuse TrailPath service contracts, MapLibre stack, routing/elevation engines, persistence and CI before adding parallel implementations.
+- Do not gate core safety, data recovery or basic route ownership behind Pro.
+- Paid features must have clear recurring value or recurring provider cost.
+- Map/satellite provider licensing and commercial usage limits are a release gate for every premium map layer.
+- Account is optional; local-first remains the default architecture.
+- Every implemented maxi-step updates README, roadmap, tests and release evidence.
+- No post-v1 scope may be merged into the v1.0 certification branch if it destabilizes the current release candidate.

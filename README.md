@@ -136,4 +136,11 @@ The Android native scaffold is committed and validated by CI for reproducible bu
 
 Open the app, create or select a route, and go. TrailPath is designed as a tool first, not a social network.
 
+
+## Approved post-v1 direction
+
+After v1.0 certification, approved development moves in this order: **Smart Trace/map layers → TrailPath Pro → Settings/Profile/optional Google account → cloud sync → premium outdoor intelligence**.
+
+The current v1.0 release remains feature-frozen. The approved post-v1 scope is tracked in `docs/ROADMAP.md`; satellite/provider licensing and recurring service cost must be validated before any paid map layer is shipped.
+
 See docs/ARCHITECTURE.md and docs/ROADMAP.md.
