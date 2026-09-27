@@ -7,6 +7,7 @@ import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/domain/offline_region_math.dart';
 import 'package:trail_path/core/services/service_providers.dart';
+import 'package:trail_path/features/settings/application/settings_controller.dart';
 
 final offlineDownloadsProvider =
     NotifierProvider<OfflineDownloadsController, OfflineDownloadsState>(
@@ -129,7 +130,7 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
 
     try {
       final preferences =
-          ref.read(settingsControllerProvider).valueOrNull ??
+          ref.read(settingsControllerProvider).asData?.value ??
           await ref.read(settingsControllerProvider.future);
       if (preferences.wifiOnlyDownloads) {
         final connectivity = await Connectivity().checkConnectivity();
@@ -137,7 +138,7 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
             connectivity.contains(ConnectivityResult.wifi) ||
             connectivity.contains(ConnectivityResult.ethernet);
         if (!allowed) {
-          throw const StateError(
+          throw StateError(
             'Offline downloads are limited to Wi-Fi by user preference.',
           );
         }
