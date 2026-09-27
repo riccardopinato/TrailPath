@@ -101,8 +101,8 @@ Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current f
 - [ ] complete exact-artifact ARM64 physical QA, store signing, Play metadata/screenshots and rollout review.
 
 ### P2 — correctness, resilience and technical debt
-- [ ] keep ETA semantics consistent after partial reroute: patched legs currently recompute ETA with local static profile speed instead of provider duration;
-- [ ] harden recording finalization failure handling: a database completion failure after recorder stop must remain retryable/recoverable and must not surface as “activity too short”;
+- [x] keep ETA semantics consistent after partial reroute: unaffected duration is retained proportionally and the replacement span uses the routing provider duration;
+- [x] harden recording finalization failure handling: final snapshots remain retryable after database failure and UI distinguishes save failure from a genuinely short activity;
 - [ ] replace raw `error.toString()` surfaces with localized user-safe categories while preserving technical detail in structured logs;
 - [ ] localize foreground-service notification text and remaining hardcoded UI/support strings;
 - [ ] add explicit cancel semantics for long offline downloads and document/review download-size behavior;
