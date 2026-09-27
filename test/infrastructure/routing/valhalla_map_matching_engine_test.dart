@@ -14,6 +14,9 @@ void main() {
       expect(payload['shape_match'], 'walk_or_snap');
       expect(payload['shape_format'], 'geojson');
       expect(payload['costing'], 'pedestrian');
+      final traceOptions = payload['trace_options'] as Map<String, dynamic>;
+      expect(traceOptions['gps_accuracy'], 10);
+      expect(traceOptions['search_radius'], 32);
 
       return http.Response(
         jsonEncode({
@@ -25,7 +28,7 @@ void main() {
                   'type': 'LineString',
                   'coordinates': [
                     [11.0, 45.0],
-                    [11.005, 45.004],
+                    [11.005, 45.005],
                     [11.01, 45.01],
                   ],
                 },
@@ -59,6 +62,51 @@ void main() {
     expect(result.distanceMeters, 1250);
     expect(result.estimatedDuration, const Duration(seconds: 900));
     expect(result.source, 'valhalla.trace_route');
+  });
+
+  test('rejects a matched path that leaves the drawn corridor', () async {
+    final client = MockClient((request) async {
+      return http.Response(
+        jsonEncode({
+          'trip': {
+            'summary': {'length': 4.0, 'time': 1200},
+            'legs': [
+              {
+                'shape': {
+                  'type': 'LineString',
+                  'coordinates': [
+                    [11.0, 45.0],
+                    [11.03, 45.03],
+                    [11.01, 45.01],
+                  ],
+                },
+              },
+            ],
+          },
+        }),
+        200,
+      );
+    });
+
+    final engine = ValhallaMapMatchingEngine(
+      client: client,
+      endpoint: Uri.parse('https://example.test/trace_route'),
+    );
+
+    await expectLater(
+      engine.match(
+        const TraceMatchRequest(
+          trace: [
+            GeoPoint(latitude: 45.0, longitude: 11.0),
+            GeoPoint(latitude: 45.005, longitude: 11.005),
+            GeoPoint(latitude: 45.01, longitude: 11.01),
+          ],
+          profile: RouteProfile.hiking,
+          mode: MapMatchMode.trails,
+        ),
+      ),
+      throwsA(isA<MapMatchingException>()),
+    );
   });
 
   test('road cycling trace asks for road-biased bicycle matching', () async {
