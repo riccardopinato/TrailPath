@@ -355,8 +355,7 @@ class _BackToCarCard extends StatelessWidget {
       title: strings.backToCar,
       subtitle: point == null
           ? strings.backToCarHint
-          : '${strings.carSavedAt} ${_formatSavedTime(context, point.savedAt)} · '
-                context.formatAccuracy(point.accuracyMeters),
+          : '${strings.carSavedAt} ${_formatSavedTime(context, point.savedAt)} · ${context.formatAccuracy(point.accuracyMeters)}',
       child: Row(
         children: [
           Expanded(
