@@ -1,4 +1,4 @@
-enum SyncEntityType { route, activity, preferences }
+enum SyncEntityType { route, activity, preferences, collection }
 
 enum SyncMutationAction { upsert, delete }
 
