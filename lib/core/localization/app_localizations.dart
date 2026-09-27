@@ -60,6 +60,22 @@ class AppLocalizations {
   String get mapHybrid => _value('mapHybrid');
   String get proMap => _value('proMap');
   String get proMapUnavailable => _value('proMapUnavailable');
+  String get trailPathPro => _value('trailPathPro');
+  String get proSubtitle => _value('proSubtitle');
+  String get proActive => _value('proActive');
+  String get proBenefitMaps => _value('proBenefitMaps');
+  String get proBenefitTrace => _value('proBenefitTrace');
+  String get proBenefitOffline => _value('proBenefitOffline');
+  String get proBenefitStats => _value('proBenefitStats');
+  String get proBenefitCloud => _value('proBenefitCloud');
+  String get proMonthly => _value('proMonthly');
+  String get proYearly => _value('proYearly');
+  String get proMonthlyUnavailable => _value('proMonthlyUnavailable');
+  String get proYearlyUnavailable => _value('proYearlyUnavailable');
+  String get restorePurchases => _value('restorePurchases');
+  String get proStoreUnavailable => _value('proStoreUnavailable');
+  String get proPurchaseError => _value('proPurchaseError');
+  String get proSafetyFree => _value('proSafetyFree');
   String get centerLocation => _value('centerLocation');
   String get locationServiceOff => _value('locationServiceOff');
   String get locationUnavailable => _value('locationUnavailable');
@@ -252,6 +268,22 @@ class AppLocalizations {
       'mapHybrid': 'Satellite + strade',
       'proMap': 'Mappa Pro',
       'proMapUnavailable': 'Mappa Pro non configurata',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Mappe e strumenti outdoor avanzati',
+      'proActive': 'TrailPath Pro attivo',
+      'proBenefitMaps': 'Satellite e mappe premium',
+      'proBenefitTrace': 'Smart Trace e strumenti percorso avanzati',
+      'proBenefitOffline': 'Funzioni offline avanzate',
+      'proBenefitStats': 'Statistiche e analisi avanzate',
+      'proBenefitCloud': 'Cloud sync e backup tra dispositivi',
+      'proMonthly': 'Mensile',
+      'proYearly': 'Annuale',
+      'proMonthlyUnavailable': 'Piano mensile non configurato',
+      'proYearlyUnavailable': 'Piano annuale non configurato',
+      'restorePurchases': 'Ripristina acquisti',
+      'proStoreUnavailable': 'Google Play Billing non è disponibile o i prodotti Pro non sono ancora configurati.',
+      'proPurchaseError': 'Non è stato possibile completare l\'acquisto.',
+      'proSafetyFree': 'Registrazione, recovery e funzioni di sicurezza di base restano disponibili anche senza Pro.',
       'centerLocation': 'Centra sulla mia posizione',
       'locationServiceOff': 'Attiva i servizi di localizzazione',
       'locationUnavailable': 'Posizione temporaneamente non disponibile',
@@ -439,6 +471,22 @@ class AppLocalizations {
       'mapHybrid': 'Satellite + roads',
       'proMap': 'Pro map',
       'proMapUnavailable': 'Pro map provider not configured',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Advanced maps and outdoor tools',
+      'proActive': 'TrailPath Pro active',
+      'proBenefitMaps': 'Satellite and premium maps',
+      'proBenefitTrace': 'Advanced Smart Trace and route tools',
+      'proBenefitOffline': 'Advanced offline features',
+      'proBenefitStats': 'Advanced statistics and analysis',
+      'proBenefitCloud': 'Cloud sync and cross-device backup',
+      'proMonthly': 'Monthly',
+      'proYearly': 'Yearly',
+      'proMonthlyUnavailable': 'Monthly plan not configured',
+      'proYearlyUnavailable': 'Yearly plan not configured',
+      'restorePurchases': 'Restore purchases',
+      'proStoreUnavailable': 'Google Play Billing is unavailable or Pro products are not configured yet.',
+      'proPurchaseError': 'The purchase could not be completed.',
+      'proSafetyFree': 'Core recording, recovery and safety features remain available without Pro.',
       'centerLocation': 'Center on my location',
       'locationServiceOff': 'Turn on location services',
       'locationUnavailable': 'Location temporarily unavailable',
@@ -626,6 +674,22 @@ class AppLocalizations {
       'mapHybrid': 'Satélite + carreteras',
       'proMap': 'Mapa Pro',
       'proMapUnavailable': 'Proveedor de mapas Pro no configurado',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Mapas y herramientas outdoor avanzadas',
+      'proActive': 'TrailPath Pro activo',
+      'proBenefitMaps': 'Satélite y mapas premium',
+      'proBenefitTrace': 'Smart Trace y herramientas de ruta avanzadas',
+      'proBenefitOffline': 'Funciones offline avanzadas',
+      'proBenefitStats': 'Estadísticas y análisis avanzados',
+      'proBenefitCloud': 'Sincronización cloud y copia entre dispositivos',
+      'proMonthly': 'Mensual',
+      'proYearly': 'Anual',
+      'proMonthlyUnavailable': 'Plan mensual no configurado',
+      'proYearlyUnavailable': 'Plan anual no configurado',
+      'restorePurchases': 'Restaurar compras',
+      'proStoreUnavailable': 'Google Play Billing no está disponible o los productos Pro aún no están configurados.',
+      'proPurchaseError': 'No se pudo completar la compra.',
+      'proSafetyFree': 'La grabación, recuperación y seguridad básicas siguen disponibles sin Pro.',
       'centerLocation': 'Centrar en mi ubicación',
       'locationServiceOff': 'Activa los servicios de ubicación',
       'locationUnavailable': 'Ubicación temporalmente no disponible',
@@ -815,6 +879,22 @@ class AppLocalizations {
       'mapHybrid': 'Satellite + routes',
       'proMap': 'Carte Pro',
       'proMapUnavailable': 'Fournisseur de cartes Pro non configuré',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Cartes et outils outdoor avancés',
+      'proActive': 'TrailPath Pro actif',
+      'proBenefitMaps': 'Satellite et cartes premium',
+      'proBenefitTrace': 'Smart Trace et outils de parcours avancés',
+      'proBenefitOffline': 'Fonctions hors ligne avancées',
+      'proBenefitStats': 'Statistiques et analyses avancées',
+      'proBenefitCloud': 'Synchronisation cloud et sauvegarde multi-appareils',
+      'proMonthly': 'Mensuel',
+      'proYearly': 'Annuel',
+      'proMonthlyUnavailable': 'Offre mensuelle non configurée',
+      'proYearlyUnavailable': 'Offre annuelle non configurée',
+      'restorePurchases': 'Restaurer les achats',
+      'proStoreUnavailable': 'Google Play Billing est indisponible ou les produits Pro ne sont pas encore configurés.',
+      'proPurchaseError': 'L’achat n’a pas pu être effectué.',
+      'proSafetyFree': 'L’enregistrement, la récupération et les fonctions de sécurité essentielles restent disponibles sans Pro.',
       'centerLocation': 'Centrer sur ma position',
       'locationServiceOff': 'Activez les services de localisation',
       'locationUnavailable': 'Position temporairement indisponible',
@@ -1005,6 +1085,22 @@ class AppLocalizations {
       'mapHybrid': 'Satélite + estradas',
       'proMap': 'Mapa Pro',
       'proMapUnavailable': 'Fornecedor de mapas Pro não configurado',
+      'trailPathPro': 'TrailPath Pro',
+      'proSubtitle': 'Mapas e ferramentas outdoor avançadas',
+      'proActive': 'TrailPath Pro ativo',
+      'proBenefitMaps': 'Satélite e mapas premium',
+      'proBenefitTrace': 'Smart Trace e ferramentas de rota avançadas',
+      'proBenefitOffline': 'Funcionalidades offline avançadas',
+      'proBenefitStats': 'Estatísticas e análises avançadas',
+      'proBenefitCloud': 'Sincronização cloud e backup entre dispositivos',
+      'proMonthly': 'Mensal',
+      'proYearly': 'Anual',
+      'proMonthlyUnavailable': 'Plano mensal não configurado',
+      'proYearlyUnavailable': 'Plano anual não configurado',
+      'restorePurchases': 'Restaurar compras',
+      'proStoreUnavailable': 'Google Play Billing não está disponível ou os produtos Pro ainda não estão configurados.',
+      'proPurchaseError': 'Não foi possível concluir a compra.',
+      'proSafetyFree': 'Gravação, recuperação e funcionalidades essenciais de segurança continuam disponíveis sem Pro.',
       'centerLocation': 'Centrar na minha localização',
       'locationServiceOff': 'Ative os serviços de localização',
       'locationUnavailable': 'Localização temporariamente indisponível',
