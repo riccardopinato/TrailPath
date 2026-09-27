@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/domain/route_intelligence.dart';
+import 'package:trail_path/core/services/route_intelligence_service.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/infrastructure/routing/default_route_intelligence_engine.dart';
 
@@ -55,10 +56,42 @@ class _FakeElevationEngine implements ElevationEngine {
   }
 }
 
+class _FakeOutdoorContext implements OutdoorContextService {
+  @override
+  Future<List<OutdoorPoi>> poisAlongRoute(
+    List<GeoPoint> geometry, {
+    double corridorMeters = 800,
+  }) async => const [];
+
+  @override
+  Future<List<RouteWeatherSample>> weatherAlongRoute(
+    List<GeoPoint> geometry, {
+    int samples = 5,
+  }) async => const [];
+
+  @override
+  Future<RouteSurfaceSummary> surfaceSummary(List<GeoPoint> geometry) async {
+    final isNorthern = geometry.any((point) => point.latitude > 45.01);
+    return RouteSurfaceSummary(
+      sampleCount: 10,
+      counts: isNorthern
+          ? const {
+              RouteSurfaceType.trail: 8,
+              RouteSurfaceType.unknown: 2,
+            }
+          : const {
+              RouteSurfaceType.paved: 8,
+              RouteSurfaceType.unknown: 2,
+            },
+    );
+  }
+}
+
 void main() {
   final engine = DefaultRouteIntelligenceEngine(
     routing: _FakeRoutingEngine(),
     elevation: _FakeElevationEngine(),
+    context: _FakeOutdoorContext(),
   );
 
   test('circular generator returns bounded snapped candidates', () async {
@@ -109,5 +142,34 @@ void main() {
       engine.supportedAlternativePreferences,
       containsAll(AlternativeRoutePreference.values),
     );
+  });
+
+  test('surface-aware preferences produce viable alternatives', () async {
+    const base = RoutePlan(
+      geometry: [
+        GeoPoint(latitude: 45.0, longitude: 11.0),
+        GeoPoint(latitude: 45.02, longitude: 11.02),
+      ],
+      distanceMeters: 3000,
+      ascentMeters: 100,
+      descentMeters: 80,
+      estimatedDuration: Duration(minutes: 40),
+      profile: RouteProfile.hiking,
+      isSnapped: true,
+    );
+
+    final trail = await engine.alternatives(
+      base,
+      preference: AlternativeRoutePreference.moreTrail,
+    );
+    final road = await engine.alternatives(
+      base,
+      preference: AlternativeRoutePreference.moreRoad,
+    );
+
+    expect(trail, isNotEmpty);
+    expect(road, isNotEmpty);
+    expect(trail.first.score, isNonNegative);
+    expect(road.first.score, isNonNegative);
   });
 }
