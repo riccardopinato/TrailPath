@@ -65,7 +65,7 @@ class RouteCollectionsScreen extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 28),
             itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final collection = items[index];
               return FutureBuilder<List<String>>(

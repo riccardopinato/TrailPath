@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
@@ -57,7 +56,7 @@ class _RouteIntelligenceScreenState
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  _targetKm.toStringAsFixed(0) + ' km',
+                  '${_targetKm.toStringAsFixed(0)} km',
                   style: const TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 22,
@@ -68,7 +67,7 @@ class _RouteIntelligenceScreenState
                   min: 3,
                   max: 40,
                   divisions: 37,
-                  label: _targetKm.toStringAsFixed(0) + ' km',
+                  label: '${_targetKm.toStringAsFixed(0)} km',
                   onChanged: _busy
                       ? null
                       : (value) => setState(() => _targetKm = value),
@@ -103,7 +102,7 @@ class _RouteIntelligenceScreenState
                   const SizedBox(height: 14),
                   for (var i = 0; i < _circularCandidates.length; i++) ...[
                     _CandidateCard(
-                      title: strings.routeOption + ' ' + (i + 1).toString(),
+                      title: '${strings.routeOption} ${i + 1}',
                       candidate: _circularCandidates[i],
                       onSave: () => _saveCandidate(
                         _circularCandidates[i],
@@ -196,7 +195,7 @@ class _RouteIntelligenceScreenState
                       const SizedBox(height: 12),
                       for (var i = 0; i < _alternatives.length; i++) ...[
                         _CandidateCard(
-                          title: strings.alternative + ' ' + (i + 1).toString(),
+                          title: '${strings.alternative} ${i + 1}',
                           candidate: _alternatives[i],
                           onSave: () => _saveCandidate(
                             _alternatives[i],
@@ -236,7 +235,7 @@ class _RouteIntelligenceScreenState
                 if (_surface != null) ...[
                   const SizedBox(height: 12),
                   Text(
-                    strings.surface + ': ' + _surfaceLabel(strings, _surface!),
+                    '${strings.surface}: ${_surfaceLabel(strings, _surface!)}',
                     style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                 ],
@@ -255,12 +254,7 @@ class _RouteIntelligenceScreenState
                         Chip(
                           avatar: const Icon(Icons.cloud_outlined, size: 17),
                           label: Text(
-                            sample.temperatureCelsius.toStringAsFixed(0) +
-                                '° · ' +
-                                sample.precipitationMm.toStringAsFixed(1) +
-                                ' mm · ' +
-                                sample.windKmh.toStringAsFixed(0) +
-                                ' km/h',
+                            '${sample.temperatureCelsius.toStringAsFixed(0)}° · ${sample.precipitationMm.toStringAsFixed(1)} mm · ${sample.windKmh.toStringAsFixed(0)} km/h',
                           ),
                         ),
                     ],
@@ -280,9 +274,7 @@ class _RouteIntelligenceScreenState
                       leading: Icon(_poiIcon(poi.type)),
                       title: Text(poi.name),
                       subtitle: Text(
-                        poi.distanceFromRouteMeters.round().toString() +
-                            ' m ' +
-                            strings.fromRoute,
+                        '${poi.distanceFromRouteMeters.round()} m ${strings.fromRoute}',
                       ),
                     ),
                 ],
@@ -467,9 +459,7 @@ class _RouteIntelligenceScreenState
         .read(appDatabaseProvider)
         .savePlannedRoute(
           name:
-              prefix +
-              ' ' +
-              DateTime.now().toLocal().toIso8601String().substring(0, 16),
+              '$prefix ${DateTime.now().toLocal().toIso8601String().substring(0, 16)}',
           profile: plan.profile.name,
           waypointsData: waypoints,
           geometryData: geometry,
@@ -561,11 +551,7 @@ class _CandidateCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _distance(plan.distanceMeters) +
-                      ' · +' +
-                      plan.ascentMeters.round().toString() +
-                      ' m · ' +
-                      _duration(plan.estimatedDuration),
+                  '${_distance(plan.distanceMeters)} · +${plan.ascentMeters.round()} m · ${_duration(plan.estimatedDuration)}',
                 ),
               ],
             ),
@@ -613,18 +599,18 @@ String _surfaceLabel(AppLocalizations strings, RouteSurfaceSummary summary) {
     RouteSurfaceType.trail => strings.surfaceTrail,
     RouteSurfaceType.unknown => strings.surfaceUnknown,
   };
-  return label + ' · ' + percentage.toString() + '%';
+  return '$label · $percentage%';
 }
 
 String _distance(double meters) => meters < 1000
-    ? meters.round().toString() + ' m'
-    : (meters / 1000).toStringAsFixed(1) + ' km';
+    ? '${meters.round()} m'
+    : '${(meters / 1000).toStringAsFixed(1)} km';
 
 String _duration(Duration duration) {
   final hours = duration.inHours;
   final minutes = duration.inMinutes.remainder(60);
   if (hours == 0) {
-    return minutes.toString() + ' min';
+    return '$minutes min';
   }
-  return hours.toString() + ' h ' + minutes.toString().padLeft(2, '0');
+  return '$hours h ${minutes.toString().padLeft(2, '0')}';
 }

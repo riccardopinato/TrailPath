@@ -7,12 +7,10 @@ import 'package:trail_path/core/services/cloud_sync_engine.dart';
 
 class SupabaseCloudSyncEngine implements CloudSyncEngine {
   SupabaseCloudSyncEngine({
-    required AppDatabase database,
-    required AccountService accountService,
-    SupabaseClient? client,
-  }) : _database = database,
-       _accountService = accountService,
-       _client = client;
+    required this._database,
+    required this._accountService,
+    this._client,
+  });
 
   static const String _table = 'trailpath_sync_items';
 

@@ -575,7 +575,7 @@ class AppDatabase extends _$AppDatabase {
       throw ArgumentError.value(name, 'name', 'Collection name is required.');
     }
     final now = DateTime.now();
-    final id = 'collection-' + now.microsecondsSinceEpoch.toString();
+    final id = 'collection-${now.microsecondsSinceEpoch}';
     await transaction(() async {
       await into(routeCollections).insert(
         RouteCollectionsCompanion.insert(

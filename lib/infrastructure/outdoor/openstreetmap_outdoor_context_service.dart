@@ -49,29 +49,7 @@ class OpenStreetMapOutdoorContextService implements OutdoorContextService {
       bounds.east,
     ].join(',');
     final query =
-        '[out:json][timeout:18];('
-            'nwr["amenity"="drinking_water"](' +
-        bbox +
-        ');'
-            'nwr["amenity"="toilets"](' +
-        bbox +
-        ');'
-            'nwr["amenity"="parking"](' +
-        bbox +
-        ');'
-            'nwr["tourism"="viewpoint"](' +
-        bbox +
-        ');'
-            'nwr["tourism"="alpine_hut"](' +
-        bbox +
-        ');'
-            'nwr["tourism"="wilderness_hut"](' +
-        bbox +
-        ');'
-            'nwr["amenity"="shelter"](' +
-        bbox +
-        ');'
-            ');out center tags;';
+        '[out:json][timeout:18];(nwr["amenity"="drinking_water"]($bbox);nwr["amenity"="toilets"]($bbox);nwr["amenity"="parking"]($bbox);nwr["tourism"="viewpoint"]($bbox);nwr["tourism"="alpine_hut"]($bbox);nwr["tourism"="wilderness_hut"]($bbox);nwr["amenity"="shelter"]($bbox););out center tags;';
 
     final response = await _postOverpass(query);
     final decoded = jsonDecode(response.body);
@@ -103,7 +81,7 @@ class OpenStreetMapOutdoorContextService implements OutdoorContextService {
       final elementId = element['id']?.toString() ?? pois.length.toString();
       pois.add(
         OutdoorPoi(
-          id: elementType + ':' + elementId,
+          id: '$elementType:$elementId',
           type: type,
           name: (tags['name'] as String?)?.trim().isNotEmpty == true
               ? tags['name'] as String
@@ -197,11 +175,7 @@ class OpenStreetMapOutdoorContextService implements OutdoorContextService {
       bounds.north,
       bounds.east,
     ].join(',');
-    final query =
-        '[out:json][timeout:18];'
-            'way["highway"](' +
-        bbox +
-        ');out geom tags;';
+    final query = '[out:json][timeout:18];way["highway"]($bbox);out geom tags;';
 
     final response = await _postOverpass(query);
     final decoded = jsonDecode(response.body);
@@ -301,9 +275,7 @@ class OpenStreetMapOutdoorContextService implements OutdoorContextService {
         if (!isTransientHttpStatus(response.statusCode) ||
             attempt == maxRetries) {
           throw StateError(
-            'Outdoor context service returned HTTP ' +
-                response.statusCode.toString() +
-                '.',
+            'Outdoor context service returned HTTP ${response.statusCode}.',
           );
         }
         await _delay(_retryDelay(response, attempt));
@@ -321,7 +293,7 @@ class OpenStreetMapOutdoorContextService implements OutdoorContextService {
         await _delay(_retryDelay(null, attempt));
       }
     }
-    throw StateError('Outdoor context request failed: ' + lastError.toString());
+    throw StateError('Outdoor context request failed: $lastError');
   }
 
   Duration _retryDelay(http.Response? response, int attempt) {

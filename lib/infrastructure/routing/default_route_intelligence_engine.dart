@@ -8,12 +8,10 @@ import 'package:trail_path/core/services/service_contracts.dart';
 
 class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
   const DefaultRouteIntelligenceEngine({
-    required RoutingEngine routing,
-    required ElevationEngine elevation,
-    OutdoorContextService? context,
-  }) : _routing = routing,
-       _elevation = elevation,
-       _context = context;
+    required this._routing,
+    required this._elevation,
+    this._context,
+  });
 
   final RoutingEngine _routing;
   final ElevationEngine _elevation;
@@ -73,7 +71,7 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
         candidates.add(
           RouteCandidate(
             plan: plan,
-            label: 'loop-' + heading.round().toString(),
+            label: 'loop-${heading.round()}',
             score: score,
           ),
         );
@@ -123,11 +121,7 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
         final plan = await _withElevation(raw);
         final score = await _scoreAlternative(plan, preference);
         candidates.add(
-          RouteCandidate(
-            plan: plan,
-            label: 'alternative-' + index.toString(),
-            score: score,
-          ),
+          RouteCandidate(plan: plan, label: 'alternative-$index', score: score),
         );
       } on Object {
         // Keep the viable alternatives when one candidate cannot be routed.
