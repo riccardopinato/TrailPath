@@ -144,3 +144,42 @@ After v1.0 certification, approved development moves in this order: **Smart Trac
 The current v1.0 release remains feature-frozen. The approved post-v1 scope is tracked in `docs/ROADMAP.md`; satellite/provider licensing and recurring service cost must be validated before any paid map layer is shipped.
 
 See docs/ARCHITECTURE.md and docs/ROADMAP.md.
+
+
+## v1.1 development train
+
+The post-v1 branch starts at **v1.1.0+32** with Smart Trace and multi-map foundations.
+
+- Smart Trace uses a dedicated `MapMatchingEngine` and Valhalla `trace_route` map matching for Trail/Road modes instead of converting the finger gesture directly into ordinary route waypoints.
+- Free mode preserves the previous trace behavior for deliberate free-form planning.
+- Cycling/MTB matching switches between mountain/path-biased and road-biased Valhalla bicycle costing.
+- Planner exposes Outdoor, Street, Satellite and Hybrid map choices.
+- Satellite/Hybrid are provider-gated through `MAPTILER_API_KEY`; no commercial map key is committed to source.
+- Existing distance/elevation pipeline remains the source of truth after matched geometry is accepted.
+- The Valhalla public demo endpoint is development/fair-use infrastructure only; production provider strategy remains an explicit release decision.
+
+The v1.1 Dart sources are normalized with the pinned Flutter 3.47.5 formatter before CI validation.
+
+- Loop, out-and-back, reverse and erase-last-segment route tools are available inside Smart Trace mode, reusing the planner undo/reroute pipeline.
+
+**v1.1 Smart Trace feature-complete checkpoint:** map matching, Trail/Road/Free modes, map layers, loop, out-and-back, reverse, eraser-last-segment and undo/redo are implemented; exact-head CI/AppLab validation follows this documentation commit.
+
+
+## v1.4 Cloud Sync
+
+The v1.4 staging candidate is **v1.4.0+35**.
+
+- Optional Supabase client, initialized only when `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` are supplied.
+- Google identity remains the user-facing sign-in; native Google tokens establish a Supabase session only when cloud sync is actually used.
+- Local Drift remains the source of truth while offline.
+- Schema v4 adds a coalescing sync outbox.
+- Route/activity deletes are represented as remote tombstones to avoid deleted data reappearing from another device.
+- Routes, completed activities and behavior-backed preferences use last-write-wins timestamps.
+- First cloud enablement seeds the outbox from existing local data.
+- Cloud Sync is a Pro entitlement but planning/recording/navigation remain fully local without it.
+- RLS-safe reference schema is documented in `docs/SUPABASE_CLOUD_SYNC_SCHEMA.sql`.
+- No Supabase service-role/secret key is embedded in the app.
+
+v1.4 Cloud Sync sources are normalized with the pinned Flutter 3.47.5 formatter.
+
+v1.4 Cloud sources are normalized with the pinned Flutter 3.47.5 formatter before staging CI.

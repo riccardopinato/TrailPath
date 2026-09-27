@@ -9,6 +9,7 @@ import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/features/navigation/application/active_navigation_controller.dart';
+import 'package:trail_path/features/settings/application/settings_controller.dart';
 
 class NavigationScreen extends ConsumerStatefulWidget {
   const NavigationScreen({
@@ -64,7 +65,16 @@ class _NavigationScreenState extends ConsumerState<NavigationScreen> {
     final languageCode = Localizations.localeOf(context).languageCode;
     final controller = ref.read(activeNavigationProvider.notifier);
     _navigationController = controller;
-    Future<void>.microtask(() => controller.start(widget.route, languageCode));
+    final voiceGuidance =
+        ref.read(settingsControllerProvider).asData?.value.voiceGuidance ??
+        true;
+    Future<void>.microtask(
+      () => controller.start(
+        widget.route,
+        languageCode,
+        voiceGuidance: voiceGuidance,
+      ),
+    );
   }
 
   @override

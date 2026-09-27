@@ -11,12 +11,17 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/database/database_providers.dart';
+import 'package:trail_path/core/domain/app_preferences.dart';
 import 'package:trail_path/core/domain/collection_sampling.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
+import 'package:trail_path/core/domain/map_matching.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/planner/application/route_planner_controller.dart';
+import 'package:trail_path/features/pro/application/premium_controller.dart';
+import 'package:trail_path/features/pro/presentation/pro_paywall.dart';
+import 'package:trail_path/features/settings/application/settings_controller.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
@@ -43,6 +48,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   bool _routeSelected = false;
   bool _draggingFeature = false;
   bool _traceMode = false;
+  MapMatchMode _traceMatchMode = MapMatchMode.trails;
+  _PlannerMapStyle _plannerMapStyle = _PlannerMapStyle.outdoor;
   bool _traceDrawing = false;
   bool _traceProcessing = false;
   int? _tracePointerId;
@@ -74,6 +81,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     _appInForeground =
         lifecycleState == null || lifecycleState == AppLifecycleState.resumed;
     Future<void>.microtask(_initializeLocation);
+    Future<void>.microtask(_applyStoredPlannerPreferences);
   }
 
   @override
@@ -101,6 +109,38 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     _searchController.dispose();
     _mapController?.dispose();
     super.dispose();
+  }
+
+  Future<void> _applyStoredPlannerPreferences() async {
+    try {
+      final preferences = await ref.read(settingsControllerProvider.future);
+      if (!mounted) {
+        return;
+      }
+
+      final planner = ref.read(routePlannerProvider);
+      if (planner.points.isEmpty &&
+          planner.profile != preferences.defaultProfile) {
+        ref
+            .read(routePlannerProvider.notifier)
+            .setProfile(preferences.defaultProfile);
+      }
+
+      var style = _mapStyleFromPreference(preferences.defaultMap);
+      final premium = ref.read(premiumControllerProvider);
+      if (style.isPremium &&
+          (!premium.isPro || !MapConfig.hasPremiumMapProvider)) {
+        style = _PlannerMapStyle.outdoor;
+      }
+
+      if (_styleReady && _mapController != null) {
+        await _applyMapStyle(style);
+      } else if (mounted) {
+        setState(() => _plannerMapStyle = style);
+      }
+    } on Object {
+      // Defaults remain safe when settings are unavailable during startup.
+    }
   }
 
   Future<void> _initializeLocation() async {
@@ -520,6 +560,114 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     ref.read(routePlannerProvider.notifier).insertPointNearRoute(candidate);
   }
 
+  Future<void> _openMapLayers() async {
+    final premium = ref.read(premiumControllerProvider);
+    final selected = await showModalBottomSheet<_PlannerMapStyle>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        final strings = AppLocalizations.of(sheetContext);
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+                child: Text(
+                  strings.mapLayers,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              for (final style in _PlannerMapStyle.values)
+                ListTile(
+                  leading: Icon(_mapStyleIcon(style)),
+                  title: Text(_mapStyleLabel(strings, style)),
+                  subtitle: style.isPremium
+                      ? Text(
+                          MapConfig.hasPremiumMapProvider
+                              ? strings.proMap
+                              : strings.proMapUnavailable,
+                        )
+                      : null,
+                  trailing: _plannerMapStyle == style
+                      ? const Icon(Icons.check_rounded)
+                      : style.isPremium
+                      ? const Icon(Icons.workspace_premium_outlined)
+                      : null,
+                  onTap: () async {
+                    if (style.isPremium && !premium.isPro) {
+                      Navigator.of(sheetContext).pop();
+                      await Future<void>.delayed(Duration.zero);
+                      if (mounted) {
+                        await showTrailPathProPaywall(context, ref);
+                      }
+                      return;
+                    }
+                    if (style.isPremium && !MapConfig.hasPremiumMapProvider) {
+                      Navigator.of(sheetContext).pop();
+                      await Future<void>.delayed(Duration.zero);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(strings.proMapUnavailable)),
+                        );
+                      }
+                      return;
+                    }
+                    Navigator.of(sheetContext).pop(style);
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selected == null || selected == _plannerMapStyle || !mounted) {
+      return;
+    }
+    await _applyMapStyle(selected);
+  }
+
+  Future<void> _applyMapStyle(_PlannerMapStyle style) async {
+    final controller = _mapController;
+    final url = _mapStyleUrl(style);
+    if (controller == null || url == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).proMapUnavailable),
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _plannerMapStyle = style;
+      _styleReady = false;
+      _routeLines = const [];
+      _waypointCircles = const [];
+      _midpointCircles = const [];
+      _candidateCircle = null;
+      _dragPreviewLine = null;
+      _routeVisualKey = null;
+      _waypointVisualKeys = const [];
+      _midpointVisualKeys = const [];
+      _candidateVisualKey = null;
+    });
+    await controller.setStyle(url);
+  }
+
+  String? _mapStyleUrl(_PlannerMapStyle style) {
+    return switch (style) {
+      _PlannerMapStyle.outdoor => MapConfig.plannerStyleUrl,
+      _PlannerMapStyle.street => MapConfig.styleUrl,
+      _PlannerMapStyle.satellite => MapConfig.mapTilerStyleUrl('satellite'),
+      _PlannerMapStyle.hybrid => MapConfig.mapTilerStyleUrl('hybrid'),
+    };
+  }
+
   void _toggleTraceMode() {
     if (_traceProcessing) {
       return;
@@ -630,9 +778,31 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
         return;
       }
 
-      final accepted = ref
-          .read(routePlannerProvider.notifier)
-          .addTrace(geoPoints);
+      final plannerState = ref.read(routePlannerProvider);
+      final plannerController = ref.read(routePlannerProvider.notifier);
+      var accepted = false;
+
+      if (_traceMatchMode == MapMatchMode.free) {
+        accepted = plannerController.addTrace(geoPoints);
+      } else {
+        final matchInput = <GeoPoint>[
+          if (plannerState.points.isNotEmpty) plannerState.points.last,
+          ...geoPoints,
+        ];
+        final match = await ref
+            .read(mapMatchingEngineProvider)
+            .match(
+              TraceMatchRequest(
+                trace: matchInput,
+                profile: plannerState.profile,
+                mode: _traceMatchMode,
+              ),
+            );
+        if (!mounted) {
+          return;
+        }
+        accepted = plannerController.applyMatchedTrace(match);
+      }
       if (!accepted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context).traceTooShort)),
@@ -1384,7 +1554,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
           child: _runningWidgetTest
               ? _MapTestFallback(dark: dark)
               : MapLibreMap(
-                  styleString: MapConfig.plannerStyleUrl,
+                  styleString:
+                      _mapStyleUrl(_plannerMapStyle) ??
+                      MapConfig.plannerStyleUrl,
                   initialCameraPosition: const CameraPosition(
                     target: _fallbackCenter,
                     zoom: 6.8,
@@ -1496,6 +1668,14 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                     ),
                     const Spacer(),
                     _MapActionButton(
+                      icon: Icons.layers_outlined,
+                      dark: dark,
+                      tooltip: strings.mapLayers,
+                      active: _plannerMapStyle != _PlannerMapStyle.outdoor,
+                      onTap: _openMapLayers,
+                    ),
+                    const SizedBox(width: 8),
+                    _MapActionButton(
                       icon: Icons.draw_rounded,
                       dark: dark,
                       tooltip: strings.traceMode,
@@ -1599,6 +1779,147 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                     dark: dark,
                     busy: _traceProcessing,
                   ),
+                  const SizedBox(height: 7),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Material(
+                      color: dark
+                          ? const Color(0xE61A241E)
+                          : const Color(0xF5FFFFFF),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 5,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: [
+                                ChoiceChip(
+                                  label: Text(strings.traceFollowTrails),
+                                  selected:
+                                      _traceMatchMode == MapMatchMode.trails,
+                                  onSelected: _traceProcessing
+                                      ? null
+                                      : (_) => setState(
+                                          () => _traceMatchMode =
+                                              MapMatchMode.trails,
+                                        ),
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                ChoiceChip(
+                                  label: Text(strings.traceFollowRoads),
+                                  selected:
+                                      _traceMatchMode == MapMatchMode.roads,
+                                  onSelected: _traceProcessing
+                                      ? null
+                                      : (_) => setState(
+                                          () => _traceMatchMode =
+                                              MapMatchMode.roads,
+                                        ),
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                ChoiceChip(
+                                  label: Text(strings.traceFree),
+                                  selected:
+                                      _traceMatchMode == MapMatchMode.free,
+                                  onSelected: _traceProcessing
+                                      ? null
+                                      : (_) => setState(
+                                          () => _traceMatchMode =
+                                              MapMatchMode.free,
+                                        ),
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                              ],
+                            ),
+                            if (planner.points.length >= 2) ...[
+                              const SizedBox(height: 5),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                children: [
+                                  ActionChip(
+                                    avatar: const Icon(
+                                      Icons.all_inclusive_rounded,
+                                      size: 17,
+                                    ),
+                                    label: Text(strings.traceCloseLoop),
+                                    onPressed: _traceProcessing
+                                        ? null
+                                        : () {
+                                            ref
+                                                .read(
+                                                  routePlannerProvider.notifier,
+                                                )
+                                                .closeLoop();
+                                          },
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                  ActionChip(
+                                    avatar: const Icon(
+                                      Icons.swap_horiz_rounded,
+                                      size: 17,
+                                    ),
+                                    label: Text(strings.traceOutAndBack),
+                                    onPressed: _traceProcessing
+                                        ? null
+                                        : () {
+                                            ref
+                                                .read(
+                                                  routePlannerProvider.notifier,
+                                                )
+                                                .makeOutAndBack();
+                                          },
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                  ActionChip(
+                                    avatar: const Icon(
+                                      Icons.swap_calls_rounded,
+                                      size: 17,
+                                    ),
+                                    label: Text(strings.traceReverse),
+                                    onPressed: _traceProcessing
+                                        ? null
+                                        : () {
+                                            ref
+                                                .read(
+                                                  routePlannerProvider.notifier,
+                                                )
+                                                .reverseRoute();
+                                          },
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                  ActionChip(
+                                    avatar: const Icon(
+                                      Icons.auto_fix_off_rounded,
+                                      size: 17,
+                                    ),
+                                    label: Text(strings.traceErase),
+                                    onPressed: _traceProcessing
+                                        ? null
+                                        : () {
+                                            ref
+                                                .read(
+                                                  routePlannerProvider.notifier,
+                                                )
+                                                .eraseLastSegment();
+                                          },
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -1657,6 +1978,40 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       ],
     );
   }
+}
+
+enum _PlannerMapStyle { outdoor, street, satellite, hybrid }
+
+extension on _PlannerMapStyle {
+  bool get isPremium =>
+      this == _PlannerMapStyle.satellite || this == _PlannerMapStyle.hybrid;
+}
+
+String _mapStyleLabel(AppLocalizations strings, _PlannerMapStyle style) {
+  return switch (style) {
+    _PlannerMapStyle.outdoor => strings.mapOutdoor,
+    _PlannerMapStyle.street => strings.mapStreet,
+    _PlannerMapStyle.satellite => strings.mapSatellite,
+    _PlannerMapStyle.hybrid => strings.mapHybrid,
+  };
+}
+
+_PlannerMapStyle _mapStyleFromPreference(DefaultMapPreference preference) {
+  return switch (preference) {
+    DefaultMapPreference.outdoor => _PlannerMapStyle.outdoor,
+    DefaultMapPreference.street => _PlannerMapStyle.street,
+    DefaultMapPreference.satellite => _PlannerMapStyle.satellite,
+    DefaultMapPreference.hybrid => _PlannerMapStyle.hybrid,
+  };
+}
+
+IconData _mapStyleIcon(_PlannerMapStyle style) {
+  return switch (style) {
+    _PlannerMapStyle.outdoor => Icons.terrain_rounded,
+    _PlannerMapStyle.street => Icons.map_outlined,
+    _PlannerMapStyle.satellite => Icons.satellite_alt_outlined,
+    _PlannerMapStyle.hybrid => Icons.layers_outlined,
+  };
 }
 
 enum _CandidateIntent { start, destination, waypoint }

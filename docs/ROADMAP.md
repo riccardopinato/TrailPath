@@ -128,15 +128,15 @@ The following items are **approved product scope** after the 2026-09-27 product 
 
 Goal: make route creation materially closer to Footpath-quality behavior before adding account/cloud complexity.
 
-- [ ] **Smart Trace / Map Matching Engine:** replace the current gesture→sampled-waypoints approximation with a real map-matching pipeline that follows roads/trails closely.
-- [ ] evaluate **Valhalla Meili** first, then OSRM Match / GraphHopper Map Matching as alternatives; keep provider abstraction swappable.
-- [ ] preserve exact user gesture intent while snapping to the OSM trail/road graph.
-- [ ] add drawing modes: Follow trails / Follow roads / Free.
-- [ ] add route-drawing tools: eraser, undo, loop, out-and-back, reverse.
-- [ ] keep current distance/elevation engine as the reference implementation unless testing finds a regression.
-- [ ] **Map layer selector:** standard/outdoor map, road-focused map and high-contrast map.
-- [ ] **Pro satellite layer:** aerial/satellite imagery, with licensing/cost controls suitable for commercial use.
-- [ ] **Pro satellite + trails overlay** where provider terms and map-style licensing allow it.
+- [x] **Smart Trace / Map Matching Engine:** dedicated Valhalla `trace_route` map matching now follows the drawn gesture against the OSM network; Free mode retains the legacy free-form trace path.
+- [x] evaluated Valhalla/OSRM/GraphHopper direction; `MapMatchingEngine` keeps the implementation swappable and v1.1 uses Valhalla `trace_route` as the first provider.
+- [x] preserve gesture samples as the map-matching trace while returning matched OSM network geometry.
+- [x] add drawing modes: Follow trails / Follow roads / Free.
+- [x] add route-drawing tools: eraser-last-segment, undo/redo, loop, out-and-back and reverse.
+- [x] keep the current distance/elevation engine as the reference implementation after Smart Trace matching.
+- [~] **Map layer selector:** Outdoor + Street are live; Satellite + Hybrid are wired as provider-gated styles. Dedicated high-contrast style remains later polish.
+- [~] **Pro satellite layer:** MapTiler Satellite is wired through runtime `MAPTILER_API_KEY`; commercial plan/key and entitlement gate complete in v1.2.
+- [~] **Pro satellite + trails overlay:** Hybrid provider style is wired; entitlement/licensing gate follows in v1.2.
 - [ ] evaluate terrain/relief/contours and future 3D terrain without coupling the app to one map vendor.
 - [ ] add explicit map-provider usage/cost telemetry hooks that do not track user routes or precise location analytics.
 
@@ -162,15 +162,15 @@ Goal: make TrailPath feel like a complete product without forcing account creati
 - [ ] keep TrailPath fully usable local-first without login.
 - [ ] optional **Google Sign-In** only when account-backed value exists.
 - [ ] separate identity/auth from stored outdoor data so account removal does not silently delete local data.
-- [ ] add export/delete-account/data lifecycle documentation before account release.
+- [x] document account sign-out/local-data retention/cloud deletion lifecycle before production account enablement.
 
 ### v1.4 — Cloud Sync & Cross-device
 
-- [ ] optional backup/sync for routes, activities, preferences and collections.
-- [ ] design conflict resolution, offline-first queueing and explicit sync status before implementation.
-- [ ] encrypt transport and define at-rest policy for cloud-stored route/location history.
-- [ ] restore on new device and sign-out behavior must be deterministic and tested.
-- [ ] no mandatory cloud dependency for route recording/navigation.
+- [~] optional backup/sync for routes, completed activities and preferences is implemented; collections join the same sync model in v1.5 when the collection entity exists.
+- [x] implement last-write-wins conflict resolution, local outbox queueing, remote tombstones and explicit Profile sync status.
+- [~] TLS transport is provided by Supabase HTTPS; cloud at-rest handling follows the selected Supabase project/storage policy and must be reviewed before production enablement.
+- [x] remote-newer records restore into local Drift, deletions propagate through tombstones, and Google/Supabase sign-out does not delete local data.
+- [x] no mandatory cloud dependency for planning, recording or navigation; Supabase is runtime-config gated.
 
 ### v1.5 — Premium Outdoor Intelligence
 

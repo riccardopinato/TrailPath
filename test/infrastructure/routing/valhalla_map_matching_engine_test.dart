@@ -1,0 +1,110 @@
+import 'dart:convert';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:trail_path/core/domain/map_matching.dart';
+import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/infrastructure/routing/valhalla_map_matching_engine.dart';
+
+void main() {
+  test('Valhalla matcher decodes GeoJSON trace_route response', () async {
+    final client = MockClient((request) async {
+      final payload = jsonDecode(request.body) as Map<String, dynamic>;
+      expect(payload['shape_match'], 'walk_or_snap');
+      expect(payload['shape_format'], 'geojson');
+      expect(payload['costing'], 'pedestrian');
+
+      return http.Response(
+        jsonEncode({
+          'trip': {
+            'summary': {'length': 1.25, 'time': 900},
+            'legs': [
+              {
+                'shape': {
+                  'type': 'LineString',
+                  'coordinates': [
+                    [11.0, 45.0],
+                    [11.005, 45.004],
+                    [11.01, 45.01],
+                  ],
+                },
+              },
+            ],
+          },
+        }),
+        200,
+      );
+    });
+
+    final engine = ValhallaMapMatchingEngine(
+      client: client,
+      endpoint: Uri.parse('https://example.test/trace_route'),
+    );
+
+    final result = await engine.match(
+      const TraceMatchRequest(
+        trace: [
+          GeoPoint(latitude: 45.0, longitude: 11.0),
+          GeoPoint(latitude: 45.01, longitude: 11.01),
+        ],
+        profile: RouteProfile.hiking,
+        mode: MapMatchMode.trails,
+      ),
+    );
+
+    expect(result.geometry, hasLength(3));
+    expect(result.geometry.first.latitude, 45.0);
+    expect(result.geometry.last.longitude, 11.01);
+    expect(result.distanceMeters, 1250);
+    expect(result.estimatedDuration, const Duration(seconds: 900));
+    expect(result.source, 'valhalla.trace_route');
+  });
+
+  test('road cycling trace asks for road-biased bicycle matching', () async {
+    final client = MockClient((request) async {
+      final payload = jsonDecode(request.body) as Map<String, dynamic>;
+      expect(payload['costing'], 'bicycle');
+      final costing = payload['costing_options'] as Map<String, dynamic>;
+      final options = costing['bicycle'] as Map<String, dynamic>;
+      expect(options['bicycle_type'], 'road');
+      expect(options['use_roads'], 0.95);
+
+      return http.Response(
+        jsonEncode({
+          'trip': {
+            'summary': {'length': 0.5, 'time': 120},
+            'legs': [
+              {
+                'shape': {
+                  'type': 'LineString',
+                  'coordinates': [
+                    [11.0, 45.0],
+                    [11.01, 45.01],
+                  ],
+                },
+              },
+            ],
+          },
+        }),
+        200,
+      );
+    });
+
+    final engine = ValhallaMapMatchingEngine(
+      client: client,
+      endpoint: Uri.parse('https://example.test/trace_route'),
+    );
+
+    await engine.match(
+      const TraceMatchRequest(
+        trace: [
+          GeoPoint(latitude: 45.0, longitude: 11.0),
+          GeoPoint(latitude: 45.01, longitude: 11.01),
+        ],
+        profile: RouteProfile.cycling,
+        mode: MapMatchMode.roads,
+      ),
+    );
+  });
+}
