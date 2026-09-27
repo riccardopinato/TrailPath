@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/database/database_providers.dart';
+import 'package:trail_path/core/domain/cloud_sync.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/features/outdoor/presentation/outdoor_screen.dart';
 import 'package:trail_path/features/pro/application/premium_controller.dart';
@@ -230,7 +231,7 @@ class _CloudSyncCard extends StatelessWidget {
     required this.onTap,
   });
 
-  final dynamic snapshot;
+  final CloudSyncSnapshot snapshot;
   final bool isPro;
   final bool isSignedIn;
   final Future<void> Function() onTap;
@@ -238,10 +239,10 @@ class _CloudSyncCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
-    final configured = snapshot.isConfigured == true;
-    final busy = snapshot.isBusy == true;
-    final lastSync = snapshot.lastSyncedAt as DateTime?;
-    final pending = snapshot.pendingChanges as int? ?? 0;
+    final configured = snapshot.isConfigured;
+    final busy = snapshot.isBusy;
+    final lastSync = snapshot.lastSyncedAt;
+    final pending = snapshot.pendingChanges;
 
     late final String subtitle;
     if (!configured) {
