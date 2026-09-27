@@ -64,6 +64,61 @@ void main() {
     },
   );
 
+  test('route deletion also removes its native offline region', () async {
+    final database = AppDatabase.memory();
+    addTearDown(database.close);
+
+    final routeId = await database.savePlannedRoute(
+      name: 'Delete route',
+      profile: RouteProfile.hiking.name,
+      waypointsData: const [
+        GeoPoint(latitude: 45.20, longitude: 11.70),
+        GeoPoint(latitude: 45.21, longitude: 11.71),
+      ],
+      geometryData: const [
+        GeoPoint(latitude: 45.20, longitude: 11.70),
+        GeoPoint(latitude: 45.21, longitude: 11.71),
+      ],
+      distanceMeters: 1200,
+      ascentMeters: 40,
+      descentMeters: 20,
+      estimatedDuration: const Duration(minutes: 20),
+    );
+
+    final manager = _FakeOfflineMapManager(
+      regions: [
+        OfflineRegion(
+          id: routeId,
+          name: 'Delete route',
+          downloadedBytes: 32000,
+          isComplete: true,
+          progress: 1,
+        ),
+      ],
+    );
+
+    final container = ProviderContainer(
+      overrides: [
+        appDatabaseProvider.overrideWithValue(database),
+        offlineMapManagerProvider.overrideWithValue(manager),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container
+        .read(offlineDownloadsProvider.notifier)
+        .reconcileNativeState();
+
+    final deleted = await container
+        .read(offlineDownloadsProvider.notifier)
+        .deleteRouteAndOfflineData(routeId);
+
+    expect(deleted, isTrue);
+    expect(manager.deletedIds, contains(routeId));
+    expect(await database.listSavedRoutes(), isEmpty);
+    expect(container.read(offlineDownloadsProvider).snapshots, isEmpty);
+  });
+
   test(
     'incomplete region is restartable after process-state recovery',
     () async {
@@ -144,6 +199,7 @@ class _FakeOfflineMapManager implements OfflineMapManager {
 
   List<OfflineRegion> _regions;
   int downloadCount = 0;
+  final List<String> deletedIds = <String>[];
 
   @override
   Future<List<OfflineRegion>> listRegions() async =>
@@ -175,6 +231,7 @@ class _FakeOfflineMapManager implements OfflineMapManager {
 
   @override
   Future<void> delete(String regionId) async {
+    deletedIds.add(regionId);
     _regions.removeWhere((region) => region.id == regionId);
   }
 

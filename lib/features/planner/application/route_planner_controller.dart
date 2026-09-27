@@ -511,18 +511,21 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         return;
       }
 
-      final snappedWaypoints = plan.snappedWaypoints.length == waypoints.length
+      final routingWaypoints = plan.snappedWaypoints.length == waypoints.length
           ? List<GeoPoint>.unmodifiable(plan.snappedWaypoints)
           : waypoints;
       _legGeometries = plan.isSnapped
-          ? _splitGeometryIntoLegs(plan.geometry, snappedWaypoints)
+          ? _splitGeometryIntoLegs(plan.geometry, routingWaypoints)
           : const [];
-      if (_legGeometries.length != snappedWaypoints.length - 1) {
+      if (_legGeometries.length != routingWaypoints.length - 1) {
         _legGeometries = const [];
       }
 
+      // Keep the user's selected coordinates stable. Routing geometry may snap
+      // to the trail/road network, but a confirmed start/destination/waypoint
+      // must not visually jump away from the coordinate the user selected.
       state = state.copyWith(
-        points: snappedWaypoints,
+        points: waypoints,
         geometry: plan.geometry,
         distanceMeters: plan.distanceMeters,
         estimatedDuration: plan.estimatedDuration,
@@ -633,10 +636,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         return;
       }
 
-      final snappedPoints = [...nextPoints];
-      for (var offset = 0; offset < snappedSpan.length; offset++) {
-        snappedPoints[startWaypoint + offset] = snappedSpan[offset];
-      }
+      final stablePoints = List<GeoPoint>.unmodifiable(nextPoints);
 
       final mergedLegs = <List<GeoPoint>>[
         ...previousLegs.take(oldLegStart),
@@ -647,10 +647,10 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         for (final leg in mergedLegs) List<GeoPoint>.unmodifiable(leg),
       ];
 
-      if (_legGeometries.length != snappedPoints.length - 1) {
+      if (_legGeometries.length != stablePoints.length - 1) {
         _legGeometries = const [];
         state = state.copyWith(
-          points: List<GeoPoint>.unmodifiable(snappedPoints),
+          points: stablePoints,
           isRouting: true,
           editHandles: const [],
         );
@@ -661,7 +661,7 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
       final geometry = _mergeLegs(_legGeometries);
       final distance = calculateRouteDistanceMeters(geometry);
       state = state.copyWith(
-        points: List<GeoPoint>.unmodifiable(snappedPoints),
+        points: stablePoints,
         geometry: geometry,
         distanceMeters: distance,
         estimatedDuration: _estimateDuration(distance, profile),

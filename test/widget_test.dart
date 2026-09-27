@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trail_path/app/app.dart';
@@ -21,7 +22,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.text('TrailPath'), findsOneWidget);
-    expect(find.text('0 m'), findsOneWidget);
+    expect(find.text('0 m'), findsNothing);
     expect(find.text('Start TrailPath'), findsNothing);
+    expect(find.byType(TextField), findsOneWidget);
   });
 }
