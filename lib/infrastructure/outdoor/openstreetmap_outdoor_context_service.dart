@@ -168,14 +168,22 @@ class OpenStreetMapOutdoorContextService implements OutdoorContextService {
       );
     }
 
-    final bounds = _boundsFor(geometry, paddingMeters: 120);
-    final bbox = [
-      bounds.south,
-      bounds.west,
-      bounds.north,
-      bounds.east,
-    ].join(',');
-    final query = '[out:json][timeout:18];way["highway"]($bbox);out geom tags;';
+    const probeCount = 18;
+    const probeRadiusMeters = 220;
+    final queryBuffer = StringBuffer('[out:json][timeout:18];(');
+    for (var index = 0; index < probeCount; index++) {
+      final point = pointAlongPolyline(
+        geometry,
+        fraction: index / (probeCount - 1),
+      );
+      queryBuffer.write(
+        'way["highway"](around:$probeRadiusMeters,'
+        '${point.latitude.toStringAsFixed(6)},'
+        '${point.longitude.toStringAsFixed(6)});',
+      );
+    }
+    queryBuffer.write(');out geom tags;');
+    final query = queryBuffer.toString();
 
     final response = await _postOverpass(query);
     final decoded = jsonDecode(response.body);
