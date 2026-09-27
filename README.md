@@ -221,3 +221,5 @@ TrailPath Pro is implemented behind a provider-agnostic Premium Engine using the
 - A global km/mi preference is not exposed yet because every metric surface must convert consistently before shipping it.
 
 v1.5 Outdoor Intelligence sources and tests are normalized with the pinned Flutter 3.47.5 formatter before staging CI.
+
+The v1.5 analyzer fixes are normalized with the pinned Flutter 3.47.5 toolchain before full CI/AppLab validation.
