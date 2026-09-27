@@ -50,6 +50,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   bool _traceMode = false;
   MapMatchMode _traceMatchMode = MapMatchMode.trails;
   _PlannerMapStyle _plannerMapStyle = _PlannerMapStyle.outdoor;
+  bool _slopeLayerEnabled = false;
+  bool _terrain3dEnabled = false;
   bool _traceDrawing = false;
   bool _traceProcessing = false;
   int? _tracePointerId;
@@ -58,11 +60,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   bool _annotationSyncQueued = false;
   Timer? _annotationSyncTimer;
   List<Line> _routeLines = const [];
+  List<Line> _slopeLines = const [];
   List<Circle> _waypointCircles = const [];
   List<Circle> _midpointCircles = const [];
   Circle? _candidateCircle;
   Line? _dragPreviewLine;
   String? _routeVisualKey;
+  String? _slopeVisualKey;
   List<String> _waypointVisualKeys = const [];
   List<String> _midpointVisualKeys = const [];
   String? _candidateVisualKey;
@@ -617,6 +621,51 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                     Navigator.of(sheetContext).pop(style);
                   },
                 ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.gradient_rounded),
+                title: Text(strings.slopeMap),
+                subtitle: Text(strings.slopeMapHint),
+                trailing: _slopeLayerEnabled
+                    ? const Icon(Icons.check_rounded)
+                    : const Icon(Icons.workspace_premium_outlined),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  await Future<void>.delayed(Duration.zero);
+                  if (!mounted) {
+                    return;
+                  }
+                  if (!premium.isPro) {
+                    await showTrailPathProPaywall(context, ref);
+                    return;
+                  }
+                  await _toggleSlopeLayer();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.view_in_ar_rounded),
+                title: Text(strings.terrain3d),
+                subtitle: Text(
+                  MapConfig.hasPremiumMapProvider
+                      ? strings.terrain3dHint
+                      : strings.proMapUnavailable,
+                ),
+                trailing: _terrain3dEnabled
+                    ? const Icon(Icons.check_rounded)
+                    : const Icon(Icons.workspace_premium_outlined),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  await Future<void>.delayed(Duration.zero);
+                  if (!mounted) {
+                    return;
+                  }
+                  if (!premium.isPro) {
+                    await showTrailPathProPaywall(context, ref);
+                    return;
+                  }
+                  await _toggleTerrain3d();
+                },
+              ),
             ],
           ),
         );
@@ -627,6 +676,64 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       return;
     }
     await _applyMapStyle(selected);
+  }
+
+  Future<void> _toggleSlopeLayer() async {
+    final planner = ref.read(routePlannerProvider);
+    if (!_slopeLayerEnabled && !planner.elevationProfile.isAvailable) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).elevationUnavailable)),
+      );
+      return;
+    }
+    setState(() => _slopeLayerEnabled = !_slopeLayerEnabled);
+    await _syncPlannerAnnotations();
+  }
+
+  Future<void> _toggleTerrain3d() async {
+    if (!MapConfig.hasPremiumMapProvider) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).proMapUnavailable)),
+      );
+      return;
+    }
+    setState(() => _terrain3dEnabled = !_terrain3dEnabled);
+    await _applyTerrainState();
+  }
+
+  Future<void> _applyTerrainState() async {
+    final controller = _mapController;
+    if (controller == null || !_styleReady || controller.isDisposed) {
+      return;
+    }
+    if (!_terrain3dEnabled) {
+      await controller.setTerrain(null);
+      return;
+    }
+
+    final url = MapConfig.mapTilerTerrainDemUrl;
+    if (url == null) {
+      return;
+    }
+    const sourceId = 'trailpath-terrain-dem';
+    final sourceIds = await controller.getSourceIds();
+    if (!sourceIds.contains(sourceId)) {
+      await controller.addSource(
+        sourceId,
+        RasterDemSourceProperties(
+          url: url,
+          tileSize: 512,
+          maxzoom: 14,
+          encoding: 'mapbox',
+        ),
+      );
+    }
+    await controller.setTerrain(
+      const TerrainProperties(
+        source: sourceId,
+        exaggeration: 1.15,
+      ),
+    );
   }
 
   Future<void> _applyMapStyle(_PlannerMapStyle style) async {
@@ -647,11 +754,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       _plannerMapStyle = style;
       _styleReady = false;
       _routeLines = const [];
+      _slopeLines = const [];
       _waypointCircles = const [];
       _midpointCircles = const [];
       _candidateCircle = null;
       _dragPreviewLine = null;
       _routeVisualKey = null;
+      _slopeVisualKey = null;
       _waypointVisualKeys = const [];
       _midpointVisualKeys = const [];
       _candidateVisualKey = null;
@@ -1227,6 +1336,66 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     }
     _routeVisualKey = routeOptions.isEmpty ? null : routeVisualKey;
 
+    final slopeSamples = planner.elevationProfile.isAvailable
+        ? planner.elevationProfile.samples
+        : const <ElevationSample>[];
+    final slopeOptions = _slopeLayerEnabled && slopeSamples.length >= 2
+        ? <LineOptions>[
+            for (var index = 1; index < slopeSamples.length; index++)
+              LineOptions(
+                geometry: [
+                  _latLng(slopeSamples[index - 1].point),
+                  _latLng(slopeSamples[index].point),
+                ],
+                lineColor: _gradeColor(
+                  (slopeSamples[index - 1].gradePercent +
+                          slopeSamples[index].gradePercent) /
+                      2,
+                ),
+                lineWidth: 6.5,
+                lineOpacity: 0.96,
+                lineJoin: 'round',
+              ),
+          ]
+        : const <LineOptions>[];
+    final slopeVisualKey = slopeOptions.isEmpty
+        ? null
+        : Object.hashAll([
+            for (final sample in slopeSamples)
+              Object.hash(
+                sample.point.latitude,
+                sample.point.longitude,
+                sample.gradePercent.toStringAsFixed(1),
+              ),
+          ]).toString();
+    final slopeLinesCurrent =
+        _slopeLines.length == slopeOptions.length &&
+        _slopeLines.every(controller.lines.contains);
+    if (slopeLinesCurrent) {
+      if (_slopeVisualKey != slopeVisualKey) {
+        for (var index = 0; index < _slopeLines.length; index++) {
+          await controller.updateLine(_slopeLines[index], slopeOptions[index]);
+        }
+      }
+    } else {
+      final stale = _slopeLines
+          .where(controller.lines.contains)
+          .toList(growable: false);
+      if (stale.isNotEmpty) {
+        await controller.removeLines(stale);
+      }
+      _slopeLines = slopeOptions.isEmpty
+          ? const []
+          : await controller.addLines(
+              slopeOptions,
+              [
+                for (var index = 0; index < slopeOptions.length; index++)
+                  <String, dynamic>{'kind': 'slope', 'segment': index},
+              ],
+            );
+    }
+    _slopeVisualKey = slopeVisualKey;
+
     final waypointOptions = <CircleOptions>[
       for (var index = 0; index < waypoints.length; index++)
         CircleOptions(
@@ -1571,6 +1740,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                   },
                   onStyleLoadedCallback: () {
                     _styleReady = true;
+                    unawaited(_applyTerrainState());
                     unawaited(_syncPlannerAnnotations());
                   },
                   onMapClick: (point, coordinates) {
@@ -1976,6 +2146,23 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       ],
     );
   }
+}
+
+String _gradeColor(double grade) {
+  final absolute = grade.abs();
+  if (absolute < 4) {
+    return '#2E7D32';
+  }
+  if (absolute < 8) {
+    return '#F9A825';
+  }
+  if (absolute < 13) {
+    return '#EF6C00';
+  }
+  if (absolute < 18) {
+    return '#D32F2F';
+  }
+  return '#7B1FA2';
 }
 
 enum _PlannerMapStyle { outdoor, street, satellite, hybrid }
