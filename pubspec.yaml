@@ -1,7 +1,7 @@
 name: trail_path
 description: TrailPath - planner, recorder and offline navigation foundation for outdoor routes.
 publish_to: "none"
-version: 1.3.0+34
+version: 1.4.0+35
 
 environment:
   sdk: ">=3.13.0 <4.0.0"
@@ -26,6 +26,7 @@ dependencies:
   in_app_purchase: ^3.3.1
   google_sign_in: ^7.2.0
   connectivity_plus: ^7.3.1
+  supabase_flutter: ^2.17.2
   http: ^1.5.0
 
 dev_dependencies:
