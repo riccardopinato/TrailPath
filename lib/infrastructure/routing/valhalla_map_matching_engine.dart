@@ -249,7 +249,7 @@ class ValhallaMapMatchingEngine implements MapMatchingEngine {
       'shape_match': 'walk_or_snap',
       'shape_format': 'geojson',
       'directions_type': 'none',
-      'units': 'km',
+      'units': 'kilometers',
       'trace_options': <String, Object?>{
         'gps_accuracy': 10,
         'search_radius': request.mode == MapMatchMode.trails ? 32 : 26,
