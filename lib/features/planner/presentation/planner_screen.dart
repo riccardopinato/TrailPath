@@ -1898,13 +1898,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                 LayoutBuilder(
                   builder: (context, constraints) {
                     final compact = constraints.maxWidth < 430;
-                    final veryCompact = constraints.maxWidth < 305;
-                    final actionSize = veryCompact
-                        ? 38.0
-                        : compact
-                        ? 42.0
-                        : 48.0;
-                    final actionGap = compact ? 4.0 : 8.0;
+                    final veryCompact = constraints.maxWidth < 315;
+                    final actionSize = compact ? 44.0 : 48.0;
+                    final actionGap = compact ? 2.0 : 8.0;
 
                     return Row(
                       children: [
@@ -1912,9 +1908,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                           height: actionSize,
                           padding: EdgeInsets.symmetric(
                             horizontal: veryCompact
-                                ? 9
-                                : compact
                                 ? 8
+                                : compact
+                                ? 6
                                 : 13,
                           ),
                           decoration: BoxDecoration(
@@ -1934,11 +1930,11 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                             children: [
                               Icon(Icons.terrain, size: compact ? 19 : 20),
                               if (!veryCompact) ...[
-                                SizedBox(width: compact ? 5 : 8),
+                                SizedBox(width: compact ? 4 : 8),
                                 Text(
                                   'TrailPath',
                                   style: TextStyle(
-                                    fontSize: compact ? 13 : null,
+                                    fontSize: compact ? 12.5 : null,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: -0.4,
                                   ),
