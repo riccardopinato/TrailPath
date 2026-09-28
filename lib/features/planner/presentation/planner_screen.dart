@@ -977,6 +977,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
         }
       }
 
+      if (!mounted) {
+        return;
+      }
+
       final plannerState = ref.read(routePlannerProvider);
       final plannerController = ref.read(routePlannerProvider.notifier);
       var accepted = false;
