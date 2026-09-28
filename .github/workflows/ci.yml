@@ -369,6 +369,21 @@ jobs:
           test "$ACTUAL_APPLAB_SHA" = "16271b3ffa34982a0f04fd118565047e7c09e743"
           echo "Pinned AppLab: $ACTUAL_APPLAB_SHA"
 
+      - name: Stabilize AppLab crawler startup readiness
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path(".applab/scripts/verify_apk.sh")
+          text = path.read_text(encoding="utf-8")
+          old = "--settle-seconds 1.5"
+          new = "--settle-seconds 5.0"
+          if old not in text:
+              raise SystemExit("Pinned AppLab crawler settle contract changed unexpectedly")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+          grep -Fq -- '--settle-seconds 5.0' .applab/scripts/verify_apk.sh
+
       - name: Install Maestro
         run: |
           chmod +x .applab/scripts/*.sh
@@ -474,9 +489,16 @@ jobs:
             adb shell pm grant com.riccardopinato.trail_path android.permission.ACCESS_COARSE_LOCATION || true
             adb emu geo fix 11.7500 45.2320 100 || true
             mkdir -p applab-v15-report
+            set +e
             "$HOME/.maestro/bin/maestro" test "$GITHUB_WORKSPACE/.maestro/applab-v15-pro-e2e.yaml" --format junit --output "$GITHUB_WORKSPACE/applab-v15-report/results.xml"
+            MAESTRO_STATUS=$?
+            set -e
+            adb exec-out screencap -p > "$GITHUB_WORKSPACE/applab-v15-report/final.png" || true
+            adb shell uiautomator dump /sdcard/trailpath-v15-final.xml >/dev/null 2>&1 || true
+            adb pull /sdcard/trailpath-v15-final.xml "$GITHUB_WORKSPACE/applab-v15-report/final.xml" >/dev/null 2>&1 || true
             adb logcat -d > "$GITHUB_WORKSPACE/applab-v15-report/logcat.txt"
             ! grep -Eq "ANR in com\\.riccardopinato\\.trail_path|Process: com\\.riccardopinato\\.trail_path.*FATAL" "$GITHUB_WORKSPACE/applab-v15-report/logcat.txt"
+            exit "$MAESTRO_STATUS"
 
       - name: Upload v1.5 Pro AppLab report
         if: always()
