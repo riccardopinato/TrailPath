@@ -88,7 +88,7 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
           plan.geometry.first,
           plan.geometry.last,
         );
-        final score = distanceError + closure / 1000;
+        final score = distanceError + retracePenalty + closure / 1000;
 
         candidates.add(
           RouteCandidate(
