@@ -3172,7 +3172,7 @@ class _RoutingStatus extends StatelessWidget {
         : planner.isRouting
         ? (Icons.sync_rounded, strings.routingCalculating)
         : planner.hasRoutingError
-        ? (Icons.cloud_off_rounded, strings.routeUnavailable)
+        ? (Icons.cloud_off_rounded, _routingFailureLabel(strings, planner.routingError))
         : planner.isSnapped
         ? (Icons.route_rounded, strings.routeSnapped)
         : (Icons.alt_route_rounded, strings.routeLocalFallback);
@@ -3207,6 +3207,31 @@ class _RoutingStatus extends StatelessWidget {
       ),
     );
   }
+}
+
+String _routingFailureLabel(AppLocalizations strings, String? rawError) {
+  final error = (rawError ?? '').toLowerCase();
+  if (error.contains('timed out') || error.contains('timeout')) {
+    return strings.routeTimeout;
+  }
+  if (error.contains('network request failed') ||
+      error.contains('socket') ||
+      error.contains('clientexception')) {
+    return strings.routeNoNetwork;
+  }
+  if (error.contains('no route found') ||
+      error.contains('noroute') ||
+      error.contains('no suitable edges') ||
+      error.contains('could not snap')) {
+    return strings.routeNotFound;
+  }
+  if (error.contains('http 429') ||
+      error.contains('http 5') ||
+      error.contains('service returned') ||
+      error.contains('valhalla routing returned')) {
+    return strings.routeProviderUnavailable;
+  }
+  return strings.routeUnavailable;
 }
 
 class _Metric extends StatelessWidget {
