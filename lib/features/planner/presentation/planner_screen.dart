@@ -3172,7 +3172,10 @@ class _RoutingStatus extends StatelessWidget {
         : planner.isRouting
         ? (Icons.sync_rounded, strings.routingCalculating)
         : planner.hasRoutingError
-        ? (Icons.cloud_off_rounded, _routingFailureLabel(strings, planner.routingError))
+        ? (
+            Icons.cloud_off_rounded,
+            _routingFailureLabel(strings, planner.routingError),
+          )
         : planner.isSnapped
         ? (Icons.route_rounded, strings.routeSnapped)
         : (Icons.alt_route_rounded, strings.routeLocalFallback);
