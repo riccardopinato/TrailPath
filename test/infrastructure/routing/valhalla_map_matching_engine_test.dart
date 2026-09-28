@@ -180,7 +180,6 @@ void main() {
       ),
     );
   });
-
 }
 
 class _AlwaysFailMapMatchingEngine implements MapMatchingEngine {
