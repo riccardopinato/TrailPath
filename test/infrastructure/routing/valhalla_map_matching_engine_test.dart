@@ -293,7 +293,6 @@ class _TraceRoutingEngine implements RoutingEngine {
   }
 }
 
-
 class _OffsetTraceRoutingEngine implements RoutingEngine {
   const _OffsetTraceRoutingEngine();
 
