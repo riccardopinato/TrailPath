@@ -955,6 +955,29 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
         return;
       }
 
+      double? gestureToleranceMeters;
+      if (_traceMatchMode != MapMatchMode.free && geoPoints.isNotEmpty) {
+        try {
+          final reference = geoPoints[geoPoints.length ~/ 2];
+          final metersPerNativePixel =
+              await controller.getMetersPerPixelAtLatitude(reference.latitude);
+          final metersPerLogicalPixel =
+              metersPerNativePixel * projectionScale;
+          final baseTolerance = _traceMatchMode == MapMatchMode.trails
+              ? 36.0
+              : 30.0;
+          final maxTolerance = _traceMatchMode == MapMatchMode.trails
+              ? 220.0
+              : 180.0;
+          gestureToleranceMeters = (metersPerLogicalPixel * 18)
+              .clamp(baseTolerance, maxTolerance)
+              .toDouble();
+        } on Object {
+          // Keep the matcher defaults if map scale information is temporarily
+          // unavailable.
+        }
+      }
+
       final plannerState = ref.read(routePlannerProvider);
       final plannerController = ref.read(routePlannerProvider.notifier);
       var accepted = false;
@@ -973,6 +996,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                 trace: matchInput,
                 profile: plannerState.profile,
                 mode: _traceMatchMode,
+                gestureToleranceMeters: gestureToleranceMeters,
               ),
             );
         if (!mounted) {
