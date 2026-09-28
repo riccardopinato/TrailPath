@@ -233,9 +233,11 @@ double _retracePenalty(List<GeoPoint> geometry) {
     final earlier = sampled.sublist(0, i - 3);
     final later = sampled.sublist(i + 4);
     final nearEarlier =
-        earlier.length >= 2 && distanceToPolylineMeters(sampled[i], earlier) < 28;
+        earlier.length >= 2 &&
+        distanceToPolylineMeters(sampled[i], earlier) < 28;
     final nearLater =
-        later.length >= 2 && distanceToPolylineMeters(sampled[i], later) < 28;
+        later.length >= 2 &&
+        distanceToPolylineMeters(sampled[i], later) < 28;
     if (nearEarlier || nearLater) {
       retraced++;
     }
