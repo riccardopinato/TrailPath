@@ -6,6 +6,7 @@ import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/map_matching.dart';
 import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/core/logging/app_logger.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/infrastructure/network/http_retry.dart';
 
@@ -166,9 +167,18 @@ class ValhallaRoutingEngine implements RoutingEngine {
           routingSource: engineId,
           snappedWaypoints: List<GeoPoint>.unmodifiable(request.points),
         );
-      } on Object catch (error) {
+      } on Object catch (error, stackTrace) {
         lastError = error;
+        AppLogger.warning(
+          'routing provider=$engineId failed attempt=${attempt + 1}/${maxRetries + 1} '
+          'profile=${request.profile.name} waypoints=${request.points.length}',
+        );
         if (attempt == maxRetries) {
+          AppLogger.error(
+            'routing provider=$engineId exhausted retries',
+            error: error,
+            stackTrace: stackTrace,
+          );
           break;
         }
         await Future<void>.delayed(const Duration(milliseconds: 350));
@@ -456,10 +466,16 @@ class RoutingFallbackMapMatchingEngine implements MapMatchingEngine {
   Future<TraceMatchResult> match(TraceMatchRequest request) async {
     try {
       return await primary.match(request);
-    } on Object {
+    } on Object catch (primaryError, primaryStack) {
       if (request.mode == MapMatchMode.free) {
-        rethrow;
+        Error.throwWithStackTrace(primaryError, primaryStack);
       }
+
+      AppLogger.warning(
+        'map-matching primary=${primary.engineId} failed; '
+        'routing-fallback=${routing.engineId} mode=${request.mode.name} '
+        'samples=${request.trace.length}',
+      );
 
       final anchorCount = request.mode == MapMatchMode.trails ? 10 : 8;
       final anchors = _sampleGeoPoints(request.trace, maxItems: anchorCount);
@@ -492,6 +508,10 @@ class RoutingFallbackMapMatchingEngine implements MapMatchingEngine {
           }
         }
 
+        AppLogger.info(
+          'map-matching fallback selected source=${plan.routingSource} '
+          'mode=${request.mode.name} anchors=${anchors.length}',
+        );
         return TraceMatchResult(
           geometry: List<GeoPoint>.unmodifiable(plan.geometry),
           distanceMeters: plan.distanceMeters,
