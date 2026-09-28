@@ -125,11 +125,12 @@ jobs:
             --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
 
       - name: Build release AAB structure gate
-        run: flutter build appbundle --release \
-          --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
-          --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
-          --dart-define=SUPABASE_URL="$SUPABASE_URL" \
-          --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
+        run: |
+          flutter build appbundle --release \
+            --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
+            --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
 
       - name: Upload CI-only AAB structure artifact
         uses: actions/upload-artifact@v6
@@ -154,10 +155,10 @@ jobs:
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$STORE_FILE"
           test -s "$STORE_FILE"
           TRAILPATH_STORE_FILE="$STORE_FILE" flutter build appbundle --release \
-          --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
-          --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
-          --dart-define=SUPABASE_URL="$SUPABASE_URL" \
-          --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
+            --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
+            --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
           jarsigner -verify build/app/outputs/bundle/release/app-release.aab
 
       - name: Upload store-signed AAB
