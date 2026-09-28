@@ -10,9 +10,8 @@ void main() {
     final billing = File(
       'lib/infrastructure/premium/play_billing_premium_engine.dart',
     ).readAsStringSync();
-    final premiumConfig = File(
-      'lib/core/config/premium_config.dart',
-    ).readAsStringSync();
+    final premiumConfig = File('lib/core/config/premium_config.dart')
+        .readAsStringSync();
 
     expect(planner, contains('premiumControllerProvider'));
     expect(planner, contains('showTrailPathProPaywall'));
