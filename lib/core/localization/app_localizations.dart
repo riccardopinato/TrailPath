@@ -208,6 +208,10 @@ class AppLocalizations {
   String get routingCalculating => _value('routingCalculating');
   String get routeSnapped => _value('routeSnapped');
   String get routeUnavailable => _value('routeUnavailable');
+  String get routeTimeout => _value('routeTimeout');
+  String get routeNoNetwork => _value('routeNoNetwork');
+  String get routeNotFound => _value('routeNotFound');
+  String get routeProviderUnavailable => _value('routeProviderUnavailable');
   String get routeLocalFallback => _value('routeLocalFallback');
   String get routeEditHint => _value('routeEditHint');
   String get routeEditActive => _value('routeEditActive');
@@ -526,6 +530,10 @@ class AppLocalizations {
       'routingCalculating': 'Calcolo percorso su sentieri e strade…',
       'routeSnapped': 'Percorso agganciato alla rete OSM',
       'routeUnavailable': 'Routing non disponibile: modifica i punti o riprova',
+      'routeTimeout': 'Il routing sta impiegando troppo tempo: riprova',
+      'routeNoNetwork': 'Nessuna connessione: il routing richiede Internet',
+      'routeNotFound': 'Nessun percorso valido trovato tra questi punti',
+      'routeProviderUnavailable': 'Servizio di routing temporaneamente non disponibile',
       'routeLocalFallback': 'Percorso locale o GPX non agganciato alla rete',
       'routeEditHint':
           'Tocca la linea per modificarla; trascina i punti per spostarli.',
@@ -839,6 +847,10 @@ class AppLocalizations {
       'routingCalculating': 'Routing along paths and roads…',
       'routeSnapped': 'Route snapped to the OSM network',
       'routeUnavailable': 'Routing unavailable: adjust the points or try again',
+      'routeTimeout': 'Routing is taking too long: try again',
+      'routeNoNetwork': 'No connection: routing requires Internet',
+      'routeNotFound': 'No valid route was found between these points',
+      'routeProviderUnavailable': 'Routing service is temporarily unavailable',
       'routeLocalFallback': 'Local or GPX route not snapped to the network',
       'routeEditHint':
           'Tap the route line to edit it; drag points to move them.',
@@ -1158,6 +1170,10 @@ class AppLocalizations {
       'routeSnapped': 'Ruta ajustada a la red OSM',
       'routeUnavailable':
           'Routing no disponible: ajusta los puntos o inténtalo de nuevo',
+      'routeTimeout': 'El cálculo tarda demasiado: inténtalo de nuevo',
+      'routeNoNetwork': 'Sin conexión: el routing requiere Internet',
+      'routeNotFound': 'No se encontró una ruta válida entre estos puntos',
+      'routeProviderUnavailable': 'Servicio de routing temporalmente no disponible',
       'routeLocalFallback': 'Ruta local o GPX sin ajustar a la red',
       'routeEditHint': 'Toca la línea del recorrido para editarla; arrastra los puntos para moverlos.',
       'routeEditActive': 'Edición activa: arrastra los puntos blancos entre etapas para insertar nuevos.',
@@ -1475,6 +1491,10 @@ class AppLocalizations {
       'routeSnapped': 'Parcours calé sur le réseau OSM',
       'routeUnavailable':
           'Itinéraire indisponible : modifiez les points ou réessayez',
+      'routeTimeout': 'Le calcul prend trop de temps : réessayez',
+      'routeNoNetwork': 'Pas de connexion : le routage nécessite Internet',
+      'routeNotFound': 'Aucun itinéraire valide trouvé entre ces points',
+      'routeProviderUnavailable': 'Service de routage temporairement indisponible',
       'routeLocalFallback': 'Itinéraire local ou GPX non accroché au réseau',
       'routeEditHint': 'Touchez la ligne du parcours pour la modifier ; faites glisser les points pour les déplacer.',
       'routeEditActive': 'Modification active : faites glisser les points blancs entre les étapes pour en insérer.',
@@ -1793,6 +1813,10 @@ class AppLocalizations {
       'routeSnapped': 'Percurso ajustado à rede OSM',
       'routeUnavailable':
           'Roteamento indisponível: ajuste os pontos ou tente novamente',
+      'routeTimeout': 'O cálculo está a demorar demasiado: tente novamente',
+      'routeNoNetwork': 'Sem ligação: o roteamento requer Internet',
+      'routeNotFound': 'Não foi encontrada uma rota válida entre estes pontos',
+      'routeProviderUnavailable': 'Serviço de roteamento temporariamente indisponível',
       'routeLocalFallback': 'Rota local ou GPX não ajustada à rede',
       'routeEditHint': 'Toque na linha do percurso para editar; arraste os pontos para os mover.',
       'routeEditActive': 'Edição ativa: arraste os pontos brancos entre etapas para inserir novos.',
