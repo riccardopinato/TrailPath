@@ -930,10 +930,18 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     setState(() => _traceProcessing = true);
     try {
       final geoPoints = <GeoPoint>[];
-      final pixelRatio = View.of(context).devicePixelRatio;
+      // MapLibre native Android projection coordinates are physical screen
+      // pixels, while iOS uses UIKit points. Keep the trace overlay in Flutter
+      // logical pixels and convert only on Android.
+      final projectionScale = Platform.isAndroid
+          ? View.of(context).devicePixelRatio
+          : 1.0;
       for (final offset in sampled) {
         final coordinates = await controller.toLatLng(
-          math.Point<double>(offset.dx * pixelRatio, offset.dy * pixelRatio),
+          math.Point<double>(
+            offset.dx * projectionScale,
+            offset.dy * projectionScale,
+          ),
         );
         geoPoints.add(
           GeoPoint(
