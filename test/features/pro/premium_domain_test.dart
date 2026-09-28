@@ -15,7 +15,9 @@ void main() {
     }
   });
 
-  test('Premium issue classification distinguishes configuration failures', () {
+  test(
+    'Premium issue classification distinguishes configuration failures',
+    () {
     const storeUnavailable = PremiumSnapshot();
     const missingProducts = PremiumSnapshot(
       storeAvailable: true,
@@ -36,8 +38,9 @@ void main() {
       verificationUnavailable.issue,
       PremiumIssue.verificationUnavailable,
     );
-    expect(purchaseFailure.issue, PremiumIssue.purchaseFailed);
-  });
+      expect(purchaseFailure.issue, PremiumIssue.purchaseFailed);
+    },
+  );
 
   test('Premium offers resolve by plan', () {
     const monthly = PremiumOffer(
