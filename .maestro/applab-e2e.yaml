@@ -167,12 +167,16 @@ appId: com.riccardopinato.trail_path
     timeout: 15000
 - scrollUntilVisible:
     element:
-      text: "Outdoor tools"
+      text: "Outdoor tools|Strumenti Outdoor|Herramientas Outdoor|Outils Outdoor|Ferramentas Outdoor"
     direction: DOWN
-    timeout: 15000
-- tapOn: "Outdoor tools"
+    timeout: 20000
+    visibilityPercentage: 60
+    centerElement: true
+- tapOn:
+    text: "Outdoor tools|Strumenti Outdoor|Herramientas Outdoor|Outils Outdoor|Ferramentas Outdoor"
 - assertVisible: "Outdoor"
-- assertVisible: "Balanced"
+- assertVisible:
+    text: "Balanced|Bilanciata|Equilibrado|Équilibré"
 - pressKey: BACK
 - assertVisible: "Profile"
 
