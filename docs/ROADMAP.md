@@ -202,6 +202,7 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] make the main AppLab Outdoor flow locale-tolerant instead of hard-coding the English accessibility label.
 - [x] add a dedicated internal-Pro x86_64 artifact and AppLab v1.5 Pro routing gate covering Pro entitlement, live Route Lab generation and Smart Trace road-mode availability.
 - [x] add privacy-safe routing diagnostics for OSM, Valhalla and Smart Trace fallback selection without logging route coordinates.
+- [x] add live OSM/Valhalla provider smoke coverage and fix the field-discovered Valhalla trace units contract (`kilometers`) that caused HTTP 400 map-matching failures.
 - [x] centralize production-service readiness for Google Sign-In, MapTiler, Supabase Cloud Sync and Google Play server verification.
 - [x] add optional backend purchase-token verification and require it for a store-signed AAB.
 - [x] document the GitHub configuration contract for Google OAuth, premium maps, dedicated TrailPath Supabase and Google Play verification.
