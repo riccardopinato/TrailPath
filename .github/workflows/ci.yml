@@ -137,6 +137,7 @@ jobs:
           name: TrailPath-v${{ steps.app-version.outputs.app_version }}-store-aab
           path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
+          retention-days: 7
 
       - name: Report release APK sizes
         run: |
@@ -161,6 +162,7 @@ jobs:
           name: TrailPath-v${{ steps.app-version.outputs.app_version }}-arm64-release
           path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
           if-no-files-found: error
+          retention-days: 7
 
       - name: Upload x86_64 release runtime APK
         uses: actions/upload-artifact@v6
@@ -245,4 +247,4 @@ jobs:
           name: TrailPath-AppLab-${{ github.sha }}
           path: applab-report/
           if-no-files-found: warn
-          retention-days: 14
+          retention-days: 1
