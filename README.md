@@ -5,11 +5,11 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 ## Current version
 
 Stable certification baseline: **v1.0.0+31**  
-Post-v1 cumulative development candidate: **v1.5.0+36**
+Post-v1 cumulative development candidate: **v1.5.3+39**
 
 ### Post-v1 cumulative candidate
 
-The v1.5 branch contains the approved v1.1→v1.5 train: Smart Trace/map layers, TrailPath Pro, Settings/Profile/optional Google account, optional Supabase Cloud Sync, Route Lab, Collections, personal statistics, slope/terrain layers and automatic rerouting. Runtime/provider features remain fail-safe when their commercial configuration is absent.
+The v1.5 branch contains the approved v1.1→v1.5 train: Smart Trace/map layers, TrailPath Pro, Settings/Profile/optional Google account, optional Supabase Cloud Sync, Route Lab, Collections, personal statistics, slope/terrain layers and automatic rerouting. The v1.5.3 production-readiness hardening adds OSM→Valhalla routing redundancy, Smart Trace routing fallback, locale-tolerant AppLab coverage, a dedicated internal-Pro routing E2E gate, privacy-safe provider diagnostics and a server-verifiable Google Play entitlement path. Runtime/provider features remain fail-safe when their commercial configuration is absent.
 
 
 TrailPath v1.0.0 is the first stable Android release candidate. No new product scope is added here: the milestone is limited to final regression, artifact certification, release evidence and production-readiness gates.
