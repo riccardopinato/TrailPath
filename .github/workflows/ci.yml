@@ -275,7 +275,7 @@ jobs:
       - name: Verify Valhalla trace endpoint
         run: |
           set -euo pipefail
-          curl --fail --silent --show-error --max-time 20             -H 'Accept: application/json'             -H 'Content-Type: application/json'             --data '{"shape":[{"lat":45.232,"lon":11.75},{"lat":45.2335,"lon":11.752},{"lat":45.235,"lon":11.754}],"costing":"pedestrian","shape_match":"walk_or_snap","shape_format":"geojson","trace_options":{"gps_accuracy":10,"search_radius":32}}'             'https://valhalla1.openstreetmap.de/trace_route'             | python3 -c "import json,sys; d=json.load(sys.stdin); assert d.get('trip'); assert d['trip'].get('legs')"
+          curl --fail --silent --show-error --max-time 20             -H 'Accept: application/json'             -H 'Content-Type: application/json'             --data '{"shape":[{"lat":45.232,"lon":11.75},{"lat":45.2335,"lon":11.752},{"lat":45.235,"lon":11.754}],"costing":"pedestrian","shape_match":"walk_or_snap","shape_format":"geojson","directions_type":"none","units":"kilometers","trace_options":{"gps_accuracy":10,"search_radius":32}}'             'https://valhalla1.openstreetmap.de/trace_route'             | python3 -c "import json,sys; d=json.load(sys.stdin); assert d.get('trip'); assert d['trip'].get('legs')"
 
   android-api29-smoke:
     name: Android API 29 Release Smoke
