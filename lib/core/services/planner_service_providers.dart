@@ -10,10 +10,15 @@ import 'package:trail_path/infrastructure/search/nominatim_place_search_service.
 
 final routingEngineProvider = Provider<RoutingEngine>((ref) {
   final primary = OpenStreetMapRoutingEngine();
+  final secondary = ValhallaRoutingEngine();
   ref.onDispose(primary.dispose);
+  ref.onDispose(secondary.dispose);
   return FallbackRoutingEngine(
     primary: primary,
-    fallback: const StraightLineRoutingEngine(),
+    fallback: FallbackRoutingEngine(
+      primary: secondary,
+      fallback: const StraightLineRoutingEngine(),
+    ),
   );
 });
 
