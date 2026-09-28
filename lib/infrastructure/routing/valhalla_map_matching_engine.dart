@@ -477,8 +477,13 @@ class RoutingFallbackMapMatchingEngine implements MapMatchingEngine {
         'samples=${request.trace.length}',
       );
 
-      final anchorCount = request.mode == MapMatchMode.trails ? 10 : 8;
-      final anchors = _sampleGeoPoints(request.trace, maxItems: anchorCount);
+      final minAnchors = request.mode == MapMatchMode.trails ? 10 : 8;
+      final maxAnchors = request.mode == MapMatchMode.trails ? 20 : 16;
+      final anchorCount = request.trace.length.clamp(minAnchors, maxAnchors);
+      final anchors = _sampleGeoPoints(
+        request.trace,
+        maxItems: anchorCount.toInt(),
+      );
       if (anchors.length < 2) {
         throw const MapMatchingException(
           'Trace is too short for routing fallback.',
@@ -500,8 +505,8 @@ class RoutingFallbackMapMatchingEngine implements MapMatchingEngine {
         }
 
         final corridorLimit = request.mode == MapMatchMode.trails
-            ? 180.0
-            : 120.0;
+            ? 95.0
+            : 70.0;
         for (final point in _sampleGeoPoints(plan.geometry, maxItems: 64)) {
           if (distanceToPolylineMeters(point, request.trace) > corridorLimit) {
             throw const MapMatchingException(
