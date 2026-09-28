@@ -17,6 +17,9 @@ abstract final class MapConfig {
   static const String mapMatchingEndpoint =
       'https://valhalla1.openstreetmap.de/trace_route';
 
+  static const String valhallaRoutingEndpoint =
+      'https://valhalla1.openstreetmap.de/route';
+
   static const String overpassEndpoint =
       'https://overpass-api.de/api/interpreter';
 
