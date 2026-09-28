@@ -270,6 +270,75 @@ class ValhallaMapMatchingEngine implements MapMatchingEngine {
   }
 }
 
+class RoutingFallbackMapMatchingEngine implements MapMatchingEngine {
+  const RoutingFallbackMapMatchingEngine({
+    required this.primary,
+    required this.routing,
+  });
+
+  final MapMatchingEngine primary;
+  final RoutingEngine routing;
+
+  @override
+  String get engineId => '${primary.engineId}+routing-fallback';
+
+  @override
+  Future<TraceMatchResult> match(TraceMatchRequest request) async {
+    try {
+      return await primary.match(request);
+    } on Object {
+      if (request.mode == MapMatchMode.free) {
+        rethrow;
+      }
+
+      final anchorCount = request.mode == MapMatchMode.trails ? 10 : 8;
+      final anchors = _sampleGeoPoints(request.trace, maxItems: anchorCount);
+      if (anchors.length < 2) {
+        throw const MapMatchingException(
+          'Trace is too short for routing fallback.',
+        );
+      }
+
+      try {
+        final plan = await routing.calculate(
+          RouteRequest(
+            points: anchors,
+            profile: request.profile,
+            snapToNetwork: true,
+          ),
+        );
+        if (!plan.isSnapped || plan.geometry.length < 2) {
+          throw const MapMatchingException(
+            'Routing fallback could not snap the trace.',
+          );
+        }
+
+        final corridorLimit = request.mode == MapMatchMode.trails ? 180.0 : 120.0;
+        for (final point in _sampleGeoPoints(plan.geometry, maxItems: 64)) {
+          if (distanceToPolylineMeters(point, request.trace) > corridorLimit) {
+            throw const MapMatchingException(
+              'Routing fallback left the drawn corridor.',
+            );
+          }
+        }
+
+        return TraceMatchResult(
+          geometry: List<GeoPoint>.unmodifiable(plan.geometry),
+          distanceMeters: plan.distanceMeters,
+          estimatedDuration: plan.estimatedDuration,
+          source: '${plan.routingSource}.trace-fallback',
+        );
+      } on MapMatchingException {
+        rethrow;
+      } on Object catch (error) {
+        throw MapMatchingException(
+          'Map matching and routing fallback failed: $error',
+        );
+      }
+    }
+  }
+}
+
 List<GeoPoint> _sampleGeoPoints(
   List<GeoPoint> points, {
   required int maxItems,
