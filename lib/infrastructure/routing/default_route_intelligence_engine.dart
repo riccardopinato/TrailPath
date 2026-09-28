@@ -220,12 +220,10 @@ double _retracePenalty(List<GeoPoint> geometry) {
   final sampleCount = math.min(48, geometry.length);
   final sampled = <GeoPoint>[
     for (var i = 0; i < sampleCount; i++)
-      geometry[
-        (i * (geometry.length - 1) / (sampleCount - 1))
-            .round()
-            .clamp(0, geometry.length - 1)
-            .toInt()
-      ],
+      geometry[(i * (geometry.length - 1) / (sampleCount - 1))
+          .round()
+          .clamp(0, geometry.length - 1)
+          .toInt()],
   ];
 
   var retraced = 0;
@@ -236,8 +234,7 @@ double _retracePenalty(List<GeoPoint> geometry) {
         earlier.length >= 2 &&
         distanceToPolylineMeters(sampled[i], earlier) < 28;
     final nearLater =
-        later.length >= 2 &&
-        distanceToPolylineMeters(sampled[i], later) < 28;
+        later.length >= 2 && distanceToPolylineMeters(sampled[i], later) < 28;
     if (nearEarlier || nearLater) {
       retraced++;
     }
