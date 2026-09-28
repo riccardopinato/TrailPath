@@ -13,6 +13,8 @@ void main() {
     expect(flow, contains('Route Lab'));
     expect(flow, contains('Generate routes'));
     expect(flow, contains('Follow roads'));
+    expect(flow, contains('- swipe:'));
+    expect(flow, contains('Close loop'));
   });
 
   test('main AppLab flow accepts localized Outdoor labels', () {
