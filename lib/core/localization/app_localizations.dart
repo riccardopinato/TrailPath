@@ -394,8 +394,7 @@ class AppLocalizations {
       'restorePurchases': 'Ripristina acquisti',
       'proStoreUnavailable':
           'Google Play Billing non è disponibile per questa installazione.',
-      'proProductsUnavailable':
-          'I prodotti TrailPath Pro non sono ancora disponibili su Google Play.',
+      'proProductsUnavailable': 'I prodotti TrailPath Pro non sono ancora disponibili su Google Play.',
       'proVerificationUnavailable':
           'La verifica sicura degli acquisti Pro non è ancora configurata.',
       'proPurchaseError': 'Non è stato possibile completare l\'acquisto.',
@@ -1040,8 +1039,7 @@ class AppLocalizations {
       'restorePurchases': 'Restaurar compras',
       'proStoreUnavailable':
           'Google Play Billing no está disponible para esta instalación.',
-      'proProductsUnavailable':
-          'Los productos TrailPath Pro aún no están disponibles en Google Play.',
+      'proProductsUnavailable': 'Los productos TrailPath Pro aún no están disponibles en Google Play.',
       'proVerificationUnavailable':
           'La verificación segura de compras Pro aún no está configurada.',
       'proPurchaseError': 'No se pudo completar la compra.',
@@ -1370,10 +1368,8 @@ class AppLocalizations {
       'restorePurchases': 'Restaurer les achats',
       'proStoreUnavailable':
           'Google Play Billing est indisponible pour cette installation.',
-      'proProductsUnavailable':
-          'Les produits TrailPath Pro ne sont pas encore disponibles sur Google Play.',
-      'proVerificationUnavailable':
-          'La vérification sécurisée des achats Pro n’est pas encore configurée.',
+      'proProductsUnavailable': 'Les produits TrailPath Pro ne sont pas encore disponibles sur Google Play.',
+      'proVerificationUnavailable': 'La vérification sécurisée des achats Pro n’est pas encore configurée.',
       'proPurchaseError': 'L’achat n’a pas pu être effectué.',
       'proSafetyFree': 'L’enregistrement, la récupération et les fonctions de sécurité essentielles restent disponibles sans Pro.',
       'proRenewalNotice': 'L’abonnement est renouvelé automatiquement pour la période choisie jusqu’à son annulation via Google Play.',
@@ -1697,8 +1693,7 @@ class AppLocalizations {
       'restorePurchases': 'Restaurar compras',
       'proStoreUnavailable':
           'Google Play Billing não está disponível para esta instalação.',
-      'proProductsUnavailable':
-          'Os produtos TrailPath Pro ainda não estão disponíveis no Google Play.',
+      'proProductsUnavailable': 'Os produtos TrailPath Pro ainda não estão disponíveis no Google Play.',
       'proVerificationUnavailable':
           'A verificação segura das compras Pro ainda não está configurada.',
       'proPurchaseError': 'Não foi possível concluir a compra.',
