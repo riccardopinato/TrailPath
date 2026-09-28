@@ -85,6 +85,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
     if (plans.any((plan) => !plan.isSnapped)) {
       throw const RoutingException(
         'A routing chunk could not be snapped to the network.',
+        kind: RoutingFailureKind.invalidResponse,
       );
     }
 
@@ -123,6 +124,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         snappedWaypoints.length != request.points.length) {
       throw const RoutingException(
         'Chunked routing returned incomplete geometry.',
+        kind: RoutingFailureKind.invalidResponse,
       );
     }
 
@@ -143,17 +145,28 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
     final response = await _request(_buildUri(request));
     final payload = jsonDecode(response.body);
     if (payload is! Map<String, dynamic>) {
-      throw const RoutingException('Invalid routing response.');
+      throw const RoutingException(
+        'Invalid routing response.',
+        kind: RoutingFailureKind.invalidResponse,
+      );
     }
 
     final code = payload['code'];
     if (code != 'Ok') {
-      throw RoutingException('Routing failed: $code');
+      throw RoutingException(
+        'Routing failed: $code',
+        kind: code == 'NoRoute'
+            ? RoutingFailureKind.noRoute
+            : RoutingFailureKind.providerUnavailable,
+      );
     }
 
     final routes = payload['routes'];
     if (routes is! List || routes.isEmpty) {
-      throw const RoutingException('No route found.');
+      throw const RoutingException(
+        'No route found.',
+        kind: RoutingFailureKind.noRoute,
+      );
     }
 
     final routeCandidates = <Map<String, dynamic>>[
@@ -161,7 +174,10 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         if (rawRoute is Map) Map<String, dynamic>.from(rawRoute),
     ];
     if (routeCandidates.isEmpty) {
-      throw const RoutingException('No route found.');
+      throw const RoutingException(
+        'No route found.',
+        kind: RoutingFailureKind.noRoute,
+      );
     }
 
     final route = request.points.length == 2 && routeCandidates.length > 1
@@ -175,12 +191,18 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         : routeCandidates.first;
     final geometryJson = route['geometry'];
     if (geometryJson is! Map) {
-      throw const RoutingException('Missing route geometry.');
+      throw const RoutingException(
+        'Missing route geometry.',
+        kind: RoutingFailureKind.invalidResponse,
+      );
     }
 
     final coordinatesJson = geometryJson['coordinates'];
     if (coordinatesJson is! List || coordinatesJson.length < 2) {
-      throw const RoutingException('Route geometry is empty.');
+      throw const RoutingException(
+        'Route geometry is empty.',
+        kind: RoutingFailureKind.invalidResponse,
+      );
     }
 
     final points = <GeoPoint>[];
@@ -201,7 +223,10 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
     }
 
     if (points.length < 2) {
-      throw const RoutingException('Route geometry could not be decoded.');
+      throw const RoutingException(
+        'Route geometry could not be decoded.',
+        kind: RoutingFailureKind.invalidResponse,
+      );
     }
 
     final snappedWaypoints = <GeoPoint>[];
@@ -229,7 +254,10 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
     }
 
     if (snappedWaypoints.length != request.points.length) {
-      throw const RoutingException('Waypoint snapping is incomplete.');
+      throw const RoutingException(
+        'Waypoint snapping is incomplete.',
+        kind: RoutingFailureKind.invalidResponse,
+      );
     }
 
     final distance = (route['distance'] as num?)?.toDouble() ?? 0;
@@ -291,7 +319,14 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
             'profile=${_serviceForProfileName(uri)} attempt=${attempt + 1}',
           );
           throw RoutingException(
-            'Routing service returned HTTP ${response.statusCode}.',
+            'Routing service returned HTTP ' + response.statusCode.toString() + '.',
+            kind: response.statusCode == 429
+                ? RoutingFailureKind.rateLimited
+                : response.statusCode == 408
+                ? RoutingFailureKind.timeout
+                : response.statusCode >= 500
+                ? RoutingFailureKind.providerUnavailable
+                : RoutingFailureKind.invalidResponse,
           );
         }
 
@@ -307,7 +342,8 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         );
         if (attempt == maxRetries) {
           throw RoutingException(
-            'Routing request timed out after ${maxRetries + 1} attempts.',
+            'Routing request timed out after ' + (maxRetries + 1).toString() + ' attempts.',
+            kind: RoutingFailureKind.timeout,
           );
         }
         await _delay(_retryDelay(null, attempt));
@@ -318,15 +354,18 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         );
         if (attempt == maxRetries) {
           throw RoutingException(
-            'Routing network request failed after ${maxRetries + 1} attempts: '
-            '${error.message}',
+            'Routing network request failed after ' + (maxRetries + 1).toString() + ' attempts: ' + error.message,
+            kind: RoutingFailureKind.network,
           );
         }
         await _delay(_retryDelay(null, attempt));
       }
     }
 
-    throw RoutingException('Routing request failed: $lastNetworkError');
+    throw RoutingException(
+      'Routing request failed: $lastNetworkError',
+      kind: RoutingFailureKind.network,
+    );
   }
 
   String _serviceForProfileName(Uri uri) {
@@ -415,6 +454,78 @@ class FallbackRoutingEngine implements RoutingEngine {
       }
       Error.throwWithStackTrace(primaryError, primaryStack);
     }
+  }
+}
+
+class QualityRoutingEngine implements RoutingEngine {
+  const QualityRoutingEngine({
+    required this.primary,
+    required this.secondary,
+    required this.fallback,
+    this.detourProbeRatio = 1.12,
+    this.minImprovementMeters = 20,
+  });
+
+  final RoutingEngine primary;
+  final RoutingEngine secondary;
+  final RoutingEngine fallback;
+  final double detourProbeRatio;
+  final double minImprovementMeters;
+
+  @override
+  String get engineId => 'quality(' + primary.engineId + '+' + secondary.engineId + '+' + fallback.engineId + ')';
+
+  @override
+  Future<RoutePlan> calculate(RouteRequest request) async {
+    RoutePlan? primaryPlan;
+    Object? primaryError;
+    try {
+      primaryPlan = await primary.calculate(request);
+    } on Object catch (error) {
+      primaryError = error;
+    }
+    final shouldProbeSecondary = request.snapToNetwork && request.points.length == 2 && (primaryPlan == null || _isWorthProbing(request, primaryPlan));
+    if (!shouldProbeSecondary && primaryPlan != null) return primaryPlan;
+
+    RoutePlan? secondaryPlan;
+    Object? secondaryError;
+    try {
+      secondaryPlan = await secondary.calculate(request);
+    } on Object catch (error) {
+      secondaryError = error;
+    }
+    if (primaryPlan != null && secondaryPlan != null) {
+      if (secondaryPlan.isSnapped && (!primaryPlan.isSnapped || secondaryPlan.distanceMeters + minImprovementMeters < primaryPlan.distanceMeters)) {
+        AppLogger.info('routing quality selected secondary=' + secondaryPlan.routingSource + ' primaryMeters=' + primaryPlan.distanceMeters.round().toString() + ' secondaryMeters=' + secondaryPlan.distanceMeters.round().toString());
+        return secondaryPlan;
+      }
+      return primaryPlan;
+    }
+    if (primaryPlan != null) return primaryPlan;
+    if (secondaryPlan != null) return secondaryPlan;
+    try {
+      final fallbackPlan = await fallback.calculate(request);
+      if (fallbackPlan.isSnapped || !request.snapToNetwork) return fallbackPlan;
+    } on Object {
+      // Fail closed below.
+    }
+    final error = _preferredFailure(primaryError, secondaryError);
+    if (error is RoutingException) throw error;
+    throw RoutingException('All routing providers failed: $error', kind: RoutingFailureKind.providerUnavailable);
+  }
+
+  bool _isWorthProbing(RouteRequest request, RoutePlan plan) {
+    if (!plan.isSnapped || plan.distanceMeters <= 0) return true;
+    final direct = haversineMeters(request.points.first, request.points.last);
+    if (direct < 100) return false;
+    return plan.distanceMeters / direct >= detourProbeRatio;
+  }
+
+  Object? _preferredFailure(Object? primaryError, Object? secondaryError) {
+    for (final error in [primaryError, secondaryError]) {
+      if (error is RoutingException && (error.kind == RoutingFailureKind.network || error.kind == RoutingFailureKind.timeout || error.kind == RoutingFailureKind.rateLimited)) return error;
+    }
+    return secondaryError ?? primaryError;
   }
 }
 
