@@ -60,3 +60,14 @@ appId: com.riccardopinato.trail_path
     text: "Follow roads|Segui strade|Seguir carreteras|Suivre les routes|Seguir estradas"
 - assertVisible:
     text: "Draw mode:.*|Modalità Disegna:.*|Modo dibujo:.*|Mode dessin :.*|Modo desenho:.*"
+# Exercise a real device-level draw gesture across the map. Successful map
+# matching/routing creates at least two planner points, which exposes loop tools.
+- swipe:
+    start: 25%, 34%
+    end: 75%, 34%
+    duration: 1800
+    waitToSettleTimeoutMs: 3000
+- extendedWaitUntil:
+    visible:
+      text: "Close loop|Chiudi anello|Cerrar circuito|Fermer la boucle|Fechar circuito"
+    timeout: 90000
