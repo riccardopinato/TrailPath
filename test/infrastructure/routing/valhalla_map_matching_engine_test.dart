@@ -69,6 +69,54 @@ void main() {
     expect(result.source, 'valhalla.trace_route');
   });
 
+  test('caps zoom-aware Valhalla search radius at 100 meters', () async {
+    final client = MockClient((request) async {
+      final payload = jsonDecode(request.body) as Map<String, dynamic>;
+      final traceOptions = payload['trace_options'] as Map<String, dynamic>;
+      expect(traceOptions['search_radius'], 100);
+
+      return http.Response(
+        jsonEncode({
+          'trip': {
+            'summary': {'length': 0.8, 'time': 500},
+            'legs': [
+              {
+                'shape': {
+                  'type': 'LineString',
+                  'coordinates': [
+                    [11.0, 45.0],
+                    [11.005, 45.005],
+                    [11.01, 45.01],
+                  ],
+                },
+              },
+            ],
+          },
+        }),
+        200,
+      );
+    });
+
+    final engine = ValhallaMapMatchingEngine(
+      client: client,
+      endpoint: Uri.parse('https://example.test/trace_route'),
+    );
+
+    final result = await engine.match(
+      const TraceMatchRequest(
+        trace: [
+          GeoPoint(latitude: 45.0, longitude: 11.0),
+          GeoPoint(latitude: 45.01, longitude: 11.01),
+        ],
+        profile: RouteProfile.hiking,
+        mode: MapMatchMode.roads,
+        gestureToleranceMeters: 180,
+      ),
+    );
+
+    expect(result.geometry, hasLength(3));
+  });
+
   test('rejects a matched path that leaves the drawn corridor', () async {
     final client = MockClient((request) async {
       return http.Response(
