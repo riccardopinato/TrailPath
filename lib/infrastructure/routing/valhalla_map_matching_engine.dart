@@ -9,6 +9,176 @@ import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/infrastructure/network/http_retry.dart';
 
+class ValhallaRoutingEngine implements RoutingEngine {
+  ValhallaRoutingEngine({
+    http.Client? client,
+    Uri? endpoint,
+    this.timeout = const Duration(seconds: 16),
+    this.maxRetries = 1,
+  }) : _client = client ?? http.Client(),
+       endpoint = endpoint ?? Uri.parse(MapConfig.valhallaRoutingEndpoint);
+
+  final http.Client _client;
+  final Uri endpoint;
+  final Duration timeout;
+  final int maxRetries;
+
+  @override
+  String get engineId => 'valhalla.route';
+
+  void dispose() => _client.close();
+
+  @override
+  Future<RoutePlan> calculate(RouteRequest request) async {
+    if (request.points.length < 2) {
+      return RoutePlan(
+        geometry: request.points,
+        distanceMeters: 0,
+        ascentMeters: 0,
+        descentMeters: 0,
+        estimatedDuration: Duration.zero,
+        profile: request.profile,
+        isSnapped: false,
+        routingSource: engineId,
+      );
+    }
+
+    final costing = switch (request.profile) {
+      RouteProfile.mountainBike || RouteProfile.cycling => 'bicycle',
+      RouteProfile.hiking ||
+      RouteProfile.trailRunning ||
+      RouteProfile.walking ||
+      RouteProfile.dogWalk => 'pedestrian',
+    };
+
+    final body = <String, Object?>{
+      'locations': [
+        for (final point in request.points)
+          <String, double>{'lat': point.latitude, 'lon': point.longitude},
+      ],
+      'costing': costing,
+      'directions_type': 'none',
+      'units': 'kilometers',
+      'shape_format': 'geojson',
+      if (costing == 'bicycle')
+        'costing_options': <String, Object?>{
+          'bicycle': <String, Object?>{
+            'bicycle_type': request.profile == RouteProfile.mountainBike
+                ? 'mountain'
+                : 'road',
+          },
+        },
+    };
+
+    Object? lastError;
+    for (var attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        final response = await _client
+            .post(
+              endpoint,
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Client-Id': MapConfig.userAgent,
+              },
+              body: jsonEncode(body),
+            )
+            .timeout(timeout);
+        if (response.statusCode != 200) {
+          throw RoutingException(
+            'Valhalla routing returned HTTP ${response.statusCode}.',
+          );
+        }
+
+        final decoded = jsonDecode(response.body);
+        if (decoded is! Map<String, dynamic>) {
+          throw const RoutingException('Invalid Valhalla routing response.');
+        }
+        final trip = decoded['trip'];
+        if (trip is! Map) {
+          throw const RoutingException('Valhalla routing trip is missing.');
+        }
+        final tripMap = Map<String, dynamic>.from(trip);
+        final legs = tripMap['legs'];
+        if (legs is! List || legs.isEmpty) {
+          throw const RoutingException('Valhalla route geometry is missing.');
+        }
+
+        final geometry = <GeoPoint>[];
+        for (final rawLeg in legs) {
+          if (rawLeg is! Map) {
+            continue;
+          }
+          final rawShape = rawLeg['shape'];
+          final legPoints = <GeoPoint>[];
+          if (rawShape is Map) {
+            final coordinates = rawShape['coordinates'];
+            if (coordinates is List) {
+              for (final coordinate in coordinates) {
+                if (coordinate is List &&
+                    coordinate.length >= 2 &&
+                    coordinate[0] is num &&
+                    coordinate[1] is num) {
+                  legPoints.add(
+                    GeoPoint(
+                      latitude: (coordinate[1] as num).toDouble(),
+                      longitude: (coordinate[0] as num).toDouble(),
+                    ),
+                  );
+                }
+              }
+            }
+          } else if (rawShape is String && rawShape.isNotEmpty) {
+            legPoints.addAll(decodeValhallaPolyline6(rawShape));
+          }
+          if (legPoints.isEmpty) {
+            continue;
+          }
+          if (geometry.isEmpty) {
+            geometry.addAll(legPoints);
+          } else {
+            final seam = haversineMeters(geometry.last, legPoints.first);
+            geometry.addAll(seam <= 2 ? legPoints.skip(1) : legPoints);
+          }
+        }
+        if (geometry.length < 2) {
+          throw const RoutingException('Valhalla route is empty.');
+        }
+
+        final summary = tripMap['summary'];
+        final summaryMap = summary is Map
+            ? Map<String, dynamic>.from(summary)
+            : const <String, dynamic>{};
+        final distanceMeters =
+            ((summaryMap['length'] as num?)?.toDouble() ?? 0) * 1000;
+        final durationSeconds = (summaryMap['time'] as num?)?.round() ?? 0;
+
+        return RoutePlan(
+          geometry: List<GeoPoint>.unmodifiable(geometry),
+          distanceMeters: distanceMeters > 0
+              ? distanceMeters
+              : calculateRouteDistanceMeters(geometry),
+          ascentMeters: 0,
+          descentMeters: 0,
+          estimatedDuration: Duration(seconds: durationSeconds),
+          profile: request.profile,
+          isSnapped: true,
+          routingSource: engineId,
+          snappedWaypoints: List<GeoPoint>.unmodifiable(request.points),
+        );
+      } on Object catch (error) {
+        lastError = error;
+        if (attempt == maxRetries) {
+          break;
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 350));
+      }
+    }
+
+    throw RoutingException('Valhalla routing failed: $lastError');
+  }
+}
+
 class ValhallaMapMatchingEngine implements MapMatchingEngine {
   ValhallaMapMatchingEngine({
     http.Client? client,
