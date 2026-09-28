@@ -47,6 +47,9 @@ appId: com.riccardopinato.trail_path
       text: "Search place or trail|Cerca luogo o sentiero|Buscar lugar o sendero|Rechercher un lieu ou sentier|Pesquisar local ou trilho"
     timeout: 15000
 - tapOn:
+    text: "Center on my location|Centra sulla mia posizione|Centrar en mi ubicación|Centrer sur ma position|Centrar na minha localização"
+- waitForAnimationToEnd
+- tapOn:
     text: ".*(Draw route|Disegna percorso|Dibujar ruta|Dessiner l’itinéraire|Desenhar rota).*"
 - assertVisible:
     text: ".*(Follow roads|Segui strade|Seguir carreteras|Suivre les routes|Seguir estradas).*"
