@@ -319,7 +319,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
             'profile=${_serviceForProfileName(uri)} attempt=${attempt + 1}',
           );
           throw RoutingException(
-            'Routing service returned HTTP \${response.statusCode}.',
+            'Routing service returned HTTP ${response.statusCode}.',
             kind: response.statusCode == 429
                 ? RoutingFailureKind.rateLimited
                 : response.statusCode == 408
@@ -342,7 +342,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         );
         if (attempt == maxRetries) {
           throw RoutingException(
-            'Routing request timed out after \${maxRetries + 1} attempts.',
+            'Routing request timed out after ${maxRetries + 1} attempts.',
             kind: RoutingFailureKind.timeout,
           );
         }
@@ -354,8 +354,8 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         );
         if (attempt == maxRetries) {
           throw RoutingException(
-            'Routing network request failed after \${maxRetries + 1} attempts: '
-            '\${error.message}',
+            'Routing network request failed after ${maxRetries + 1} attempts: '
+            '${error.message}',
             kind: RoutingFailureKind.network,
           );
         }
@@ -475,7 +475,7 @@ class QualityRoutingEngine implements RoutingEngine {
 
   @override
   String get engineId =>
-      'quality(\${primary.engineId}+\${secondary.engineId}+\${fallback.engineId})';
+      'quality(${primary.engineId}+${secondary.engineId}+${fallback.engineId})';
 
   @override
   Future<RoutePlan> calculate(RouteRequest request) async {
@@ -505,9 +505,9 @@ class QualityRoutingEngine implements RoutingEngine {
               secondaryPlan.distanceMeters + minImprovementMeters <
                   primaryPlan.distanceMeters)) {
         AppLogger.info(
-          'routing quality selected secondary=\${secondaryPlan.routingSource} '
-          'primaryMeters=\${primaryPlan.distanceMeters.round()} '
-          'secondaryMeters=\${secondaryPlan.distanceMeters.round()}',
+          'routing quality selected secondary=${secondaryPlan.routingSource} '
+          'primaryMeters=${primaryPlan.distanceMeters.round()} '
+          'secondaryMeters=${secondaryPlan.distanceMeters.round()}',
         );
         return secondaryPlan;
       }
