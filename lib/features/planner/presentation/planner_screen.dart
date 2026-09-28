@@ -959,10 +959,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       if (_traceMatchMode != MapMatchMode.free && geoPoints.isNotEmpty) {
         try {
           final reference = geoPoints[geoPoints.length ~/ 2];
-          final metersPerNativePixel =
-              await controller.getMetersPerPixelAtLatitude(reference.latitude);
-          final metersPerLogicalPixel =
-              metersPerNativePixel * projectionScale;
+          final metersPerNativePixel = await controller
+              .getMetersPerPixelAtLatitude(reference.latitude);
+          final metersPerLogicalPixel = metersPerNativePixel * projectionScale;
           final baseTolerance = _traceMatchMode == MapMatchMode.trails
               ? 36.0
               : 30.0;
@@ -1918,9 +1917,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                             color: dark
                                 ? const Color(0xD91A241E)
                                 : const Color(0xEFFFFFFF),
-                            borderRadius: BorderRadius.circular(
-                              actionSize / 2,
-                            ),
+                            borderRadius: BorderRadius.circular(actionSize / 2),
                             boxShadow: [
                               BoxShadow(
                                 blurRadius: 18,
@@ -1931,10 +1928,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
-                                Icons.terrain,
-                                size: compact ? 19 : 20,
-                              ),
+                              Icon(Icons.terrain, size: compact ? 19 : 20),
                               if (!veryCompact) ...[
                                 SizedBox(width: compact ? 5 : 8),
                                 Text(
