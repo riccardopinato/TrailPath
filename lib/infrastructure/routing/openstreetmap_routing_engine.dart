@@ -164,15 +164,13 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
       throw const RoutingException('No route found.');
     }
 
-    final route = request.points.length == 2 && routeCandidates.length > 1
-        ? routeCandidates.reduce((best, candidate) {
-            final bestDistance =
-                (best['distance'] as num?)?.toDouble() ?? double.infinity;
-            final candidateDistance =
-                (candidate['distance'] as num?)?.toDouble() ?? double.infinity;
-            return candidateDistance < bestDistance ? candidate : best;
-          })
-        : routeCandidates.first;
+    final route = routeCandidates.reduce((best, candidate) {
+      final bestDistance =
+          (best['distance'] as num?)?.toDouble() ?? double.infinity;
+      final candidateDistance =
+          (candidate['distance'] as num?)?.toDouble() ?? double.infinity;
+      return candidateDistance < bestDistance ? candidate : best;
+    });
     final geometryJson = route['geometry'];
     if (geometryJson is! Map) {
       throw const RoutingException('Missing route geometry.');
@@ -266,7 +264,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         'geometries': 'geojson',
         'steps': 'false',
         'continue_straight': 'false',
-        'alternatives': request.points.length == 2 ? 'true' : 'false',
+        'alternatives': 'true',
       },
     );
   }
