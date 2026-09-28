@@ -13,7 +13,9 @@ void main() {
     expect(planner, contains('MapMatchMode _traceMatchMode'));
     expect(planner, contains('mapMatchingEngineProvider'));
     expect(planner, contains('applyMatchedTrace(match)'));
+    expect(planner, contains('Platform.isAndroid'));
     expect(planner, contains('View.of(context).devicePixelRatio'));
+    expect(planner, contains(': 1.0;'));
     expect(planner, contains('_mapViewportKey'));
     expect(planner, contains('globalToLocal(event.position)'));
     expect(planner, contains('controller.setStyle(url)'));
