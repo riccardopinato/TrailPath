@@ -185,6 +185,32 @@ void main() {
     expect(result.source, contains('trace-fallback'));
   });
 
+  test(
+    'coarse zoom routing fallback accepts a nearby inferred road corridor',
+    () async {
+      const engine = RoutingFallbackMapMatchingEngine(
+        primary: _AlwaysFailMapMatchingEngine(),
+        routing: _OffsetTraceRoutingEngine(),
+      );
+
+      final result = await engine.match(
+        const TraceMatchRequest(
+          trace: [
+            GeoPoint(latitude: 45.0, longitude: 11.0),
+            GeoPoint(latitude: 45.002, longitude: 11.002),
+            GeoPoint(latitude: 45.004, longitude: 11.004),
+          ],
+          profile: RouteProfile.hiking,
+          mode: MapMatchMode.roads,
+          gestureToleranceMeters: 160,
+        ),
+      );
+
+      expect(result.geometry, isNotEmpty);
+      expect(result.source, contains('trace-fallback'));
+    },
+  );
+
   test('road cycling trace asks for road-biased bicycle matching', () async {
     final client = MockClient((request) async {
       final payload = jsonDecode(request.body) as Map<String, dynamic>;
@@ -256,6 +282,36 @@ class _TraceRoutingEngine implements RoutingEngine {
     return RoutePlan(
       geometry: List<GeoPoint>.unmodifiable(request.points),
       distanceMeters: calculateRouteDistanceMeters(request.points),
+      ascentMeters: 0,
+      descentMeters: 0,
+      estimatedDuration: const Duration(minutes: 12),
+      profile: request.profile,
+      isSnapped: true,
+      routingSource: engineId,
+      snappedWaypoints: List<GeoPoint>.unmodifiable(request.points),
+    );
+  }
+}
+
+
+class _OffsetTraceRoutingEngine implements RoutingEngine {
+  const _OffsetTraceRoutingEngine();
+
+  @override
+  String get engineId => 'offset-trace-routing';
+
+  @override
+  Future<RoutePlan> calculate(RouteRequest request) async {
+    final geometry = [
+      for (final point in request.points)
+        GeoPoint(
+          latitude: point.latitude + 0.0008,
+          longitude: point.longitude,
+        ),
+    ];
+    return RoutePlan(
+      geometry: List<GeoPoint>.unmodifiable(geometry),
+      distanceMeters: calculateRouteDistanceMeters(geometry),
       ascentMeters: 0,
       descentMeters: 0,
       estimatedDuration: const Duration(minutes: 12),
