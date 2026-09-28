@@ -304,10 +304,7 @@ class _OffsetTraceRoutingEngine implements RoutingEngine {
   Future<RoutePlan> calculate(RouteRequest request) async {
     final geometry = [
       for (final point in request.points)
-        GeoPoint(
-          latitude: point.latitude + 0.0008,
-          longitude: point.longitude,
-        ),
+        GeoPoint(latitude: point.latitude + 0.0008, longitude: point.longitude),
     ];
     return RoutePlan(
       geometry: List<GeoPoint>.unmodifiable(geometry),
