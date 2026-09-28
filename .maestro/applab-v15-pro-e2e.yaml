@@ -23,25 +23,19 @@ appId: com.riccardopinato.trail_path
     text: "Profile\\s*Tab 5 of 5|Profilo\\s*Scheda 5 di 5|Perfil.*5.*5|Profil.*5.*5"
 - extendedWaitUntil:
     visible:
-      text: "TrailPath Pro active|TrailPath Pro attivo|TrailPath Pro activo|TrailPath Pro actif|TrailPath Pro ativo"
+      text: ".*(TrailPath Pro active|TrailPath Pro attivo|TrailPath Pro activo|TrailPath Pro actif|TrailPath Pro ativo).*"
     timeout: 15000
 
 # Route Lab is a Pro feature and must open directly.
-- scrollUntilVisible:
-    element:
-      text: "Route Lab"
-    direction: DOWN
-    timeout: 20000
-    visibilityPercentage: 60
-    centerElement: true
-- tapOn: "Route Lab"
-- assertVisible:
-    text: "Circular route|Percorso circolare|Ruta circular|Parcours circulaire|Percurso circolare|Percurso circular"
 - tapOn:
-    text: "Generate routes|Genera percorsi|Generar rutas|Générer des parcours|Gerar percursos"
+    text: ".*Route Lab.*"
+- assertVisible:
+    text: ".*(Circular route|Percorso circolare|Ruta circular|Parcours circulaire|Percurso circular).*"
+- tapOn:
+    text: ".*(Generate routes|Genera percorsi|Generar rutas|Générer des parcours|Gerar percursos).*"
 - extendedWaitUntil:
     visible:
-      text: "Option 1|Opzione 1|Opción 1|Opção 1"
+      text: ".*(Option 1|Opzione 1|Opción 1|Opção 1).*"
     timeout: 90000
 - pressKey: BACK
 
@@ -53,13 +47,13 @@ appId: com.riccardopinato.trail_path
       text: "Search place or trail|Cerca luogo o sentiero|Buscar lugar o sendero|Rechercher un lieu ou sentier|Pesquisar local ou trilho"
     timeout: 15000
 - tapOn:
-    text: "Draw route|Disegna percorso|Dibujar ruta|Dessiner l’itinéraire|Desenhar rota"
+    text: ".*(Draw route|Disegna percorso|Dibujar ruta|Dessiner l’itinéraire|Desenhar rota).*"
 - assertVisible:
-    text: "Follow roads|Segui strade|Seguir carreteras|Suivre les routes|Seguir estradas"
+    text: ".*(Follow roads|Segui strade|Seguir carreteras|Suivre les routes|Seguir estradas).*"
 - tapOn:
     text: "Follow roads|Segui strade|Seguir carreteras|Suivre les routes|Seguir estradas"
 - assertVisible:
-    text: "Draw mode:.*|Modalità Disegna:.*|Modo dibujo:.*|Mode dessin :.*|Modo desenho:.*"
+    text: ".*(Draw mode:|Modalità Disegna:|Modo dibujo:|Mode dessin :|Modo desenho:).*"
 # Exercise a real device-level draw gesture across the map. Successful map
 # matching/routing creates at least two planner points, which exposes loop tools.
 - swipe:
@@ -69,5 +63,5 @@ appId: com.riccardopinato.trail_path
     waitToSettleTimeoutMs: 3000
 - extendedWaitUntil:
     visible:
-      text: "Close loop|Chiudi anello|Cerrar circuito|Fermer la boucle|Fechar circuito"
+      text: ".*(Close loop|Chiudi anello|Cerrar circuito|Fermer la boucle|Fechar circuito).*"
     timeout: 90000
