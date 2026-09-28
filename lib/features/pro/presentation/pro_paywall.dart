@@ -146,6 +146,17 @@ class TrailPathProSheet extends ConsumerWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              const SizedBox(height: 3),
+              Text(
+                premium.error!,
+                textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 10,
+                ),
+              ),
             ],
             if (!premium.isPro) ...[
               const SizedBox(height: 10),

@@ -100,6 +100,7 @@ void main() {
 
     expect(result, isNotEmpty);
     expect(result.length, lessThanOrEqualTo(3));
+    expect(result.map((candidate) => candidate.label).toSet().length, result.length);
     for (final candidate in result) {
       expect(candidate.plan.isSnapped, isTrue);
       expect(candidate.plan.geometry.length, greaterThanOrEqualTo(2));

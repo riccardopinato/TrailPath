@@ -14,6 +14,7 @@ void main() {
     expect(planner, contains('mapMatchingEngineProvider'));
     expect(planner, contains('applyMatchedTrace(match)'));
     expect(planner, contains('View.of(context).devicePixelRatio'));
+    expect(providers, contains('QualityRoutingEngine'));
     expect(planner, contains('_mapViewportKey'));
     expect(planner, contains('globalToLocal(event.position)'));
     expect(planner, contains('controller.setStyle(url)'));

@@ -43,7 +43,7 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
     );
     final candidates = <RouteCandidate>[];
 
-    for (final heading in const [20.0, 80.0, 140.0, 200.0, 260.0, 320.0]) {
+    for (final heading in const [0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0]) {
       try {
         final p1 = _destination(request.start, radius, heading);
         final p2 = _destination(request.start, radius * 1.05, heading + 120);
@@ -78,7 +78,8 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
           plan.geometry.first,
           plan.geometry.last,
         );
-        final score = distanceError + closure / 1000;
+        final overlapPenalty = _routeOverlapPenalty(plan.geometry);
+        final score = distanceError * 2.4 + closure / 1000 + overlapPenalty * 1.8;
 
         candidates.add(
           RouteCandidate(
@@ -200,6 +201,34 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
       return route;
     }
   }
+}
+
+double _routeOverlapPenalty(List<GeoPoint> geometry) {
+  if (geometry.length < 4) {
+    return 0;
+  }
+
+  final cells = <String>[];
+  String? previous;
+  for (final point in geometry) {
+    final latitudeCell = (point.latitude * 5000).round();
+    final longitudeCell = (point.longitude * 5000).round();
+    final key = '$latitudeCell:$longitudeCell';
+    if (key != previous) {
+      cells.add(key);
+      previous = key;
+    }
+  }
+  if (cells.length < 4) {
+    return 0;
+  }
+
+  final unique = cells.toSet().length;
+  final unavoidableClosureDuplicate = cells.first == cells.last ? 1 : 0;
+  final revisits = (cells.length - unique - unavoidableClosureDuplicate)
+      .clamp(0, cells.length)
+      .toDouble();
+  return revisits / cells.length;
 }
 
 GeoPoint _destination(
