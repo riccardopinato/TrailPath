@@ -319,9 +319,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
             'profile=${_serviceForProfileName(uri)} attempt=${attempt + 1}',
           );
           throw RoutingException(
-            'Routing service returned HTTP ' +
-                response.statusCode.toString() +
-                '.',
+            'Routing service returned HTTP \${response.statusCode}.',
             kind: response.statusCode == 429
                 ? RoutingFailureKind.rateLimited
                 : response.statusCode == 408
@@ -344,9 +342,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         );
         if (attempt == maxRetries) {
           throw RoutingException(
-            'Routing request timed out after ' +
-                (maxRetries + 1).toString() +
-                ' attempts.',
+            'Routing request timed out after \${maxRetries + 1} attempts.',
             kind: RoutingFailureKind.timeout,
           );
         }
@@ -358,10 +354,8 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         );
         if (attempt == maxRetries) {
           throw RoutingException(
-            'Routing network request failed after ' +
-                (maxRetries + 1).toString() +
-                ' attempts: ' +
-                error.message,
+            'Routing network request failed after \${maxRetries + 1} attempts: '
+            '\${error.message}',
             kind: RoutingFailureKind.network,
           );
         }
@@ -481,13 +475,7 @@ class QualityRoutingEngine implements RoutingEngine {
 
   @override
   String get engineId =>
-      'quality(' +
-      primary.engineId +
-      '+' +
-      secondary.engineId +
-      '+' +
-      fallback.engineId +
-      ')';
+      'quality(\${primary.engineId}+\${secondary.engineId}+\${fallback.engineId})';
 
   @override
   Future<RoutePlan> calculate(RouteRequest request) async {
@@ -517,12 +505,9 @@ class QualityRoutingEngine implements RoutingEngine {
               secondaryPlan.distanceMeters + minImprovementMeters <
                   primaryPlan.distanceMeters)) {
         AppLogger.info(
-          'routing quality selected secondary=' +
-              secondaryPlan.routingSource +
-              ' primaryMeters=' +
-              primaryPlan.distanceMeters.round().toString() +
-              ' secondaryMeters=' +
-              secondaryPlan.distanceMeters.round().toString(),
+          'routing quality selected secondary=\${secondaryPlan.routingSource} '
+          'primaryMeters=\${primaryPlan.distanceMeters.round()} '
+          'secondaryMeters=\${secondaryPlan.distanceMeters.round()}',
         );
         return secondaryPlan;
       }
@@ -556,8 +541,9 @@ class QualityRoutingEngine implements RoutingEngine {
       if (error is RoutingException &&
           (error.kind == RoutingFailureKind.network ||
               error.kind == RoutingFailureKind.timeout ||
-              error.kind == RoutingFailureKind.rateLimited))
+              error.kind == RoutingFailureKind.rateLimited)) {
         return error;
+      }
     }
     return secondaryError ?? primaryError;
   }

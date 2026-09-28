@@ -88,9 +88,7 @@ class ValhallaRoutingEngine implements RoutingEngine {
             .timeout(timeout);
         if (response.statusCode != 200) {
           throw RoutingException(
-            'Valhalla routing returned HTTP ' +
-                response.statusCode.toString() +
-                '.',
+            'Valhalla routing returned HTTP \${response.statusCode}.',
             kind: response.statusCode == 429
                 ? RoutingFailureKind.rateLimited
                 : response.statusCode == 408
