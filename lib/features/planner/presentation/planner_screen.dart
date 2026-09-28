@@ -1892,80 +1892,105 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 13,
-                        vertical: 9,
-                      ),
-                      decoration: BoxDecoration(
-                        color: dark
-                            ? const Color(0xD91A241E)
-                            : const Color(0xEFFFFFFF),
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            blurRadius: 18,
-                            color: Colors.black.withValues(alpha: 0.08),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final compact = constraints.maxWidth < 430;
+                    final veryCompact = constraints.maxWidth < 350;
+                    final actionSize = veryCompact
+                        ? 40.0
+                        : compact
+                        ? 42.0
+                        : 48.0;
+                    final actionGap = compact ? 4.0 : 8.0;
+
+                    return Row(
+                      children: [
+                        Container(
+                          height: actionSize,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: compact ? 10 : 13,
                           ),
-                        ],
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.terrain, size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'TrailPath',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.4,
+                          decoration: BoxDecoration(
+                            color: dark
+                                ? const Color(0xD91A241E)
+                                : const Color(0xEFFFFFFF),
+                            borderRadius: BorderRadius.circular(
+                              actionSize / 2,
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 18,
+                                color: Colors.black.withValues(alpha: 0.08),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                    const Spacer(),
-                    _MapActionButton(
-                      icon: Icons.layers_outlined,
-                      dark: dark,
-                      tooltip: strings.mapLayers,
-                      active: _plannerMapStyle != _PlannerMapStyle.outdoor,
-                      onTap: _openMapLayers,
-                    ),
-                    const SizedBox(width: 8),
-                    _MapActionButton(
-                      icon: Icons.draw_rounded,
-                      dark: dark,
-                      tooltip: strings.traceMode,
-                      active: _traceMode,
-                      onTap: planner.isRouting ? null : _toggleTraceMode,
-                    ),
-                    const SizedBox(width: 8),
-                    _MapActionButton(
-                      icon: Icons.undo_rounded,
-                      dark: dark,
-                      tooltip: strings.undo,
-                      onTap: planner.canUndo ? _undo : null,
-                    ),
-                    const SizedBox(width: 8),
-                    _MapActionButton(
-                      icon: Icons.redo_rounded,
-                      dark: dark,
-                      tooltip: strings.redo,
-                      onTap: planner.canRedo ? _redo : null,
-                    ),
-                    const SizedBox(width: 8),
-                    _MapActionButton(
-                      icon: _locationBusy
-                          ? Icons.hourglass_top_rounded
-                          : Icons.my_location,
-                      dark: dark,
-                      tooltip: strings.centerLocation,
-                      onTap: _centerOnUser,
-                    ),
-                  ],
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.terrain,
+                                size: compact ? 19 : 20,
+                              ),
+                              if (!compact) ...const [
+                                SizedBox(width: 8),
+                                Text(
+                                  'TrailPath',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -0.4,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
+                        _MapActionButton(
+                          icon: Icons.layers_outlined,
+                          dark: dark,
+                          tooltip: strings.mapLayers,
+                          active: _plannerMapStyle != _PlannerMapStyle.outdoor,
+                          size: actionSize,
+                          onTap: _openMapLayers,
+                        ),
+                        SizedBox(width: actionGap),
+                        _MapActionButton(
+                          icon: Icons.draw_rounded,
+                          dark: dark,
+                          tooltip: strings.traceMode,
+                          active: _traceMode,
+                          size: actionSize,
+                          onTap: planner.isRouting ? null : _toggleTraceMode,
+                        ),
+                        SizedBox(width: actionGap),
+                        _MapActionButton(
+                          icon: Icons.undo_rounded,
+                          dark: dark,
+                          tooltip: strings.undo,
+                          size: actionSize,
+                          onTap: planner.canUndo ? _undo : null,
+                        ),
+                        SizedBox(width: actionGap),
+                        _MapActionButton(
+                          icon: Icons.redo_rounded,
+                          dark: dark,
+                          tooltip: strings.redo,
+                          size: actionSize,
+                          onTap: planner.canRedo ? _redo : null,
+                        ),
+                        SizedBox(width: actionGap),
+                        _MapActionButton(
+                          icon: _locationBusy
+                              ? Icons.hourglass_top_rounded
+                              : Icons.my_location,
+                          dark: dark,
+                          tooltip: strings.centerLocation,
+                          size: actionSize,
+                          onTap: _centerOnUser,
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: 12),
                 Container(
@@ -3296,6 +3321,7 @@ class _MapActionButton extends StatelessWidget {
     required this.dark,
     required this.tooltip,
     this.active = false,
+    this.size = 48,
     this.onTap,
   });
 
@@ -3303,6 +3329,7 @@ class _MapActionButton extends StatelessWidget {
   final bool dark;
   final String tooltip;
   final bool active;
+  final double size;
   final VoidCallback? onTap;
 
   @override
@@ -3327,11 +3354,11 @@ class _MapActionButton extends StatelessWidget {
             child: Opacity(
               opacity: onTap == null ? 0.38 : 1,
               child: SizedBox(
-                width: 48,
-                height: 48,
+                width: size,
+                height: size,
                 child: Icon(
                   icon,
-                  size: 20,
+                  size: size <= 42 ? 19 : 20,
                   color: active
                       ? Theme.of(context).colorScheme.onPrimaryContainer
                       : null,
