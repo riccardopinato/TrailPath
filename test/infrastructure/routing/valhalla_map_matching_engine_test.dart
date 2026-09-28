@@ -10,6 +10,55 @@ import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/infrastructure/routing/valhalla_map_matching_engine.dart';
 
 void main() {
+  test('Valhalla route requests quasi-shortest pedestrian costing', () async {
+    final client = MockClient((request) async {
+      final payload = jsonDecode(request.body) as Map<String, dynamic>;
+      expect(payload['costing'], 'pedestrian');
+      final costing = payload['costing_options'] as Map<String, dynamic>;
+      final pedestrian = costing['pedestrian'] as Map<String, dynamic>;
+      expect(pedestrian['shortest'], isTrue);
+
+      return http.Response(
+        jsonEncode({
+          'trip': {
+            'summary': {'length': 1.2, 'time': 900},
+            'legs': [
+              {
+                'shape': {
+                  'type': 'LineString',
+                  'coordinates': [
+                    [11.0, 45.0],
+                    [11.01, 45.01],
+                  ],
+                },
+              },
+            ],
+          },
+        }),
+        200,
+      );
+    });
+    final engine = ValhallaRoutingEngine(
+      client: client,
+      endpoint: Uri.parse('https://example.test/route'),
+      maxRetries: 0,
+    );
+    addTearDown(engine.dispose);
+
+    final plan = await engine.calculate(
+      const RouteRequest(
+        points: [
+          GeoPoint(latitude: 45.0, longitude: 11.0),
+          GeoPoint(latitude: 45.01, longitude: 11.01),
+        ],
+        profile: RouteProfile.hiking,
+      ),
+    );
+
+    expect(plan.isSnapped, isTrue);
+    expect(plan.distanceMeters, 1200);
+  });
+
   test('Valhalla matcher decodes GeoJSON trace_route response', () async {
     final client = MockClient((request) async {
       final payload = jsonDecode(request.body) as Map<String, dynamic>;
@@ -21,7 +70,7 @@ void main() {
       expect(directionsOptions['units'], 'kilometers');
       final traceOptions = payload['trace_options'] as Map<String, dynamic>;
       expect(traceOptions['gps_accuracy'], 10);
-      expect(traceOptions['search_radius'], 32);
+      expect(traceOptions['search_radius'], 28);
 
       return http.Response(
         jsonEncode({

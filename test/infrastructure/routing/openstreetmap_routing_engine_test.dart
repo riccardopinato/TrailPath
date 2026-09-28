@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/infrastructure/routing/openstreetmap_routing_engine.dart';
 
 void main() {
@@ -214,6 +215,22 @@ void main() {
     expect(requests, 1);
   });
 
+  test('quality engine selects a meaningfully shorter secondary route', () async {
+    const engine = QualityRoutingEngine(
+      primary: _FixedRoutingEngine(distanceMeters: 2100, source: 'primary'),
+      secondary: _FixedRoutingEngine(
+        distanceMeters: 1500,
+        source: 'secondary',
+      ),
+      fallback: StraightLineRoutingEngine(),
+    );
+
+    final plan = await engine.calculate(_request());
+
+    expect(plan.routingSource, 'secondary');
+    expect(plan.distanceMeters, 1500);
+  });
+
   test('rejects incomplete provider waypoint snapping', () async {
     final payload = _successPayload()
       ..['waypoints'] = [
@@ -240,6 +257,34 @@ void main() {
       ),
     );
   });
+}
+
+class _FixedRoutingEngine implements RoutingEngine {
+  const _FixedRoutingEngine({
+    required this.distanceMeters,
+    required this.source,
+  });
+
+  final double distanceMeters;
+  final String source;
+
+  @override
+  String get engineId => source;
+
+  @override
+  Future<RoutePlan> calculate(RouteRequest request) async {
+    return RoutePlan(
+      geometry: List<GeoPoint>.unmodifiable(request.points),
+      distanceMeters: distanceMeters,
+      ascentMeters: 0,
+      descentMeters: 0,
+      estimatedDuration: const Duration(minutes: 20),
+      profile: request.profile,
+      isSnapped: true,
+      routingSource: source,
+      snappedWaypoints: List<GeoPoint>.unmodifiable(request.points),
+    );
+  }
 }
 
 RouteRequest _request() {
