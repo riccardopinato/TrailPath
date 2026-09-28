@@ -473,7 +473,7 @@ jobs:
 
   certification-evidence:
     name: v1.0 Certification Evidence
-    needs: [validate-and-build, android-api29-smoke, applab-android]
+    needs: [validate-and-build, android-api29-smoke, applab-android, applab-v15-pro]
     if: always()
     runs-on: ubuntu-latest
 
