@@ -7,11 +7,17 @@ class TraceMatchRequest {
     required this.trace,
     required this.profile,
     required this.mode,
+    this.gestureToleranceMeters,
   });
 
   final List<GeoPoint> trace;
   final RouteProfile profile;
   final MapMatchMode mode;
+
+  /// Geographic tolerance derived from the current map scale and the finger
+  /// width used to draw the trace. This lets coarse, zoomed-out gestures snap
+  /// to the intended road/path network without weakening close-zoom traces.
+  final double? gestureToleranceMeters;
 }
 
 class TraceMatchResult {
