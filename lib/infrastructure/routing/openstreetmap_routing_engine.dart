@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/core/logging/app_logger.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/infrastructure/network/http_retry.dart';
 
@@ -285,14 +286,25 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
 
         if (!isTransientHttpStatus(response.statusCode) ||
             attempt == maxRetries) {
+          AppLogger.warning(
+            'routing provider=$engineId status=${response.statusCode} '
+            'profile=${_serviceForProfileName(uri)} attempt=${attempt + 1}',
+          );
           throw RoutingException(
             'Routing service returned HTTP ${response.statusCode}.',
           );
         }
 
+        AppLogger.warning(
+          'routing retry provider=$engineId status=${response.statusCode} '
+          'attempt=${attempt + 1}/${maxRetries + 1}',
+        );
         await _delay(_retryDelay(response, attempt));
       } on TimeoutException catch (error) {
         lastNetworkError = error;
+        AppLogger.warning(
+          'routing timeout provider=$engineId attempt=${attempt + 1}/${maxRetries + 1}',
+        );
         if (attempt == maxRetries) {
           throw RoutingException(
             'Routing request timed out after ${maxRetries + 1} attempts.',
@@ -301,6 +313,9 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         await _delay(_retryDelay(null, attempt));
       } on http.ClientException catch (error) {
         lastNetworkError = error;
+        AppLogger.warning(
+          'routing network-error provider=$engineId attempt=${attempt + 1}/${maxRetries + 1}',
+        );
         if (attempt == maxRetries) {
           throw RoutingException(
             'Routing network request failed after ${maxRetries + 1} attempts: '
@@ -312,6 +327,16 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
     }
 
     throw RoutingException('Routing request failed: $lastNetworkError');
+  }
+
+  String _serviceForProfileName(Uri uri) {
+    if (uri.path.contains('routed-bike')) {
+      return 'bike';
+    }
+    if (uri.path.contains('routed-foot')) {
+      return 'foot';
+    }
+    return 'unknown';
   }
 
   Map<String, String> _requestHeaders() {
@@ -367,14 +392,26 @@ class FallbackRoutingEngine implements RoutingEngine {
     try {
       return await primary.calculate(request);
     } on Object catch (primaryError, primaryStack) {
+      AppLogger.warning(
+        'routing fallback primary=${primary.engineId} failed; '
+        'trying=${fallback.engineId} profile=${request.profile.name} '
+        'waypoints=${request.points.length}',
+      );
       try {
         final fallbackPlan = await fallback.calculate(request);
         if (fallbackPlan.isSnapped) {
+          AppLogger.info(
+            'routing fallback selected provider=${fallbackPlan.routingSource} '
+            'profile=${request.profile.name} waypoints=${request.points.length}',
+          );
           return fallbackPlan;
         }
-      } on Object {
-        // Preserve the primary provider failure below. The fallback is best
-        // effort and must never turn a snapped request into a fake line.
+      } on Object catch (fallbackError, fallbackStack) {
+        AppLogger.error(
+          'routing fallback failed provider=${fallback.engineId}',
+          error: fallbackError,
+          stackTrace: fallbackStack,
+        );
       }
       Error.throwWithStackTrace(primaryError, primaryStack);
     }
