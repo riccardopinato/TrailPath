@@ -1895,9 +1895,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                 LayoutBuilder(
                   builder: (context, constraints) {
                     final compact = constraints.maxWidth < 430;
-                    final veryCompact = constraints.maxWidth < 350;
+                    final veryCompact = constraints.maxWidth < 305;
                     final actionSize = veryCompact
-                        ? 40.0
+                        ? 38.0
                         : compact
                         ? 42.0
                         : 48.0;
@@ -1908,7 +1908,11 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                         Container(
                           height: actionSize,
                           padding: EdgeInsets.symmetric(
-                            horizontal: compact ? 10 : 13,
+                            horizontal: veryCompact
+                                ? 9
+                                : compact
+                                ? 8
+                                : 13,
                           ),
                           decoration: BoxDecoration(
                             color: dark
@@ -1931,11 +1935,12 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                                 Icons.terrain,
                                 size: compact ? 19 : 20,
                               ),
-                              if (!compact) ...const [
-                                SizedBox(width: 8),
+                              if (!veryCompact) ...[
+                                SizedBox(width: compact ? 5 : 8),
                                 Text(
                                   'TrailPath',
                                   style: TextStyle(
+                                    fontSize: compact ? 13 : null,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: -0.4,
                                   ),
