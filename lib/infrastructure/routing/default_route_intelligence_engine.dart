@@ -43,7 +43,16 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
     );
     final candidates = <RouteCandidate>[];
 
-    for (final heading in const [0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0]) {
+    for (final heading in const [
+      0.0,
+      45.0,
+      90.0,
+      135.0,
+      180.0,
+      225.0,
+      270.0,
+      315.0,
+    ]) {
       try {
         final p1 = _destination(request.start, radius, heading);
         final p2 = _destination(request.start, radius * 1.05, heading + 120);
@@ -79,7 +88,8 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
           plan.geometry.last,
         );
         final overlapPenalty = _routeOverlapPenalty(plan.geometry);
-        final score = distanceError * 2.4 + closure / 1000 + overlapPenalty * 1.8;
+        final score =
+            distanceError * 2.4 + closure / 1000 + overlapPenalty * 1.8;
 
         candidates.add(
           RouteCandidate(

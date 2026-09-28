@@ -215,21 +215,24 @@ void main() {
     expect(requests, 1);
   });
 
-  test('quality engine selects a meaningfully shorter secondary route', () async {
-    const engine = QualityRoutingEngine(
-      primary: _FixedRoutingEngine(distanceMeters: 2100, source: 'primary'),
-      secondary: _FixedRoutingEngine(
-        distanceMeters: 1500,
-        source: 'secondary',
-      ),
-      fallback: StraightLineRoutingEngine(),
-    );
+  test(
+    'quality engine selects a meaningfully shorter secondary route',
+    () async {
+      const engine = QualityRoutingEngine(
+        primary: _FixedRoutingEngine(distanceMeters: 2100, source: 'primary'),
+        secondary: _FixedRoutingEngine(
+          distanceMeters: 1500,
+          source: 'secondary',
+        ),
+        fallback: StraightLineRoutingEngine(),
+      );
 
-    final plan = await engine.calculate(_request());
+      final plan = await engine.calculate(_request());
 
-    expect(plan.routingSource, 'secondary');
-    expect(plan.distanceMeters, 1500);
-  });
+      expect(plan.routingSource, 'secondary');
+      expect(plan.distanceMeters, 1500);
+    },
+  );
 
   test('rejects incomplete provider waypoint snapping', () async {
     final payload = _successPayload()

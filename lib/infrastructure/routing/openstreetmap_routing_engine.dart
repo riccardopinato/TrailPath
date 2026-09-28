@@ -319,7 +319,9 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
             'profile=${_serviceForProfileName(uri)} attempt=${attempt + 1}',
           );
           throw RoutingException(
-            'Routing service returned HTTP ' + response.statusCode.toString() + '.',
+            'Routing service returned HTTP ' +
+                response.statusCode.toString() +
+                '.',
             kind: response.statusCode == 429
                 ? RoutingFailureKind.rateLimited
                 : response.statusCode == 408
@@ -342,7 +344,9 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         );
         if (attempt == maxRetries) {
           throw RoutingException(
-            'Routing request timed out after ' + (maxRetries + 1).toString() + ' attempts.',
+            'Routing request timed out after ' +
+                (maxRetries + 1).toString() +
+                ' attempts.',
             kind: RoutingFailureKind.timeout,
           );
         }
@@ -354,7 +358,10 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         );
         if (attempt == maxRetries) {
           throw RoutingException(
-            'Routing network request failed after ' + (maxRetries + 1).toString() + ' attempts: ' + error.message,
+            'Routing network request failed after ' +
+                (maxRetries + 1).toString() +
+                ' attempts: ' +
+                error.message,
             kind: RoutingFailureKind.network,
           );
         }
@@ -473,7 +480,14 @@ class QualityRoutingEngine implements RoutingEngine {
   final double minImprovementMeters;
 
   @override
-  String get engineId => 'quality(' + primary.engineId + '+' + secondary.engineId + '+' + fallback.engineId + ')';
+  String get engineId =>
+      'quality(' +
+      primary.engineId +
+      '+' +
+      secondary.engineId +
+      '+' +
+      fallback.engineId +
+      ')';
 
   @override
   Future<RoutePlan> calculate(RouteRequest request) async {
@@ -484,7 +498,10 @@ class QualityRoutingEngine implements RoutingEngine {
     } on Object catch (error) {
       primaryError = error;
     }
-    final shouldProbeSecondary = request.snapToNetwork && request.points.length == 2 && (primaryPlan == null || _isWorthProbing(request, primaryPlan));
+    final shouldProbeSecondary =
+        request.snapToNetwork &&
+        request.points.length == 2 &&
+        (primaryPlan == null || _isWorthProbing(request, primaryPlan));
     if (!shouldProbeSecondary && primaryPlan != null) return primaryPlan;
 
     RoutePlan? secondaryPlan;
@@ -495,8 +512,18 @@ class QualityRoutingEngine implements RoutingEngine {
       secondaryError = error;
     }
     if (primaryPlan != null && secondaryPlan != null) {
-      if (secondaryPlan.isSnapped && (!primaryPlan.isSnapped || secondaryPlan.distanceMeters + minImprovementMeters < primaryPlan.distanceMeters)) {
-        AppLogger.info('routing quality selected secondary=' + secondaryPlan.routingSource + ' primaryMeters=' + primaryPlan.distanceMeters.round().toString() + ' secondaryMeters=' + secondaryPlan.distanceMeters.round().toString());
+      if (secondaryPlan.isSnapped &&
+          (!primaryPlan.isSnapped ||
+              secondaryPlan.distanceMeters + minImprovementMeters <
+                  primaryPlan.distanceMeters)) {
+        AppLogger.info(
+          'routing quality selected secondary=' +
+              secondaryPlan.routingSource +
+              ' primaryMeters=' +
+              primaryPlan.distanceMeters.round().toString() +
+              ' secondaryMeters=' +
+              secondaryPlan.distanceMeters.round().toString(),
+        );
         return secondaryPlan;
       }
       return primaryPlan;
@@ -511,7 +538,10 @@ class QualityRoutingEngine implements RoutingEngine {
     }
     final error = _preferredFailure(primaryError, secondaryError);
     if (error is RoutingException) throw error;
-    throw RoutingException('All routing providers failed: $error', kind: RoutingFailureKind.providerUnavailable);
+    throw RoutingException(
+      'All routing providers failed: $error',
+      kind: RoutingFailureKind.providerUnavailable,
+    );
   }
 
   bool _isWorthProbing(RouteRequest request, RoutePlan plan) {
@@ -523,7 +553,11 @@ class QualityRoutingEngine implements RoutingEngine {
 
   Object? _preferredFailure(Object? primaryError, Object? secondaryError) {
     for (final error in [primaryError, secondaryError]) {
-      if (error is RoutingException && (error.kind == RoutingFailureKind.network || error.kind == RoutingFailureKind.timeout || error.kind == RoutingFailureKind.rateLimited)) return error;
+      if (error is RoutingException &&
+          (error.kind == RoutingFailureKind.network ||
+              error.kind == RoutingFailureKind.timeout ||
+              error.kind == RoutingFailureKind.rateLimited))
+        return error;
     }
     return secondaryError ?? primaryError;
   }

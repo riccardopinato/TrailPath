@@ -532,11 +532,14 @@ class AppLocalizations {
       'routingCalculating': 'Calcolo percorso su sentieri e strade…',
       'routeSnapped': 'Percorso agganciato alla rete OSM',
       'routeUnavailable': 'Routing non disponibile: modifica i punti o riprova',
-      'routeNetworkUnavailable': 'Nessuna connessione: impossibile calcolare il percorso',
+      'routeNetworkUnavailable':
+          'Nessuna connessione: impossibile calcolare il percorso',
       'routeTimeout': 'Il routing sta impiegando troppo tempo: riprova',
-      'routeRateLimited': 'Servizio routing temporaneamente occupato: riprova tra poco',
+      'routeRateLimited':
+          'Servizio routing temporaneamente occupato: riprova tra poco',
       'routeNoPath': 'Nessun percorso valido trovato tra questi punti',
-      'routeProviderUnavailable': 'Servizio routing temporaneamente non disponibile',
+      'routeProviderUnavailable':
+          'Servizio routing temporaneamente non disponibile',
       'routeInvalidResponse': 'Risposta routing non valida: riprova',
       'routeLocalFallback': 'Percorso locale o GPX non agganciato alla rete',
       'routeEditHint':
@@ -851,9 +854,11 @@ class AppLocalizations {
       'routingCalculating': 'Routing along paths and roads…',
       'routeSnapped': 'Route snapped to the OSM network',
       'routeUnavailable': 'Routing unavailable: adjust the points or try again',
-      'routeNetworkUnavailable': 'No connection: the route cannot be calculated',
+      'routeNetworkUnavailable':
+          'No connection: the route cannot be calculated',
       'routeTimeout': 'Routing is taking too long: try again',
-      'routeRateLimited': 'Routing service is temporarily busy: try again shortly',
+      'routeRateLimited':
+          'Routing service is temporarily busy: try again shortly',
       'routeNoPath': 'No valid route was found between these points',
       'routeProviderUnavailable': 'Routing service is temporarily unavailable',
       'routeInvalidResponse': 'Invalid routing response: try again',
@@ -1178,10 +1183,13 @@ class AppLocalizations {
           'Routing no disponible: ajusta los puntos o inténtalo de nuevo',
       'routeNetworkUnavailable': 'Sin conexión: no se puede calcular la ruta',
       'routeTimeout': 'El cálculo está tardando demasiado: inténtalo de nuevo',
-      'routeRateLimited': 'El servicio de rutas está ocupado: inténtalo en breve',
+      'routeRateLimited':
+          'El servicio de rutas está ocupado: inténtalo en breve',
       'routeNoPath': 'No se encontró una ruta válida entre estos puntos',
-      'routeProviderUnavailable': 'El servicio de rutas no está disponible temporalmente',
-      'routeInvalidResponse': 'Respuesta de routing no válida: inténtalo de nuevo',
+      'routeProviderUnavailable':
+          'El servicio de rutas no está disponible temporalmente',
+      'routeInvalidResponse':
+          'Respuesta de routing no válida: inténtalo de nuevo',
       'routeLocalFallback': 'Ruta local o GPX sin ajustar a la red',
       'routeEditHint': 'Toca la línea del recorrido para editarla; arrastra los puntos para moverlos.',
       'routeEditActive': 'Edición activa: arrastra los puntos blancos entre etapas para insertar nuevos.',
@@ -1499,11 +1507,13 @@ class AppLocalizations {
       'routeSnapped': 'Parcours calé sur le réseau OSM',
       'routeUnavailable':
           'Itinéraire indisponible : modifiez les points ou réessayez',
-      'routeNetworkUnavailable': 'Pas de connexion : impossible de calculer le parcours',
+      'routeNetworkUnavailable':
+          'Pas de connexion : impossible de calculer le parcours',
       'routeTimeout': 'Le calcul prend trop de temps : réessayez',
       'routeRateLimited': 'Le service de routage est temporairement occupé',
       'routeNoPath': 'Aucun parcours valide trouvé entre ces points',
-      'routeProviderUnavailable': 'Service de routage temporairement indisponible',
+      'routeProviderUnavailable':
+          'Service de routage temporairement indisponible',
       'routeInvalidResponse': 'Réponse de routage invalide : réessayez',
       'routeLocalFallback': 'Itinéraire local ou GPX non accroché au réseau',
       'routeEditHint': 'Touchez la ligne du parcours pour la modifier ; faites glisser les points pour les déplacer.',
@@ -1825,10 +1835,13 @@ class AppLocalizations {
           'Roteamento indisponível: ajuste os pontos ou tente novamente',
       'routeNetworkUnavailable': 'Sem ligação: não é possível calcular a rota',
       'routeTimeout': 'O cálculo está a demorar demasiado: tente novamente',
-      'routeRateLimited': 'O serviço de rotas está ocupado: tente novamente em breve',
+      'routeRateLimited':
+          'O serviço de rotas está ocupado: tente novamente em breve',
       'routeNoPath': 'Não foi encontrada uma rota válida entre estes pontos',
-      'routeProviderUnavailable': 'Serviço de rotas temporariamente indisponível',
-      'routeInvalidResponse': 'Resposta de roteamento inválida: tente novamente',
+      'routeProviderUnavailable':
+          'Serviço de rotas temporariamente indisponível',
+      'routeInvalidResponse':
+          'Resposta de roteamento inválida: tente novamente',
       'routeLocalFallback': 'Rota local ou GPX não ajustada à rede',
       'routeEditHint': 'Toque na linha do percurso para editar; arraste os pontos para os mover.',
       'routeEditActive': 'Edição ativa: arraste os pontos brancos entre etapas para inserir novos.',

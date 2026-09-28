@@ -88,7 +88,9 @@ class ValhallaRoutingEngine implements RoutingEngine {
             .timeout(timeout);
         if (response.statusCode != 200) {
           throw RoutingException(
-            'Valhalla routing returned HTTP ' + response.statusCode.toString() + '.',
+            'Valhalla routing returned HTTP ' +
+                response.statusCode.toString() +
+                '.',
             kind: response.statusCode == 429
                 ? RoutingFailureKind.rateLimited
                 : response.statusCode == 408
@@ -208,7 +210,10 @@ class ValhallaRoutingEngine implements RoutingEngine {
     if (lastError is RoutingException) {
       throw lastError;
     }
-    throw RoutingException('Valhalla routing failed: $lastError', kind: RoutingFailureKind.providerUnavailable);
+    throw RoutingException(
+      'Valhalla routing failed: $lastError',
+      kind: RoutingFailureKind.providerUnavailable,
+    );
   }
 }
 
@@ -503,7 +508,9 @@ class RoutingFallbackMapMatchingEngine implements MapMatchingEngine {
       final traceDistance = calculateRouteDistanceMeters(request.trace);
       final minAnchors = request.mode == MapMatchMode.trails ? 10 : 8;
       final maxAnchors = request.mode == MapMatchMode.trails ? 24 : 18;
-      final anchorCount = ((traceDistance / 110).round() + 4).clamp(minAnchors, maxAnchors).toInt();
+      final anchorCount = ((traceDistance / 110).round() + 4)
+          .clamp(minAnchors, maxAnchors)
+          .toInt();
       final anchors = _sampleGeoPoints(request.trace, maxItems: anchorCount);
       if (anchors.length < 2) {
         throw const MapMatchingException(
