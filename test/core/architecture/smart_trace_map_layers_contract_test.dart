@@ -18,6 +18,10 @@ void main() {
     expect(planner, contains(': 1.0;'));
     expect(planner, contains('_mapViewportKey'));
     expect(planner, contains('globalToLocal(event.position)'));
+    expect(planner, contains('gestureToleranceMeters'));
+    expect(planner, contains('getMetersPerPixelAtLatitude'));
+    expect(planner, contains('constraints.maxWidth < 430'));
+    expect(planner, contains('size: actionSize'));
     expect(planner, contains('controller.setStyle(url)'));
     expect(planner, contains('_PlannerMapStyle.satellite'));
     expect(planner, contains('_PlannerMapStyle.hybrid'));
