@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/map_matching.dart';
 import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/infrastructure/routing/valhalla_map_matching_engine.dart';
 
 void main() {
@@ -179,6 +181,8 @@ void main() {
     );
   });
 
+}
+
 class _AlwaysFailMapMatchingEngine implements MapMatchingEngine {
   const _AlwaysFailMapMatchingEngine();
 
@@ -211,5 +215,4 @@ class _TraceRoutingEngine implements RoutingEngine {
       snappedWaypoints: List<GeoPoint>.unmodifiable(request.points),
     );
   }
-}
 }
