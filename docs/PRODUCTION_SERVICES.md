@@ -24,6 +24,11 @@ preferred for values that should not be printed or copied casually.
 The CI passes the first five values through `--dart-define`. The signing
 values are never passed into Dart.
 
+When Play signing credentials are present, the store-AAB job now fails closed
+unless all five production service values are also configured. Development and
+internal-Pro QA artifacts remain local-first and may intentionally run without
+them.
+
 ## Google Sign-In
 
 Create Android OAuth credentials for package
