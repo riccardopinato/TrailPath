@@ -122,26 +122,15 @@ class TrailPathProSheet extends ConsumerWidget {
                 child: Text(strings.restorePurchases),
               ),
             ],
-            if (!premium.isPro &&
-                !premium.storeAvailable &&
-                !premium.isLoading) ...[
+            if (premium.issue != PremiumIssue.none) ...[
               const SizedBox(height: 8),
               Text(
-                strings.proStoreUnavailable,
+                _premiumIssueLabel(strings, premium.issue),
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-            if (premium.error != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                strings.proPurchaseError,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
+                  color: premium.issue == PremiumIssue.purchaseFailed
+                      ? Theme.of(context).colorScheme.error
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
@@ -173,6 +162,16 @@ class TrailPathProSheet extends ConsumerWidget {
       ),
     );
   }
+}
+
+String _premiumIssueLabel(AppLocalizations strings, PremiumIssue issue) {
+  return switch (issue) {
+    PremiumIssue.none => '',
+    PremiumIssue.storeUnavailable => strings.proStoreUnavailable,
+    PremiumIssue.productsUnavailable => strings.proProductsUnavailable,
+    PremiumIssue.verificationUnavailable => strings.proVerificationUnavailable,
+    PremiumIssue.purchaseFailed => strings.proPurchaseError,
+  };
 }
 
 class _Benefit extends StatelessWidget {
