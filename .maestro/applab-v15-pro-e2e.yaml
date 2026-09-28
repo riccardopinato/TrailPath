@@ -1,0 +1,62 @@
+# TrailPath v1.5.x focused Pro QA E2E.
+# Verifies internal Pro entitlement, Route Lab live routing and Smart Trace UI.
+appId: com.riccardopinato.trail_path
+---
+- launchApp:
+    clearState: true
+
+- assertVisible:
+    text: "Start TrailPath|Inizia con TrailPath|Empezar con TrailPath|Commencer avec TrailPath|Começar com TrailPath"
+- tapOn:
+    text: "Start TrailPath|Inizia con TrailPath|Empezar con TrailPath|Commencer avec TrailPath|Começar com TrailPath"
+- extendedWaitUntil:
+    visible:
+      text: "Search place or trail|Cerca luogo o sentiero|Buscar lugar o sendero|Rechercher un lieu ou sentier|Pesquisar local ou trilho"
+    timeout: 15000
+
+- setLocation:
+    latitude: 45.232000
+    longitude: 11.750000
+
+# Internal QA build must expose Pro entitlement without Play billing.
+- tapOn:
+    text: "Profile\\s*Tab 5 of 5|Profilo\\s*Scheda 5 di 5|Perfil.*5.*5|Profil.*5.*5"
+- extendedWaitUntil:
+    visible:
+      text: "TrailPath Pro active|TrailPath Pro attivo|TrailPath Pro activo|TrailPath Pro actif|TrailPath Pro ativo"
+    timeout: 15000
+
+# Route Lab is a Pro feature and must open directly.
+- scrollUntilVisible:
+    element:
+      text: "Route Lab"
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 60
+    centerElement: true
+- tapOn: "Route Lab"
+- assertVisible:
+    text: "Circular route|Percorso circolare|Ruta circular|Parcours circulaire|Percurso circolare|Percurso circular"
+- tapOn:
+    text: "Generate routes|Genera percorsi|Generar rutas|Générer des parcours|Gerar percursos"
+- extendedWaitUntil:
+    visible:
+      text: "Option 1|Opzione 1|Opción 1|Opção 1"
+    timeout: 90000
+- pressKey: BACK
+
+# Smart Trace controls must be available in Pro and accept road mode.
+- tapOn:
+    text: "Plan\\s*Tab 1 of 5|Pianifica.*1.*5|Planificar.*1.*5|Planifier.*1.*5|Planear.*1.*5"
+- extendedWaitUntil:
+    visible:
+      text: "Search place or trail|Cerca luogo o sentiero|Buscar lugar o sendero|Rechercher un lieu ou sentier|Pesquisar local ou trilho"
+    timeout: 15000
+- tapOn:
+    text: "Draw route|Disegna percorso|Dibujar ruta|Dessiner l’itinéraire|Desenhar rota"
+- assertVisible:
+    text: "Follow roads|Segui strade|Seguir carreteras|Suivre les routes|Seguir estradas"
+- tapOn:
+    text: "Follow roads|Segui strade|Seguir carreteras|Suivre les routes|Seguir estradas"
+- assertVisible:
+    text: "Draw mode:.*|Modalità Disegna:.*|Modo dibujo:.*|Mode dessin :.*|Modo desenho:.*"
