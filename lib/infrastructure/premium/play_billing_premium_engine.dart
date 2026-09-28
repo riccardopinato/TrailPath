@@ -1,13 +1,19 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:http/http.dart' as http;
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:trail_path/core/config/premium_config.dart';
 import 'package:trail_path/core/domain/premium.dart';
 import 'package:trail_path/core/services/premium_engine.dart';
 
 class PlayBillingPremiumEngine implements PremiumEngine {
-  PlayBillingPremiumEngine({InAppPurchase? store})
-    : _store = store ?? InAppPurchase.instance;
+  PlayBillingPremiumEngine({
+    InAppPurchase? store,
+    http.Client? verificationClient,
+  }) : _store = store ?? InAppPurchase.instance,
+       _verificationClient = verificationClient ?? http.Client(),
+       _ownsVerificationClient = verificationClient == null;
 
   static const String monthlyProductId = 'trailpath_pro_monthly';
   static const String yearlyProductId = 'trailpath_pro_yearly';
@@ -15,6 +21,8 @@ class PlayBillingPremiumEngine implements PremiumEngine {
   static const Set<String> _productIds = {monthlyProductId, yearlyProductId};
 
   final InAppPurchase _store;
+  final http.Client _verificationClient;
+  final bool _ownsVerificationClient;
   final StreamController<PremiumSnapshot> _controller =
       StreamController<PremiumSnapshot>.broadcast();
 
@@ -190,11 +198,24 @@ class PlayBillingPremiumEngine implements PremiumEngine {
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
           final valid = _hasLocalStoreReceipt(purchase);
-          if (valid) {
+          if (!valid) {
+            error = 'Purchase receipt could not be validated locally.';
+            break;
+          }
+
+          if (PremiumConfig.hasServerVerification) {
+            final serverValid = await _verifyWithServer(purchase);
+            if (serverValid) {
+              pro = true;
+              verification = PremiumVerificationLevel.serverVerified;
+            } else {
+              error = 'Purchase could not be verified by the server.';
+            }
+          } else if (PremiumConfig.requireServerVerification) {
+            error = 'Server purchase verification is not configured.';
+          } else {
             pro = true;
             verification = PremiumVerificationLevel.localStoreReceipt;
-          } else {
-            error = 'Purchase receipt could not be validated locally.';
           }
         case PurchaseStatus.error:
           error = purchase.error?.message ?? 'Google Play purchase failed.';
@@ -222,6 +243,33 @@ class PlayBillingPremiumEngine implements PremiumEngine {
         clearError: error == null,
       ),
     );
+  }
+
+  Future<bool> _verifyWithServer(PurchaseDetails purchase) async {
+    try {
+      final response = await _verificationClient
+          .post(
+            Uri.parse(PremiumConfig.serverVerificationUrl),
+            headers: const {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'platform': 'google_play',
+              'productId': purchase.productID,
+              'purchaseToken':
+                  purchase.verificationData.serverVerificationData,
+            }),
+          )
+          .timeout(const Duration(seconds: 12));
+      if (response.statusCode != 200) {
+        return false;
+      }
+      final decoded = jsonDecode(response.body);
+      return decoded is Map && decoded['valid'] == true;
+    } on Object {
+      return false;
+    }
   }
 
   bool _hasLocalStoreReceipt(PurchaseDetails purchase) {
@@ -259,6 +307,9 @@ class PlayBillingPremiumEngine implements PremiumEngine {
     _purchaseSubscription = null;
     if (!_controller.isClosed) {
       await _controller.close();
+    }
+    if (_ownsVerificationClient) {
+      _verificationClient.close();
     }
   }
 }
