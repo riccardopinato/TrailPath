@@ -153,6 +153,19 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+      - name: Verify production services before store AAB
+        if: steps.store-signing.outputs.available == 'true'
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in GOOGLE_SERVER_CLIENT_ID MAPTILER_API_KEY SUPABASE_URL SUPABASE_PUBLISHABLE_KEY PREMIUM_VERIFICATION_URL; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is required for a fully enabled store-signed TrailPath build."
+              missing=1
+            fi
+          done
+          test "$missing" -eq 0
+
       - name: Build store-signed AAB
         if: steps.store-signing.outputs.available == 'true'
         env:
