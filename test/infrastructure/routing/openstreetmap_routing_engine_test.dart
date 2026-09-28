@@ -73,7 +73,9 @@ void main() {
     },
   );
 
-  test('selects shortest provider alternative with multiple waypoints', () async {
+  test(
+    'selects shortest provider alternative with multiple waypoints',
+    () async {
     Uri? requestedUri;
     final payload = _successPayload()
       ..['routes'] = [
@@ -132,8 +134,10 @@ void main() {
     );
 
     expect(requestedUri?.queryParameters['alternatives'], 'true');
-    expect(plan.distanceMeters, 1450);
-  });
+      expect(requestedUri?.queryParameters['alternatives'], 'true');
+      expect(plan.distanceMeters, 1450);
+    },
+  );
 
   test(
     'chunks dense waypoint routes before calling the public router',
