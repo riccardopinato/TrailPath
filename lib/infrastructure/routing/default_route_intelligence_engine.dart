@@ -43,7 +43,16 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
     );
     final candidates = <RouteCandidate>[];
 
-    for (final heading in const [20.0, 80.0, 140.0, 200.0, 260.0, 320.0]) {
+    for (final heading in const [
+      0.0,
+      45.0,
+      90.0,
+      135.0,
+      180.0,
+      225.0,
+      270.0,
+      315.0,
+    ]) {
       try {
         final p1 = _destination(request.start, radius, heading);
         final p2 = _destination(request.start, radius * 1.05, heading + 120);
@@ -74,6 +83,7 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
         final distanceError =
             (plan.distanceMeters - request.targetDistanceMeters).abs() /
             request.targetDistanceMeters;
+        final retracePenalty = _retracePenalty(plan.geometry);
         final closure = haversineMeters(
           plan.geometry.first,
           plan.geometry.last,
@@ -200,6 +210,36 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
       return route;
     }
   }
+}
+
+double _retracePenalty(List<GeoPoint> geometry) {
+  if (geometry.length < 8) {
+    return 0;
+  }
+
+  final sampleCount = math.min(48, geometry.length);
+  final sampled = <GeoPoint>[
+    for (var i = 0; i < sampleCount; i++)
+      geometry[
+        (i * (geometry.length - 1) / (sampleCount - 1))
+            .round()
+            .clamp(0, geometry.length - 1)
+      ],
+  ];
+
+  var retraced = 0;
+  for (var i = 4; i < sampled.length - 4; i++) {
+    final earlier = sampled.sublist(0, i - 3);
+    final later = sampled.sublist(i + 4);
+    final nearEarlier =
+        earlier.length >= 2 && distanceToPolylineMeters(sampled[i], earlier) < 28;
+    final nearLater =
+        later.length >= 2 && distanceToPolylineMeters(sampled[i], later) < 28;
+    if (nearEarlier || nearLater) {
+      retraced++;
+    }
+  }
+  return (retraced / sampled.length) * 0.65;
 }
 
 GeoPoint _destination(
