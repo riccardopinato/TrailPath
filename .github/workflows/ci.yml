@@ -188,7 +188,8 @@ jobs:
             --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
-            --dart-define=PREMIUM_VERIFICATION_URL="$PREMIUM_VERIFICATION_URL"
+            --dart-define=PREMIUM_VERIFICATION_URL="$PREMIUM_VERIFICATION_URL" \
+            --dart-define=TRAILPATH_REQUIRE_SERVER_VERIFICATION=true
           jarsigner -verify build/app/outputs/bundle/release/app-release.aab
 
       - name: Upload store-signed AAB
