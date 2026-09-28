@@ -18,5 +18,8 @@ void main() {
     expect(billing, contains('trailpath_pro_yearly'));
     expect(billing, contains('completePurchase'));
     expect(billing, contains('restorePurchases'));
+    expect(billing, contains('PREMIUM_VERIFICATION_URL'));
+    expect(billing, contains('_verifyWithServer'));
+    expect(billing, contains('PremiumVerificationLevel.serverVerified'));
   });
 }
