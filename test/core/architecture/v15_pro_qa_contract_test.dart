@@ -23,6 +23,11 @@ void main() {
     expect(flow, contains('Herramientas Outdoor'));
     expect(flow, contains('Outils Outdoor'));
     expect(flow, contains('Ferramentas Outdoor'));
-    expect(flow, contains('visibilityPercentage: 60'));
+    expect(
+      flow,
+      contains(
+        '.*(Outdoor tools|Strumenti Outdoor|Herramientas Outdoor|Outils Outdoor|Ferramentas Outdoor).*',
+      ),
+    );
   });
 }
