@@ -73,6 +73,68 @@ void main() {
     },
   );
 
+  test('selects shortest provider alternative with multiple waypoints', () async {
+    Uri? requestedUri;
+    final payload = _successPayload()
+      ..['routes'] = [
+        {
+          'distance': 1800.0,
+          'duration': 1000.0,
+          'geometry': {
+            'coordinates': [
+              [11.0, 45.0],
+              [11.005, 45.005],
+              [11.01, 45.01],
+            ],
+          },
+        },
+        {
+          'distance': 1450.0,
+          'duration': 950.0,
+          'geometry': {
+            'coordinates': [
+              [11.0, 45.0],
+              [11.004, 45.004],
+              [11.01, 45.01],
+            ],
+          },
+        },
+      ]
+      ..['waypoints'] = [
+        {
+          'location': [11.0, 45.0],
+        },
+        {
+          'location': [11.005, 45.005],
+        },
+        {
+          'location': [11.01, 45.01],
+        },
+      ];
+    final engine = OpenStreetMapRoutingEngine(
+      client: MockClient((request) async {
+        requestedUri = request.url;
+        return http.Response(jsonEncode(payload), 200);
+      }),
+      maxRetries: 0,
+    );
+    addTearDown(engine.dispose);
+
+    final plan = await engine.calculate(
+      const RouteRequest(
+        points: [
+          GeoPoint(latitude: 45.0, longitude: 11.0),
+          GeoPoint(latitude: 45.005, longitude: 11.005),
+          GeoPoint(latitude: 45.01, longitude: 11.01),
+        ],
+        profile: RouteProfile.hiking,
+      ),
+    );
+
+    expect(requestedUri?.queryParameters['alternatives'], 'true');
+    expect(plan.distanceMeters, 1450);
+  });
+
   test(
     'chunks dense waypoint routes before calling the public router',
     () async {
