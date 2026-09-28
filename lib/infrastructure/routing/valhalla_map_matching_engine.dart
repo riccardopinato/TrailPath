@@ -240,6 +240,10 @@ class ValhallaMapMatchingEngine implements MapMatchingEngine {
           ];
 
     final costing = _costing(request.profile);
+    final baseSearchRadius = request.mode == MapMatchMode.trails ? 32.0 : 26.0;
+    final searchRadius = (request.gestureToleranceMeters ?? baseSearchRadius)
+        .clamp(baseSearchRadius, 100.0)
+        .round();
     final body = <String, Object?>{
       'shape': [
         for (final point in sampled)
@@ -252,7 +256,7 @@ class ValhallaMapMatchingEngine implements MapMatchingEngine {
       'directions_options': <String, Object?>{'units': 'kilometers'},
       'trace_options': <String, Object?>{
         'gps_accuracy': 10,
-        'search_radius': request.mode == MapMatchMode.trails ? 32 : 26,
+        'search_radius': searchRadius,
         'turn_penalty_factor': request.mode == MapMatchMode.trails ? 700 : 550,
         'breakage_distance': 800,
         'interpolation_distance': 5,
@@ -311,7 +315,12 @@ class ValhallaMapMatchingEngine implements MapMatchingEngine {
       );
     }
 
-    _validateTraceFidelity(sampled, geometry, request.mode);
+    _validateTraceFidelity(
+      sampled,
+      geometry,
+      request.mode,
+      gestureToleranceMeters: request.gestureToleranceMeters,
+    );
 
     final summary = trip['summary'];
     final summaryMap = summary is Map
@@ -334,10 +343,20 @@ class ValhallaMapMatchingEngine implements MapMatchingEngine {
   void _validateTraceFidelity(
     List<GeoPoint> trace,
     List<GeoPoint> geometry,
-    MapMatchMode mode,
-  ) {
-    final traceLimitMeters = mode == MapMatchMode.trails ? 60.0 : 45.0;
-    final geometryLimitMeters = mode == MapMatchMode.trails ? 90.0 : 70.0;
+    MapMatchMode mode, {
+    double? gestureToleranceMeters,
+  }) {
+    final baseTraceLimit = mode == MapMatchMode.trails ? 60.0 : 45.0;
+    final baseGeometryLimit = mode == MapMatchMode.trails ? 90.0 : 70.0;
+    final maxTraceLimit = mode == MapMatchMode.trails ? 220.0 : 180.0;
+    final maxGeometryLimit = mode == MapMatchMode.trails ? 280.0 : 230.0;
+    final adaptiveTolerance = gestureToleranceMeters ?? 0;
+    final traceLimitMeters = adaptiveTolerance
+        .clamp(baseTraceLimit, maxTraceLimit)
+        .toDouble();
+    final geometryLimitMeters = (adaptiveTolerance * 1.35)
+        .clamp(baseGeometryLimit, maxGeometryLimit)
+        .toDouble();
 
     for (final point in _sampleGeoPoints(trace, maxItems: 48)) {
       if (distanceToPolylineMeters(point, geometry) > traceLimitMeters) {
@@ -477,8 +496,14 @@ class RoutingFallbackMapMatchingEngine implements MapMatchingEngine {
         'samples=${request.trace.length}',
       );
 
-      final minAnchors = request.mode == MapMatchMode.trails ? 10 : 8;
-      final maxAnchors = request.mode == MapMatchMode.trails ? 20 : 16;
+      final tolerance = request.gestureToleranceMeters ?? 0;
+      final coarseGesture = tolerance >= 80;
+      final minAnchors = coarseGesture
+          ? (request.mode == MapMatchMode.trails ? 6 : 5)
+          : (request.mode == MapMatchMode.trails ? 10 : 8);
+      final maxAnchors = coarseGesture
+          ? (request.mode == MapMatchMode.trails ? 12 : 10)
+          : (request.mode == MapMatchMode.trails ? 20 : 16);
       final anchorCount = request.trace.length.clamp(minAnchors, maxAnchors);
       final anchors = _sampleGeoPoints(
         request.trace,
@@ -504,7 +529,11 @@ class RoutingFallbackMapMatchingEngine implements MapMatchingEngine {
           );
         }
 
-        final corridorLimit = request.mode == MapMatchMode.trails ? 95.0 : 70.0;
+        final baseCorridor = request.mode == MapMatchMode.trails ? 95.0 : 70.0;
+        final maxCorridor = request.mode == MapMatchMode.trails ? 220.0 : 180.0;
+        final corridorLimit = (tolerance * 1.35)
+            .clamp(baseCorridor, maxCorridor)
+            .toDouble();
         for (final point in _sampleGeoPoints(plan.geometry, maxItems: 64)) {
           if (distanceToPolylineMeters(point, request.trace) > corridorLimit) {
             throw const MapMatchingException(
