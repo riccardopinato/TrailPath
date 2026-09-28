@@ -21,6 +21,14 @@ enum PremiumVerificationLevel {
   serverVerified,
 }
 
+enum PremiumIssue {
+  none,
+  storeUnavailable,
+  productsUnavailable,
+  verificationUnavailable,
+  purchaseFailed,
+}
+
 class PremiumOffer {
   const PremiumOffer({
     required this.plan,
@@ -59,6 +67,27 @@ class PremiumSnapshot {
   final String? error;
 
   bool has(PremiumFeature feature) => isPro;
+
+  PremiumIssue get issue {
+    if (isLoading || isPro) {
+      return PremiumIssue.none;
+    }
+    if (!storeAvailable) {
+      return PremiumIssue.storeUnavailable;
+    }
+
+    final normalized = error?.toLowerCase();
+    if (normalized == null || normalized.isEmpty) {
+      return PremiumIssue.none;
+    }
+    if (normalized.contains('missing play products')) {
+      return PremiumIssue.productsUnavailable;
+    }
+    if (normalized.contains('server purchase verification is not configured')) {
+      return PremiumIssue.verificationUnavailable;
+    }
+    return PremiumIssue.purchaseFailed;
+  }
 
   PremiumOffer? offerFor(PremiumPlan plan) {
     for (final offer in offers) {
