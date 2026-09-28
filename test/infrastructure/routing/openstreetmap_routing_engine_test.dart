@@ -67,11 +67,63 @@ void main() {
 
       final plan = await engine.calculate(_request());
 
-      expect(requestedUri?.queryParameters['alternatives'], '3');
+      expect(requestedUri?.queryParameters['alternatives'], 'true');
       expect(requestedUri?.queryParameters['continue_straight'], 'false');
       expect(plan.distanceMeters, 980);
     },
   );
+
+  test('chunks dense waypoint routes before calling the public router', () async {
+    var requests = 0;
+    final engine = OpenStreetMapRoutingEngine(
+      client: MockClient((request) async {
+        requests++;
+        final coordinates = request.url.pathSegments.last.split(';');
+        final payload = {
+          'code': 'Ok',
+          'routes': [
+            {
+              'distance': 1000.0,
+              'duration': 600.0,
+              'geometry': {
+                'coordinates': [
+                  for (final coordinate in coordinates)
+                    [
+                      double.parse(coordinate.split(',')[0]),
+                      double.parse(coordinate.split(',')[1]),
+                    ],
+                ],
+              },
+            },
+          ],
+          'waypoints': [
+            for (final coordinate in coordinates)
+              {
+                'location': [
+                  double.parse(coordinate.split(',')[0]),
+                  double.parse(coordinate.split(',')[1]),
+                ],
+              },
+          ],
+        };
+        return http.Response(jsonEncode(payload), 200);
+      }),
+      maxRetries: 0,
+    );
+    addTearDown(engine.dispose);
+
+    final points = [
+      for (var i = 0; i < 20; i++)
+        GeoPoint(latitude: 45 + i * 0.001, longitude: 11 + i * 0.001),
+    ];
+    final plan = await engine.calculate(
+      RouteRequest(points: points, profile: RouteProfile.hiking),
+    );
+
+    expect(requests, greaterThan(1));
+    expect(plan.snappedWaypoints, hasLength(20));
+    expect(plan.isSnapped, isTrue);
+  });
 
   test(
     'honors numeric Retry-After for rate limiting before retrying',
