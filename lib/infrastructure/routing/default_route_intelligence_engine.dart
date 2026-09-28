@@ -43,18 +43,30 @@ class DefaultRouteIntelligenceEngine implements RouteIntelligenceEngine {
     );
     final candidates = <RouteCandidate>[];
 
-    for (final heading in const [25.0, 115.0, 205.0, 295.0]) {
+    for (final heading in const [20.0, 80.0, 140.0, 200.0, 260.0, 320.0]) {
       try {
         final p1 = _destination(request.start, radius, heading);
-        final p2 = _destination(request.start, radius * 1.08, heading + 105);
-        final p3 = _destination(request.start, radius * 0.92, heading + 220);
+        final p2 = _destination(request.start, radius * 1.05, heading + 120);
+        final p3 = _destination(request.start, radius * 0.95, heading + 240);
 
-        final raw = await _routing.calculate(
-          RouteRequest(
-            points: [request.start, p1, p2, p3, request.start],
-            profile: request.profile,
-          ),
-        );
+        RoutePlan raw;
+        try {
+          raw = await _routing.calculate(
+            RouteRequest(
+              points: [request.start, p1, p2, p3, request.start],
+              profile: request.profile,
+            ),
+          );
+        } on Object {
+          // Public routers can reject a synthetic waypoint that lands too far
+          // from their routable graph. Retry with a simpler triangular loop.
+          raw = await _routing.calculate(
+            RouteRequest(
+              points: [request.start, p1, p2, request.start],
+              profile: request.profile,
+            ),
+          );
+        }
         if (!raw.isSnapped || raw.geometry.length < 2) {
           continue;
         }
