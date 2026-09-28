@@ -211,8 +211,7 @@ class AppLocalizations {
   String get routeTimeout => _value('routeTimeout');
   String get routeNoNetwork => _value('routeNoNetwork');
   String get routeNotFound => _value('routeNotFound');
-  String get routeProviderUnavailable =>
-      _value('routeProviderUnavailable');
+  String get routeProviderUnavailable => _value('routeProviderUnavailable');
   String get routeLocalFallback => _value('routeLocalFallback');
   String get routeEditHint => _value('routeEditHint');
   String get routeEditActive => _value('routeEditActive');
@@ -852,8 +851,7 @@ class AppLocalizations {
       'routeTimeout': 'Routing is taking too long: try again',
       'routeNoNetwork': 'No connection: routing requires Internet',
       'routeNotFound': 'No valid route was found between these points',
-      'routeProviderUnavailable':
-          'Routing service is temporarily unavailable',
+      'routeProviderUnavailable': 'Routing service is temporarily unavailable',
       'routeLocalFallback': 'Local or GPX route not snapped to the network',
       'routeEditHint':
           'Tap the route line to edit it; drag points to move them.',
