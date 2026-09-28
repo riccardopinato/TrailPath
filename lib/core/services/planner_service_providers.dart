@@ -13,12 +13,10 @@ final routingEngineProvider = Provider<RoutingEngine>((ref) {
   final secondary = ValhallaRoutingEngine();
   ref.onDispose(primary.dispose);
   ref.onDispose(secondary.dispose);
-  return FallbackRoutingEngine(
+  return QualityRoutingEngine(
     primary: primary,
-    fallback: FallbackRoutingEngine(
-      primary: secondary,
-      fallback: const StraightLineRoutingEngine(),
-    ),
+    secondary: secondary,
+    fallback: const StraightLineRoutingEngine(),
   );
 });
 

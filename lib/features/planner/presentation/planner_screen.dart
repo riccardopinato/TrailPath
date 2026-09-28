@@ -3159,12 +3159,38 @@ class _RoutingStatus extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
+    final (failureIcon, failureLabel) = switch (planner.routingFailureKind) {
+      RoutingFailureKind.network => (
+        Icons.wifi_off_rounded,
+        strings.routeNetworkUnavailable,
+      ),
+      RoutingFailureKind.timeout => (
+        Icons.timer_off_rounded,
+        strings.routeTimeout,
+      ),
+      RoutingFailureKind.rateLimited => (
+        Icons.hourglass_top_rounded,
+        strings.routeRateLimited,
+      ),
+      RoutingFailureKind.noRoute => (Icons.route_outlined, strings.routeNoPath),
+      RoutingFailureKind.providerUnavailable => (
+        Icons.cloud_off_rounded,
+        strings.routeProviderUnavailable,
+      ),
+      RoutingFailureKind.invalidResponse => (
+        Icons.warning_amber_rounded,
+        strings.routeInvalidResponse,
+      ),
+      RoutingFailureKind.unknown ||
+      null => (Icons.cloud_off_rounded, strings.routeUnavailable),
+    };
+
     final (icon, label) = planner.points.length < 2
         ? (Icons.alt_route_rounded, strings.routingReady)
         : planner.isRouting
         ? (Icons.sync_rounded, strings.routingCalculating)
         : planner.hasRoutingError
-        ? (Icons.cloud_off_rounded, strings.routeUnavailable)
+        ? (failureIcon, failureLabel)
         : planner.isSnapped
         ? (Icons.route_rounded, strings.routeSnapped)
         : (Icons.alt_route_rounded, strings.routeLocalFallback);

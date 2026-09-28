@@ -61,14 +61,15 @@ class ValhallaRoutingEngine implements RoutingEngine {
       'directions_type': 'none',
       'units': 'kilometers',
       'shape_format': 'geojson',
-      if (costing == 'bicycle')
-        'costing_options': <String, Object?>{
-          'bicycle': <String, Object?>{
+      'costing_options': <String, Object?>{
+        costing: <String, Object?>{
+          'shortest': true,
+          if (costing == 'bicycle')
             'bicycle_type': request.profile == RouteProfile.mountainBike
                 ? 'mountain'
                 : 'road',
-          },
         },
+      },
     };
 
     Object? lastError;
@@ -88,21 +89,37 @@ class ValhallaRoutingEngine implements RoutingEngine {
         if (response.statusCode != 200) {
           throw RoutingException(
             'Valhalla routing returned HTTP ${response.statusCode}.',
+            kind: response.statusCode == 429
+                ? RoutingFailureKind.rateLimited
+                : response.statusCode == 408
+                ? RoutingFailureKind.timeout
+                : response.statusCode >= 500
+                ? RoutingFailureKind.providerUnavailable
+                : RoutingFailureKind.invalidResponse,
           );
         }
 
         final decoded = jsonDecode(response.body);
         if (decoded is! Map<String, dynamic>) {
-          throw const RoutingException('Invalid Valhalla routing response.');
+          throw const RoutingException(
+            'Invalid Valhalla routing response.',
+            kind: RoutingFailureKind.invalidResponse,
+          );
         }
         final trip = decoded['trip'];
         if (trip is! Map) {
-          throw const RoutingException('Valhalla routing trip is missing.');
+          throw const RoutingException(
+            'Valhalla routing trip is missing.',
+            kind: RoutingFailureKind.invalidResponse,
+          );
         }
         final tripMap = Map<String, dynamic>.from(trip);
         final legs = tripMap['legs'];
         if (legs is! List || legs.isEmpty) {
-          throw const RoutingException('Valhalla route geometry is missing.');
+          throw const RoutingException(
+            'Valhalla route geometry is missing.',
+            kind: RoutingFailureKind.noRoute,
+          );
         }
 
         final geometry = <GeoPoint>[];
@@ -143,7 +160,10 @@ class ValhallaRoutingEngine implements RoutingEngine {
           }
         }
         if (geometry.length < 2) {
-          throw const RoutingException('Valhalla route is empty.');
+          throw const RoutingException(
+            'Valhalla route is empty.',
+            kind: RoutingFailureKind.noRoute,
+          );
         }
 
         final summary = tripMap['summary'];
@@ -185,7 +205,13 @@ class ValhallaRoutingEngine implements RoutingEngine {
       }
     }
 
-    throw RoutingException('Valhalla routing failed: $lastError');
+    if (lastError is RoutingException) {
+      throw lastError;
+    }
+    throw RoutingException(
+      'Valhalla routing failed: $lastError',
+      kind: RoutingFailureKind.providerUnavailable,
+    );
   }
 }
 
@@ -252,8 +278,8 @@ class ValhallaMapMatchingEngine implements MapMatchingEngine {
       'directions_options': <String, Object?>{'units': 'kilometers'},
       'trace_options': <String, Object?>{
         'gps_accuracy': 10,
-        'search_radius': request.mode == MapMatchMode.trails ? 32 : 26,
-        'turn_penalty_factor': request.mode == MapMatchMode.trails ? 700 : 550,
+        'search_radius': request.mode == MapMatchMode.trails ? 28 : 22,
+        'turn_penalty_factor': request.mode == MapMatchMode.trails ? 750 : 600,
         'breakage_distance': 800,
         'interpolation_distance': 5,
       },
@@ -336,8 +362,8 @@ class ValhallaMapMatchingEngine implements MapMatchingEngine {
     List<GeoPoint> geometry,
     MapMatchMode mode,
   ) {
-    final traceLimitMeters = mode == MapMatchMode.trails ? 60.0 : 45.0;
-    final geometryLimitMeters = mode == MapMatchMode.trails ? 90.0 : 70.0;
+    final traceLimitMeters = mode == MapMatchMode.trails ? 45.0 : 35.0;
+    final geometryLimitMeters = mode == MapMatchMode.trails ? 70.0 : 55.0;
 
     for (final point in _sampleGeoPoints(trace, maxItems: 48)) {
       if (distanceToPolylineMeters(point, geometry) > traceLimitMeters) {
@@ -477,7 +503,12 @@ class RoutingFallbackMapMatchingEngine implements MapMatchingEngine {
         'samples=${request.trace.length}',
       );
 
-      final anchorCount = request.mode == MapMatchMode.trails ? 10 : 8;
+      final traceDistance = calculateRouteDistanceMeters(request.trace);
+      final minAnchors = request.mode == MapMatchMode.trails ? 10 : 8;
+      final maxAnchors = request.mode == MapMatchMode.trails ? 24 : 18;
+      final anchorCount = ((traceDistance / 110).round() + 4)
+          .clamp(minAnchors, maxAnchors)
+          .toInt();
       final anchors = _sampleGeoPoints(request.trace, maxItems: anchorCount);
       if (anchors.length < 2) {
         throw const MapMatchingException(
@@ -499,9 +530,7 @@ class RoutingFallbackMapMatchingEngine implements MapMatchingEngine {
           );
         }
 
-        final corridorLimit = request.mode == MapMatchMode.trails
-            ? 180.0
-            : 120.0;
+        final corridorLimit = request.mode == MapMatchMode.trails ? 95.0 : 70.0;
         for (final point in _sampleGeoPoints(plan.geometry, maxItems: 64)) {
           if (distanceToPolylineMeters(point, request.trace) > corridorLimit) {
             throw const MapMatchingException(

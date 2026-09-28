@@ -281,13 +281,27 @@ class SafetySnapshot {
   final bool isPowerSaveMode;
 }
 
+enum RoutingFailureKind {
+  network,
+  timeout,
+  rateLimited,
+  noRoute,
+  providerUnavailable,
+  invalidResponse,
+  unknown,
+}
+
 class RoutingException implements Exception {
-  const RoutingException(this.message);
+  const RoutingException(
+    this.message, {
+    this.kind = RoutingFailureKind.unknown,
+  });
 
   final String message;
+  final RoutingFailureKind kind;
 
   @override
-  String toString() => 'RoutingException: $message';
+  String toString() => 'RoutingException($kind): $message';
 }
 
 class ElevationException implements Exception {

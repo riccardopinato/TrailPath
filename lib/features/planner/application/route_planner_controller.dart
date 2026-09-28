@@ -28,6 +28,7 @@ class RoutePlannerState {
     this.isElevationLoading = false,
     this.importedName,
     this.routingError,
+    this.routingFailureKind,
     this.editHandles = const [],
   });
 
@@ -45,6 +46,7 @@ class RoutePlannerState {
   final bool isElevationLoading;
   final String? importedName;
   final String? routingError;
+  final RoutingFailureKind? routingFailureKind;
   final List<GeoPoint> editHandles;
 
   bool get hasRoutingError => routingError != null;
@@ -78,6 +80,7 @@ class RoutePlannerState {
     String? importedName,
     bool clearImportedName = false,
     String? routingError,
+    RoutingFailureKind? routingFailureKind,
     bool clearRoutingError = false,
     List<GeoPoint>? editHandles,
   }) {
@@ -100,6 +103,9 @@ class RoutePlannerState {
       routingError: clearRoutingError
           ? null
           : routingError ?? this.routingError,
+      routingFailureKind: clearRoutingError
+          ? null
+          : routingFailureKind ?? this.routingFailureKind,
       editHandles: editHandles ?? this.editHandles,
     );
   }
@@ -682,6 +688,9 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
         isElevationLoading: false,
         editHandles: const [],
         routingError: error.toString(),
+        routingFailureKind: error is RoutingException
+            ? error.kind
+            : RoutingFailureKind.unknown,
       );
     }
   }
