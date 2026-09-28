@@ -20,7 +20,10 @@ final routingEngineProvider = Provider<RoutingEngine>((ref) {
 final mapMatchingEngineProvider = Provider<MapMatchingEngine>((ref) {
   final engine = ValhallaMapMatchingEngine();
   ref.onDispose(engine.dispose);
-  return engine;
+  return RoutingFallbackMapMatchingEngine(
+    primary: engine,
+    routing: ref.watch(routingEngineProvider),
+  );
 });
 
 final elevationEngineProvider = Provider<ElevationEngine>((ref) {
