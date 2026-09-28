@@ -224,6 +224,7 @@ double _retracePenalty(List<GeoPoint> geometry) {
         (i * (geometry.length - 1) / (sampleCount - 1))
             .round()
             .clamp(0, geometry.length - 1)
+            .toInt()
       ],
   ];
 
