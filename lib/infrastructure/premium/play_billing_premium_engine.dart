@@ -257,8 +257,7 @@ class PlayBillingPremiumEngine implements PremiumEngine {
             body: jsonEncode({
               'platform': 'google_play',
               'productId': purchase.productID,
-              'purchaseToken':
-                  purchase.verificationData.serverVerificationData,
+              'purchaseToken': purchase.verificationData.serverVerificationData,
             }),
           )
           .timeout(const Duration(seconds: 12));
