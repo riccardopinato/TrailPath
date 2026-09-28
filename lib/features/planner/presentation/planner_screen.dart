@@ -644,30 +644,31 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                   await _toggleSlopeLayer();
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.view_in_ar_rounded),
-                title: Text(strings.terrain3d),
-                subtitle: Text(
-                  MapConfig.hasPremiumMapProvider
-                      ? strings.terrain3dHint
-                      : strings.proMapUnavailable,
+              if (!Platform.isAndroid && !Platform.isIOS)
+                ListTile(
+                  leading: const Icon(Icons.view_in_ar_rounded),
+                  title: Text(strings.terrain3d),
+                  subtitle: Text(
+                    MapConfig.hasPremiumMapProvider
+                        ? strings.terrain3dHint
+                        : strings.proMapUnavailable,
+                  ),
+                  trailing: _terrain3dEnabled
+                      ? const Icon(Icons.check_rounded)
+                      : const Icon(Icons.workspace_premium_outlined),
+                  onTap: () async {
+                    Navigator.of(sheetContext).pop();
+                    await Future<void>.delayed(Duration.zero);
+                    if (!mounted) {
+                      return;
+                    }
+                    if (!premium.isPro) {
+                      await showTrailPathProPaywall(context, ref);
+                      return;
+                    }
+                    await _toggleTerrain3d();
+                  },
                 ),
-                trailing: _terrain3dEnabled
-                    ? const Icon(Icons.check_rounded)
-                    : const Icon(Icons.workspace_premium_outlined),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await Future<void>.delayed(Duration.zero);
-                  if (!mounted) {
-                    return;
-                  }
-                  if (!premium.isPro) {
-                    await showTrailPathProPaywall(context, ref);
-                    return;
-                  }
-                  await _toggleTerrain3d();
-                },
-              ),
             ],
           ),
         );
@@ -695,6 +696,12 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   }
 
   Future<void> _toggleTerrain3d() async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      if (_terrain3dEnabled && mounted) {
+        setState(() => _terrain3dEnabled = false);
+      }
+      return;
+    }
     if (!MapConfig.hasPremiumMapProvider) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context).proMapUnavailable)),
@@ -706,6 +713,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   }
 
   Future<void> _applyTerrainState() async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      if (_terrain3dEnabled && mounted) {
+        setState(() => _terrain3dEnabled = false);
+      }
+      return;
+    }
+
     final controller = _mapController;
     if (controller == null || !_styleReady || controller.isDisposed) {
       return;
