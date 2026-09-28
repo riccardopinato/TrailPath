@@ -109,6 +109,29 @@ void main() {
     );
   });
 
+  test('falls back to routing when trace matching is unavailable', () async {
+    const engine = RoutingFallbackMapMatchingEngine(
+      primary: _AlwaysFailMapMatchingEngine(),
+      routing: _TraceRoutingEngine(),
+    );
+
+    final result = await engine.match(
+      const TraceMatchRequest(
+        trace: [
+          GeoPoint(latitude: 45.0, longitude: 11.0),
+          GeoPoint(latitude: 45.002, longitude: 11.002),
+          GeoPoint(latitude: 45.004, longitude: 11.004),
+        ],
+        profile: RouteProfile.hiking,
+        mode: MapMatchMode.roads,
+      ),
+    );
+
+    expect(result.geometry, isNotEmpty);
+    expect(result.distanceMeters, greaterThan(0));
+    expect(result.source, contains('trace-fallback'));
+  });
+
   test('road cycling trace asks for road-biased bicycle matching', () async {
     final client = MockClient((request) async {
       final payload = jsonDecode(request.body) as Map<String, dynamic>;
@@ -155,4 +178,38 @@ void main() {
       ),
     );
   });
+
+class _AlwaysFailMapMatchingEngine implements MapMatchingEngine {
+  const _AlwaysFailMapMatchingEngine();
+
+  @override
+  String get engineId => 'failed-map-match';
+
+  @override
+  Future<TraceMatchResult> match(TraceMatchRequest request) {
+    throw const MapMatchingException('offline');
+  }
+}
+
+class _TraceRoutingEngine implements RoutingEngine {
+  const _TraceRoutingEngine();
+
+  @override
+  String get engineId => 'trace-routing';
+
+  @override
+  Future<RoutePlan> calculate(RouteRequest request) async {
+    return RoutePlan(
+      geometry: List<GeoPoint>.unmodifiable(request.points),
+      distanceMeters: calculateRouteDistanceMeters(request.points),
+      ascentMeters: 0,
+      descentMeters: 0,
+      estimatedDuration: const Duration(minutes: 12),
+      profile: request.profile,
+      isSnapped: true,
+      routingSource: engineId,
+      snappedWaypoints: List<GeoPoint>.unmodifiable(request.points),
+    );
+  }
+}
 }
