@@ -19,6 +19,8 @@ void main() {
     expect(planner, contains('controller.setStyle(url)'));
     expect(planner, contains('_PlannerMapStyle.satellite'));
     expect(planner, contains('_PlannerMapStyle.hybrid'));
+    expect(planner, contains('Platform.isAndroid || Platform.isIOS'));
+    expect(planner, contains('await controller.setTerrain(null)'));
     expect(providers, contains('ValhallaMapMatchingEngine'));
   });
 }
