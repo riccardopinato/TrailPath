@@ -16,7 +16,9 @@ void main() {
       expect(payload['shape_match'], 'walk_or_snap');
       expect(payload['shape_format'], 'geojson');
       expect(payload['costing'], 'pedestrian');
-      expect(payload['units'], 'kilometers');
+      final directionsOptions =
+          payload['directions_options'] as Map<String, dynamic>;
+      expect(directionsOptions['units'], 'kilometers');
       final traceOptions = payload['trace_options'] as Map<String, dynamic>;
       expect(traceOptions['gps_accuracy'], 10);
       expect(traceOptions['search_radius'], 32);
