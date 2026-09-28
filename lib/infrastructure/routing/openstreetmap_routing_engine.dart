@@ -13,7 +13,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
   OpenStreetMapRoutingEngine({
     http.Client? client,
     this.timeout = const Duration(seconds: 12),
-    this.maxWaypointsPerRequest = 20,
+    this.maxWaypointsPerRequest = 8,
     this.maxRetries = 2,
     this.retryBaseDelay = const Duration(milliseconds: 350),
     this.maxRetryDelay = const Duration(seconds: 4),
@@ -265,7 +265,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         'geometries': 'geojson',
         'steps': 'false',
         'continue_straight': 'false',
-        'alternatives': request.points.length == 2 ? '3' : 'false',
+        'alternatives': request.points.length == 2 ? 'true' : 'false',
       },
     );
   }
