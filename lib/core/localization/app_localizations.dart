@@ -76,8 +76,7 @@ class AppLocalizations {
   String get restorePurchases => _value('restorePurchases');
   String get proStoreUnavailable => _value('proStoreUnavailable');
   String get proProductsUnavailable => _value('proProductsUnavailable');
-  String get proVerificationUnavailable =>
-      _value('proVerificationUnavailable');
+  String get proVerificationUnavailable => _value('proVerificationUnavailable');
   String get proPurchaseError => _value('proPurchaseError');
   String get proSafetyFree => _value('proSafetyFree');
   String get proRenewalNotice => _value('proRenewalNotice');
