@@ -489,24 +489,7 @@ jobs:
             adb shell pm grant com.riccardopinato.trail_path android.permission.ACCESS_COARSE_LOCATION || true
             adb emu geo fix 11.7500 45.2320 100 || true
             mkdir -p applab-v15-report
-            cat > "$RUNNER_TEMP/run-trailpath-pro-gate.sh" <<'SH'
-            #!/usr/bin/env bash
-            set -u
-            set +e
-            "$HOME/.maestro/bin/maestro" test "$GITHUB_WORKSPACE/.maestro/applab-v15-pro-e2e.yaml" --format junit --output "$GITHUB_WORKSPACE/applab-v15-report/results.xml"
-            maestro_status=$?
-            set -e
-            adb exec-out screencap -p > "$GITHUB_WORKSPACE/applab-v15-report/final.png" || true
-            adb shell uiautomator dump /sdcard/trailpath-v15-final.xml >/dev/null 2>&1 || true
-            adb pull /sdcard/trailpath-v15-final.xml "$GITHUB_WORKSPACE/applab-v15-report/final.xml" >/dev/null 2>&1 || true
-            adb logcat -d > "$GITHUB_WORKSPACE/applab-v15-report/logcat.txt"
-            if grep -Eq "ANR in com\\.riccardopinato\\.trail_path|Process: com\\.riccardopinato\\.trail_path.*FATAL" "$GITHUB_WORKSPACE/applab-v15-report/logcat.txt"; then
-              exit 1
-            fi
-            exit "$maestro_status"
-            SH
-            chmod +x "$RUNNER_TEMP/run-trailpath-pro-gate.sh"
-            "$RUNNER_TEMP/run-trailpath-pro-gate.sh"
+            set +e; "$HOME/.maestro/bin/maestro" test "$GITHUB_WORKSPACE/.maestro/applab-v15-pro-e2e.yaml" --format junit --output "$GITHUB_WORKSPACE/applab-v15-report/results.xml"; maestro_status=$?; adb exec-out screencap -p > "$GITHUB_WORKSPACE/applab-v15-report/final.png" || true; adb shell uiautomator dump /sdcard/trailpath-v15-final.xml >/dev/null 2>&1 || true; adb pull /sdcard/trailpath-v15-final.xml "$GITHUB_WORKSPACE/applab-v15-report/final.xml" >/dev/null 2>&1 || true; adb logcat -d > "$GITHUB_WORKSPACE/applab-v15-report/logcat.txt"; crash_status=0; grep -Eq "ANR in com\\.riccardopinato\\.trail_path|Process: com\\.riccardopinato\\.trail_path.*FATAL" "$GITHUB_WORKSPACE/applab-v15-report/logcat.txt" && crash_status=1; if [ "$maestro_status" -ne 0 ]; then exit "$maestro_status"; fi; exit "$crash_status"
 
       - name: Upload v1.5 Pro AppLab report
         if: always()
