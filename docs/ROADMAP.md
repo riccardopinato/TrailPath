@@ -194,6 +194,20 @@ Approved ideas to implement after Smart Trace + Pro foundation:
 - [x] harden planner start-state E2E timing while preserving the required `Choose destination` state before second-point routing.
 - [x] harden final AppLab semantics/timing: Pro-card matching follows the combined accessibility node and destination confirmation is exercised when surfaced without failing a run that has already reached the valid savable route state.
 
+### v1.5.3 — QA & Production Services Foundation
+
+Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates and prepare the external-service boundary without weakening local-first behavior.
+
+- [x] restore a strict repository formatting gate after canonicalizing the v1.5.3 Dart changes.
+- [x] make the main AppLab Outdoor flow locale-tolerant instead of hard-coding the English accessibility label.
+- [x] add a dedicated internal-Pro x86_64 artifact and AppLab v1.5 Pro routing gate covering Pro entitlement, live Route Lab generation and Smart Trace road-mode availability.
+- [x] add privacy-safe routing diagnostics for OSM, Valhalla and Smart Trace fallback selection without logging route coordinates.
+- [x] centralize production-service readiness for Google Sign-In, MapTiler, Supabase Cloud Sync and Google Play server verification.
+- [x] add optional backend purchase-token verification and require it for a store-signed AAB.
+- [x] document the GitHub configuration contract for Google OAuth, premium maps, dedicated TrailPath Supabase and Google Play verification.
+- [ ] configure the real external credentials/projects in their provider consoles before production enablement; CI must continue to report missing services instead of embedding placeholders.
+- [ ] repeat the physical-device regression on the v1.5.3 Pro APK after the v1.5.2 routing field test feedback is complete.
+
 ### Product principles for the approved roadmap
 
 - REUSE-FIRST: reuse TrailPath service contracts, MapLibre stack, routing/elevation engines, persistence and CI before adding parallel implementations.
