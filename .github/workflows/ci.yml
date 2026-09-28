@@ -256,6 +256,27 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+  routing-provider-smoke:
+    name: Live Routing Provider Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Verify OSM foot routing endpoint
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 20             -H 'Accept: application/json'             'https://routing.openstreetmap.de/routed-foot/route/v1/driving/11.750000,45.232000;11.754000,45.235000?overview=false&steps=false'             | python3 -c "import json,sys; d=json.load(sys.stdin); assert d.get('code') == 'Ok'; assert d.get('routes')"
+
+      - name: Verify Valhalla route endpoint
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 20             -H 'Accept: application/json'             -H 'Content-Type: application/json'             --data '{"locations":[{"lat":45.232,"lon":11.75},{"lat":45.235,"lon":11.754}],"costing":"pedestrian","directions_type":"none","units":"kilometers","shape_format":"geojson"}'             'https://valhalla1.openstreetmap.de/route'             | python3 -c "import json,sys; d=json.load(sys.stdin); assert d.get('trip'); assert d['trip'].get('legs')"
+
+      - name: Verify Valhalla trace endpoint
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 20             -H 'Accept: application/json'             -H 'Content-Type: application/json'             --data '{"shape":[{"lat":45.232,"lon":11.75},{"lat":45.2335,"lon":11.752},{"lat":45.235,"lon":11.754}],"costing":"pedestrian","shape_match":"walk_or_snap","shape_format":"geojson","trace_options":{"gps_accuracy":10,"search_radius":32}}'             'https://valhalla1.openstreetmap.de/trace_route'             | python3 -c "import json,sys; d=json.load(sys.stdin); assert d.get('trip'); assert d['trip'].get('legs')"
+
   android-api29-smoke:
     name: Android API 29 Release Smoke
     needs: validate-and-build
@@ -457,7 +478,7 @@ jobs:
 
   certification-evidence:
     name: v1.0 Certification Evidence
-    needs: [validate-and-build, android-api29-smoke, applab-android, applab-v15-pro]
+    needs: [validate-and-build, routing-provider-smoke, android-api29-smoke, applab-android, applab-v15-pro]
     if: always()
     runs-on: ubuntu-latest
 
