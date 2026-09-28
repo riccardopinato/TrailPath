@@ -15,32 +15,26 @@ void main() {
     }
   });
 
-  test(
-    'Premium issue classification distinguishes configuration failures',
-    () {
-      const storeUnavailable = PremiumSnapshot();
-      const missingProducts = PremiumSnapshot(
-        storeAvailable: true,
-        error: 'Missing Play products: trailpath_pro_monthly',
-      );
-      const verificationUnavailable = PremiumSnapshot(
-        storeAvailable: true,
-        error: 'Server purchase verification is not configured.',
-      );
-      const purchaseFailure = PremiumSnapshot(
-        storeAvailable: true,
-        error: 'Google Play purchase failed.',
-      );
+  test('Premium issue classification distinguishes configuration failures', () {
+    const storeUnavailable = PremiumSnapshot();
+    const missingProducts = PremiumSnapshot(
+      storeAvailable: true,
+      error: 'Missing Play products: trailpath_pro_monthly',
+    );
+    const verificationUnavailable = PremiumSnapshot(
+      storeAvailable: true,
+      error: 'Server purchase verification is not configured.',
+    );
+    const purchaseFailure = PremiumSnapshot(
+      storeAvailable: true,
+      error: 'Google Play purchase failed.',
+    );
 
-      expect(storeUnavailable.issue, PremiumIssue.storeUnavailable);
-      expect(missingProducts.issue, PremiumIssue.productsUnavailable);
-      expect(
-        verificationUnavailable.issue,
-        PremiumIssue.verificationUnavailable,
-      );
-      expect(purchaseFailure.issue, PremiumIssue.purchaseFailed);
-    },
-  );
+    expect(storeUnavailable.issue, PremiumIssue.storeUnavailable);
+    expect(missingProducts.issue, PremiumIssue.productsUnavailable);
+    expect(verificationUnavailable.issue, PremiumIssue.verificationUnavailable);
+    expect(purchaseFailure.issue, PremiumIssue.purchaseFailed);
+  });
 
   test('Premium offers resolve by plan', () {
     const monthly = PremiumOffer(
