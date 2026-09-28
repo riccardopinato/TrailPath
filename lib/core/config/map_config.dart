@@ -1,5 +1,5 @@
 abstract final class MapConfig {
-  static const String appVersion = '1.5.2';
+  static const String appVersion = '1.5.3';
   static const String projectUrl =
       'https://github.com/riccardopinato/TrailPath';
 
