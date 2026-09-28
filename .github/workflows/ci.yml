@@ -94,24 +94,8 @@ jobs:
       - name: Generate Drift code
         run: dart run build_runner build --delete-conflicting-outputs
 
-      - name: Format Dart sources for canonicalization
-        run: |
-          dart format lib test
-          mkdir -p format-output
-          git diff --name-only -- lib test > format-output/changed-files.txt
-          while IFS= read -r file; do
-            [ -z "$file" ] && continue
-            mkdir -p "format-output/$(dirname "$file")"
-            cp "$file" "format-output/$file"
-          done < format-output/changed-files.txt
-
-      - name: Upload canonical Dart formatting
-        uses: actions/upload-artifact@v6
-        with:
-          name: TrailPath-canonical-format-${{ github.sha }}
-          path: format-output/
-          if-no-files-found: warn
-          retention-days: 1
+      - name: Verify Dart formatting
+        run: dart format --output=none --set-exit-if-changed lib test
 
       - name: Analyze
         run: flutter analyze
