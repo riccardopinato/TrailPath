@@ -364,9 +364,20 @@ class FallbackRoutingEngine implements RoutingEngine {
       return fallback.calculate(request);
     }
 
-    // A snapped outdoor route must be real or fail explicitly.
-    // Never turn a provider failure into a fake straight-line route.
-    return primary.calculate(request);
+    try {
+      return await primary.calculate(request);
+    } on Object catch (primaryError, primaryStack) {
+      try {
+        final fallbackPlan = await fallback.calculate(request);
+        if (fallbackPlan.isSnapped) {
+          return fallbackPlan;
+        }
+      } on Object {
+        // Preserve the primary provider failure below. The fallback is best
+        // effort and must never turn a snapped request into a fake line.
+      }
+      Error.throwWithStackTrace(primaryError, primaryStack);
+    }
   }
 }
 
