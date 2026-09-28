@@ -504,9 +504,7 @@ class RoutingFallbackMapMatchingEngine implements MapMatchingEngine {
           );
         }
 
-        final corridorLimit = request.mode == MapMatchMode.trails
-            ? 95.0
-            : 70.0;
+        final corridorLimit = request.mode == MapMatchMode.trails ? 95.0 : 70.0;
         for (final point in _sampleGeoPoints(plan.geometry, maxItems: 64)) {
           if (distanceToPolylineMeters(point, request.trace) > corridorLimit) {
             throw const MapMatchingException(
