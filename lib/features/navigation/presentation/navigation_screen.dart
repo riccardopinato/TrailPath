@@ -369,7 +369,6 @@ class _NavigationPanel extends StatelessWidget {
                   ),
                 ),
               ),
-
             ],
           ),
           const SizedBox(height: 14),
