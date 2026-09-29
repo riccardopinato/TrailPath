@@ -280,18 +280,71 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
     }
   }
 
-  void _addPoint(math.Point<double> _, LatLng latLng) {
-    if (_selectedWaypointIndex != null || _routeSelected) {
-      setState(() {
-        _selectedWaypointIndex = null;
-        _routeSelected = false;
-      });
+  void _previewCandidateLatLng(LatLng latLng) {
+    _previewCandidate(
+      GeoPoint(latitude: latLng.latitude, longitude: latLng.longitude),
+    );
+  }
+
+  void _previewCandidate(GeoPoint point, {String? label}) {
+    setState(() {
+      _candidatePoint = point;
+      _candidateLabel = label?.trim().isEmpty == true ? null : label?.trim();
+      _selectedWaypointIndex = null;
+      _routeSelected = false;
+    });
+    _scheduleMapSync(ref.read(routePlannerProvider));
+  }
+
+  void _cancelCandidate() {
+    if (_candidatePoint == null) {
+      return;
     }
-    ref
-        .read(routePlannerProvider.notifier)
-        .addPoint(
-          GeoPoint(latitude: latLng.latitude, longitude: latLng.longitude),
-        );
+    setState(() {
+      _candidatePoint = null;
+      _candidateLabel = null;
+    });
+    _scheduleMapSync(ref.read(routePlannerProvider));
+  }
+
+  void _confirmCandidate(_WebCandidateIntent intent) {
+    final candidate = _candidatePoint;
+    if (candidate == null) {
+      return;
+    }
+
+    final planner = ref.read(routePlannerProvider);
+    final controller = ref.read(routePlannerProvider.notifier);
+    switch (intent) {
+      case _WebCandidateIntent.start:
+        if (planner.points.isEmpty) {
+          controller.addPoint(candidate);
+        } else {
+          controller.movePoint(0, candidate);
+        }
+      case _WebCandidateIntent.destination:
+        if (planner.points.isEmpty) {
+          controller.addPoint(candidate);
+        } else if (planner.points.length == 1) {
+          controller.addPoint(candidate);
+        } else {
+          controller.movePoint(planner.points.length - 1, candidate);
+        }
+      case _WebCandidateIntent.waypoint:
+        if (planner.points.length >= 2) {
+          controller.insertPointAt(planner.points.length - 1, candidate);
+        } else {
+          controller.addPoint(candidate);
+        }
+    }
+
+    setState(() {
+      _candidatePoint = null;
+      _candidateLabel = null;
+      _selectedWaypointIndex = null;
+      _routeSelected = planner.points.isNotEmpty;
+    });
+    _scheduleMapSync(ref.read(routePlannerProvider));
   }
 
   Future<void> _insertPoint(math.Point<double> _, LatLng latLng) async {
@@ -470,11 +523,10 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
 
   Future<void> _focusSearchResult(PlaceSearchResult result) async {
     setState(() {
-      _searchResult = result;
       _searchResults = const [];
       _searchController.text = result.name;
     });
-    _scheduleMapSync(ref.read(routePlannerProvider));
+    _previewCandidate(result.point, label: result.name);
 
     final map = _map;
     if (map != null) {
@@ -485,14 +537,6 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
         ),
       );
     }
-  }
-
-  void _addSearchResultAsWaypoint() {
-    final result = _searchResult;
-    if (result == null) {
-      return;
-    }
-    ref.read(routePlannerProvider.notifier).addPoint(result.point);
   }
 
   void _toggleTraceMode() {
@@ -707,7 +751,7 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
       },
       onMapClick: (point, coordinates) {
         if (!_traceMode) {
-          _addPoint(point, coordinates);
+          _previewCandidateLatLng(coordinates);
         }
       },
       onMapLongClick: (point, coordinates) {
