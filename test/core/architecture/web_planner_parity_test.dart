@@ -22,11 +22,19 @@ void main() {
     expect(webPreview, contains('ref.watch(routePlannerProvider)'));
     expect(webPreview, contains('routePlannerProvider.notifier'));
     expect(webPreview, contains('placeSearchServiceProvider'));
+    expect(webPreview, contains('mapMatchingEngineProvider'));
     expect(webPreview, contains('insertPointNearRoute'));
     expect(webPreview, contains('movePoint(index, pointValue)'));
     expect(webPreview, contains('insertPointAt(insertedIndex, pointValue)'));
+    expect(webPreview, contains('applyMatchedTrace(match)'));
     expect(webPreview, contains('addTrace'));
     expect(webPreview, contains('sampleEvenly'));
+    expect(webPreview, contains('_candidatePoint'));
+    expect(webPreview, contains('_confirmCandidate'));
+    expect(webPreview, contains('MapMatchMode _traceMatchMode'));
+    expect(webPreview, contains('gestureToleranceMeters'));
+    expect(webPreview, contains('AppLocalizations.supportedLocales'));
+    expect(webPreview, isNot(contains('_searchResult')));
 
     expect(
       webPreview,
