@@ -71,6 +71,20 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
     }
   }
 
+  Future<void> _cancelDownload(OfflineRegion region) async {
+    final strings = AppLocalizations.of(context);
+    final cancelled = await ref
+        .read(offlineDownloadsProvider.notifier)
+        .cancelDownload(region.id);
+    if (!mounted || !cancelled) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(strings.offlineCancelled)),
+    );
+    await _refresh();
+  }
+
   Future<void> _clearCache() async {
     final strings = AppLocalizations.of(context);
     await ref.read(offlineMapManagerProvider).clearCache();
@@ -119,7 +133,7 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
                     return _OfflineMessage(
                       icon: Icons.cloud_off_rounded,
                       title: strings.offlineFailed,
-                      message: snapshot.error.toString(),
+                      message: strings.offlineUnavailable,
                     );
                   }
 
@@ -164,6 +178,11 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
                               region: region,
                               readyLabel: strings.offlineReady,
                               downloadingLabel: strings.downloadingOffline,
+                              isDownloading: liveDownloads.isDownloading(
+                                region.id,
+                              ),
+                              cancelLabel: strings.cancelDownload,
+                              onCancel: () => _cancelDownload(region),
                               onDelete: () => _deleteRegion(region),
                             ),
                             const SizedBox(height: 10),
@@ -245,12 +264,18 @@ class _RegionCard extends StatelessWidget {
     required this.region,
     required this.readyLabel,
     required this.downloadingLabel,
+    required this.isDownloading,
+    required this.cancelLabel,
+    required this.onCancel,
     required this.onDelete,
   });
 
   final OfflineRegion region;
   final String readyLabel;
   final String downloadingLabel;
+  final bool isDownloading;
+  final String cancelLabel;
+  final VoidCallback onCancel;
   final VoidCallback onDelete;
 
   @override
@@ -317,8 +342,13 @@ class _RegionCard extends StatelessWidget {
               ),
             ),
             IconButton(
-              onPressed: onDelete,
-              icon: const Icon(Icons.delete_outline_rounded),
+              tooltip: isDownloading ? cancelLabel : null,
+              onPressed: isDownloading ? onCancel : onDelete,
+              icon: Icon(
+                isDownloading
+                    ? Icons.close_rounded
+                    : Icons.delete_outline_rounded,
+              ),
             ),
           ],
         ),
