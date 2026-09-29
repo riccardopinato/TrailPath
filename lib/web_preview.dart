@@ -508,10 +508,10 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
         return;
       }
       setState(() => _searchResults = results);
-    } on Object catch (error) {
+    } on Object {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ricerca non disponibile: $error')),
+          SnackBar(content: Text(AppLocalizations.of(context).searchFailed)),
         );
       }
     } finally {
@@ -551,8 +551,18 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
       _selectedWaypointIndex = null;
       if (_traceMode) {
         _routeSelected = false;
+        _candidatePoint = null;
+        _candidateLabel = null;
       }
     });
+    _scheduleMapSync(ref.read(routePlannerProvider));
+  }
+
+  void _setTraceMatchMode(MapMatchMode mode) {
+    if (_traceProcessing || _traceMatchMode == mode) {
+      return;
+    }
+    setState(() => _traceMatchMode = mode);
   }
 
   void _onTracePointerDown(PointerDownEvent event) {
@@ -621,7 +631,11 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
       return;
     }
 
-    final sampled = sampleEvenly(screenPoints, maxItems: 56);
+    final sampled = sampleEvenly(screenPoints, maxItems: 90);
+    if (sampled.length < 2) {
+      return;
+    }
+
     setState(() => _traceProcessing = true);
     try {
       final geoPoints = <GeoPoint>[];
@@ -641,13 +655,63 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
         return;
       }
 
-      final accepted = ref
-          .read(routePlannerProvider.notifier)
-          .addTrace(geoPoints);
+      double? gestureToleranceMeters;
+      if (_traceMatchMode != MapMatchMode.free && geoPoints.isNotEmpty) {
+        try {
+          final reference = geoPoints[geoPoints.length ~/ 2];
+          final metersPerPixel = await map.getMetersPerPixelAtLatitude(
+            reference.latitude,
+          );
+          final baseTolerance = _traceMatchMode == MapMatchMode.trails
+              ? 36.0
+              : 30.0;
+          final maxTolerance = _traceMatchMode == MapMatchMode.trails
+              ? 220.0
+              : 180.0;
+          gestureToleranceMeters = (metersPerPixel * 18)
+              .clamp(baseTolerance, maxTolerance)
+              .toDouble();
+        } on Object {
+          // Keep provider defaults when browser projection metrics are
+          // temporarily unavailable.
+        }
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      final plannerState = ref.read(routePlannerProvider);
+      final plannerController = ref.read(routePlannerProvider.notifier);
+      var accepted = false;
+
+      if (_traceMatchMode == MapMatchMode.free) {
+        accepted = plannerController.addTrace(geoPoints);
+      } else {
+        final matchInput = <GeoPoint>[
+          if (plannerState.points.isNotEmpty) plannerState.points.last,
+          ...geoPoints,
+        ];
+        final match = await ref
+            .read(mapMatchingEngineProvider)
+            .match(
+              TraceMatchRequest(
+                trace: matchInput,
+                profile: plannerState.profile,
+                mode: _traceMatchMode,
+                gestureToleranceMeters: gestureToleranceMeters,
+              ),
+            );
+        if (!mounted) {
+          return;
+        }
+        accepted = plannerController.applyMatchedTrace(match);
+      }
+
       if (!accepted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Traccia troppo corta.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).traceTooShort)),
+        );
         return;
       }
 
@@ -655,10 +719,10 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
         _routeSelected = true;
         _selectedWaypointIndex = null;
       });
-    } on Object catch (error) {
+    } on Object {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Traccia non disponibile: $error')),
+          SnackBar(content: Text(AppLocalizations.of(context).traceFailed)),
         );
       }
     } finally {
