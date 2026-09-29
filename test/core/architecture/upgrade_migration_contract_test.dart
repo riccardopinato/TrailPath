@@ -12,7 +12,7 @@ void main() {
 
     expect(workflow, contains('TrailPath Upgrade / Migration AppLab'));
     expect(workflow, contains('11021533532'));
-    expect(workflow, contains('36544385449'));
+    expect(runner, contains('36544385449'));
     expect(workflow, contains('upgrade-migration-report'));
 
     expect(runner, contains('adb install -r'));
