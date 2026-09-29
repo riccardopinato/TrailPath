@@ -753,6 +753,7 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final planner = ref.watch(routePlannerProvider);
     final controller = ref.read(routePlannerProvider.notifier);
 
@@ -772,14 +773,22 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
       searchController: _searchController,
       searchBusy: _searchBusy,
       searchResults: _searchResults,
-      selectedSearchResult: _searchResult,
+      candidatePoint: _candidatePoint,
+      candidateLabel: _candidateLabel,
       selectedWaypointIndex: _selectedWaypointIndex,
       traceMode: _traceMode,
+      traceMatchMode: _traceMatchMode,
       traceProcessing: _traceProcessing,
       onSearch: _searchPlaces,
       onSearchSelected: _focusSearchResult,
-      onAddSearchWaypoint: _addSearchResultAsWaypoint,
+      onCandidateStart: () => _confirmCandidate(_WebCandidateIntent.start),
+      onCandidateDestination: () =>
+          _confirmCandidate(_WebCandidateIntent.destination),
+      onCandidateWaypoint: () =>
+          _confirmCandidate(_WebCandidateIntent.waypoint),
+      onCandidateCancel: _cancelCandidate,
       onToggleTrace: _toggleTraceMode,
+      onTraceMatchModeChanged: _setTraceMatchMode,
       onProfileChanged: controller.setProfile,
       onUndo: planner.canUndo ? controller.undo : null,
       onRedo: planner.canRedo ? controller.redo : null,
@@ -872,10 +881,10 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
                 ),
                 label: Text(
                   planner.isRouting
-                      ? 'Calcolo percorso…'
+                      ? strings.routingCalculating
                       : planner.isSnapped
-                      ? 'Routing OSM'
-                      : 'Planner condiviso',
+                      ? strings.routeSnapped
+                      : strings.routingReady,
                 ),
               ),
             ),
@@ -918,6 +927,8 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
   }
 }
 
+enum _WebCandidateIntent { start, destination, waypoint }
+
 class _PlannerPanel extends StatelessWidget {
   const _PlannerPanel({
     required this.planner,
@@ -926,14 +937,20 @@ class _PlannerPanel extends StatelessWidget {
     required this.searchController,
     required this.searchBusy,
     required this.searchResults,
-    required this.selectedSearchResult,
+    required this.candidatePoint,
+    required this.candidateLabel,
     required this.selectedWaypointIndex,
     required this.traceMode,
+    required this.traceMatchMode,
     required this.traceProcessing,
     required this.onSearch,
     required this.onSearchSelected,
-    required this.onAddSearchWaypoint,
+    required this.onCandidateStart,
+    required this.onCandidateDestination,
+    required this.onCandidateWaypoint,
+    required this.onCandidateCancel,
     required this.onToggleTrace,
+    required this.onTraceMatchModeChanged,
     required this.onProfileChanged,
     required this.onUndo,
     required this.onRedo,
@@ -947,14 +964,20 @@ class _PlannerPanel extends StatelessWidget {
   final TextEditingController searchController;
   final bool searchBusy;
   final List<PlaceSearchResult> searchResults;
-  final PlaceSearchResult? selectedSearchResult;
+  final GeoPoint? candidatePoint;
+  final String? candidateLabel;
   final int? selectedWaypointIndex;
   final bool traceMode;
+  final MapMatchMode traceMatchMode;
   final bool traceProcessing;
   final VoidCallback onSearch;
   final ValueChanged<PlaceSearchResult> onSearchSelected;
-  final VoidCallback onAddSearchWaypoint;
+  final VoidCallback onCandidateStart;
+  final VoidCallback onCandidateDestination;
+  final VoidCallback onCandidateWaypoint;
+  final VoidCallback onCandidateCancel;
   final VoidCallback onToggleTrace;
+  final ValueChanged<MapMatchMode> onTraceMatchModeChanged;
   final ValueChanged<RouteProfile> onProfileChanged;
   final VoidCallback? onUndo;
   final VoidCallback? onRedo;
@@ -963,6 +986,7 @@ class _PlannerPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final routeReady =
         planner.geometry.length >= 2 && planner.isSnapped && !planner.isRouting;
@@ -988,7 +1012,7 @@ class _PlannerPanel extends StatelessWidget {
             textInputAction: TextInputAction.search,
             onSubmitted: (_) => onSearch(),
             decoration: InputDecoration(
-              labelText: 'Cerca luogo o sentiero',
+              labelText: strings.searchPlace,
               prefixIcon: const Icon(Icons.search_rounded),
               suffixIcon: searchBusy
                   ? const Padding(
@@ -1000,7 +1024,7 @@ class _PlannerPanel extends StatelessWidget {
                       ),
                     )
                   : IconButton(
-                      tooltip: 'Cerca',
+                      tooltip: strings.searchPlace,
                       onPressed: onSearch,
                       icon: const Icon(Icons.arrow_forward_rounded),
                     ),
@@ -1026,12 +1050,59 @@ class _PlannerPanel extends StatelessWidget {
                 onTap: () => onSearchSelected(result),
               ),
           ],
-          if (selectedSearchResult != null) ...[
-            const SizedBox(height: 8),
-            FilledButton.tonalIcon(
-              onPressed: onAddSearchWaypoint,
-              icon: const Icon(Icons.add_location_alt_outlined),
-              label: Text('Aggiungi ${selectedSearchResult!.name} al percorso'),
+          if (candidatePoint != null) ...[
+            const SizedBox(height: 10),
+            Card(
+              margin: EdgeInsets.zero,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      candidateLabel ?? strings.tapMapContinue,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if (planner.points.isEmpty)
+                          FilledButton.icon(
+                            onPressed: onCandidateStart,
+                            icon: const Icon(Icons.trip_origin_rounded),
+                            label: Text(strings.startHere),
+                          )
+                        else if (planner.points.length == 1)
+                          FilledButton.icon(
+                            onPressed: onCandidateDestination,
+                            icon: const Icon(Icons.flag_rounded),
+                            label: Text(strings.setDestination),
+                          )
+                        else ...[
+                          OutlinedButton.icon(
+                            onPressed: onCandidateWaypoint,
+                            icon: const Icon(Icons.add_location_alt_outlined),
+                            label: Text(strings.addWaypoint),
+                          ),
+                          FilledButton.icon(
+                            onPressed: onCandidateDestination,
+                            icon: const Icon(Icons.flag_rounded),
+                            label: Text(strings.setDestination),
+                          ),
+                        ],
+                        TextButton(
+                          onPressed: onCandidateCancel,
+                          child: Text(strings.cancel),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
           const SizedBox(height: 16),
@@ -1047,7 +1118,7 @@ class _PlannerPanel extends StatelessWidget {
                     for (final profile in RouteProfile.values)
                       DropdownMenuItem(
                         value: profile,
-                        child: Text(_profileLabel(profile)),
+                        child: Text(_profileLabel(strings, profile)),
                       ),
                   ],
                   onChanged: planner.isRouting
@@ -1080,7 +1151,7 @@ class _PlannerPanel extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      _friendlyRoutingError(planner.routingError!),
+                      _friendlyRoutingError(strings, planner.routingError!),
                       style: TextStyle(color: scheme.onErrorContainer),
                     ),
                   ),
@@ -1140,8 +1211,36 @@ class _PlannerPanel extends StatelessWidget {
                 ? null
                 : onToggleTrace,
             icon: Icon(traceMode ? Icons.close_rounded : Icons.draw_rounded),
-            label: Text(traceMode ? 'Esci da Trace Mode' : 'Trace Mode'),
+            label: Text(traceMode ? strings.cancel : strings.traceMode),
           ),
+          if (traceMode) ...[
+            const SizedBox(height: 10),
+            SegmentedButton<MapMatchMode>(
+              segments: [
+                ButtonSegment(
+                  value: MapMatchMode.trails,
+                  label: Text(strings.traceFollowTrails),
+                ),
+                ButtonSegment(
+                  value: MapMatchMode.roads,
+                  label: Text(strings.traceFollowRoads),
+                ),
+                ButtonSegment(
+                  value: MapMatchMode.free,
+                  label: Text(strings.traceFree),
+                ),
+              ],
+              selected: {traceMatchMode},
+              showSelectedIcon: false,
+              onSelectionChanged: traceProcessing
+                  ? null
+                  : (selection) {
+                      if (selection.isNotEmpty) {
+                        onTraceMatchModeChanged(selection.first);
+                      }
+                    },
+            ),
+          ],
           const SizedBox(height: 10),
           Row(
             children: [
@@ -1253,22 +1352,38 @@ class _MetricRow extends StatelessWidget {
   }
 }
 
-String _profileLabel(RouteProfile profile) {
+String _profileLabel(AppLocalizations strings, RouteProfile profile) {
   return switch (profile) {
-    RouteProfile.hiking => 'Hiking',
-    RouteProfile.trailRunning => 'Trail running',
-    RouteProfile.walking => 'Walking',
-    RouteProfile.mountainBike => 'Mountain bike',
-    RouteProfile.cycling => 'Cycling',
-    RouteProfile.dogWalk => 'Dog walk',
+    RouteProfile.hiking => strings.profileHiking,
+    RouteProfile.trailRunning => strings.profileTrailRun,
+    RouteProfile.walking => strings.profileWalking,
+    RouteProfile.mountainBike => strings.profileMtb,
+    RouteProfile.cycling => strings.profileCycling,
+    RouteProfile.dogWalk => strings.profileDogWalk,
   };
 }
 
-String _friendlyRoutingError(String raw) {
-  if (raw.contains('timed out') ||
-      raw.contains('network request failed') ||
-      raw.contains('ClientException')) {
-    return 'Il servizio di routing non è raggiungibile. Riprova tra poco.';
+String _friendlyRoutingError(AppLocalizations strings, String raw) {
+  final error = raw.toLowerCase();
+  if (error.contains('timed out') || error.contains('timeout')) {
+    return strings.routeTimeout;
   }
-  return raw.replaceFirst('RoutingException: ', '');
+  if (error.contains('network request failed') ||
+      error.contains('socket') ||
+      error.contains('clientexception')) {
+    return strings.routeNoNetwork;
+  }
+  if (error.contains('no route found') ||
+      error.contains('noroute') ||
+      error.contains('no suitable edges') ||
+      error.contains('could not snap')) {
+    return strings.routeNotFound;
+  }
+  if (error.contains('http 429') ||
+      error.contains('http 5') ||
+      error.contains('service returned') ||
+      error.contains('valhalla routing returned')) {
+    return strings.routeProviderUnavailable;
+  }
+  return strings.routeUnavailable;
 }
