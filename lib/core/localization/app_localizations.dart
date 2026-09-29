@@ -32,6 +32,7 @@ class AppLocalizations {
   String get planner => _value('planner');
   String get record => _value('record');
   String get routes => _value('routes');
+  String get routesUnavailable => _value('routesUnavailable');
   String get searchPlace => _value('searchPlace');
   String get noSearchResults => _value('noSearchResults');
   String get searchFailed => _value('searchFailed');
@@ -49,6 +50,7 @@ class AppLocalizations {
   String get ascent => _value('ascent');
   String get duration => _value('duration');
   String get readyToRecord => _value('readyToRecord');
+  String get recordingUnavailable => _value('recordingUnavailable');
   String get startRecording => _value('startRecording');
   String get yourRoutes => _value('yourRoutes');
   String get noRoutes => _value('noRoutes');
@@ -296,6 +298,8 @@ class AppLocalizations {
   String get noOfflineMapsHint => _value('noOfflineMapsHint');
   String get storageUsed => _value('storageUsed');
   String get outdoor => _value('outdoor');
+  String get outdoorUnavailable => _value('outdoorUnavailable');
+  String get safetyUnavailable => _value('safetyUnavailable');
   String get outdoorHint => _value('outdoorHint');
   String get batteryMode => _value('batteryMode');
   String get batteryModeUnavailable => _value('batteryModeUnavailable');
@@ -357,6 +361,8 @@ class AppLocalizations {
       'planner': 'Pianifica',
       'record': 'Registra',
       'routes': 'Percorsi',
+      'routesUnavailable':
+          'Percorsi e attività temporaneamente non disponibili. Riprova.',
       'searchPlace': 'Cerca luogo o sentiero',
       'noSearchResults': 'Nessun risultato trovato',
       'searchFailed': 'Ricerca non disponibile. Riprova più tardi',
@@ -636,6 +642,26 @@ class AppLocalizations {
           'Apri Percorsi e scarica la mappa di un itinerario salvato.',
       'storageUsed': 'Spazio usato',
       'outdoor': 'Outdoor',
+      'outdoorUnavailable':
+          'As ferramentas Outdoor estão temporariamente indisponíveis. Tente novamente.',
+      'safetyUnavailable':
+          'A verificação de segurança está temporariamente indisponível.',
+      'outdoorUnavailable':
+          'Les outils Outdoor sont temporairement indisponibles. Réessayez.',
+      'safetyUnavailable':
+          'Le contrôle de sécurité est temporairement indisponible.',
+      'outdoorUnavailable':
+          'Las herramientas Outdoor no están disponibles temporalmente. Inténtalo de nuevo.',
+      'safetyUnavailable':
+          'El control de seguridad no está disponible temporalmente.',
+      'outdoorUnavailable':
+          'Outdoor tools are temporarily unavailable. Try again.',
+      'safetyUnavailable':
+          'Safety check is temporarily unavailable.',
+      'outdoorUnavailable':
+          'Gli strumenti Outdoor non sono disponibili al momento. Riprova.',
+      'safetyUnavailable':
+          'Controllo sicurezza temporaneamente non disponibile.',
       'outdoorHint':
           'Strumenti rapidi per autonomia, rientro e sicurezza sul sentiero.',
       'batteryMode': 'Modalità batteria',
@@ -690,6 +716,8 @@ class AppLocalizations {
       'planner': 'Plan',
       'record': 'Record',
       'routes': 'Routes',
+      'routesUnavailable':
+          'Routes and activities are temporarily unavailable. Try again.',
       'searchPlace': 'Search place or trail',
       'noSearchResults': 'No results found',
       'searchFailed': 'Search is unavailable. Try again later',
@@ -707,6 +735,8 @@ class AppLocalizations {
       'ascent': 'Ascent',
       'duration': 'Time',
       'readyToRecord': 'Ready to record',
+      'recordingUnavailable':
+          'Recording hit a problem. Check GPS and permissions, then try again.',
       'startRecording': 'Start recording',
       'yourRoutes': 'Your routes',
       'noRoutes': 'No saved routes',
@@ -1026,6 +1056,8 @@ class AppLocalizations {
       'planner': 'Planificar',
       'record': 'Registrar',
       'routes': 'Rutas',
+      'routesUnavailable':
+          'Las rutas y actividades no están disponibles temporalmente. Inténtalo de nuevo.',
       'searchPlace': 'Buscar lugar o sendero',
       'noSearchResults': 'No se encontraron resultados',
       'searchFailed': 'La búsqueda no está disponible. Inténtalo de nuevo',
@@ -1365,6 +1397,8 @@ class AppLocalizations {
       'planner': 'Planifier',
       'record': 'Enregistrer',
       'routes': 'Parcours',
+      'routesUnavailable':
+          'Les parcours et activités sont temporairement indisponibles. Réessayez.',
       'searchPlace': 'Rechercher un lieu ou sentier',
       'noSearchResults': 'Aucun résultat trouvé',
       'searchFailed': 'Recherche indisponible. Réessayez plus tard',
@@ -1381,6 +1415,8 @@ class AppLocalizations {
       'ascent': 'Montée',
       'duration': 'Temps',
       'readyToRecord': 'Prêt à enregistrer',
+      'recordingUnavailable':
+          'L’enregistrement a rencontré un problème. Vérifiez le GPS et les autorisations puis réessayez.',
       'startRecording': 'Démarrer',
       'yourRoutes': 'Vos parcours',
       'noRoutes': 'Aucun parcours enregistré',
@@ -1694,6 +1730,8 @@ class AppLocalizations {
       'planner': 'Planear',
       'record': 'Gravar',
       'routes': 'Percursos',
+      'routesUnavailable':
+          'Os percursos e atividades estão temporariamente indisponíveis. Tente novamente.',
       'searchPlace': 'Pesquisar local ou trilho',
       'noSearchResults': 'Nenhum resultado encontrado',
       'searchFailed': 'Pesquisa indisponível. Tente novamente mais tarde',
@@ -1710,6 +1748,8 @@ class AppLocalizations {
       'ascent': 'Subida',
       'duration': 'Tempo',
       'readyToRecord': 'Pronto para gravar',
+      'recordingUnavailable':
+          'A gravação encontrou um problema. Verifique o GPS e as permissões e tente novamente.',
       'startRecording': 'Iniciar gravação',
       'yourRoutes': 'Os seus percursos',
       'noRoutes': 'Nenhum percurso guardado',
