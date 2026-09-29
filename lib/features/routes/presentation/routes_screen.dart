@@ -173,7 +173,7 @@ class RoutesScreen extends ConsumerWidget {
     try {
       final document = ref.read(appDatabaseProvider).activityToGpx(activity);
       final xml = await ref.read(gpxServiceProvider).export(document);
-      final name = activity.name ?? 'TrailPath activity';
+      final name = activity.name ?? strings.activitySummary;
 
       await SharePlus.instance.share(
         ShareParams(
