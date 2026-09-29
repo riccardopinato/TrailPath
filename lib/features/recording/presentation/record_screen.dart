@@ -602,7 +602,7 @@ class _RecorderPanel extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Text(
-                state.error!,
+                strings.recordingUnavailable,
                 style: TextStyle(
                   color: scheme.error,
                   fontSize: 12,
