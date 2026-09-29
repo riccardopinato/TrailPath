@@ -39,7 +39,7 @@ class RoutesScreen extends ConsumerWidget {
                 error: (error, stackTrace) => _RoutesMessage(
                   icon: Icons.error_outline_rounded,
                   title: strings.locationUnavailable,
-                  message: error.toString(),
+                  message: strings.routesUnavailable,
                 ),
                 data: (routeItems) => activities.when(
                   loading: () =>
@@ -47,7 +47,7 @@ class RoutesScreen extends ConsumerWidget {
                   error: (error, stackTrace) => _RoutesMessage(
                     icon: Icons.error_outline_rounded,
                     title: strings.locationUnavailable,
-                    message: error.toString(),
+                    message: strings.routesUnavailable,
                   ),
                   data: (activityItems) {
                     if (routeItems.isEmpty && activityItems.isEmpty) {
