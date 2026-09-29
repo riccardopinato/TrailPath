@@ -347,7 +347,6 @@ class _FakeOfflineMapManager implements OfflineMapManager {
   Future<void> dispose() => _controller.close();
 }
 
-
 class _ControllableOfflineMapManager implements OfflineMapManager {
   final StreamController<OfflineRegion> _controller =
       StreamController<OfflineRegion>();
