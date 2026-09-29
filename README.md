@@ -5,11 +5,11 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 ## Current version
 
 Stable certification baseline: **v1.0.0+31**  
-Post-v1 cumulative development candidate: **v1.5.3+39**
+Post-v1 cumulative development candidate: **v1.5.12+49**
 
 ### Post-v1 cumulative candidate
 
-The v1.5 branch contains the approved v1.1→v1.5 train: Smart Trace/map layers, TrailPath Pro, Settings/Profile/optional Google account, optional Supabase Cloud Sync, Route Lab, Collections, personal statistics, slope/terrain layers and automatic rerouting. The v1.5.3 production-readiness hardening adds OSM→Valhalla routing redundancy, Smart Trace routing fallback, locale-tolerant AppLab coverage, a dedicated internal-Pro routing E2E gate, privacy-safe provider diagnostics and a server-verifiable Google Play entitlement path. Runtime/provider features remain fail-safe when their commercial configuration is absent.
+The v1.5 branch contains the approved v1.1→v1.5 train plus the v1.5.3→v1.5.12 hardening sequence: Smart Trace/map layers, TrailPath Pro, optional account/cloud sync, Route Lab, Collections, outdoor intelligence, routing redundancy, zoom-aware trace matching, cancellable offline downloads, user-safe localized errors, Android permission-contract evidence, localized foreground recording notifications and stronger behavioral widget coverage. Runtime/provider features remain fail-safe when commercial configuration is absent.
 
 
 TrailPath v1.0.0 is the first stable Android release candidate. No new product scope is added here: the milestone is limited to final regression, artifact certification, release evidence and production-readiness gates.
@@ -66,7 +66,7 @@ The 2026-09-27 deep audit found no code-level P0 crash/data-loss blocker in the 
 - route line, undo/redo and clear controls
 - activity profiles with foot/bike routing profiles
 - asynchronous snap-to-network routing through routing.openstreetmap.de
-- shared Android/Web routing engine and planner domain core with persistent HTTP client reuse; Web Preview presentation currently lags the build-31 mobile preview/confirmation UX and is tracked as P1 parity debt
+- shared Android/Web routing engine and planner domain core with persistent HTTP client reuse; Web Preview now shares candidate preview/confirmation, routing, Smart Trace and coalesced map updates with mobile
 - bounded retry/backoff for HTTP 408/425/429/5xx and transient network timeouts
 - Retry-After handling and strict snapped-waypoint response validation
 - explicit routing failure state when network routing is unavailable; no silent straight-line route can be saved
@@ -272,3 +272,7 @@ Final v1.5 provider-usage sources are normalized with the pinned Flutter 3.47.5 
 
 
 AppLab v1.5 final hardening accepts the combined accessibility node emitted by the Pro card and treats the second planner candidate like the first: when the explicit Destination action is surfaced it is exercised, while a MapLibre/emulator callback race that has already produced the valid savable route state does not create a false-negative E2E failure.
+
+### v1.5.12 hardening
+
+The current post-v1 candidate uses `pubspec.yaml` as the only semantic-version source, localizes the Android foreground GPS notification in all supported app languages, centralizes destructive confirmation behavior and adds real widget tests for planner candidate actions, destructive confirmation, narrow-screen behavior and navigation error privacy.
