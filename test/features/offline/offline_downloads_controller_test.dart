@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -144,6 +146,84 @@ void main() {
     expect(container.read(offlineDownloadsProvider).snapshots, isEmpty);
   });
 
+  test('active offline download can be cancelled cleanly', () async {
+    final database = AppDatabase.memory();
+    addTearDown(database.close);
+
+    final routeId = await database.savePlannedRoute(
+      name: 'Cancelable route',
+      profile: RouteProfile.hiking.name,
+      waypointsData: const [
+        GeoPoint(latitude: 45.20, longitude: 11.70),
+        GeoPoint(latitude: 45.23, longitude: 11.73),
+      ],
+      geometryData: const [
+        GeoPoint(latitude: 45.20, longitude: 11.70),
+        GeoPoint(latitude: 45.23, longitude: 11.73),
+      ],
+      distanceMeters: 3200,
+      ascentMeters: 90,
+      descentMeters: 70,
+      estimatedDuration: const Duration(minutes: 45),
+    );
+
+    final manager = _ControllableOfflineMapManager();
+    final container = ProviderContainer(
+      overrides: [
+        appDatabaseProvider.overrideWithValue(database),
+        offlineMapManagerProvider.overrideWithValue(manager),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final prepare = container
+        .read(offlineDownloadsProvider.notifier)
+        .prepareRoute(
+          routeId: routeId,
+          routeName: 'Cancelable route',
+          geometry: const [
+            GeoPoint(latitude: 45.20, longitude: 11.70),
+            GeoPoint(latitude: 45.23, longitude: 11.73),
+          ],
+        );
+
+    await Future<void>.delayed(Duration.zero);
+    await manager.waitUntilStarted();
+
+    manager.emit(
+      OfflineRegion(
+        id: routeId,
+        name: 'Cancelable route',
+        downloadedBytes: 16000,
+        isComplete: false,
+        progress: 0.4,
+      ),
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    expect(
+      container.read(offlineDownloadsProvider).isDownloading(routeId),
+      isTrue,
+    );
+
+    final cancelled = await container
+        .read(offlineDownloadsProvider.notifier)
+        .cancelDownload(routeId);
+    final completed = await prepare;
+
+    expect(cancelled, isTrue);
+    expect(completed, isFalse);
+    expect(manager.deletedIds, contains(routeId));
+    expect(
+      container.read(offlineDownloadsProvider).isDownloading(routeId),
+      isFalse,
+    );
+    expect(container.read(offlineDownloadsProvider).snapshots[routeId], isNull);
+
+    final routes = await database.listSavedRoutes();
+    expect(routes.single.isOfflineReady, isFalse);
+  });
+
   test(
     'incomplete region is restartable after process-state recovery',
     () async {
@@ -258,6 +338,41 @@ class _FakeOfflineMapManager implements OfflineMapManager {
   Future<void> delete(String regionId) async {
     deletedIds.add(regionId);
     _regions.removeWhere((region) => region.id == regionId);
+  }
+
+  @override
+  Future<void> clearCache() async {}
+}
+
+
+class _ControllableOfflineMapManager implements OfflineMapManager {
+  final StreamController<OfflineRegion> _controller =
+      StreamController<OfflineRegion>();
+  final Completer<void> _started = Completer<void>();
+  final List<String> deletedIds = <String>[];
+
+  Future<void> waitUntilStarted() => _started.future;
+
+  void emit(OfflineRegion region) {
+    if (!_controller.isClosed) {
+      _controller.add(region);
+    }
+  }
+
+  @override
+  Future<List<OfflineRegion>> listRegions() async => const [];
+
+  @override
+  Stream<OfflineRegion> download(OfflineRegionRequest request) {
+    if (!_started.isCompleted) {
+      _started.complete();
+    }
+    return _controller.stream;
+  }
+
+  @override
+  Future<void> delete(String regionId) async {
+    deletedIds.add(regionId);
   }
 
   @override
