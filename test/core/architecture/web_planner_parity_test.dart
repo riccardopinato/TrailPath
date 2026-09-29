@@ -36,6 +36,8 @@ void main() {
     expect(webPreview, contains('_drainMapSync'));
     expect(webPreview, contains('updateLine'));
     expect(webPreview, contains('updateCircle'));
+    expect(webPreview, contains('strings.removeWaypoint'));
+    expect(webPreview, isNot(contains('Rimuovi waypoint')));
     expect(webPreview, contains('MapMatchMode _traceMatchMode'));
     expect(webPreview, contains('gestureToleranceMeters'));
     expect(webPreview, contains('AppLocalizations.supportedLocales'));
