@@ -242,3 +242,11 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] sanitize Settings, Navigation, Offline, Routes, Recording, Outdoor and Back to Car error rendering;
 - [x] add localized user-safe failure copy for the supported languages;
 - [x] add an architecture regression test that blocks raw exception rendering on primary screens;
+
+
+### v1.5.11 — Android permission contract hardening
+
+- [x] upgrade permission_handler to 13.0.2 using request-driven permanently-denied handling;
+- [x] compile against Android SDK 37 while leaving targetSdk controlled by the pinned Flutter toolchain;
+- [x] add architecture coverage for notification, fine/coarse location and foreground-location permissions;
+- [x] add CI inspection of the built ARM64 APK for resolved min/target SDK and merged permission declarations.
