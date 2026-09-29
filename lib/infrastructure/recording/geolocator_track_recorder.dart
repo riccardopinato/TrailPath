@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
@@ -6,6 +7,7 @@ import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
+import 'package:trail_path/infrastructure/recording/foreground_notification_copy.dart';
 
 class GeolocatorTrackRecorder implements TrackRecorder {
   GeolocatorTrackRecorder();
@@ -227,15 +229,17 @@ class GeolocatorTrackRecorder implements TrackRecorder {
     final accuracy = _accuracy(policy.accuracy);
 
     if (defaultTargetPlatform == TargetPlatform.android) {
+      final notificationCopy = foregroundNotificationCopyForLanguage(
+        PlatformDispatcher.instance.locale.languageCode,
+      );
       return AndroidSettings(
         accuracy: accuracy,
         distanceFilter: policy.distanceFilterMeters,
         intervalDuration: policy.interval,
         useMSLAltitude: true,
         foregroundNotificationConfig: ForegroundNotificationConfig(
-          notificationTitle: 'TrailPath · registrazione attiva',
-          notificationText:
-              'La traccia GPS continua anche con TrailPath in background.',
+          notificationTitle: notificationCopy.title,
+          notificationText: notificationCopy.text,
           enableWakeLock: policy.keepCpuAwake,
           setOngoing: true,
         ),
