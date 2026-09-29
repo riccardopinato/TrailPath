@@ -343,7 +343,6 @@ class _FakeOfflineMapManager implements OfflineMapManager {
 
   @override
   Future<void> clearCache() async {}
-
 }
 
 class _ControllableOfflineMapManager implements OfflineMapManager {
