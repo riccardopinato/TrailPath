@@ -103,7 +103,7 @@ Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current f
 ### P2 — correctness, resilience and technical debt
 - [x] keep ETA semantics consistent after partial reroute: unaffected duration is retained proportionally and the replacement span uses the routing provider duration;
 - [x] harden recording finalization failure handling: final snapshots remain retryable after database failure and UI distinguishes save failure from a genuinely short activity;
-- [~] replace raw `error.toString()` surfaces with localized user-safe categories while preserving technical detail in structured logs; Settings and active Navigation user surfaces are sanitized/localized in v1.5.8; remaining feature-specific surfaces stay tracked;
+- [x] replace raw `error.toString()` surfaces on primary user-facing screens with localized user-safe categories while retaining technical controller/service error state for diagnostics;
 - [~] localize foreground-service notification text and remaining hardcoded UI/support strings; planner OSM search attribution is localized in v1.5.8, foreground-service copy remains tracked;
 - [x] add explicit cancel semantics for long offline downloads; active downloads can be cancelled from Routes or Offline, partial region data is removed, database readiness is reset and the route remains restartable. Download-size review remains part of release QA;
 - [ ] decide whether route/activity/Back-to-Car coordinates require app-level encryption at rest;
@@ -235,3 +235,10 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] cancellation terminates the active stream, removes partial region data and resets saved-route offline readiness without deleting the route;
 - [x] cancelled downloads remain restartable;
 - [x] offline inventory failures are rendered with localized user-safe copy instead of raw exception text;
+
+
+### v1.5.10 — Primary error-surface hardening
+
+- [x] sanitize Settings, Navigation, Offline, Routes, Recording, Outdoor and Back to Car error rendering;
+- [x] add localized user-safe failure copy for the supported languages;
+- [x] add an architecture regression test that blocks raw exception rendering on primary screens;
