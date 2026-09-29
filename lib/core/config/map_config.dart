@@ -1,5 +1,4 @@
 abstract final class MapConfig {
-  static const String appVersion = '1.5.11';
   static const String projectUrl =
       'https://github.com/riccardopinato/TrailPath';
 
@@ -46,5 +45,5 @@ abstract final class MapConfig {
     return 'https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=$mapTilerApiKey';
   }
 
-  static String get userAgent => 'TrailPath/$appVersion (+$projectUrl)';
+  static String get userAgent => 'TrailPath (+$projectUrl)';
 }
