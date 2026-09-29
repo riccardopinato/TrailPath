@@ -380,8 +380,7 @@ class AppLocalizations {
       'ascent': 'Salita',
       'duration': 'Tempo',
       'readyToRecord': 'Pronto a registrare',
-      'recordingUnavailable':
-          'La registrazione ha incontrato un problema. Controlla GPS e permessi e riprova.',
+      'recordingUnavailable': 'La registrazione ha incontrato un problema. Controlla GPS e permessi e riprova.',
       'startRecording': 'Avvia registrazione',
       'yourRoutes': 'I tuoi percorsi',
       'noRoutes': 'Nessun percorso salvato',
@@ -1040,8 +1039,7 @@ class AppLocalizations {
       'planner': 'Planificar',
       'record': 'Registrar',
       'routes': 'Rutas',
-      'routesUnavailable':
-          'Las rutas y actividades no están disponibles temporalmente. Inténtalo de nuevo.',
+      'routesUnavailable': 'Las rutas y actividades no están disponibles temporalmente. Inténtalo de nuevo.',
       'searchPlace': 'Buscar lugar o sendero',
       'noSearchResults': 'No se encontraron resultados',
       'searchFailed': 'La búsqueda no está disponible. Inténtalo de nuevo',
@@ -1059,8 +1057,7 @@ class AppLocalizations {
       'ascent': 'Ascenso',
       'duration': 'Tiempo',
       'readyToRecord': 'Listo para registrar',
-      'recordingUnavailable':
-          'La grabación encontró un problema. Comprueba el GPS y los permisos e inténtalo de nuevo.',
+      'recordingUnavailable': 'La grabación encontró un problema. Comprueba el GPS y los permisos e inténtalo de nuevo.',
       'startRecording': 'Iniciar registro',
       'yourRoutes': 'Tus rutas',
       'noRoutes': 'No hay rutas guardadas',
@@ -1313,8 +1310,7 @@ class AppLocalizations {
       'offlineHint': 'Descarga el mapa de una ruta antes de salir: el GPS y la navegación siguen funcionando sin conexión.',
       'downloadOffline': 'Descargar mapa',
       'downloadingOffline': 'Descargando mapa…',
-      'offlineUnavailable':
-          'Los mapas offline no están disponibles temporalmente. Inténtalo de nuevo.',
+      'offlineUnavailable': 'Los mapas offline no están disponibles temporalmente. Inténtalo de nuevo.',
       'cancelDownload': 'Cancelar descarga',
       'offlineCancelled': 'Descarga offline cancelada',
       'offlineReady': 'Disponible offline',
@@ -1330,8 +1326,7 @@ class AppLocalizations {
       'outdoor': 'Outdoor',
       'safetyUnavailable':
           'El control de seguridad no está disponible temporalmente.',
-      'outdoorUnavailable':
-          'Las herramientas Outdoor no están disponibles temporalmente. Inténtalo de nuevo.',
+      'outdoorUnavailable': 'Las herramientas Outdoor no están disponibles temporalmente. Inténtalo de nuevo.',
       'outdoorHint':
           'Herramientas rápidas para autonomía, regreso y seguridad en ruta.',
       'batteryMode': 'Modo de batería',
@@ -1388,8 +1383,7 @@ class AppLocalizations {
       'planner': 'Planifier',
       'record': 'Enregistrer',
       'routes': 'Parcours',
-      'routesUnavailable':
-          'Les parcours et activités sont temporairement indisponibles. Réessayez.',
+      'routesUnavailable': 'Les parcours et activités sont temporairement indisponibles. Réessayez.',
       'searchPlace': 'Rechercher un lieu ou sentier',
       'noSearchResults': 'Aucun résultat trouvé',
       'searchFailed': 'Recherche indisponible. Réessayez plus tard',
@@ -1407,8 +1401,7 @@ class AppLocalizations {
       'ascent': 'Montée',
       'duration': 'Temps',
       'readyToRecord': 'Prêt à enregistrer',
-      'recordingUnavailable':
-          'L’enregistrement a rencontré un problème. Vérifiez le GPS et les autorisations puis réessayez.',
+      'recordingUnavailable': 'L’enregistrement a rencontré un problème. Vérifiez le GPS et les autorisations puis réessayez.',
       'startRecording': 'Démarrer',
       'yourRoutes': 'Vos parcours',
       'noRoutes': 'Aucun parcours enregistré',
@@ -1730,8 +1723,7 @@ class AppLocalizations {
       'planner': 'Planear',
       'record': 'Gravar',
       'routes': 'Percursos',
-      'routesUnavailable':
-          'Os percursos e atividades estão temporariamente indisponíveis. Tente novamente.',
+      'routesUnavailable': 'Os percursos e atividades estão temporariamente indisponíveis. Tente novamente.',
       'searchPlace': 'Pesquisar local ou trilho',
       'noSearchResults': 'Nenhum resultado encontrado',
       'searchFailed': 'Pesquisa indisponível. Tente novamente mais tarde',
@@ -1749,8 +1741,7 @@ class AppLocalizations {
       'ascent': 'Subida',
       'duration': 'Tempo',
       'readyToRecord': 'Pronto para gravar',
-      'recordingUnavailable':
-          'A gravação encontrou um problema. Verifique o GPS e as permissões e tente novamente.',
+      'recordingUnavailable': 'A gravação encontrou um problema. Verifique o GPS e as permissões e tente novamente.',
       'startRecording': 'Iniciar gravação',
       'yourRoutes': 'Os seus percursos',
       'noRoutes': 'Nenhum percurso guardado',
@@ -2001,8 +1992,7 @@ class AppLocalizations {
       'offlineHint': 'Descarregue o mapa de um percurso antes de sair: o GPS e a navegação continuam disponíveis sem rede.',
       'downloadOffline': 'Descarregar mapa',
       'downloadingOffline': 'A descarregar mapa…',
-      'offlineUnavailable':
-          'Os mapas offline estão temporariamente indisponíveis. Tente novamente.',
+      'offlineUnavailable': 'Os mapas offline estão temporariamente indisponíveis. Tente novamente.',
       'cancelDownload': 'Cancelar download',
       'offlineCancelled': 'Download offline cancelado',
       'offlineReady': 'Disponível offline',
@@ -2018,8 +2008,7 @@ class AppLocalizations {
       'outdoor': 'Outdoor',
       'safetyUnavailable':
           'A verificação de segurança está temporariamente indisponível.',
-      'outdoorUnavailable':
-          'As ferramentas Outdoor estão temporariamente indisponíveis. Tente novamente.',
+      'outdoorUnavailable': 'As ferramentas Outdoor estão temporariamente indisponíveis. Tente novamente.',
       'outdoorHint': 'Ferramentas rápidas para autonomia, regresso e segurança no percurso.',
       'batteryMode': 'Modo de bateria',
       'batteryModeUnavailable':
