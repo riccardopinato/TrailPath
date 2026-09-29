@@ -361,8 +361,7 @@ class AppLocalizations {
       'planner': 'Pianifica',
       'record': 'Registra',
       'routes': 'Percorsi',
-      'routesUnavailable':
-          'Percorsi e attività temporaneamente non disponibili. Riprova.',
+      'routesUnavailable': 'Percorsi e attività temporaneamente non disponibili. Riprova.',
       'searchPlace': 'Cerca luogo o sentiero',
       'noSearchResults': 'Nessun risultato trovato',
       'searchFailed': 'Ricerca non disponibile. Riprova più tardi',
@@ -380,6 +379,7 @@ class AppLocalizations {
       'ascent': 'Salita',
       'duration': 'Tempo',
       'readyToRecord': 'Pronto a registrare',
+      'recordingUnavailable': 'La registrazione ha incontrato un problema. Controlla GPS e permessi e riprova.',
       'startRecording': 'Avvia registrazione',
       'yourRoutes': 'I tuoi percorsi',
       'noRoutes': 'Nessun percorso salvato',
@@ -416,8 +416,7 @@ class AppLocalizations {
       'proRenewalNotice': 'L’abbonamento si rinnova automaticamente al periodo selezionato finché non viene annullato da Google Play.',
       'profile': 'Profilo',
       'settings': 'Impostazioni',
-      'settingsUnavailable':
-          'Impostazioni temporaneamente non disponibili. Riprova.',
+      'settingsUnavailable': 'Impostazioni temporaneamente non disponibili. Riprova.',
       'preferences': 'Preferenze dell\'app',
       'activitySummary': 'Riepilogo attività',
       'activities': 'Attività',
@@ -612,8 +611,7 @@ class AppLocalizations {
       'deleteActivity': 'Eliminare l’attività?',
       'navigate': 'Naviga',
       'navigationActive': 'Navigazione attiva',
-      'navigationUnavailable':
-          'La navigazione ha incontrato un problema temporaneo. Riprova.',
+      'navigationUnavailable': 'La navigazione ha incontrato un problema temporaneo. Riprova.',
       'offRoute': 'Fuori percorso',
       'backOnRoute': 'Tornato sul percorso',
       'arrived': 'Arrivato',
@@ -627,10 +625,9 @@ class AppLocalizations {
       'offlineHint': 'Scarica la mappa di un percorso prima di partire: GPS e navigazione restano utilizzabili anche senza rete.',
       'downloadOffline': 'Scarica mappa',
       'downloadingOffline': 'Download mappa…',
+      'offlineUnavailable': 'Le mappe offline non sono disponibili al momento. Riprova.',
       'cancelDownload': 'Interrompi download',
       'offlineCancelled': 'Download offline interrotto',
-      'offlineUnavailable':
-          'Le mappe offline non sono disponibili al momento. Riprova.',
       'offlineReady': 'Disponibile offline',
       'offlineFailed': 'Download offline non riuscito',
       'offlineStorage': 'Archivio offline',
@@ -642,31 +639,12 @@ class AppLocalizations {
           'Apri Percorsi e scarica la mappa di un itinerario salvato.',
       'storageUsed': 'Spazio usato',
       'outdoor': 'Outdoor',
-      'outdoorUnavailable':
-          'As ferramentas Outdoor estão temporariamente indisponíveis. Tente novamente.',
-      'safetyUnavailable':
-          'A verificação de segurança está temporariamente indisponível.',
-      'outdoorUnavailable':
-          'Les outils Outdoor sont temporairement indisponibles. Réessayez.',
-      'safetyUnavailable':
-          'Le contrôle de sécurité est temporairement indisponible.',
-      'outdoorUnavailable':
-          'Las herramientas Outdoor no están disponibles temporalmente. Inténtalo de nuevo.',
-      'safetyUnavailable':
-          'El control de seguridad no está disponible temporalmente.',
-      'outdoorUnavailable':
-          'Outdoor tools are temporarily unavailable. Try again.',
-      'safetyUnavailable':
-          'Safety check is temporarily unavailable.',
-      'outdoorUnavailable':
-          'Gli strumenti Outdoor non sono disponibili al momento. Riprova.',
-      'safetyUnavailable':
-          'Controllo sicurezza temporaneamente non disponibile.',
+      'safetyUnavailable': 'Controllo sicurezza temporaneamente non disponibile.',
+      'outdoorUnavailable': 'Gli strumenti Outdoor non sono disponibili al momento. Riprova.',
       'outdoorHint':
           'Strumenti rapidi per autonomia, rientro e sicurezza sul sentiero.',
       'batteryMode': 'Modalità batteria',
-      'batteryModeUnavailable':
-          'Modalità batteria temporaneamente non disponibile.',
+      'batteryModeUnavailable': 'Modalità batteria temporaneamente non disponibile.',
       'batteryPerformance': 'Prestazioni',
       'batteryBalanced': 'Bilanciata',
       'batterySaver': 'Risparmio',
@@ -716,8 +694,7 @@ class AppLocalizations {
       'planner': 'Plan',
       'record': 'Record',
       'routes': 'Routes',
-      'routesUnavailable':
-          'Routes and activities are temporarily unavailable. Try again.',
+      'routesUnavailable': 'Routes and activities are temporarily unavailable. Try again.',
       'searchPlace': 'Search place or trail',
       'noSearchResults': 'No results found',
       'searchFailed': 'Search is unavailable. Try again later',
@@ -735,8 +712,7 @@ class AppLocalizations {
       'ascent': 'Ascent',
       'duration': 'Time',
       'readyToRecord': 'Ready to record',
-      'recordingUnavailable':
-          'Recording hit a problem. Check GPS and permissions, then try again.',
+      'recordingUnavailable': 'Recording hit a problem. Check GPS and permissions, then try again.',
       'startRecording': 'Start recording',
       'yourRoutes': 'Your routes',
       'noRoutes': 'No saved routes',
@@ -774,8 +750,7 @@ class AppLocalizations {
       'proRenewalNotice': 'The subscription renews automatically for the selected period until cancelled through Google Play.',
       'profile': 'Profile',
       'settings': 'Settings',
-      'settingsUnavailable':
-          'Settings are temporarily unavailable. Try again.',
+      'settingsUnavailable': 'Settings are temporarily unavailable. Try again.',
       'preferences': 'App preferences',
       'activitySummary': 'Activity summary',
       'activities': 'Activities',
@@ -971,10 +946,7 @@ class AppLocalizations {
       'deleteActivity': 'Delete activity?',
       'navigate': 'Navigate',
       'navigationActive': 'Navigation active',
-      'navigationUnavailable':
-          'La navigation a rencontré un problème temporaire. Réessayez.',
-      'navigationUnavailable':
-          'Navigation hit a temporary problem. Try again.',
+      'navigationUnavailable': 'Navigation hit a temporary problem. Try again.',
       'offRoute': 'Off route',
       'backOnRoute': 'Back on route',
       'arrived': 'Arrived',
@@ -987,10 +959,9 @@ class AppLocalizations {
       'offlineHint': 'Download a saved route map before you leave: GPS and navigation keep working without a connection.',
       'downloadOffline': 'Download map',
       'downloadingOffline': 'Downloading map…',
+      'offlineUnavailable': 'Offline maps are temporarily unavailable. Try again.',
       'cancelDownload': 'Cancel download',
       'offlineCancelled': 'Offline download cancelled',
-      'offlineUnavailable':
-          'Offline maps are temporarily unavailable. Try again.',
       'offlineReady': 'Available offline',
       'offlineFailed': 'Offline download failed',
       'offlineStorage': 'Offline storage',
@@ -1002,11 +973,12 @@ class AppLocalizations {
           'Open Routes and download the map for a saved route.',
       'storageUsed': 'Storage used',
       'outdoor': 'Outdoor',
+      'safetyUnavailable': 'Safety check is temporarily unavailable.',
+      'outdoorUnavailable': 'Outdoor tools are temporarily unavailable. Try again.',
       'outdoorHint':
           'Quick tools for battery life, return guidance and trail safety.',
       'batteryMode': 'Battery mode',
-      'batteryModeUnavailable':
-          'Battery mode is temporarily unavailable.',
+      'batteryModeUnavailable': 'Battery mode is temporarily unavailable.',
       'batteryPerformance': 'Performance',
       'batteryBalanced': 'Balanced',
       'batterySaver': 'Saver',
@@ -1056,11 +1028,11 @@ class AppLocalizations {
       'planner': 'Planificar',
       'record': 'Registrar',
       'routes': 'Rutas',
-      'routesUnavailable':
-          'Las rutas y actividades no están disponibles temporalmente. Inténtalo de nuevo.',
+      'routesUnavailable': 'Las rutas y actividades no están disponibles temporalmente. Inténtalo de nuevo.',
       'searchPlace': 'Buscar lugar o sendero',
       'noSearchResults': 'No se encontraron resultados',
       'searchFailed': 'La búsqueda no está disponible. Inténtalo de nuevo',
+      'searchAttribution': 'Datos de búsqueda © colaboradores de OpenStreetMap',
       'createRoute': 'Crear una ruta',
       'pointPreview': 'Punto seleccionado',
       'startHere': 'Empezar aquí',
@@ -1074,6 +1046,7 @@ class AppLocalizations {
       'ascent': 'Ascenso',
       'duration': 'Tiempo',
       'readyToRecord': 'Listo para registrar',
+      'recordingUnavailable': 'La grabación encontró un problema. Comprueba el GPS y los permisos e inténtalo de nuevo.',
       'startRecording': 'Iniciar registro',
       'yourRoutes': 'Tus rutas',
       'noRoutes': 'No hay rutas guardadas',
@@ -1110,8 +1083,7 @@ class AppLocalizations {
       'proRenewalNotice': 'La suscripción se renueva automáticamente por el periodo seleccionado hasta que se cancele en Google Play.',
       'profile': 'Perfil',
       'settings': 'Ajustes',
-      'settingsUnavailable':
-          'Los ajustes no están disponibles temporalmente. Inténtalo de nuevo.',
+      'settingsUnavailable': 'Los ajustes no están disponibles temporalmente. Inténtalo de nuevo.',
       'preferences': 'Preferencias de la app',
       'activitySummary': 'Resumen de actividad',
       'activities': 'Actividades',
@@ -1312,8 +1284,7 @@ class AppLocalizations {
       'deleteActivity': '¿Eliminar la actividad?',
       'navigate': 'Navegar',
       'navigationActive': 'Navegación activa',
-      'navigationUnavailable':
-          'La navegación encontró un problema temporal. Inténtalo de nuevo.',
+      'navigationUnavailable': 'La navegación encontró un problema temporal. Inténtalo de nuevo.',
       'offRoute': 'Fuera de ruta',
       'backOnRoute': 'De nuevo en ruta',
       'arrived': 'Has llegado',
@@ -1326,10 +1297,9 @@ class AppLocalizations {
       'offlineHint': 'Descarga el mapa de una ruta antes de salir: el GPS y la navegación siguen funcionando sin conexión.',
       'downloadOffline': 'Descargar mapa',
       'downloadingOffline': 'Descargando mapa…',
+      'offlineUnavailable': 'Los mapas offline no están disponibles temporalmente. Inténtalo de nuevo.',
       'cancelDownload': 'Cancelar descarga',
       'offlineCancelled': 'Descarga offline cancelada',
-      'offlineUnavailable':
-          'Los mapas offline no están disponibles temporalmente. Inténtalo de nuevo.',
       'offlineReady': 'Disponible offline',
       'offlineFailed': 'Error al descargar el mapa offline',
       'offlineStorage': 'Almacenamiento offline',
@@ -1341,11 +1311,12 @@ class AppLocalizations {
           'Abre Rutas y descarga el mapa de una ruta guardada.',
       'storageUsed': 'Espacio usado',
       'outdoor': 'Outdoor',
+      'safetyUnavailable': 'El control de seguridad no está disponible temporalmente.',
+      'outdoorUnavailable': 'Las herramientas Outdoor no están disponibles temporalmente. Inténtalo de nuevo.',
       'outdoorHint':
           'Herramientas rápidas para autonomía, regreso y seguridad en ruta.',
       'batteryMode': 'Modo de batería',
-      'batteryModeUnavailable':
-          'El modo de batería no está disponible temporalmente.',
+      'batteryModeUnavailable': 'El modo de batería no está disponible temporalmente.',
       'batteryPerformance': 'Rendimiento',
       'batteryBalanced': 'Equilibrado',
       'batterySaver': 'Ahorro',
@@ -1397,11 +1368,11 @@ class AppLocalizations {
       'planner': 'Planifier',
       'record': 'Enregistrer',
       'routes': 'Parcours',
-      'routesUnavailable':
-          'Les parcours et activités sont temporairement indisponibles. Réessayez.',
+      'routesUnavailable': 'Les parcours et activités sont temporairement indisponibles. Réessayez.',
       'searchPlace': 'Rechercher un lieu ou sentier',
       'noSearchResults': 'Aucun résultat trouvé',
       'searchFailed': 'Recherche indisponible. Réessayez plus tard',
+      'searchAttribution': 'Données de recherche © contributeurs OpenStreetMap',
       'createRoute': 'Créer un parcours',
       'pointPreview': 'Point sélectionné',
       'startHere': 'Partir d’ici',
@@ -1415,8 +1386,7 @@ class AppLocalizations {
       'ascent': 'Montée',
       'duration': 'Temps',
       'readyToRecord': 'Prêt à enregistrer',
-      'recordingUnavailable':
-          'L’enregistrement a rencontré un problème. Vérifiez le GPS et les autorisations puis réessayez.',
+      'recordingUnavailable': 'L’enregistrement a rencontré un problème. Vérifiez le GPS et les autorisations puis réessayez.',
       'startRecording': 'Démarrer',
       'yourRoutes': 'Vos parcours',
       'noRoutes': 'Aucun parcours enregistré',
@@ -1452,8 +1422,7 @@ class AppLocalizations {
       'proRenewalNotice': 'L’abonnement est renouvelé automatiquement pour la période choisie jusqu’à son annulation via Google Play.',
       'profile': 'Profil',
       'settings': 'Réglages',
-      'settingsUnavailable':
-          'Les réglages sont temporairement indisponibles. Réessayez.',
+      'settingsUnavailable': 'Les réglages sont temporairement indisponibles. Réessayez.',
       'preferences': 'Préférences de l’application',
       'activitySummary': 'Résumé d’activité',
       'activities': 'Activités',
@@ -1650,6 +1619,7 @@ class AppLocalizations {
       'deleteActivity': 'Supprimer l’activité ?',
       'navigate': 'Naviguer',
       'navigationActive': 'Navigation active',
+      'navigationUnavailable': 'La navigation a rencontré un problème temporaire. Réessayez.',
       'offRoute': 'Hors parcours',
       'backOnRoute': 'De retour sur le parcours',
       'arrived': 'Arrivé',
@@ -1663,6 +1633,7 @@ class AppLocalizations {
       'offlineHint': 'Téléchargez la carte d’un parcours avant de partir : le GPS et la navigation restent disponibles sans réseau.',
       'downloadOffline': 'Télécharger la carte',
       'downloadingOffline': 'Téléchargement…',
+      'offlineUnavailable': 'Les cartes hors ligne sont temporairement indisponibles. Réessayez.',
       'offlineReady': 'Disponible hors ligne',
       'offlineFailed': 'Échec du téléchargement hors ligne',
       'offlineStorage': 'Stockage hors ligne',
@@ -1674,11 +1645,12 @@ class AppLocalizations {
           'Ouvrez Parcours et téléchargez la carte d’un parcours enregistré.',
       'storageUsed': 'Espace utilisé',
       'outdoor': 'Outdoor',
+      'safetyUnavailable': 'Le contrôle de sécurité est temporairement indisponible.',
+      'outdoorUnavailable': 'Les outils Outdoor sont temporairement indisponibles. Réessayez.',
       'outdoorHint':
           'Outils rapides pour autonomie, retour et sécurité sur le terrain.',
       'batteryMode': 'Mode batterie',
-      'batteryModeUnavailable':
-          'Le mode batterie est temporairement indisponible.',
+      'batteryModeUnavailable': 'Le mode batterie est temporairement indisponible.',
       'batteryPerformance': 'Performance',
       'batteryBalanced': 'Équilibré',
       'batterySaver': 'Économie',
@@ -1730,11 +1702,11 @@ class AppLocalizations {
       'planner': 'Planear',
       'record': 'Gravar',
       'routes': 'Percursos',
-      'routesUnavailable':
-          'Os percursos e atividades estão temporariamente indisponíveis. Tente novamente.',
+      'routesUnavailable': 'Os percursos e atividades estão temporariamente indisponíveis. Tente novamente.',
       'searchPlace': 'Pesquisar local ou trilho',
       'noSearchResults': 'Nenhum resultado encontrado',
       'searchFailed': 'Pesquisa indisponível. Tente novamente mais tarde',
+      'searchAttribution': 'Dados de pesquisa © colaboradores do OpenStreetMap',
       'createRoute': 'Criar um percurso',
       'pointPreview': 'Ponto selecionado',
       'startHere': 'Começar aqui',
@@ -1748,8 +1720,7 @@ class AppLocalizations {
       'ascent': 'Subida',
       'duration': 'Tempo',
       'readyToRecord': 'Pronto para gravar',
-      'recordingUnavailable':
-          'A gravação encontrou um problema. Verifique o GPS e as permissões e tente novamente.',
+      'recordingUnavailable': 'A gravação encontrou um problema. Verifique o GPS e as permissões e tente novamente.',
       'startRecording': 'Iniciar gravação',
       'yourRoutes': 'Os seus percursos',
       'noRoutes': 'Nenhum percurso guardado',
@@ -1786,8 +1757,7 @@ class AppLocalizations {
       'proRenewalNotice': 'A subscrição renova-se automaticamente pelo período selecionado até ser cancelada no Google Play.',
       'profile': 'Perfil',
       'settings': 'Definições',
-      'settingsUnavailable':
-          'As definições estão temporariamente indisponíveis. Tente novamente.',
+      'settingsUnavailable': 'As definições estão temporariamente indisponíveis. Tente novamente.',
       'preferences': 'Preferências da app',
       'activitySummary': 'Resumo de atividade',
       'activities': 'Atividades',
@@ -1986,8 +1956,7 @@ class AppLocalizations {
       'deleteActivity': 'Eliminar atividade?',
       'navigate': 'Navegar',
       'navigationActive': 'Navegação ativa',
-      'navigationUnavailable':
-          'A navegação encontrou um problema temporário. Tente novamente.',
+      'navigationUnavailable': 'A navegação encontrou um problema temporário. Tente novamente.',
       'offRoute': 'Fora do percurso',
       'backOnRoute': 'De volta ao percurso',
       'arrived': 'Chegou',
@@ -2000,10 +1969,9 @@ class AppLocalizations {
       'offlineHint': 'Descarregue o mapa de um percurso antes de sair: o GPS e a navegação continuam disponíveis sem rede.',
       'downloadOffline': 'Descarregar mapa',
       'downloadingOffline': 'A descarregar mapa…',
+      'offlineUnavailable': 'Os mapas offline estão temporariamente indisponíveis. Tente novamente.',
       'cancelDownload': 'Cancelar download',
       'offlineCancelled': 'Download offline cancelado',
-      'offlineUnavailable':
-          'Os mapas offline estão temporariamente indisponíveis. Tente novamente.',
       'offlineReady': 'Disponível offline',
       'offlineFailed': 'Falha no download offline',
       'offlineStorage': 'Armazenamento offline',
@@ -2015,10 +1983,11 @@ class AppLocalizations {
           'Abra Percursos e descarregue o mapa de um percurso guardado.',
       'storageUsed': 'Espaço usado',
       'outdoor': 'Outdoor',
+      'safetyUnavailable': 'A verificação de segurança está temporariamente indisponível.',
+      'outdoorUnavailable': 'As ferramentas Outdoor estão temporariamente indisponíveis. Tente novamente.',
       'outdoorHint': 'Ferramentas rápidas para autonomia, regresso e segurança no percurso.',
       'batteryMode': 'Modo de bateria',
-      'batteryModeUnavailable':
-          'O modo de bateria está temporariamente indisponível.',
+      'batteryModeUnavailable': 'O modo de bateria está temporariamente indisponível.',
       'batteryPerformance': 'Desempenho',
       'batteryBalanced': 'Equilibrado',
       'batterySaver': 'Poupança',
