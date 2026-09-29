@@ -79,9 +79,8 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
     if (!mounted || !cancelled) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(strings.offlineCancelled)),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(strings.offlineCancelled)));
     await _refresh();
   }
 
