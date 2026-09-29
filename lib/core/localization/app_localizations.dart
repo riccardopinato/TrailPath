@@ -35,6 +35,7 @@ class AppLocalizations {
   String get searchPlace => _value('searchPlace');
   String get noSearchResults => _value('noSearchResults');
   String get searchFailed => _value('searchFailed');
+  String get searchAttribution => _value('searchAttribution');
   String get createRoute => _value('createRoute');
   String get tapMapHint => _value('tapMapHint');
   String get pointPreview => _value('pointPreview');
@@ -356,6 +357,7 @@ class AppLocalizations {
       'searchPlace': 'Cerca luogo o sentiero',
       'noSearchResults': 'Nessun risultato trovato',
       'searchFailed': 'Ricerca non disponibile. Riprova più tardi',
+      'searchAttribution': 'Dati di ricerca © collaboratori OpenStreetMap',
       'createRoute': 'Crea un percorso',
       'pointPreview': 'Punto selezionato',
       'startHere': 'Parti da qui',
@@ -684,6 +686,7 @@ class AppLocalizations {
       'searchPlace': 'Search place or trail',
       'noSearchResults': 'No results found',
       'searchFailed': 'Search is unavailable. Try again later',
+      'searchAttribution': 'Search data © OpenStreetMap contributors',
       'createRoute': 'Create a route',
       'pointPreview': 'Selected point',
       'startHere': 'Start here',
