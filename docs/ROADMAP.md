@@ -105,7 +105,7 @@ Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current f
 - [x] harden recording finalization failure handling: final snapshots remain retryable after database failure and UI distinguishes save failure from a genuinely short activity;
 - [~] replace raw `error.toString()` surfaces with localized user-safe categories while preserving technical detail in structured logs; Settings and active Navigation user surfaces are sanitized/localized in v1.5.8; remaining feature-specific surfaces stay tracked;
 - [~] localize foreground-service notification text and remaining hardcoded UI/support strings; planner OSM search attribution is localized in v1.5.8, foreground-service copy remains tracked;
-- [ ] add explicit cancel semantics for long offline downloads and document/review download-size behavior;
+- [x] add explicit cancel semantics for long offline downloads; active downloads can be cancelled from Routes or Offline, partial region data is removed, database readiness is reset and the route remains restartable. Download-size review remains part of release QA;
 - [ ] decide whether route/activity/Back-to-Car coordinates require app-level encryption at rest;
 - [ ] upgrade `permission_handler` 12.x → 13.x in a dedicated post-RC compatibility step with permission/background regression;
 - [ ] remove duplicated semantic version source (`MapConfig.appVersion` vs pubspec) or generate it from one source of truth;
@@ -227,3 +227,11 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] replace raw Settings and active Navigation technical errors with localized user-safe messages;
 - [x] localize planner OpenStreetMap search attribution across supported languages;
 - [x] keep technical failure detail in controller/service state and structured logs instead of rendering raw exceptions directly to users.
+
+
+### v1.5.9 — Cancellable offline downloads
+
+- [x] active offline downloads can be stopped explicitly from both Routes and Offline screens;
+- [x] cancellation terminates the active stream, removes partial region data and resets saved-route offline readiness without deleting the route;
+- [x] cancelled downloads remain restartable;
+- [x] offline inventory failures are rendered with localized user-safe copy instead of raw exception text;
