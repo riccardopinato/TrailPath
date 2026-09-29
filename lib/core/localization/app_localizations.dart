@@ -283,6 +283,9 @@ class AppLocalizations {
   String get offlineHint => _value('offlineHint');
   String get downloadOffline => _value('downloadOffline');
   String get downloadingOffline => _value('downloadingOffline');
+  String get cancelDownload => _value('cancelDownload');
+  String get offlineCancelled => _value('offlineCancelled');
+  String get offlineUnavailable => _value('offlineUnavailable');
   String get offlineReady => _value('offlineReady');
   String get offlineFailed => _value('offlineFailed');
   String get offlineStorage => _value('offlineStorage');
@@ -618,6 +621,10 @@ class AppLocalizations {
       'offlineHint': 'Scarica la mappa di un percorso prima di partire: GPS e navigazione restano utilizzabili anche senza rete.',
       'downloadOffline': 'Scarica mappa',
       'downloadingOffline': 'Download mappa…',
+      'cancelDownload': 'Interrompi download',
+      'offlineCancelled': 'Download offline interrotto',
+      'offlineUnavailable':
+          'Le mappe offline non sono disponibili al momento. Riprova.',
       'offlineReady': 'Disponibile offline',
       'offlineFailed': 'Download offline non riuscito',
       'offlineStorage': 'Archivio offline',
@@ -950,6 +957,10 @@ class AppLocalizations {
       'offlineHint': 'Download a saved route map before you leave: GPS and navigation keep working without a connection.',
       'downloadOffline': 'Download map',
       'downloadingOffline': 'Downloading map…',
+      'cancelDownload': 'Cancel download',
+      'offlineCancelled': 'Offline download cancelled',
+      'offlineUnavailable':
+          'Offline maps are temporarily unavailable. Try again.',
       'offlineReady': 'Available offline',
       'offlineFailed': 'Offline download failed',
       'offlineStorage': 'Offline storage',
@@ -1283,6 +1294,10 @@ class AppLocalizations {
       'offlineHint': 'Descarga el mapa de una ruta antes de salir: el GPS y la navegación siguen funcionando sin conexión.',
       'downloadOffline': 'Descargar mapa',
       'downloadingOffline': 'Descargando mapa…',
+      'cancelDownload': 'Cancelar descarga',
+      'offlineCancelled': 'Descarga offline cancelada',
+      'offlineUnavailable':
+          'Los mapas offline no están disponibles temporalmente. Inténtalo de nuevo.',
       'offlineReady': 'Disponible offline',
       'offlineFailed': 'Error al descargar el mapa offline',
       'offlineStorage': 'Almacenamiento offline',
@@ -1945,6 +1960,10 @@ class AppLocalizations {
       'offlineHint': 'Descarregue o mapa de um percurso antes de sair: o GPS e a navegação continuam disponíveis sem rede.',
       'downloadOffline': 'Descarregar mapa',
       'downloadingOffline': 'A descarregar mapa…',
+      'cancelDownload': 'Cancelar download',
+      'offlineCancelled': 'Download offline cancelado',
+      'offlineUnavailable':
+          'Os mapas offline estão temporariamente indisponíveis. Tente novamente.',
       'offlineReady': 'Disponível offline',
       'offlineFailed': 'Falha no download offline',
       'offlineStorage': 'Armazenamento offline',
