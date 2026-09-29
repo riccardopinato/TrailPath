@@ -532,9 +532,108 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  upgrade-migration:
+    name: TrailPath Upgrade / Migration AppLab
+    needs: validate-and-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    permissions:
+      contents: read
+      actions: read
+
+    steps:
+      - name: Checkout TrailPath
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Download current x86_64 release APK
+        uses: actions/download-artifact@v6
+        with:
+          name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-ci-x86_64
+          path: upgrade-current
+
+      - name: Download pinned v1.5.11 migration baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASELINE_NAME: TrailPath-upgrade-baseline-v1.5.11-x86_64
+          BOOTSTRAP_ARTIFACT_ID: "11021533532"
+        run: |
+          set -euo pipefail
+          BASELINE_ID="$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=$BASELINE_NAME&per_page=100" \
+            --jq '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty')"
+          if [ -z "$BASELINE_ID" ]; then
+            BASELINE_ID="$BOOTSTRAP_ARTIFACT_ID"
+            echo "Using bootstrap migration artifact: $BASELINE_ID"
+          else
+            echo "Using retained migration baseline artifact: $BASELINE_ID"
+          fi
+          mkdir -p upgrade-baseline
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$BASELINE_ID/zip" > "$RUNNER_TEMP/trailpath-migration-baseline.zip"
+          unzip -q "$RUNNER_TEMP/trailpath-migration-baseline.zip" -d upgrade-baseline
+          test -f upgrade-baseline/app-x86_64-release.apk
+          echo "Baseline artifact id: $BASELINE_ID"
+          sha256sum upgrade-baseline/app-x86_64-release.apk
+
+      - name: Refresh retained v1.5.11 migration baseline
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-upgrade-baseline-v1.5.11-x86_64
+          path: upgrade-baseline/app-x86_64-release.apk
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Checkout AppLab
+        uses: actions/checkout@v6
+        with:
+          repository: riccardopinato/AppLab
+          ref: 16271b3ffa34982a0f04fd118565047e7c09e743
+          path: .applab
+
+      - name: Install Maestro
+        run: |
+          chmod +x .applab/scripts/*.sh
+          chmod +x .maestro/run-upgrade-migration.sh
+          .applab/scripts/install_maestro.sh
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Upgrade v1.5.11 artifact to current release in place
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7_pro
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: |
+            bash "$GITHUB_WORKSPACE/.maestro/run-upgrade-migration.sh" \
+              "$GITHUB_WORKSPACE/upgrade-baseline/app-x86_64-release.apk" \
+              "$GITHUB_WORKSPACE/upgrade-current/app-x86_64-release.apk" \
+              "$GITHUB_WORKSPACE/upgrade-migration-report"
+
+      - name: Upload upgrade migration evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-Upgrade-Migration-${{ github.sha }}
+          path: upgrade-migration-report/
+          if-no-files-found: warn
+          retention-days: 30
+
   certification-evidence:
     name: v1.0 Certification Evidence
-    needs: [validate-and-build, routing-provider-smoke, android-api29-smoke, applab-android, applab-v15-pro]
+    needs: [validate-and-build, routing-provider-smoke, android-api29-smoke, applab-android, applab-v15-pro, upgrade-migration]
     if: always()
     runs-on: ubuntu-latest
 
@@ -570,11 +669,19 @@ jobs:
           name: TrailPath-AppLab-${{ github.sha }}
           path: certification/applab
 
+      - name: Download upgrade migration evidence
+        if: needs.upgrade-migration.result != 'skipped' && needs.upgrade-migration.result != 'cancelled'
+        uses: actions/download-artifact@v6
+        with:
+          name: TrailPath-Upgrade-Migration-${{ github.sha }}
+          path: certification/upgrade
+
       - name: Build certification Evidence Bundle
         env:
           BUILD_RESULT: ${{ needs.validate-and-build.result }}
           APPLAB_RESULT: ${{ needs.applab-android.result }}
           API29_RESULT: ${{ needs.android-api29-smoke.result }}
+          UPGRADE_RESULT: ${{ needs.upgrade-migration.result }}
           STORE_SIGNING_AVAILABLE: ${{ needs.validate-and-build.outputs.store_signing_available }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           APPLAB_HARNESS_SHA: 16271b3ffa34982a0f04fd118565047e7c09e743
@@ -628,7 +735,7 @@ jobs:
           STORE_REVIEW="$(awk -F': ' '/^- Play Store listing\/screenshots review:/ {print $2}' docs/PRODUCTION_APPROVAL.md | tr -d '\r')"
           ROLLOUT_REVIEW="$(awk -F': ' '/^- Staged rollout \/ rollback review:/ {print $2}' docs/PRODUCTION_APPROVAL.md | tr -d '\r')"
 
-          if [ "$BUILD_RESULT" = "success" ] && [ "$API29_RESULT" = "success" ] && [ "$APPLAB_RESULT" = "success" ]; then
+          if [ "$BUILD_RESULT" = "success" ] && [ "$API29_RESULT" = "success" ] && [ "$APPLAB_RESULT" = "success" ] && [ "$UPGRADE_RESULT" = "success" ]; then
             AUTOMATED_VALIDATION="PASS"
           else
             AUTOMATED_VALIDATION="FAIL"
@@ -662,6 +769,7 @@ jobs:
           - validate-and-build: **$BUILD_RESULT**
           - Android API 29 release smoke: **$API29_RESULT**
           - AppLab Android E2E (API 35): **$APPLAB_RESULT**
+          - Upgrade / Migration AppLab (v1.5.11 → current): **$UPGRADE_RESULT**
           - Store-signing credentials available: **$STORE_SIGNING_AVAILABLE**
           - Formatting / analyze / full Flutter tests: tied to validate-and-build
           - ARM64 release / x86_64 release / AAB structure / size budget: tied to validate-and-build
@@ -711,6 +819,9 @@ jobs:
           if [ -f certification/applab/summary.md ]; then
             cp certification/applab/summary.md certification/APPLAB_SUMMARY.md
           fi
+          if [ -f certification/upgrade/summary.md ]; then
+            cp certification/upgrade/summary.md certification/UPGRADE_MIGRATION_SUMMARY.md
+          fi
 
           echo "Certification verdict: $VERDICT"
           if [ "$VERDICT" = "BLOCKED" ]; then
@@ -728,6 +839,7 @@ jobs:
             certification/VERDICT.txt
             certification/ARTIFACT_SHA256.txt
             certification/APPLAB_SUMMARY.md
+            certification/UPGRADE_MIGRATION_SUMMARY.md
           if-no-files-found: error
           retention-days: 30
 
