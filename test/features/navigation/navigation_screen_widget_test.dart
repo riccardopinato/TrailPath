@@ -52,7 +52,12 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Broken route'), findsOneWidget);
-    expect(find.text('La navigazione ha incontrato un problema temporaneo. Riprova.'), findsOneWidget);
+    expect(
+      find.text(
+        'La navigazione ha incontrato un problema temporaneo. Riprova.',
+      ),
+      findsOneWidget,
+    );
     expect(find.textContaining('engine-start-secret'), findsNothing);
     expect(tester.takeException(), isNull);
   });
