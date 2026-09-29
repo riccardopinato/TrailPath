@@ -253,28 +253,29 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
             ]);
     }
 
-    final result = _searchResult;
-    if (result == null) {
-      final stale = _searchCircle;
-      _searchCircle = null;
+    final candidate = _candidatePoint;
+    if (candidate == null) {
+      final stale = _candidateCircle;
+      _candidateCircle = null;
       if (stale != null && map.circles.contains(stale)) {
         await map.removeCircle(stale);
       }
     } else {
       final options = CircleOptions(
-        geometry: LatLng(result.point.latitude, result.point.longitude),
+        geometry: LatLng(candidate.latitude, candidate.longitude),
         circleRadius: 8,
         circleColor: '#1565C0',
         circleStrokeColor: '#FFFFFF',
         circleStrokeWidth: 2.5,
       );
-      final current = _searchCircle;
+      final current = _candidateCircle;
       if (current != null && map.circles.contains(current)) {
         await map.updateCircle(current, options);
       } else {
-        _searchCircle = await map.addCircle(options, const <String, dynamic>{
-          'kind': 'search',
-        });
+        _candidateCircle = await map.addCircle(
+          options,
+          const <String, dynamic>{'kind': 'candidate'},
+        );
       }
     }
   }
