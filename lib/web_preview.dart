@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/collection_sampling.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
+import 'package:trail_path/core/domain/map_matching.dart';
 import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/services/planner_service_providers.dart';
 import 'package:trail_path/features/planner/application/route_planner_controller.dart';
 
@@ -28,6 +31,13 @@ class TrailPathWebPreview extends StatelessWidget {
         useMaterial3: true,
         colorSchemeSeed: const Color(0xFF2E7D32),
       ),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       home: const _PreviewScreen(),
     );
   }
@@ -49,12 +59,14 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
   List<Line> _routeLines = const [];
   List<Circle> _waypointCircles = const [];
   List<Circle> _midpointCircles = const [];
-  Circle? _searchCircle;
-  PlaceSearchResult? _searchResult;
+  Circle? _candidateCircle;
+  GeoPoint? _candidatePoint;
+  String? _candidateLabel;
   RoutePlannerState? _pendingPlanner;
   bool _syncRunning = false;
   bool _searchBusy = false;
   bool _traceMode = false;
+  MapMatchMode _traceMatchMode = MapMatchMode.trails;
   bool _traceDrawing = false;
   bool _traceProcessing = false;
   int? _tracePointerId;
