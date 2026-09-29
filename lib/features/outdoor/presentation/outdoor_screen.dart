@@ -78,8 +78,9 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
       }
     } on Object catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(error.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(strings.outdoorUnavailable)),
+        );
       }
     } finally {
       if (mounted) {
@@ -223,7 +224,7 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
               ),
               loading: () => const _LoadingCard(),
               error: (error, stackTrace) =>
-                  _ErrorCard(message: error.toString()),
+                  _ErrorCard(message: strings.outdoorUnavailable),
             ),
             const SizedBox(height: 14),
             FutureBuilder<SafetySnapshot>(
@@ -425,7 +426,7 @@ class _SafetyCard extends StatelessWidget {
           ? const LinearProgressIndicator()
           : error != null
           ? Text(
-              error.toString(),
+              strings.safetyUnavailable,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.error,
                 fontSize: 12,
