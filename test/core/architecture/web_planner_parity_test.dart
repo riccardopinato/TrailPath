@@ -31,6 +31,11 @@ void main() {
     expect(webPreview, contains('sampleEvenly'));
     expect(webPreview, contains('_candidatePoint'));
     expect(webPreview, contains('_confirmCandidate'));
+    expect(webPreview, contains('_previewCandidate'));
+    expect(webPreview, contains('_scheduleMapSync'));
+    expect(webPreview, contains('_drainMapSync'));
+    expect(webPreview, contains('updateLine'));
+    expect(webPreview, contains('updateCircle'));
     expect(webPreview, contains('MapMatchMode _traceMatchMode'));
     expect(webPreview, contains('gestureToleranceMeters'));
     expect(webPreview, contains('AppLocalizations.supportedLocales'));
