@@ -209,31 +209,33 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
       _downloadCompletions[routeId] = completion;
 
       late final StreamSubscription<OfflineRegion> subscription;
-      subscription = manager.download(request).listen(
-        (snapshot) {
-          if (!ref.mounted || _cancelledRouteIds.contains(routeId)) {
-            return;
-          }
-          state = state.copyWith(
-            snapshots: {...state.snapshots, routeId: snapshot},
-            clearError: true,
+      subscription = manager
+          .download(request)
+          .listen(
+            (snapshot) {
+              if (!ref.mounted || _cancelledRouteIds.contains(routeId)) {
+                return;
+              }
+              state = state.copyWith(
+                snapshots: {...state.snapshots, routeId: snapshot},
+                clearError: true,
+              );
+              completed = snapshot.isComplete;
+              if (completed && !completion.isCompleted) {
+                completion.complete(true);
+              }
+            },
+            onError: (Object error, StackTrace stackTrace) {
+              if (!completion.isCompleted) {
+                completion.completeError(error, stackTrace);
+              }
+            },
+            onDone: () {
+              if (!completion.isCompleted) {
+                completion.complete(completed);
+              }
+            },
           );
-          completed = snapshot.isComplete;
-          if (completed && !completion.isCompleted) {
-            completion.complete(true);
-          }
-        },
-        onError: (Object error, StackTrace stackTrace) {
-          if (!completion.isCompleted) {
-            completion.completeError(error, stackTrace);
-          }
-        },
-        onDone: () {
-          if (!completion.isCompleted) {
-            completion.complete(completed);
-          }
-        },
-      );
       _downloadSubscriptions[routeId] = subscription;
 
       completed = await completion.future;
