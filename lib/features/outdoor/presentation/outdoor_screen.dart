@@ -78,9 +78,8 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
       }
     } on Object catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(strings.outdoorUnavailable)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(strings.outdoorUnavailable)));
       }
     } finally {
       if (mounted) {
