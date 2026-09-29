@@ -358,9 +358,7 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
         distanceToPolylineMeters(candidate, planner.geometry) > 80) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tieni premuto più vicino al percorso.'),
-          ),
+          SnackBar(content: Text(AppLocalizations.of(context).routePressTooFar)),
         );
       }
       return;
@@ -506,6 +504,11 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
           );
       if (!mounted) {
         return;
+      }
+      if (results.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).noSearchResults)),
+        );
       }
       setState(() => _searchResults = results);
     } on Object {
@@ -997,7 +1000,7 @@ class _PlannerPanel extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         children: [
           Text(
-            'Pianifica un percorso',
+            strings.planner,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
@@ -1176,12 +1179,12 @@ class _PlannerPanel extends StatelessWidget {
                         ? Icons.check_circle_rounded
                         : Icons.more_horiz_rounded,
                     label: routeReady
-                        ? 'Percorso agganciato · ${planner.routingSource}'
+                        ? '${strings.routeSnapped} · ${planner.routingSource}'
                         : planner.points.length < 2
-                        ? 'Aggiungi almeno 2 punti'
+                        ? strings.pointsShort
                         : planner.isRouting
-                        ? 'Calcolo percorso…'
-                        : 'Percorso non disponibile',
+                        ? strings.routingCalculating
+                        : strings.routeUnavailable,
                     iconColor: routeReady ? scheme.primary : null,
                   ),
                   if (planner.hasElevation) ...[
@@ -1248,7 +1251,7 @@ class _PlannerPanel extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: planner.isRouting ? null : onUndo,
                   icon: const Icon(Icons.undo_rounded),
-                  label: const Text('Annulla'),
+                  label: Text(strings.undo),
                 ),
               ),
               const SizedBox(width: 8),
@@ -1256,7 +1259,7 @@ class _PlannerPanel extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: planner.isRouting ? null : onRedo,
                   icon: const Icon(Icons.redo_rounded),
-                  label: const Text('Ripeti'),
+                  label: Text(strings.redo),
                 ),
               ),
             ],
@@ -1265,7 +1268,7 @@ class _PlannerPanel extends StatelessWidget {
           FilledButton.tonalIcon(
             onPressed: onClear,
             icon: const Icon(Icons.delete_sweep_rounded),
-            label: const Text('Pulisci percorso'),
+            label: Text(strings.clear),
           ),
           const SizedBox(height: 12),
           Text(
