@@ -110,7 +110,7 @@ Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current f
 - [x] upgrade `permission_handler` 12.x → 13.x in a dedicated post-RC compatibility step with permission/background regression; v1.5.11 uses 13.0.2 and compileSdk 37 with release APK permission inspection;
 - [x] remove duplicated semantic version source: `pubspec.yaml` is now the sole semantic version source and runtime map/network identity no longer carries a separately maintained version constant;
 - [x] broaden behavioral widget coverage for candidate selection and destructive/error states: extracted candidate actions, shared destructive confirmation and navigation safe-error rendering are exercised as real widgets;
-- [ ] establish upgrade/migration AppLab baseline from a real previous release artifact.
+- [x] establish upgrade/migration AppLab baseline from a real previous release artifact: v1.5.13 upgrades the pinned v1.5.11+48 x86_64 CI artifact in-place and verifies activity, route geometry, native offline readiness and settings persistence.
 
 ### P3 — polish
 - [ ] finish top-toolbar declutter if physical testing still finds the map chrome crowded;
@@ -260,3 +260,13 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] centralize destructive confirmation dialogs and cover cancel/confirm behavior with widget tests;
 - [x] add navigation widget coverage proving internal engine errors are not rendered to users;
 - [x] remove the remaining Italian-only Web waypoint action and keep Web planner support copy localized.
+
+
+### v1.5.13 — Real-artifact Upgrade & Migration AppLab
+
+- [x] pin the last fully green v1.5.11+48 x86_64 release artifact as the migration baseline;
+- [x] seed completed activity, routed geometry, native offline state and a non-default unit preference through real UI flows before upgrade;
+- [x] install the new APK with `adb install -r` and explicitly forbid state clearing during verification;
+- [x] verify persisted activity, route navigation geometry, offline readiness and settings after the package update;
+- [x] retain upgrade evidence with old/new package identity and SHA-256 values;
+- [x] refresh a dedicated 90-day baseline artifact so future migration runs are not tied to the normal one-day x86 runtime artifact.
