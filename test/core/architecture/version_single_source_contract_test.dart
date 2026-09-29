@@ -5,7 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('pubspec remains the only semantic version source', () {
     final pubspec = File('pubspec.yaml').readAsStringSync();
-    final mapConfig = File('lib/core/config/map_config.dart').readAsStringSync();
+    final mapConfig = File('lib/core/config/map_config.dart')
+        .readAsStringSync();
 
     final versionLine = pubspec
         .split('\n')
