@@ -20,6 +20,7 @@ import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/planner/application/route_planner_controller.dart';
+import 'package:trail_path/features/planner/presentation/candidate_selection_card.dart';
 import 'package:trail_path/features/pro/application/premium_controller.dart';
 import 'package:trail_path/features/pro/presentation/pro_paywall.dart';
 import 'package:trail_path/features/settings/application/settings_controller.dart';
@@ -2215,7 +2216,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
             child: SafeArea(
               top: false,
               minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-              child: _CandidateSelectionCard(
+              child: CandidateSelectionCard(
                 strings: strings,
                 point: _candidatePoint!,
                 label: _candidateLabel,
@@ -2319,110 +2320,6 @@ IconData _mapStyleIcon(_PlannerMapStyle style) {
 }
 
 enum _CandidateIntent { start, destination, waypoint }
-
-class _CandidateSelectionCard extends StatelessWidget {
-  const _CandidateSelectionCard({
-    required this.strings,
-    required this.point,
-    required this.label,
-    required this.canUseCurrentLocation,
-    required this.pointCount,
-    required this.onStart,
-    required this.onDestination,
-    required this.onWaypoint,
-    required this.onCancel,
-  });
-
-  final AppLocalizations strings;
-  final GeoPoint point;
-  final String? label;
-  final bool canUseCurrentLocation;
-  final int pointCount;
-  final VoidCallback onStart;
-  final VoidCallback onDestination;
-  final VoidCallback onWaypoint;
-  final VoidCallback onCancel;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final canSetDestination = pointCount > 0 || canUseCurrentLocation;
-
-    return Material(
-      color: scheme.surface.withValues(alpha: 0.98),
-      elevation: 8,
-      borderRadius: BorderRadius.circular(22),
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.place_rounded, color: scheme.primary),
-                const SizedBox(width: 9),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label ?? strings.pointPreview,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${point.latitude.toStringAsFixed(5)}, '
-                        '${point.longitude.toStringAsFixed(5)}',
-                        style: TextStyle(
-                          color: scheme.onSurfaceVariant,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  tooltip: strings.cancel,
-                  onPressed: onCancel,
-                  icon: const Icon(Icons.close_rounded),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              alignment: WrapAlignment.end,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: onStart,
-                  icon: const Icon(Icons.trip_origin_rounded, size: 18),
-                  label: Text(strings.startHere),
-                ),
-                if (pointCount >= 2)
-                  OutlinedButton.icon(
-                    onPressed: onWaypoint,
-                    icon: const Icon(Icons.add_location_alt_outlined, size: 18),
-                    label: Text(strings.addWaypoint),
-                  ),
-                FilledButton.icon(
-                  onPressed: canSetDestination ? onDestination : null,
-                  icon: const Icon(Icons.flag_rounded, size: 18),
-                  label: Text(strings.setDestination),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _DestinationPromptBar extends StatelessWidget {
   const _DestinationPromptBar({required this.strings, required this.onClear});
