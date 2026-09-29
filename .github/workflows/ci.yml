@@ -616,11 +616,7 @@ jobs:
           profile: pixel_7_pro
           disable-animations: true
           emulator-boot-timeout: 600
-          script: |
-            bash "$GITHUB_WORKSPACE/.maestro/run-upgrade-migration.sh" \
-              "$GITHUB_WORKSPACE/upgrade-baseline/app-x86_64-release.apk" \
-              "$GITHUB_WORKSPACE/upgrade-current/app-x86_64-release.apk" \
-              "$GITHUB_WORKSPACE/upgrade-migration-report"
+          script: bash "$GITHUB_WORKSPACE/.maestro/run-upgrade-migration.sh" "$GITHUB_WORKSPACE/upgrade-baseline/app-x86_64-release.apk" "$GITHUB_WORKSPACE/upgrade-current/app-x86_64-release.apk" "$GITHUB_WORKSPACE/upgrade-migration-report"
 
       - name: Upload upgrade migration evidence
         if: always()
