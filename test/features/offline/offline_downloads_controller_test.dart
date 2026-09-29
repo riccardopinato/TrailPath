@@ -168,6 +168,7 @@ void main() {
     );
 
     final manager = _ControllableOfflineMapManager();
+    addTearDown(manager.dispose);
     final container = ProviderContainer(
       overrides: [
         appDatabaseProvider.overrideWithValue(database),
@@ -342,6 +343,8 @@ class _FakeOfflineMapManager implements OfflineMapManager {
 
   @override
   Future<void> clearCache() async {}
+
+  Future<void> dispose() => _controller.close();
 }
 
 
