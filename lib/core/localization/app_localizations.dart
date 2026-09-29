@@ -82,6 +82,7 @@ class AppLocalizations {
   String get proRenewalNotice => _value('proRenewalNotice');
   String get profile => _value('profile');
   String get settings => _value('settings');
+  String get settingsUnavailable => _value('settingsUnavailable');
   String get preferences => _value('preferences');
   String get activitySummary => _value('activitySummary');
   String get activities => _value('activities');
@@ -268,6 +269,7 @@ class AppLocalizations {
   String get deleteActivity => _value('deleteActivity');
   String get navigate => _value('navigate');
   String get navigationActive => _value('navigationActive');
+  String get navigationUnavailable => _value('navigationUnavailable');
   String get offRoute => _value('offRoute');
   String get backOnRoute => _value('backOnRoute');
   String get arrived => _value('arrived');
@@ -292,6 +294,7 @@ class AppLocalizations {
   String get outdoor => _value('outdoor');
   String get outdoorHint => _value('outdoorHint');
   String get batteryMode => _value('batteryMode');
+  String get batteryModeUnavailable => _value('batteryModeUnavailable');
   String get batteryPerformance => _value('batteryPerformance');
   String get batteryBalanced => _value('batteryBalanced');
   String get batterySaver => _value('batterySaver');
@@ -402,6 +405,8 @@ class AppLocalizations {
       'proRenewalNotice': 'L’abbonamento si rinnova automaticamente al periodo selezionato finché non viene annullato da Google Play.',
       'profile': 'Profilo',
       'settings': 'Impostazioni',
+      'settingsUnavailable':
+          'Impostazioni temporaneamente non disponibili. Riprova.',
       'preferences': 'Preferenze dell\'app',
       'activitySummary': 'Riepilogo attività',
       'activities': 'Attività',
@@ -596,6 +601,8 @@ class AppLocalizations {
       'deleteActivity': 'Eliminare l’attività?',
       'navigate': 'Naviga',
       'navigationActive': 'Navigazione attiva',
+      'navigationUnavailable':
+          'La navigazione ha incontrato un problema temporaneo. Riprova.',
       'offRoute': 'Fuori percorso',
       'backOnRoute': 'Tornato sul percorso',
       'arrived': 'Arrivato',
@@ -623,6 +630,8 @@ class AppLocalizations {
       'outdoorHint':
           'Strumenti rapidi per autonomia, rientro e sicurezza sul sentiero.',
       'batteryMode': 'Modalità batteria',
+      'batteryModeUnavailable':
+          'Modalità batteria temporaneamente non disponibile.',
       'batteryPerformance': 'Prestazioni',
       'batteryBalanced': 'Bilanciata',
       'batterySaver': 'Risparmio',
@@ -725,6 +734,8 @@ class AppLocalizations {
       'proRenewalNotice': 'The subscription renews automatically for the selected period until cancelled through Google Play.',
       'profile': 'Profile',
       'settings': 'Settings',
+      'settingsUnavailable':
+          'Settings are temporarily unavailable. Try again.',
       'preferences': 'App preferences',
       'activitySummary': 'Activity summary',
       'activities': 'Activities',
@@ -920,6 +931,10 @@ class AppLocalizations {
       'deleteActivity': 'Delete activity?',
       'navigate': 'Navigate',
       'navigationActive': 'Navigation active',
+      'navigationUnavailable':
+          'La navigation a rencontré un problème temporaire. Réessayez.',
+      'navigationUnavailable':
+          'Navigation hit a temporary problem. Try again.',
       'offRoute': 'Off route',
       'backOnRoute': 'Back on route',
       'arrived': 'Arrived',
@@ -946,6 +961,8 @@ class AppLocalizations {
       'outdoorHint':
           'Quick tools for battery life, return guidance and trail safety.',
       'batteryMode': 'Battery mode',
+      'batteryModeUnavailable':
+          'Battery mode is temporarily unavailable.',
       'batteryPerformance': 'Performance',
       'batteryBalanced': 'Balanced',
       'batterySaver': 'Saver',
@@ -1047,6 +1064,8 @@ class AppLocalizations {
       'proRenewalNotice': 'La suscripción se renueva automáticamente por el periodo seleccionado hasta que se cancele en Google Play.',
       'profile': 'Perfil',
       'settings': 'Ajustes',
+      'settingsUnavailable':
+          'Los ajustes no están disponibles temporalmente. Inténtalo de nuevo.',
       'preferences': 'Preferencias de la app',
       'activitySummary': 'Resumen de actividad',
       'activities': 'Actividades',
@@ -1247,6 +1266,8 @@ class AppLocalizations {
       'deleteActivity': '¿Eliminar la actividad?',
       'navigate': 'Navegar',
       'navigationActive': 'Navegación activa',
+      'navigationUnavailable':
+          'La navegación encontró un problema temporal. Inténtalo de nuevo.',
       'offRoute': 'Fuera de ruta',
       'backOnRoute': 'De nuevo en ruta',
       'arrived': 'Has llegado',
@@ -1273,6 +1294,8 @@ class AppLocalizations {
       'outdoorHint':
           'Herramientas rápidas para autonomía, regreso y seguridad en ruta.',
       'batteryMode': 'Modo de batería',
+      'batteryModeUnavailable':
+          'El modo de batería no está disponible temporalmente.',
       'batteryPerformance': 'Rendimiento',
       'batteryBalanced': 'Equilibrado',
       'batterySaver': 'Ahorro',
@@ -1375,6 +1398,8 @@ class AppLocalizations {
       'proRenewalNotice': 'L’abonnement est renouvelé automatiquement pour la période choisie jusqu’à son annulation via Google Play.',
       'profile': 'Profil',
       'settings': 'Réglages',
+      'settingsUnavailable':
+          'Les réglages sont temporairement indisponibles. Réessayez.',
       'preferences': 'Préférences de l’application',
       'activitySummary': 'Résumé d’activité',
       'activities': 'Activités',
@@ -1598,6 +1623,8 @@ class AppLocalizations {
       'outdoorHint':
           'Outils rapides pour autonomie, retour et sécurité sur le terrain.',
       'batteryMode': 'Mode batterie',
+      'batteryModeUnavailable':
+          'Le mode batterie est temporairement indisponible.',
       'batteryPerformance': 'Performance',
       'batteryBalanced': 'Équilibré',
       'batterySaver': 'Économie',
@@ -1701,6 +1728,8 @@ class AppLocalizations {
       'proRenewalNotice': 'A subscrição renova-se automaticamente pelo período selecionado até ser cancelada no Google Play.',
       'profile': 'Perfil',
       'settings': 'Definições',
+      'settingsUnavailable':
+          'As definições estão temporariamente indisponíveis. Tente novamente.',
       'preferences': 'Preferências da app',
       'activitySummary': 'Resumo de atividade',
       'activities': 'Atividades',
@@ -1899,6 +1928,8 @@ class AppLocalizations {
       'deleteActivity': 'Eliminar atividade?',
       'navigate': 'Navegar',
       'navigationActive': 'Navegação ativa',
+      'navigationUnavailable':
+          'A navegação encontrou um problema temporário. Tente novamente.',
       'offRoute': 'Fora do percurso',
       'backOnRoute': 'De volta ao percurso',
       'arrived': 'Chegou',
@@ -1924,6 +1955,8 @@ class AppLocalizations {
       'outdoor': 'Outdoor',
       'outdoorHint': 'Ferramentas rápidas para autonomia, regresso e segurança no percurso.',
       'batteryMode': 'Modo de bateria',
+      'batteryModeUnavailable':
+          'O modo de bateria está temporariamente indisponível.',
       'batteryPerformance': 'Desempenho',
       'batteryBalanced': 'Equilibrado',
       'batterySaver': 'Poupança',
