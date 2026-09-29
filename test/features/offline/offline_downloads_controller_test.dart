@@ -344,7 +344,6 @@ class _FakeOfflineMapManager implements OfflineMapManager {
   @override
   Future<void> clearCache() async {}
 
-  Future<void> dispose() => _controller.close();
 }
 
 class _ControllableOfflineMapManager implements OfflineMapManager {
@@ -379,4 +378,6 @@ class _ControllableOfflineMapManager implements OfflineMapManager {
 
   @override
   Future<void> clearCache() async {}
+
+  Future<void> dispose() => _controller.close();
 }
