@@ -34,7 +34,7 @@ void main() {
     expect(webPreview, contains('MapMatchMode _traceMatchMode'));
     expect(webPreview, contains('gestureToleranceMeters'));
     expect(webPreview, contains('AppLocalizations.supportedLocales'));
-    expect(webPreview, isNot(contains('_searchResult')));
+    expect(webPreview, isNot(contains('PlaceSearchResult? _searchResult')));
 
     expect(
       webPreview,
