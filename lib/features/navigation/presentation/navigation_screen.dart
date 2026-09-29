@@ -432,7 +432,7 @@ class _NavigationPanel extends StatelessWidget {
           if (state.error != null) ...[
             const SizedBox(height: 10),
             Text(
-              state.error!,
+              strings.navigationUnavailable,
               style: TextStyle(
                 color: scheme.error,
                 fontSize: 12,
