@@ -2540,7 +2540,6 @@ class _PlannerCard extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-
             ],
           ),
           const SizedBox(height: 5),
