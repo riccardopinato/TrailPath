@@ -402,7 +402,7 @@ class _BackToCarPanel extends StatelessWidget {
                   ? strings.locationPermissionNeeded
                   : error == 'location-service'
                   ? strings.locationServiceOff
-                  : error!,
+                  : strings.locationUnavailable,
               style: TextStyle(
                 color: scheme.error,
                 fontSize: 12,
