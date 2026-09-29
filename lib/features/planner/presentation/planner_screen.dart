@@ -2540,22 +2540,7 @@ class _PlannerCard extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(width: 9),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                decoration: BoxDecoration(
-                  color: scheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  'v${MapConfig.appVersion}',
-                  style: TextStyle(
-                    color: scheme.onPrimaryContainer,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
+
             ],
           ),
           const SizedBox(height: 5),
