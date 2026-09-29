@@ -272,10 +272,9 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
       if (current != null && map.circles.contains(current)) {
         await map.updateCircle(current, options);
       } else {
-        _candidateCircle = await map.addCircle(
-          options,
-          const <String, dynamic>{'kind': 'candidate'},
-        );
+        _candidateCircle = await map.addCircle(options, const <String, dynamic>{
+          'kind': 'candidate',
+        });
       }
     }
   }
@@ -358,7 +357,9 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
         distanceToPolylineMeters(candidate, planner.geometry) > 80) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).routePressTooFar)),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).routePressTooFar),
+          ),
         );
       }
       return;
