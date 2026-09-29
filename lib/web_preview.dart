@@ -1206,7 +1206,7 @@ class _PlannerPanel extends StatelessWidget {
             FilledButton.tonalIcon(
               onPressed: onRemoveWaypoint,
               icon: const Icon(Icons.delete_outline_rounded),
-              label: Text('Rimuovi waypoint ${selectedWaypointIndex! + 1}'),
+              label: Text('${strings.removeWaypoint} #${selectedWaypointIndex! + 1}'),
             ),
           ],
           const SizedBox(height: 12),
