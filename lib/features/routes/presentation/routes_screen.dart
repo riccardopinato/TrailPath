@@ -455,17 +455,23 @@ class _OfflineRouteAction extends ConsumerWidget {
     final progress = downloads.progress(route.id);
 
     if (active) {
-      return Tooltip(
-        message: strings.downloadingOffline,
-        child: SizedBox(
-          width: 44,
-          height: 44,
-          child: Padding(
-            padding: const EdgeInsets.all(11),
-            child: CircularProgressIndicator(
-              strokeWidth: 2.4,
-              value: progress > 0 ? progress : null,
-            ),
+      return IconButton(
+        tooltip: strings.cancelDownload,
+        onPressed: () {
+          ref.read(offlineDownloadsProvider.notifier).cancelDownload(route.id);
+        },
+        icon: SizedBox(
+          width: 28,
+          height: 28,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              CircularProgressIndicator(
+                strokeWidth: 2.4,
+                value: progress > 0 ? progress : null,
+              ),
+              const Icon(Icons.close_rounded, size: 16),
+            ],
           ),
         ),
       );
@@ -503,7 +509,11 @@ class _OfflineRouteAction extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              success ? strings.offlineReady : strings.offlineFailed,
+              success
+                  ? strings.offlineReady
+                  : ref.read(offlineDownloadsProvider).error == null
+                  ? strings.offlineCancelled
+                  : strings.offlineFailed,
             ),
           ),
         );
