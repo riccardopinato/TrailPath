@@ -8,6 +8,7 @@ import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/localization/measurement_formatter.dart';
+import 'package:trail_path/core/presentation/confirmation_dialog.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/navigation/presentation/navigation_screen.dart';
 import 'package:trail_path/features/offline/application/offline_downloads_controller.dart';
@@ -203,25 +204,15 @@ class RoutesScreen extends ConsumerWidget {
     SavedRoute route,
   ) async {
     final strings = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showTrailPathConfirmationDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(strings.deleteRoute),
-        content: Text(route.name),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(strings.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(strings.delete),
-          ),
-        ],
-      ),
+      title: strings.deleteRoute,
+      message: route.name,
+      confirmLabel: strings.delete,
+      cancelLabel: strings.cancel,
     );
 
-    if (confirmed == true) {
+    if (confirmed) {
       final success = await ref
           .read(offlineDownloadsProvider.notifier)
           .deleteRouteAndOfflineData(route.id);
@@ -238,25 +229,15 @@ class RoutesScreen extends ConsumerWidget {
     Activity activity,
   ) async {
     final strings = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showTrailPathConfirmationDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(strings.deleteActivity),
-        content: Text(activity.name ?? strings.yourActivities),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(strings.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(strings.delete),
-          ),
-        ],
-      ),
+      title: strings.deleteActivity,
+      message: activity.name ?? strings.yourActivities,
+      confirmLabel: strings.delete,
+      cancelLabel: strings.cancel,
     );
 
-    if (confirmed == true) {
+    if (confirmed) {
       await ref.read(appDatabaseProvider).discardActivity(activity.id);
     }
   }
