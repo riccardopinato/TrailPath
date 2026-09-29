@@ -29,7 +29,10 @@ class SettingsScreen extends ConsumerWidget {
         error: (error, stackTrace) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Text(error.toString(), textAlign: TextAlign.center),
+            child: Text(
+              strings.settingsUnavailable,
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
         data: (prefs) => ListView(
@@ -160,7 +163,7 @@ class SettingsScreen extends ConsumerWidget {
                     error: (error, stackTrace) => ListTile(
                       leading: const Icon(Icons.gps_off_rounded),
                       title: Text(strings.batteryMode),
-                      subtitle: Text(error.toString()),
+                      subtitle: Text(strings.batteryModeUnavailable),
                     ),
                     data: (mode) => DropdownButtonFormField<BatteryMode>(
                       initialValue: mode,
