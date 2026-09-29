@@ -5,13 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('v1.5.13 upgrade gate uses a real previous release artifact', () {
     final workflow = File('.github/workflows/ci.yml').readAsStringSync();
-    final runner = File(
-      '.maestro/run-upgrade-migration.sh',
-    ).readAsStringSync();
+    final runner = File('.maestro/run-upgrade-migration.sh').readAsStringSync();
     final seed = File('.maestro/upgrade-seed-v1511.yaml').readAsStringSync();
-    final verify = File(
-      '.maestro/upgrade-verify-v1513.yaml',
-    ).readAsStringSync();
+    final verify = File('.maestro/upgrade-verify-v1513.yaml')
+        .readAsStringSync();
 
     expect(workflow, contains('TrailPath Upgrade / Migration AppLab'));
     expect(workflow, contains('11021533532'));
