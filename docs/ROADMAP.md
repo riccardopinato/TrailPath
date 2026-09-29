@@ -93,7 +93,7 @@ Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current f
 - [x] **AppLab planner E2E:** new confirmation flow, save, navigation, offline and restart sequence passes;
 - [~] **Selection accuracy / camera padding:** exact coordinates are fixed, but physical QA must verify bottom-edge pin visibility, sheet occlusion and accidental taps on the exact ARM64 artifact;
 - [ ] **Physical ARM64 frame budget:** validate startup, pan/zoom, point preview, route editing and waypoint drag on a representative real Android device; emulator Performance Lab is advisory only;
-- [ ] **Web Preview UX parity:** migrate `lib/web_preview.dart` from immediate tap mutation/separate search marker to the same preview/confirmation flow as mobile and carry over annotation caching/coalescing;
+- [x] **Web Preview UX parity:** Web uses the shared planner core, candidate preview/confirmation flow, shared search/routing/map-matching providers, Smart Trace and coalesced incremental MapLibre annotation updates;
 - [ ] **Full-app accessibility + small-screen pass:** TalkBack, large text, contrast, compact route summary and candidate actions across critical screens;
 - [ ] **Android release contract evidence:** record resolved compile/min/target SDK and merged foreground-location service declarations from the release artifact;
 - [ ] **Production routing-provider decision:** explicitly accept the public routing.openstreetmap.de dependency or switch/self-host behind the existing `RoutingEngine` contract;
@@ -103,8 +103,8 @@ Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current f
 ### P2 — correctness, resilience and technical debt
 - [x] keep ETA semantics consistent after partial reroute: unaffected duration is retained proportionally and the replacement span uses the routing provider duration;
 - [x] harden recording finalization failure handling: final snapshots remain retryable after database failure and UI distinguishes save failure from a genuinely short activity;
-- [ ] replace raw `error.toString()` surfaces with localized user-safe categories while preserving technical detail in structured logs;
-- [ ] localize foreground-service notification text and remaining hardcoded UI/support strings;
+- [~] replace raw `error.toString()` surfaces with localized user-safe categories while preserving technical detail in structured logs; Settings and active Navigation user surfaces are sanitized/localized in v1.5.8; remaining feature-specific surfaces stay tracked;
+- [~] localize foreground-service notification text and remaining hardcoded UI/support strings; planner OSM search attribution is localized in v1.5.8, foreground-service copy remains tracked;
 - [ ] add explicit cancel semantics for long offline downloads and document/review download-size behavior;
 - [ ] decide whether route/activity/Back-to-Car coordinates require app-level encryption at rest;
 - [ ] upgrade `permission_handler` 12.x → 13.x in a dedicated post-RC compatibility step with permission/background regression;
@@ -219,3 +219,11 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - Account is optional; local-first remains the default architecture.
 - Every implemented maxi-step updates README, roadmap, tests and release evidence.
 - No post-v1 scope may be merged into the v1.0 certification branch if it destabilizes the current release candidate.
+
+
+### v1.5.8 — UX parity & user-safe error hardening
+
+- [x] formalize Web Preview parity against the shared planner core and coalesced annotation pipeline;
+- [x] replace raw Settings and active Navigation technical errors with localized user-safe messages;
+- [x] localize planner OpenStreetMap search attribution across supported languages;
+- [x] keep technical failure detail in controller/service state and structured logs instead of rendering raw exceptions directly to users.
