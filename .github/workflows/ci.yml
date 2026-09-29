@@ -137,6 +137,26 @@ jobs:
             --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
             --dart-define=PREMIUM_VERIFICATION_URL="$PREMIUM_VERIFICATION_URL"
 
+      - name: Verify Android release permission contract
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-arm64-v8a-release.apk"
+          APKANALYZER="$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer"
+          test -f "$APK"
+          test -x "$APKANALYZER"
+
+          MIN_SDK="$("$APKANALYZER" manifest min-sdk "$APK")"
+          TARGET_SDK="$("$APKANALYZER" manifest target-sdk "$APK")"
+          "$APKANALYZER" manifest print "$APK" > "$RUNNER_TEMP/trailpath-release-manifest.xml"
+
+          echo "Resolved minSdk: $MIN_SDK"
+          echo "Resolved targetSdk: $TARGET_SDK"
+          grep -Fq "android.permission.ACCESS_FINE_LOCATION" "$RUNNER_TEMP/trailpath-release-manifest.xml"
+          grep -Fq "android.permission.ACCESS_COARSE_LOCATION" "$RUNNER_TEMP/trailpath-release-manifest.xml"
+          grep -Fq "android.permission.FOREGROUND_SERVICE" "$RUNNER_TEMP/trailpath-release-manifest.xml"
+          grep -Fq "android.permission.FOREGROUND_SERVICE_LOCATION" "$RUNNER_TEMP/trailpath-release-manifest.xml"
+          grep -Fq "android.permission.POST_NOTIFICATIONS" "$RUNNER_TEMP/trailpath-release-manifest.xml"
+
       - name: Build x86_64 optimized release runtime gate
         run: |
           flutter build apk --release --target-platform android-x64 --split-per-abi \
