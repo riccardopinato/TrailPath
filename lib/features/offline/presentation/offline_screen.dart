@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/presentation/confirmation_dialog.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/offline/application/offline_downloads_controller.dart';
 
@@ -43,25 +44,15 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
   Future<void> _deleteRegion(OfflineRegion region) async {
     final strings = AppLocalizations.of(context);
     final downloads = ref.read(offlineDownloadsProvider.notifier);
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showTrailPathConfirmationDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(strings.deleteOfflineMap),
-        content: Text(region.name),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(strings.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(strings.delete),
-          ),
-        ],
-      ),
+      title: strings.deleteOfflineMap,
+      message: region.name,
+      confirmLabel: strings.delete,
+      cancelLabel: strings.cancel,
     );
 
-    if (confirmed != true) {
+    if (!confirmed) {
       return;
     }
 
