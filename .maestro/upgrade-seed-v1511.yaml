@@ -1,0 +1,125 @@
+# Seeds persistent TrailPath v1.5.11 data before an in-place APK upgrade.
+# Runs against the pinned real previous-release artifact.
+appId: com.riccardopinato.trail_path
+---
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      text: "Start TrailPath"
+    timeout: 20000
+- tapOn: "Start TrailPath"
+- extendedWaitUntil:
+    visible: "Search place or trail"
+    timeout: 20000
+
+# Persist a non-default preference in the old release.
+- tapOn:
+    text: 'Profile\s*Tab 5 of 5'
+- extendedWaitUntil:
+    visible: "Profile"
+    timeout: 15000
+- tapOn: "Settings"
+- extendedWaitUntil:
+    visible: "Units"
+    timeout: 15000
+- tapOn:
+    text: "Metric \(km, m\)"
+- tapOn:
+    text: "Imperial \(mi, ft\)"
+- assertVisible:
+    text: "Imperial \(mi, ft\)"
+- pressKey: BACK
+
+# Persist a completed activity.
+- tapOn:
+    text: 'Record\s*Tab 2 of 5'
+- setLocation:
+    latitude: 45.232000
+    longitude: 11.750000
+- tapOn: "Start recording"
+- extendedWaitUntil:
+    visible: "Pause"
+    timeout: 15000
+- setLocation:
+    latitude: 45.232180
+    longitude: 11.750000
+- waitForAnimationToEnd
+- setLocation:
+    latitude: 45.232360
+    longitude: 11.750000
+- waitForAnimationToEnd
+- setLocation:
+    latitude: 45.232540
+    longitude: 11.750000
+- waitForAnimationToEnd
+- tapOn: "Finish"
+- extendedWaitUntil:
+    visible: "Activity name"
+    timeout: 15000
+- eraseText
+- inputText: "Upgrade Activity"
+- tapOn: "Save"
+- extendedWaitUntil:
+    visible: "Activity saved"
+    timeout: 15000
+
+# Persist a routed trail with waypoints/geometry.
+- tapOn:
+    text: 'Plan\s*Tab 1 of 5'
+- extendedWaitUntil:
+    visible: "Search place or trail"
+    timeout: 15000
+- tapOn: "Center on my location"
+- waitForAnimationToEnd
+- tapOn:
+    point: "43%,28%"
+- runFlow:
+    when:
+      visible: "Start here"
+    commands:
+      - tapOn: "Start here"
+- extendedWaitUntil:
+    visible: "Choose destination"
+    timeout: 15000
+- tapOn:
+    point: "57%,28%"
+- runFlow:
+    when:
+      visible: "Destination"
+    commands:
+      - tapOn: "Destination"
+- extendedWaitUntil:
+    visible: "Save route"
+    timeout: 60000
+- tapOn: "Save route"
+- extendedWaitUntil:
+    visible: "Route name"
+    timeout: 15000
+- inputText: "Upgrade Route"
+- tapOn: "Save"
+- extendedWaitUntil:
+    visible: "Route saved"
+    timeout: 15000
+
+# Seed native offline state for the saved route.
+- tapOn:
+    text: 'Routes\s*Tab 3 of 5'
+- extendedWaitUntil:
+    visible:
+      text: ".*Upgrade Route.*"
+    timeout: 20000
+- tapOn: "Download map"
+- tapOn:
+    text: 'Offline\s*Tab 4 of 5'
+- extendedWaitUntil:
+    visible:
+      text: ".*Upgrade Route.*"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      text: ".*Available offline.*"
+    timeout: 120000
+
+- stopApp
