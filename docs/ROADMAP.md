@@ -95,7 +95,7 @@ Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current f
 - [ ] **Physical ARM64 frame budget:** validate startup, pan/zoom, point preview, route editing and waypoint drag on a representative real Android device; emulator Performance Lab is advisory only;
 - [x] **Web Preview UX parity:** Web uses the shared planner core, candidate preview/confirmation flow, shared search/routing/map-matching providers, Smart Trace and coalesced incremental MapLibre annotation updates;
 - [ ] **Full-app accessibility + small-screen pass:** TalkBack, large text, contrast, compact route summary and candidate actions across critical screens;
-- [ ] **Android release contract evidence:** record resolved compile/min/target SDK and merged foreground-location service declarations from the release artifact;
+- [x] **Android release contract evidence:** CI records resolved min/target SDK and verifies merged foreground/location/notification permission declarations from the ARM64 release artifact;
 - [ ] **Production routing-provider decision:** explicitly accept the public routing.openstreetmap.de dependency or switch/self-host behind the existing `RoutingEngine` contract;
 - [ ] **Visual regression baseline:** promote an accepted physical/visual checkpoint only after the build-31 UI is approved;
 - [ ] complete exact-artifact ARM64 physical QA, store signing, Play metadata/screenshots and rollout review.
@@ -104,17 +104,17 @@ Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current f
 - [x] keep ETA semantics consistent after partial reroute: unaffected duration is retained proportionally and the replacement span uses the routing provider duration;
 - [x] harden recording finalization failure handling: final snapshots remain retryable after database failure and UI distinguishes save failure from a genuinely short activity;
 - [x] replace raw `error.toString()` surfaces on primary user-facing screens with localized user-safe categories while retaining technical controller/service error state for diagnostics;
-- [~] localize foreground-service notification text and remaining hardcoded UI/support strings; planner OSM search attribution is localized in v1.5.8, foreground-service copy remains tracked;
+- [x] localize foreground-service notification text and remaining hardcoded UI/support strings; recording notification copy now follows IT/EN/ES/FR/PT system locale with English fallback, planner/Web support actions are localized;
 - [x] add explicit cancel semantics for long offline downloads; active downloads can be cancelled from Routes or Offline, partial region data is removed, database readiness is reset and the route remains restartable. Download-size review remains part of release QA;
 - [ ] decide whether route/activity/Back-to-Car coordinates require app-level encryption at rest;
-- [ ] upgrade `permission_handler` 12.x → 13.x in a dedicated post-RC compatibility step with permission/background regression;
-- [ ] remove duplicated semantic version source (`MapConfig.appVersion` vs pubspec) or generate it from one source of truth;
-- [ ] broaden behavioral widget coverage for candidate selection and destructive/error states; current architecture string-contract tests are useful but brittle;
+- [x] upgrade `permission_handler` 12.x → 13.x in a dedicated post-RC compatibility step with permission/background regression; v1.5.11 uses 13.0.2 and compileSdk 37 with release APK permission inspection;
+- [x] remove duplicated semantic version source: `pubspec.yaml` is now the sole semantic version source and runtime map/network identity no longer carries a separately maintained version constant;
+- [x] broaden behavioral widget coverage for candidate selection and destructive/error states: extracted candidate actions, shared destructive confirmation and navigation safe-error rendering are exercised as real widgets;
 - [ ] establish upgrade/migration AppLab baseline from a real previous release artifact.
 
 ### P3 — polish
 - [ ] finish top-toolbar declutter if physical testing still finds the map chrome crowded;
-- [ ] localize OSM search attribution/support copy;
+- [x] localize OSM search attribution/support copy;
 - [ ] revisit generic Safe Interaction Crawler discoverability; current crawler finds only one safe action.
 
 Full detail: `docs/FULL_AUDIT_v1.0.0.md`.
@@ -250,3 +250,13 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] compile against Android SDK 37 while leaving targetSdk controlled by the pinned Flutter toolchain;
 - [x] add architecture coverage for notification, fine/coarse location and foreground-location permissions;
 - [x] add CI inspection of the built ARM64 APK for resolved min/target SDK and merged permission declarations.
+
+
+### v1.5.12 — Core Consistency & UX Hardening
+
+- [x] make `pubspec.yaml` the single semantic-version source and remove the duplicate `MapConfig.appVersion`;
+- [x] localize Android foreground GPS-recording notification copy for IT/EN/ES/FR/PT with English fallback;
+- [x] extract planner candidate actions into a behavior-testable widget and cover destination gating, waypoint actions, cancellation and narrow-screen rendering;
+- [x] centralize destructive confirmation dialogs and cover cancel/confirm behavior with widget tests;
+- [x] add navigation widget coverage proving internal engine errors are not rendered to users;
+- [x] remove the remaining Italian-only Web waypoint action and keep Web planner support copy localized.
