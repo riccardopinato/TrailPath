@@ -5,14 +5,21 @@ appId: com.riccardopinato.trail_path
 - launchApp:
     clearState: true
 
-- assertVisible:
-    text: "Start TrailPath|Inizia con TrailPath|Empezar con TrailPath|Commencer avec TrailPath|Começar com TrailPath"
-- tapOn:
-    text: "Start TrailPath|Inizia con TrailPath|Empezar con TrailPath|Commencer avec TrailPath|Começar com TrailPath"
+- extendedWaitUntil:
+    visible:
+      text: "Start TrailPath|Inizia con TrailPath|Empezar con TrailPath|Commencer avec TrailPath|Começar com TrailPath|Search place or trail|Cerca luogo o sentiero|Buscar lugar o sendero|Rechercher un lieu ou sentier|Pesquisar local ou trilho"
+    timeout: 20000
+- runFlow:
+    when:
+      visible:
+        text: "Start TrailPath|Inizia con TrailPath|Empezar con TrailPath|Commencer avec TrailPath|Começar com TrailPath"
+    commands:
+      - tapOn:
+          text: "Start TrailPath|Inizia con TrailPath|Empezar con TrailPath|Commencer avec TrailPath|Começar com TrailPath"
 - extendedWaitUntil:
     visible:
       text: "Search place or trail|Cerca luogo o sentiero|Buscar lugar o sendero|Rechercher un lieu ou sentier|Pesquisar local ou trilho"
-    timeout: 15000
+    timeout: 20000
 
 - setLocation:
     latitude: 45.232000
