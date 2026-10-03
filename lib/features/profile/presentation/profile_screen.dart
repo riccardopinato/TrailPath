@@ -180,6 +180,7 @@ class _AccountCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final strings = AppLocalizations.of(context);
     final state = ref.watch(accountControllerProvider);
+    final cloud = ref.watch(cloudSyncControllerProvider);
     final controller = ref.read(accountControllerProvider.notifier);
     final profile = state.profile;
     final photoUrl = profile?.photoUrl;
@@ -249,10 +250,24 @@ class _AccountCard extends ConsumerWidget {
                 child: Text(strings.signInGoogle),
               )
             else
-              IconButton(
-                tooltip: strings.signOut,
-                onPressed: () => unawaited(_signOutAll(ref, controller)),
-                icon: const Icon(Icons.logout_rounded),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    tooltip: strings.signOut,
+                    onPressed: () => unawaited(_signOutAll(ref, controller)),
+                    icon: const Icon(Icons.logout_rounded),
+                  ),
+                  if (cloud.isConfigured)
+                    IconButton(
+                      tooltip: strings.deleteAccount,
+                      onPressed: cloud.isBusy
+                          ? null
+                          : () => unawaited(_confirmDeleteAccount(context, ref)),
+                      color: Theme.of(context).colorScheme.error,
+                      icon: const Icon(Icons.delete_forever_outlined),
+                    ),
+                ],
               ),
           ],
         ),
@@ -340,6 +355,54 @@ Future<void> _openProFeature(
   }
   await Navigator.of(context)
       .push(MaterialPageRoute<void>(builder: (_) => screen));
+}
+
+Future<void> _confirmDeleteAccount(
+  BuildContext context,
+  WidgetRef ref,
+) async {
+  final strings = AppLocalizations.of(context);
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(strings.deleteAccountTitle),
+      content: Text(strings.deleteAccountWarning),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(strings.cancel),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: Theme.of(dialogContext).colorScheme.error,
+            foregroundColor: Theme.of(dialogContext).colorScheme.onError,
+          ),
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: Text(strings.deleteAccount),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true || !context.mounted) {
+    return;
+  }
+
+  final deleted = await ref
+      .read(cloudSyncControllerProvider.notifier)
+      .deleteAccountAndData();
+  if (!context.mounted) {
+    return;
+  }
+
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(
+          deleted ? strings.deleteAccountSuccess : strings.deleteAccountFailure,
+        ),
+      ),
+    );
 }
 
 Future<void> _signOutAll(
