@@ -23,6 +23,7 @@ jobs:
     env:
       GOOGLE_SERVER_CLIENT_ID: ${{ secrets.GOOGLE_SERVER_CLIENT_ID || vars.GOOGLE_SERVER_CLIENT_ID }}
       MAPTILER_API_KEY: ${{ secrets.MAPTILER_API_KEY || vars.MAPTILER_API_KEY }}
+      VALHALLA_BASE_URL: ${{ secrets.VALHALLA_BASE_URL || vars.VALHALLA_BASE_URL }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL }}
       SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY || vars.SUPABASE_PUBLISHABLE_KEY }}
       PREMIUM_VERIFICATION_URL: ${{ secrets.PREMIUM_VERIFICATION_URL || vars.PREMIUM_VERIFICATION_URL }}
@@ -135,6 +136,7 @@ jobs:
           flutter build apk --release --target-platform android-arm64 --split-per-abi \
             --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
             --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
+            --dart-define=VALHALLA_BASE_URL="$VALHALLA_BASE_URL" \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
             --dart-define=PREMIUM_VERIFICATION_URL="$PREMIUM_VERIFICATION_URL"
@@ -164,6 +166,7 @@ jobs:
           flutter build apk --release --target-platform android-x64 --split-per-abi \
             --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
             --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
+            --dart-define=VALHALLA_BASE_URL="$VALHALLA_BASE_URL" \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
             --dart-define=PREMIUM_VERIFICATION_URL="$PREMIUM_VERIFICATION_URL"
@@ -173,6 +176,7 @@ jobs:
           flutter build appbundle --release \
             --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
             --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
+            --dart-define=VALHALLA_BASE_URL="$VALHALLA_BASE_URL" \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
             --dart-define=PREMIUM_VERIFICATION_URL="$PREMIUM_VERIFICATION_URL"
@@ -190,7 +194,7 @@ jobs:
         run: |
           set -euo pipefail
           missing=0
-          for name in GOOGLE_SERVER_CLIENT_ID MAPTILER_API_KEY SUPABASE_URL SUPABASE_PUBLISHABLE_KEY PREMIUM_VERIFICATION_URL; do
+          for name in GOOGLE_SERVER_CLIENT_ID MAPTILER_API_KEY VALHALLA_BASE_URL SUPABASE_URL SUPABASE_PUBLISHABLE_KEY PREMIUM_VERIFICATION_URL; do
             if [ -z "${!name}" ]; then
               echo "::error::$name is required for a fully enabled store-signed TrailPath build."
               missing=1
@@ -215,6 +219,7 @@ jobs:
           TRAILPATH_STORE_FILE="$STORE_FILE" flutter build appbundle --release \
             --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
             --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
+            --dart-define=VALHALLA_BASE_URL="$VALHALLA_BASE_URL" \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
             --dart-define=PREMIUM_VERIFICATION_URL="$PREMIUM_VERIFICATION_URL" \
@@ -258,6 +263,7 @@ jobs:
           flutter build apk --release --target-platform android-arm64 --split-per-abi \
             --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
             --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
+            --dart-define=VALHALLA_BASE_URL="$VALHALLA_BASE_URL" \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
             --dart-define=PREMIUM_VERIFICATION_URL="$PREMIUM_VERIFICATION_URL" \
@@ -278,6 +284,7 @@ jobs:
           flutter build apk --release --target-platform android-x64 --split-per-abi \
             --dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID" \
             --dart-define=MAPTILER_API_KEY="$MAPTILER_API_KEY" \
+            --dart-define=VALHALLA_BASE_URL="$VALHALLA_BASE_URL" \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
             --dart-define=PREMIUM_VERIFICATION_URL="$PREMIUM_VERIFICATION_URL" \
