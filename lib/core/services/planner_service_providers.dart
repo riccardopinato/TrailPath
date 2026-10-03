@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/services/route_intelligence_service.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/infrastructure/elevation/open_meteo_elevation_engine.dart';
@@ -9,6 +10,19 @@ import 'package:trail_path/infrastructure/routing/valhalla_map_matching_engine.d
 import 'package:trail_path/infrastructure/search/nominatim_place_search_service.dart';
 
 final routingEngineProvider = Provider<RoutingEngine>((ref) {
+  if (MapConfig.hasDedicatedRoutingProvider) {
+    // Store builds prefer the configured production provider and do not
+    // silently fall back to a community OSRM endpoint when it is unavailable.
+    final production = ValhallaRoutingEngine();
+    ref.onDispose(production.dispose);
+    return FallbackRoutingEngine(
+      primary: production,
+      fallback: const StraightLineRoutingEngine(),
+    );
+  }
+
+  // Development/internal builds remain usable without credentials by using
+  // the public community services with bounded retries and a second provider.
   final primary = OpenStreetMapRoutingEngine();
   final secondary = ValhallaRoutingEngine();
   ref.onDispose(primary.dispose);
