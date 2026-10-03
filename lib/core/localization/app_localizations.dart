@@ -108,6 +108,11 @@ class AppLocalizations {
   String get googleAccount => _value('googleAccount');
   String get signInGoogle => _value('signInGoogle');
   String get signOut => _value('signOut');
+  String get deleteAccount => _value('deleteAccount');
+  String get deleteAccountTitle => _value('deleteAccountTitle');
+  String get deleteAccountWarning => _value('deleteAccountWarning');
+  String get deleteAccountSuccess => _value('deleteAccountSuccess');
+  String get deleteAccountFailure => _value('deleteAccountFailure');
   String get accountOptional => _value('accountOptional');
   String get accountNotConfigured => _value('accountNotConfigured');
   String get appearance => _value('appearance');
@@ -441,6 +446,13 @@ class AppLocalizations {
       'googleAccount': 'Account Google',
       'signInGoogle': 'Accedi',
       'signOut': 'Esci',
+      'deleteAccount': 'Elimina account',
+      'deleteAccountTitle': 'Eliminare account e dati?',
+      'deleteAccountWarning':
+          'L’account cloud TrailPath, tutti i dati sincronizzati, i dati locali e le mappe offline verranno eliminati definitivamente. L’operazione non può essere annullata.',
+      'deleteAccountSuccess': 'Account e dati eliminati.',
+      'deleteAccountFailure':
+          'Impossibile completare completamente l’eliminazione dell’account.',
       'accountOptional': 'Account facoltativo: TrailPath funziona anche offline e senza login.',
       'accountNotConfigured': 'Google Sign-In non configurato in questa build.',
       'appearance': 'Aspetto',
@@ -782,6 +794,13 @@ class AppLocalizations {
       'googleAccount': 'Google account',
       'signInGoogle': 'Sign in',
       'signOut': 'Sign out',
+      'deleteAccount': 'Delete account',
+      'deleteAccountTitle': 'Delete account and data?',
+      'deleteAccountWarning':
+          'Your TrailPath cloud account, all synced data, local app data and offline maps will be permanently deleted. This cannot be undone.',
+      'deleteAccountSuccess': 'Account and data deleted.',
+      'deleteAccountFailure':
+          'Account deletion could not be fully completed.',
       'accountOptional':
           'Account is optional: TrailPath works offline and without sign-in.',
       'accountNotConfigured': 'Google Sign-In is not configured in this build.',
@@ -1119,6 +1138,13 @@ class AppLocalizations {
       'googleAccount': 'Cuenta de Google',
       'signInGoogle': 'Acceder',
       'signOut': 'Cerrar sesión',
+      'deleteAccount': 'Eliminar cuenta',
+      'deleteAccountTitle': '¿Eliminar la cuenta y los datos?',
+      'deleteAccountWarning':
+          'La cuenta cloud de TrailPath, todos los datos sincronizados, los datos locales y los mapas offline se eliminarán de forma permanente. No se puede deshacer.',
+      'deleteAccountSuccess': 'Cuenta y datos eliminados.',
+      'deleteAccountFailure':
+          'No se pudo completar totalmente la eliminación de la cuenta.',
       'accountOptional': 'La cuenta es opcional: TrailPath funciona offline y sin iniciar sesión.',
       'accountNotConfigured':
           'Google Sign-In no está configurado en esta build.',
@@ -1462,6 +1488,13 @@ class AppLocalizations {
       'googleAccount': 'Compte Google',
       'signInGoogle': 'Se connecter',
       'signOut': 'Se déconnecter',
+      'deleteAccount': 'Supprimer le compte',
+      'deleteAccountTitle': 'Supprimer le compte et les données ?',
+      'deleteAccountWarning':
+          'Le compte cloud TrailPath, toutes les données synchronisées, les données locales et les cartes hors ligne seront définitivement supprimés. Cette action est irréversible.',
+      'deleteAccountSuccess': 'Compte et données supprimés.',
+      'deleteAccountFailure':
+          'La suppression du compte n’a pas pu être entièrement finalisée.',
       'accountOptional': 'Le compte est facultatif : TrailPath fonctionne hors ligne et sans connexion.',
       'accountNotConfigured':
           'Google Sign-In n’est pas configuré dans cette build.',
@@ -1802,6 +1835,13 @@ class AppLocalizations {
       'googleAccount': 'Conta Google',
       'signInGoogle': 'Entrar',
       'signOut': 'Terminar sessão',
+      'deleteAccount': 'Eliminar conta',
+      'deleteAccountTitle': 'Eliminar conta e dados?',
+      'deleteAccountWarning':
+          'A conta cloud TrailPath, todos os dados sincronizados, os dados locais e os mapas offline serão eliminados permanentemente. Esta ação não pode ser anulada.',
+      'deleteAccountSuccess': 'Conta e dados eliminados.',
+      'deleteAccountFailure':
+          'Não foi possível concluir totalmente a eliminação da conta.',
       'accountOptional':
           'A conta é opcional: o TrailPath funciona offline e sem login.',
       'accountNotConfigured':
