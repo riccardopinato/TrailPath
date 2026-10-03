@@ -529,6 +529,21 @@ class AppDatabase extends _$AppDatabase {
     return row?.value;
   }
 
+  Future<void> deleteAllUserData() async {
+    await transaction(() async {
+      // Delete dependants first so this remains safe if foreign-key
+      // enforcement is enabled by the underlying SQLite connection.
+      await delete(routeCollectionItems).go();
+      await delete(waypoints).go();
+      await delete(syncOutboxEntries).go();
+      await delete(routeCollections).go();
+      await delete(savedRoutes).go();
+      await delete(activities).go();
+      await delete(savedReturnPoints).go();
+      await delete(appSettings).go();
+    });
+  }
+
   Future<void> deleteSavedRoute(String routeId) async {
     final now = DateTime.now();
     final affectedMemberships = await (select(
