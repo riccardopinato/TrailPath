@@ -22,6 +22,9 @@ void main() {
     expect(billing, contains('restorePurchases'));
     expect(premiumConfig, contains('PREMIUM_VERIFICATION_URL'));
     expect(premiumConfig, contains('TRAILPATH_REQUIRE_SERVER_VERIFICATION'));
+    expect(premiumConfig, contains('kReleaseMode'));
+    expect(premiumConfig, contains('enforceServerVerification'));
+    expect(billing, contains('PremiumConfig.enforceServerVerification'));
     expect(billing, contains('_verifyWithServer'));
     expect(billing, contains('PremiumVerificationLevel.serverVerified'));
   });
