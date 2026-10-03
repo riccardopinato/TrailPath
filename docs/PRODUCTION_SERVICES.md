@@ -13,6 +13,7 @@ preferred for values that should not be printed or copied casually.
 | --- | --- |
 | `GOOGLE_SERVER_CLIENT_ID` | Google Sign-In OAuth web/server client ID |
 | `MAPTILER_API_KEY` | Satellite, Hybrid and 3D terrain map provider |
+| `VALHALLA_BASE_URL` | Dedicated production Valhalla base URL used for routing and Smart Trace |
 | `SUPABASE_URL` | TrailPath Supabase project URL |
 | `SUPABASE_PUBLISHABLE_KEY` | TrailPath publishable/anon client key |
 | `PREMIUM_VERIFICATION_URL` | HTTPS backend endpoint that validates Google Play purchase tokens |
@@ -21,7 +22,7 @@ preferred for values that should not be printed or copied casually.
 | `TRAILPATH_KEY_ALIAS` | Upload key alias |
 | `TRAILPATH_KEY_PASSWORD` | Upload key password |
 
-The CI passes the first five values through `--dart-define`. The signing
+The CI passes the runtime service values through `--dart-define`. The signing
 values are never passed into Dart.
 
 When Play signing credentials are present, the store-AAB job now fails closed
@@ -42,11 +43,22 @@ Create a restricted MapTiler key for the TrailPath application and store it as
 `MAPTILER_API_KEY`. Without it TrailPath intentionally falls back to the free
 OpenFreeMap styles and disables Satellite/Hybrid/3D terrain.
 
+## Routing / Smart Trace
+
+Configure a dedicated Valhalla deployment or contracted Valhalla-compatible
+provider in `VALHALLA_BASE_URL` (base URL only; TrailPath appends `/route`
+and `/trace_route`). Development and internal builds can still use the
+community OpenStreetMap routing/Valhalla endpoints, but a store-signed build
+fails closed without a dedicated routing provider. This prevents production
+traffic from silently depending on best-effort community infrastructure.
+
 ## Supabase
 
 Create a dedicated TrailPath Supabase project. Apply
 `docs/SUPABASE_CLOUD_SYNC_SCHEMA.sql`, verify RLS policies, and configure the
-project URL and publishable key. Never ship a service-role key in the app.
+project URL and publishable key. The same schema installs the authenticated,
+least-privilege `delete_my_trailpath_account()` RPC used by the in-app account
+deletion flow. Never ship a service-role key in the app.
 
 ## Google Play Billing verification
 
