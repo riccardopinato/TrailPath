@@ -13,11 +13,25 @@ abstract final class MapConfig {
   static const String searchEndpoint =
       'https://nominatim.openstreetmap.org/search';
 
-  static const String mapMatchingEndpoint =
-      'https://valhalla1.openstreetmap.de/trace_route';
+  static const String _publicValhallaBaseUrl =
+      'https://valhalla1.openstreetmap.de';
 
-  static const String valhallaRoutingEndpoint =
-      'https://valhalla1.openstreetmap.de/route';
+  static const String dedicatedValhallaBaseUrl = String.fromEnvironment(
+    'VALHALLA_BASE_URL',
+  );
+
+  static bool get hasDedicatedRoutingProvider =>
+      dedicatedValhallaBaseUrl.trim().isNotEmpty;
+
+  static String get _valhallaBaseUrl {
+    final configured = dedicatedValhallaBaseUrl.trim();
+    final value = configured.isEmpty ? _publicValhallaBaseUrl : configured;
+    return value.endsWith('/') ? value.substring(0, value.length - 1) : value;
+  }
+
+  static String get mapMatchingEndpoint => '$_valhallaBaseUrl/trace_route';
+
+  static String get valhallaRoutingEndpoint => '$_valhallaBaseUrl/route';
 
   static const String overpassEndpoint =
       'https://overpass-api.de/api/interpreter';
