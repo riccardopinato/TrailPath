@@ -2,8 +2,11 @@
 # Verifies internal Pro entitlement, Route Lab live routing and Smart Trace UI.
 appId: com.riccardopinato.trail_path
 ---
+# CI clears application state before granting runtime permissions. Keep state
+# here so Maestro does not revoke those grants immediately before the routing
+# flow starts.
 - launchApp:
-    clearState: true
+    clearState: false
 
 - extendedWaitUntil:
     visible:
