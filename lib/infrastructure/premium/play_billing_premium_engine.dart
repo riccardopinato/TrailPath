@@ -211,7 +211,7 @@ class PlayBillingPremiumEngine implements PremiumEngine {
             } else {
               error = 'Purchase could not be verified by the server.';
             }
-          } else if (PremiumConfig.requireServerVerification) {
+          } else if (PremiumConfig.enforceServerVerification) {
             error = 'Server purchase verification is not configured.';
           } else {
             pro = true;
