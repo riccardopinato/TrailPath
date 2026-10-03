@@ -5,11 +5,11 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 ## Current version
 
 Stable certification baseline: **v1.0.0+31**  
-Post-v1 cumulative development candidate: **v1.5.12+49**
+Post-v1 cumulative development candidate: **v1.5.14+51**
 
 ### Post-v1 cumulative candidate
 
-The v1.5 branch contains the approved v1.1→v1.5 train plus the v1.5.3→v1.5.12 hardening sequence: Smart Trace/map layers, TrailPath Pro, optional account/cloud sync, Route Lab, Collections, outdoor intelligence, routing redundancy, zoom-aware trace matching, cancellable offline downloads, user-safe localized errors, Android permission-contract evidence, localized foreground recording notifications and stronger behavioral widget coverage. Runtime/provider features remain fail-safe when commercial configuration is absent.
+The v1.5 branch contains the approved v1.1→v1.5 train plus the v1.5.3→v1.5.14 hardening sequence: Smart Trace/map layers, TrailPath Pro, optional account/cloud sync, Route Lab, Collections, outdoor intelligence, routing redundancy, zoom-aware trace matching, cancellable offline downloads, user-safe localized errors, Android permission-contract evidence, localized foreground recording notifications and stronger behavioral widget coverage. Runtime/provider features remain fail-safe when commercial configuration is absent.
 
 
 TrailPath v1.0.0 is the first stable Android release candidate. No new product scope is added here: the milestone is limited to final regression, artifact certification, release evidence and production-readiness gates.
@@ -22,7 +22,7 @@ The generated Evidence Bundle verdict is still **BLOCKED**, not CERTIFIED, becau
 
 Exact audited ARM64 candidate: **33,704,085 bytes**, SHA-256 `14e198503f1fe4568a2cf4abb69dc4ba7271a6f9985643e7c7185a582f06c38a`.
 
-Pinned AppLab harness: `16271b3ffa34982a0f04fd118565047e7c09e743`.
+Pinned AppLab harness: `bf3478d1a1a2bf1dad458aa157fdb8c4c83321c1`.
 
 The 2026-09-27 deep audit found no code-level P0 crash/data-loss blocker in the automated path. Remaining release-quality work is explicit: physical ARM64 map/selection performance validation, restoration of Web Preview UX parity with the build-31 planner flow, full-app accessibility/small-screen validation, resolved Android SDK/merged foreground-service evidence and a production routing-provider decision. See `docs/FULL_AUDIT_v1.0.0.md`.
 
@@ -127,7 +127,7 @@ The 2026-09-27 deep audit found no code-level P0 crash/data-loss blocker in the 
 
 The CI is pinned to Flutter 3.47.5 / Dart 3.13.4, Gradle 9.1.0, Android Gradle Plugin 9.0.1 and Kotlin Gradle Plugin 2.3.20. Built-in Kotlin is temporarily opted out because Flutter 3.47.x currently rejects AGP 9's bundled Kotlin 2.2.10 during dependency validation.
 
-The Android native scaffold is committed and validated by CI for reproducible builds. iOS is not part of the Android v1.0 certification and remains a later release track. The current public routing endpoint is suitable for development and validation; the RoutingEngine abstraction is intentionally kept provider-agnostic so a production-grade or self-hosted service can replace it without changing the planner.
+The Android native scaffold is committed and validated by CI for reproducible builds. iOS is not part of the Android v1.0 certification and remains a later release track. Community routing endpoints remain available only for development/internal builds. Store readiness now requires `VALHALLA_BASE_URL` for a dedicated production Valhalla-compatible provider; the RoutingEngine abstraction remains provider-agnostic.
 
 ## Bootstrap locally
 
@@ -162,7 +162,7 @@ The post-v1 branch starts at **v1.1.0+32** with Smart Trace and multi-map founda
 - Planner exposes Outdoor, Street, Satellite and Hybrid map choices.
 - Satellite/Hybrid are provider-gated through `MAPTILER_API_KEY`; no commercial map key is committed to source.
 - Existing distance/elevation pipeline remains the source of truth after matched geometry is accepted.
-- The Valhalla public demo endpoint is development/fair-use infrastructure only; production provider strategy remains an explicit release decision.
+- Public Valhalla/OSM routing remains development/internal infrastructure only; production readiness requires a dedicated `VALHALLA_BASE_URL`.
 
 The v1.1 Dart sources are normalized with the pinned Flutter 3.47.5 formatter before CI validation.
 
