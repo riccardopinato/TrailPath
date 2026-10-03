@@ -11,12 +11,19 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/database/database_providers.dart';
+import 'package:trail_path/core/domain/app_preferences.dart';
 import 'package:trail_path/core/domain/collection_sampling.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
+import 'package:trail_path/core/domain/map_matching.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/planner/application/route_planner_controller.dart';
+import 'package:trail_path/features/planner/presentation/candidate_selection_card.dart';
+import 'package:trail_path/features/pro/application/premium_controller.dart';
+import 'package:trail_path/features/pro/presentation/pro_paywall.dart';
+import 'package:trail_path/features/settings/application/settings_controller.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
@@ -30,6 +37,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   static const _fallbackCenter = LatLng(45.232, 11.750);
 
   MapLibreMapController? _mapController;
+  final GlobalKey _mapViewportKey = GlobalKey();
   StreamSubscription<PositionSample>? _positionSubscription;
   PositionSample? _position;
   bool _permissionGranted = false;
@@ -43,6 +51,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   bool _routeSelected = false;
   bool _draggingFeature = false;
   bool _traceMode = false;
+  MapMatchMode _traceMatchMode = MapMatchMode.trails;
+  _PlannerMapStyle _plannerMapStyle = _PlannerMapStyle.outdoor;
+  bool _slopeLayerEnabled = false;
+  bool _terrain3dEnabled = false;
   bool _traceDrawing = false;
   bool _traceProcessing = false;
   int? _tracePointerId;
@@ -51,11 +63,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   bool _annotationSyncQueued = false;
   Timer? _annotationSyncTimer;
   List<Line> _routeLines = const [];
+  List<Line> _slopeLines = const [];
   List<Circle> _waypointCircles = const [];
   List<Circle> _midpointCircles = const [];
   Circle? _candidateCircle;
   Line? _dragPreviewLine;
   String? _routeVisualKey;
+  String? _slopeVisualKey;
   List<String> _waypointVisualKeys = const [];
   List<String> _midpointVisualKeys = const [];
   String? _candidateVisualKey;
@@ -74,6 +88,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     _appInForeground =
         lifecycleState == null || lifecycleState == AppLifecycleState.resumed;
     Future<void>.microtask(_initializeLocation);
+    Future<void>.microtask(_applyStoredPlannerPreferences);
   }
 
   @override
@@ -101,6 +116,38 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     _searchController.dispose();
     _mapController?.dispose();
     super.dispose();
+  }
+
+  Future<void> _applyStoredPlannerPreferences() async {
+    try {
+      final preferences = await ref.read(settingsControllerProvider.future);
+      if (!mounted) {
+        return;
+      }
+
+      final planner = ref.read(routePlannerProvider);
+      if (planner.points.isEmpty &&
+          planner.profile != preferences.defaultProfile) {
+        ref
+            .read(routePlannerProvider.notifier)
+            .setProfile(preferences.defaultProfile);
+      }
+
+      var style = _mapStyleFromPreference(preferences.defaultMap);
+      final premium = ref.read(premiumControllerProvider);
+      if (style.isPremium &&
+          (!premium.isPro || !MapConfig.hasPremiumMapProvider)) {
+        style = _PlannerMapStyle.outdoor;
+      }
+
+      if (_styleReady && _mapController != null) {
+        await _applyMapStyle(style);
+      } else if (mounted) {
+        setState(() => _plannerMapStyle = style);
+      }
+    } on Object {
+      // Defaults remain safe when settings are unavailable during startup.
+    }
   }
 
   Future<void> _initializeLocation() async {
@@ -339,11 +386,11 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                       },
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(20, 8, 20, 14),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
                     child: Text(
-                      'Search data © OpenStreetMap contributors',
-                      style: TextStyle(fontSize: 10),
+                      strings.searchAttribution,
+                      style: const TextStyle(fontSize: 10),
                     ),
                   ),
                 ],
@@ -520,6 +567,251 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     ref.read(routePlannerProvider.notifier).insertPointNearRoute(candidate);
   }
 
+  Future<void> _openMapLayers() async {
+    final premium = ref.read(premiumControllerProvider);
+    final selected = await showModalBottomSheet<_PlannerMapStyle>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        final strings = AppLocalizations.of(sheetContext);
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+                child: Text(
+                  strings.mapLayers,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              for (final style in _PlannerMapStyle.values)
+                ListTile(
+                  leading: Icon(_mapStyleIcon(style)),
+                  title: Text(_mapStyleLabel(strings, style)),
+                  subtitle: style.isPremium
+                      ? Text(
+                          MapConfig.hasPremiumMapProvider
+                              ? strings.proMap
+                              : strings.proMapUnavailable,
+                        )
+                      : null,
+                  trailing: _plannerMapStyle == style
+                      ? const Icon(Icons.check_rounded)
+                      : style.isPremium
+                      ? const Icon(Icons.workspace_premium_outlined)
+                      : null,
+                  onTap: () async {
+                    if (style.isPremium && !premium.isPro) {
+                      Navigator.of(sheetContext).pop();
+                      await Future<void>.delayed(Duration.zero);
+                      if (mounted) {
+                        await showTrailPathProPaywall(context, ref);
+                      }
+                      return;
+                    }
+                    if (style.isPremium && !MapConfig.hasPremiumMapProvider) {
+                      Navigator.of(sheetContext).pop();
+                      await Future<void>.delayed(Duration.zero);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(strings.proMapUnavailable)),
+                        );
+                      }
+                      return;
+                    }
+                    Navigator.of(sheetContext).pop(style);
+                  },
+                ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.gradient_rounded),
+                title: Text(strings.slopeMap),
+                subtitle: Text(strings.slopeMapHint),
+                trailing: _slopeLayerEnabled
+                    ? const Icon(Icons.check_rounded)
+                    : const Icon(Icons.workspace_premium_outlined),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  await Future<void>.delayed(Duration.zero);
+                  if (!mounted) {
+                    return;
+                  }
+                  if (!premium.isPro) {
+                    await showTrailPathProPaywall(context, ref);
+                    return;
+                  }
+                  await _toggleSlopeLayer();
+                },
+              ),
+              if (!Platform.isAndroid && !Platform.isIOS)
+                ListTile(
+                  leading: const Icon(Icons.view_in_ar_rounded),
+                  title: Text(strings.terrain3d),
+                  subtitle: Text(
+                    MapConfig.hasPremiumMapProvider
+                        ? strings.terrain3dHint
+                        : strings.proMapUnavailable,
+                  ),
+                  trailing: _terrain3dEnabled
+                      ? const Icon(Icons.check_rounded)
+                      : const Icon(Icons.workspace_premium_outlined),
+                  onTap: () async {
+                    Navigator.of(sheetContext).pop();
+                    await Future<void>.delayed(Duration.zero);
+                    if (!mounted) {
+                      return;
+                    }
+                    if (!premium.isPro) {
+                      await showTrailPathProPaywall(context, ref);
+                      return;
+                    }
+                    await _toggleTerrain3d();
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selected == null || selected == _plannerMapStyle || !mounted) {
+      return;
+    }
+    await _applyMapStyle(selected);
+  }
+
+  Future<void> _toggleSlopeLayer() async {
+    final planner = ref.read(routePlannerProvider);
+    if (!_slopeLayerEnabled && !planner.elevationProfile.isAvailable) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).elevationUnavailable),
+        ),
+      );
+      return;
+    }
+    setState(() => _slopeLayerEnabled = !_slopeLayerEnabled);
+    await _syncPlannerAnnotations();
+  }
+
+  Future<void> _toggleTerrain3d() async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      if (_terrain3dEnabled && mounted) {
+        setState(() => _terrain3dEnabled = false);
+      }
+      return;
+    }
+    if (!MapConfig.hasPremiumMapProvider) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).proMapUnavailable)),
+      );
+      return;
+    }
+    setState(() => _terrain3dEnabled = !_terrain3dEnabled);
+    await _applyTerrainState();
+  }
+
+  Future<void> _applyTerrainState() async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      if (_terrain3dEnabled && mounted) {
+        setState(() => _terrain3dEnabled = false);
+      }
+      return;
+    }
+
+    final controller = _mapController;
+    if (controller == null || !_styleReady || controller.isDisposed) {
+      return;
+    }
+    if (!_terrain3dEnabled) {
+      await controller.setTerrain(null);
+      return;
+    }
+
+    final url = MapConfig.mapTilerTerrainDemUrl;
+    if (url == null) {
+      return;
+    }
+    const sourceId = 'trailpath-terrain-dem';
+    final sourceIds = await controller.getSourceIds();
+    if (!sourceIds.contains(sourceId)) {
+      await controller.addSource(
+        sourceId,
+        RasterDemSourceProperties(
+          url: url,
+          tileSize: 512,
+          maxzoom: 14,
+          encoding: 'mapbox',
+        ),
+      );
+    }
+    await controller.setTerrain(
+      const TerrainProperties(source: sourceId, exaggeration: 1.15),
+    );
+    unawaited(
+      ref
+          .read(providerUsageTrackerProvider)
+          .record(provider: 'maptiler', capability: 'terrain_3d'),
+    );
+  }
+
+  Future<void> _applyMapStyle(_PlannerMapStyle style) async {
+    final controller = _mapController;
+    final url = _mapStyleUrl(style);
+    if (controller == null || url == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).proMapUnavailable),
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _plannerMapStyle = style;
+      _styleReady = false;
+      _routeLines = const [];
+      _slopeLines = const [];
+      _waypointCircles = const [];
+      _midpointCircles = const [];
+      _candidateCircle = null;
+      _dragPreviewLine = null;
+      _routeVisualKey = null;
+      _slopeVisualKey = null;
+      _waypointVisualKeys = const [];
+      _midpointVisualKeys = const [];
+      _candidateVisualKey = null;
+    });
+    await controller.setStyle(url);
+
+    final capability = switch (style) {
+      _PlannerMapStyle.satellite => 'satellite',
+      _PlannerMapStyle.hybrid => 'hybrid',
+      _ => null,
+    };
+    if (capability != null) {
+      unawaited(
+        ref
+            .read(providerUsageTrackerProvider)
+            .record(provider: 'maptiler', capability: capability),
+      );
+    }
+  }
+
+  String? _mapStyleUrl(_PlannerMapStyle style) {
+    return switch (style) {
+      _PlannerMapStyle.outdoor => MapConfig.plannerStyleUrl,
+      _PlannerMapStyle.street => MapConfig.styleUrl,
+      _PlannerMapStyle.highContrast => MapConfig.highContrastStyleUrl,
+      _PlannerMapStyle.satellite => MapConfig.mapTilerStyleUrl('satellite-v4'),
+      _PlannerMapStyle.hybrid => MapConfig.mapTilerStyleUrl('hybrid'),
+    };
+  }
+
   void _toggleTraceMode() {
     if (_traceProcessing) {
       return;
@@ -548,10 +840,14 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
         ref.read(routePlannerProvider).isRouting) {
       return;
     }
+    final mapPosition = _pointerPositionInMap(event);
+    if (mapPosition == null) {
+      return;
+    }
     _tracePointerId = event.pointer;
     setState(() {
       _traceDrawing = true;
-      _traceScreenPoints = [event.localPosition];
+      _traceScreenPoints = [mapPosition];
     });
     unawaited(HapticFeedback.selectionClick());
   }
@@ -563,11 +859,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
         _traceScreenPoints.isEmpty) {
       return;
     }
-    if ((event.localPosition - _traceScreenPoints.last).distance < 5) {
+    final mapPosition = _pointerPositionInMap(event);
+    if (mapPosition == null ||
+        (mapPosition - _traceScreenPoints.last).distance < 3) {
       return;
     }
     setState(() {
-      _traceScreenPoints = [..._traceScreenPoints, event.localPosition];
+      _traceScreenPoints = [..._traceScreenPoints, mapPosition];
     });
   }
 
@@ -576,8 +874,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
       return;
     }
     final points = List<Offset>.of(_traceScreenPoints);
-    if (points.isEmpty || (event.localPosition - points.last).distance >= 2) {
-      points.add(event.localPosition);
+    final mapPosition = _pointerPositionInMap(event);
+    if (mapPosition != null &&
+        (points.isEmpty || (mapPosition - points.last).distance >= 2)) {
+      points.add(mapPosition);
     }
     _tracePointerId = null;
     setState(() {
@@ -600,13 +900,30 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     }
   }
 
+  Offset? _pointerPositionInMap(PointerEvent event) {
+    final mapContext = _mapViewportKey.currentContext;
+    final renderBox = mapContext?.findRenderObject();
+    if (renderBox is! RenderBox || !renderBox.hasSize) {
+      return event.localPosition;
+    }
+
+    final local = renderBox.globalToLocal(event.position);
+    if (local.dx < 0 ||
+        local.dy < 0 ||
+        local.dx > renderBox.size.width ||
+        local.dy > renderBox.size.height) {
+      return null;
+    }
+    return local;
+  }
+
   Future<void> _commitTrace(List<Offset> screenPoints) async {
     final controller = _mapController;
     if (controller == null || screenPoints.length < 2 || _traceProcessing) {
       return;
     }
 
-    final sampled = sampleEvenly(screenPoints, maxItems: 56);
+    final sampled = sampleEvenly(screenPoints, maxItems: 90);
     if (sampled.length < 2) {
       return;
     }
@@ -614,9 +931,18 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     setState(() => _traceProcessing = true);
     try {
       final geoPoints = <GeoPoint>[];
+      // MapLibre native Android projection coordinates are physical screen
+      // pixels, while iOS uses UIKit points. Keep the trace overlay in Flutter
+      // logical pixels and convert only on Android.
+      final projectionScale = Platform.isAndroid
+          ? View.of(context).devicePixelRatio
+          : 1.0;
       for (final offset in sampled) {
         final coordinates = await controller.toLatLng(
-          math.Point<double>(offset.dx, offset.dy),
+          math.Point<double>(
+            offset.dx * projectionScale,
+            offset.dy * projectionScale,
+          ),
         );
         geoPoints.add(
           GeoPoint(
@@ -630,9 +956,58 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
         return;
       }
 
-      final accepted = ref
-          .read(routePlannerProvider.notifier)
-          .addTrace(geoPoints);
+      double? gestureToleranceMeters;
+      if (_traceMatchMode != MapMatchMode.free && geoPoints.isNotEmpty) {
+        try {
+          final reference = geoPoints[geoPoints.length ~/ 2];
+          final metersPerNativePixel = await controller
+              .getMetersPerPixelAtLatitude(reference.latitude);
+          final metersPerLogicalPixel = metersPerNativePixel * projectionScale;
+          final baseTolerance = _traceMatchMode == MapMatchMode.trails
+              ? 36.0
+              : 30.0;
+          final maxTolerance = _traceMatchMode == MapMatchMode.trails
+              ? 220.0
+              : 180.0;
+          gestureToleranceMeters = (metersPerLogicalPixel * 18)
+              .clamp(baseTolerance, maxTolerance)
+              .toDouble();
+        } on Object {
+          // Keep the matcher defaults if map scale information is temporarily
+          // unavailable.
+        }
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      final plannerState = ref.read(routePlannerProvider);
+      final plannerController = ref.read(routePlannerProvider.notifier);
+      var accepted = false;
+
+      if (_traceMatchMode == MapMatchMode.free) {
+        accepted = plannerController.addTrace(geoPoints);
+      } else {
+        final matchInput = <GeoPoint>[
+          if (plannerState.points.isNotEmpty) plannerState.points.last,
+          ...geoPoints,
+        ];
+        final match = await ref
+            .read(mapMatchingEngineProvider)
+            .match(
+              TraceMatchRequest(
+                trace: matchInput,
+                profile: plannerState.profile,
+                mode: _traceMatchMode,
+                gestureToleranceMeters: gestureToleranceMeters,
+              ),
+            );
+        if (!mounted) {
+          return;
+        }
+        accepted = plannerController.applyMatchedTrace(match);
+      }
       if (!accepted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context).traceTooShort)),
@@ -1057,6 +1432,63 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
     }
     _routeVisualKey = routeOptions.isEmpty ? null : routeVisualKey;
 
+    final slopeSamples = planner.elevationProfile.isAvailable
+        ? planner.elevationProfile.samples
+        : const <ElevationSample>[];
+    final slopeOptions = _slopeLayerEnabled && slopeSamples.length >= 2
+        ? <LineOptions>[
+            for (var index = 1; index < slopeSamples.length; index++)
+              LineOptions(
+                geometry: [
+                  _latLng(slopeSamples[index - 1].point),
+                  _latLng(slopeSamples[index].point),
+                ],
+                lineColor: _gradeColor(
+                  (slopeSamples[index - 1].gradePercent +
+                          slopeSamples[index].gradePercent) /
+                      2,
+                ),
+                lineWidth: 6.5,
+                lineOpacity: 0.96,
+                lineJoin: 'round',
+              ),
+          ]
+        : const <LineOptions>[];
+    final slopeVisualKey = slopeOptions.isEmpty
+        ? null
+        : Object.hashAll([
+            for (final sample in slopeSamples)
+              Object.hash(
+                sample.point.latitude,
+                sample.point.longitude,
+                sample.gradePercent.toStringAsFixed(1),
+              ),
+          ]).toString();
+    final slopeLinesCurrent =
+        _slopeLines.length == slopeOptions.length &&
+        _slopeLines.every(controller.lines.contains);
+    if (slopeLinesCurrent) {
+      if (_slopeVisualKey != slopeVisualKey) {
+        for (var index = 0; index < _slopeLines.length; index++) {
+          await controller.updateLine(_slopeLines[index], slopeOptions[index]);
+        }
+      }
+    } else {
+      final stale = _slopeLines
+          .where(controller.lines.contains)
+          .toList(growable: false);
+      if (stale.isNotEmpty) {
+        await controller.removeLines(stale);
+      }
+      _slopeLines = slopeOptions.isEmpty
+          ? const []
+          : await controller.addLines(slopeOptions, [
+              for (var index = 0; index < slopeOptions.length; index++)
+                <String, dynamic>{'kind': 'slope', 'segment': index},
+            ]);
+    }
+    _slopeVisualKey = slopeVisualKey;
+
     final waypointOptions = <CircleOptions>[
       for (var index = 0; index < waypoints.length; index++)
         CircleOptions(
@@ -1384,7 +1816,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
           child: _runningWidgetTest
               ? _MapTestFallback(dark: dark)
               : MapLibreMap(
-                  styleString: MapConfig.plannerStyleUrl,
+                  key: _mapViewportKey,
+                  styleString:
+                      _mapStyleUrl(_plannerMapStyle) ??
+                      MapConfig.plannerStyleUrl,
                   initialCameraPosition: const CameraPosition(
                     target: _fallbackCenter,
                     zoom: 6.8,
@@ -1401,6 +1836,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                   },
                   onStyleLoadedCallback: () {
                     _styleReady = true;
+                    unawaited(_applyTerrainState());
                     unawaited(_syncPlannerAnnotations());
                   },
                   onMapClick: (point, coordinates) {
@@ -1460,72 +1896,101 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 13,
-                        vertical: 9,
-                      ),
-                      decoration: BoxDecoration(
-                        color: dark
-                            ? const Color(0xD91A241E)
-                            : const Color(0xEFFFFFFF),
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            blurRadius: 18,
-                            color: Colors.black.withValues(alpha: 0.08),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final compact = constraints.maxWidth < 430;
+                    final veryCompact = constraints.maxWidth < 315;
+                    final actionSize = compact ? 44.0 : 48.0;
+                    final actionGap = compact ? 2.0 : 8.0;
+
+                    return Row(
+                      children: [
+                        Container(
+                          height: actionSize,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: veryCompact
+                                ? 8
+                                : compact
+                                ? 6
+                                : 13,
                           ),
-                        ],
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.terrain, size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'TrailPath',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.4,
-                            ),
+                          decoration: BoxDecoration(
+                            color: dark
+                                ? const Color(0xD91A241E)
+                                : const Color(0xEFFFFFFF),
+                            borderRadius: BorderRadius.circular(actionSize / 2),
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 18,
+                                color: Colors.black.withValues(alpha: 0.08),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                    const Spacer(),
-                    _MapActionButton(
-                      icon: Icons.draw_rounded,
-                      dark: dark,
-                      tooltip: strings.traceMode,
-                      active: _traceMode,
-                      onTap: planner.isRouting ? null : _toggleTraceMode,
-                    ),
-                    const SizedBox(width: 8),
-                    _MapActionButton(
-                      icon: Icons.undo_rounded,
-                      dark: dark,
-                      tooltip: strings.undo,
-                      onTap: planner.canUndo ? _undo : null,
-                    ),
-                    const SizedBox(width: 8),
-                    _MapActionButton(
-                      icon: Icons.redo_rounded,
-                      dark: dark,
-                      tooltip: strings.redo,
-                      onTap: planner.canRedo ? _redo : null,
-                    ),
-                    const SizedBox(width: 8),
-                    _MapActionButton(
-                      icon: _locationBusy
-                          ? Icons.hourglass_top_rounded
-                          : Icons.my_location,
-                      dark: dark,
-                      tooltip: strings.centerLocation,
-                      onTap: _centerOnUser,
-                    ),
-                  ],
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.terrain, size: compact ? 19 : 20),
+                              if (!veryCompact) ...[
+                                SizedBox(width: compact ? 4 : 8),
+                                Text(
+                                  'TrailPath',
+                                  style: TextStyle(
+                                    fontSize: compact ? 12.5 : null,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -0.4,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
+                        _MapActionButton(
+                          icon: Icons.layers_outlined,
+                          dark: dark,
+                          tooltip: strings.mapLayers,
+                          active: _plannerMapStyle != _PlannerMapStyle.outdoor,
+                          size: actionSize,
+                          onTap: _openMapLayers,
+                        ),
+                        SizedBox(width: actionGap),
+                        _MapActionButton(
+                          icon: Icons.draw_rounded,
+                          dark: dark,
+                          tooltip: strings.traceMode,
+                          active: _traceMode,
+                          size: actionSize,
+                          onTap: planner.isRouting ? null : _toggleTraceMode,
+                        ),
+                        SizedBox(width: actionGap),
+                        _MapActionButton(
+                          icon: Icons.undo_rounded,
+                          dark: dark,
+                          tooltip: strings.undo,
+                          size: actionSize,
+                          onTap: planner.canUndo ? _undo : null,
+                        ),
+                        SizedBox(width: actionGap),
+                        _MapActionButton(
+                          icon: Icons.redo_rounded,
+                          dark: dark,
+                          tooltip: strings.redo,
+                          size: actionSize,
+                          onTap: planner.canRedo ? _redo : null,
+                        ),
+                        SizedBox(width: actionGap),
+                        _MapActionButton(
+                          icon: _locationBusy
+                              ? Icons.hourglass_top_rounded
+                              : Icons.my_location,
+                          dark: dark,
+                          tooltip: strings.centerLocation,
+                          size: actionSize,
+                          onTap: _centerOnUser,
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: 12),
                 Container(
@@ -1599,6 +2064,147 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
                     dark: dark,
                     busy: _traceProcessing,
                   ),
+                  const SizedBox(height: 7),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Material(
+                      color: dark
+                          ? const Color(0xE61A241E)
+                          : const Color(0xF5FFFFFF),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 5,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: [
+                                ChoiceChip(
+                                  label: Text(strings.traceFollowTrails),
+                                  selected:
+                                      _traceMatchMode == MapMatchMode.trails,
+                                  onSelected: _traceProcessing
+                                      ? null
+                                      : (_) => setState(
+                                          () => _traceMatchMode =
+                                              MapMatchMode.trails,
+                                        ),
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                ChoiceChip(
+                                  label: Text(strings.traceFollowRoads),
+                                  selected:
+                                      _traceMatchMode == MapMatchMode.roads,
+                                  onSelected: _traceProcessing
+                                      ? null
+                                      : (_) => setState(
+                                          () => _traceMatchMode =
+                                              MapMatchMode.roads,
+                                        ),
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                ChoiceChip(
+                                  label: Text(strings.traceFree),
+                                  selected:
+                                      _traceMatchMode == MapMatchMode.free,
+                                  onSelected: _traceProcessing
+                                      ? null
+                                      : (_) => setState(
+                                          () => _traceMatchMode =
+                                              MapMatchMode.free,
+                                        ),
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                              ],
+                            ),
+                            if (planner.points.length >= 2) ...[
+                              const SizedBox(height: 5),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                children: [
+                                  ActionChip(
+                                    avatar: const Icon(
+                                      Icons.all_inclusive_rounded,
+                                      size: 17,
+                                    ),
+                                    label: Text(strings.traceCloseLoop),
+                                    onPressed: _traceProcessing
+                                        ? null
+                                        : () {
+                                            ref
+                                                .read(
+                                                  routePlannerProvider.notifier,
+                                                )
+                                                .closeLoop();
+                                          },
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                  ActionChip(
+                                    avatar: const Icon(
+                                      Icons.swap_horiz_rounded,
+                                      size: 17,
+                                    ),
+                                    label: Text(strings.traceOutAndBack),
+                                    onPressed: _traceProcessing
+                                        ? null
+                                        : () {
+                                            ref
+                                                .read(
+                                                  routePlannerProvider.notifier,
+                                                )
+                                                .makeOutAndBack();
+                                          },
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                  ActionChip(
+                                    avatar: const Icon(
+                                      Icons.swap_calls_rounded,
+                                      size: 17,
+                                    ),
+                                    label: Text(strings.traceReverse),
+                                    onPressed: _traceProcessing
+                                        ? null
+                                        : () {
+                                            ref
+                                                .read(
+                                                  routePlannerProvider.notifier,
+                                                )
+                                                .reverseRoute();
+                                          },
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                  ActionChip(
+                                    avatar: const Icon(
+                                      Icons.auto_fix_off_rounded,
+                                      size: 17,
+                                    ),
+                                    label: Text(strings.traceErase),
+                                    onPressed: _traceProcessing
+                                        ? null
+                                        : () {
+                                            ref
+                                                .read(
+                                                  routePlannerProvider.notifier,
+                                                )
+                                                .eraseLastSegment();
+                                          },
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -1610,7 +2216,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
             child: SafeArea(
               top: false,
               minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-              child: _CandidateSelectionCard(
+              child: CandidateSelectionCard(
                 strings: strings,
                 point: _candidatePoint!,
                 label: _candidateLabel,
@@ -1659,111 +2265,61 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen>
   }
 }
 
-enum _CandidateIntent { start, destination, waypoint }
-
-class _CandidateSelectionCard extends StatelessWidget {
-  const _CandidateSelectionCard({
-    required this.strings,
-    required this.point,
-    required this.label,
-    required this.canUseCurrentLocation,
-    required this.pointCount,
-    required this.onStart,
-    required this.onDestination,
-    required this.onWaypoint,
-    required this.onCancel,
-  });
-
-  final AppLocalizations strings;
-  final GeoPoint point;
-  final String? label;
-  final bool canUseCurrentLocation;
-  final int pointCount;
-  final VoidCallback onStart;
-  final VoidCallback onDestination;
-  final VoidCallback onWaypoint;
-  final VoidCallback onCancel;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final canSetDestination = pointCount > 0 || canUseCurrentLocation;
-
-    return Material(
-      color: scheme.surface.withValues(alpha: 0.98),
-      elevation: 8,
-      borderRadius: BorderRadius.circular(22),
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.place_rounded, color: scheme.primary),
-                const SizedBox(width: 9),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label ?? strings.pointPreview,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${point.latitude.toStringAsFixed(5)}, '
-                        '${point.longitude.toStringAsFixed(5)}',
-                        style: TextStyle(
-                          color: scheme.onSurfaceVariant,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  tooltip: strings.cancel,
-                  onPressed: onCancel,
-                  icon: const Icon(Icons.close_rounded),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              alignment: WrapAlignment.end,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: onStart,
-                  icon: const Icon(Icons.trip_origin_rounded, size: 18),
-                  label: Text(strings.startHere),
-                ),
-                if (pointCount >= 2)
-                  OutlinedButton.icon(
-                    onPressed: onWaypoint,
-                    icon: const Icon(Icons.add_location_alt_outlined, size: 18),
-                    label: Text(strings.addWaypoint),
-                  ),
-                FilledButton.icon(
-                  onPressed: canSetDestination ? onDestination : null,
-                  icon: const Icon(Icons.flag_rounded, size: 18),
-                  label: Text(strings.setDestination),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
+String _gradeColor(double grade) {
+  final absolute = grade.abs();
+  if (absolute < 4) {
+    return '#2E7D32';
   }
+  if (absolute < 8) {
+    return '#F9A825';
+  }
+  if (absolute < 13) {
+    return '#EF6C00';
+  }
+  if (absolute < 18) {
+    return '#D32F2F';
+  }
+  return '#7B1FA2';
 }
+
+enum _PlannerMapStyle { outdoor, street, highContrast, satellite, hybrid }
+
+extension on _PlannerMapStyle {
+  bool get isPremium =>
+      this == _PlannerMapStyle.satellite || this == _PlannerMapStyle.hybrid;
+}
+
+String _mapStyleLabel(AppLocalizations strings, _PlannerMapStyle style) {
+  return switch (style) {
+    _PlannerMapStyle.outdoor => strings.mapOutdoor,
+    _PlannerMapStyle.street => strings.mapStreet,
+    _PlannerMapStyle.highContrast => strings.mapHighContrast,
+    _PlannerMapStyle.satellite => strings.mapSatellite,
+    _PlannerMapStyle.hybrid => strings.mapHybrid,
+  };
+}
+
+_PlannerMapStyle _mapStyleFromPreference(DefaultMapPreference preference) {
+  return switch (preference) {
+    DefaultMapPreference.outdoor => _PlannerMapStyle.outdoor,
+    DefaultMapPreference.street => _PlannerMapStyle.street,
+    DefaultMapPreference.highContrast => _PlannerMapStyle.highContrast,
+    DefaultMapPreference.satellite => _PlannerMapStyle.satellite,
+    DefaultMapPreference.hybrid => _PlannerMapStyle.hybrid,
+  };
+}
+
+IconData _mapStyleIcon(_PlannerMapStyle style) {
+  return switch (style) {
+    _PlannerMapStyle.outdoor => Icons.terrain_rounded,
+    _PlannerMapStyle.street => Icons.map_outlined,
+    _PlannerMapStyle.highContrast => Icons.contrast_rounded,
+    _PlannerMapStyle.satellite => Icons.satellite_alt_outlined,
+    _PlannerMapStyle.hybrid => Icons.layers_outlined,
+  };
+}
+
+enum _CandidateIntent { start, destination, waypoint }
 
 class _DestinationPromptBar extends StatelessWidget {
   const _DestinationPromptBar({required this.strings, required this.onClear});
@@ -1846,7 +2402,7 @@ class _RouteSummaryBar extends StatelessWidget {
             children: [
               _CompactMetric(
                 label: strings.distance,
-                value: _formatDistance(planner.distanceMeters),
+                value: context.formatDistance(planner.distanceMeters),
               ),
               const SizedBox(width: 14),
               _CompactMetric(
@@ -1857,7 +2413,10 @@ class _RouteSummaryBar extends StatelessWidget {
               _CompactMetric(
                 label: strings.ascent,
                 value: planner.hasElevation
-                    ? '+${planner.ascentMeters.round()} m'
+                    ? context.formatElevation(
+                        planner.ascentMeters,
+                        signed: true,
+                      )
                     : '--',
               ),
               const Spacer(),
@@ -1981,22 +2540,6 @@ class _PlannerCard extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(width: 9),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                decoration: BoxDecoration(
-                  color: scheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  'v${MapConfig.appVersion}',
-                  style: TextStyle(
-                    color: scheme.onPrimaryContainer,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 5),
@@ -2102,7 +2645,7 @@ class _PlannerCard extends StatelessWidget {
               Expanded(
                 child: _Metric(
                   label: strings.distance,
-                  value: _formatDistance(planner.distanceMeters),
+                  value: context.formatDistance(planner.distanceMeters),
                 ),
               ),
               Expanded(
@@ -2148,7 +2691,7 @@ class _PlannerCard extends StatelessWidget {
               ),
               if (accuracy != null)
                 Text(
-                  '±${accuracy.round()} m',
+                  context.formatAccuracy(accuracy),
                   style: TextStyle(
                     color: scheme.onSurfaceVariant,
                     fontSize: 11,
@@ -2218,13 +2761,6 @@ String _profileLabel(AppLocalizations strings, RouteProfile profile) {
     RouteProfile.cycling => strings.profileCycling,
     RouteProfile.dogWalk => strings.profileDogWalk,
   };
-}
-
-String _formatDistance(double meters) {
-  if (meters < 1000) {
-    return '${meters.round()} m';
-  }
-  return '${(meters / 1000).toStringAsFixed(1)} km';
 }
 
 String _formatDuration(Duration duration) {
@@ -2348,7 +2884,7 @@ class _ElevationPanelState extends State<_ElevationPanel> {
                 ),
               ),
               Text(
-                '+${profile.ascentMeters.round()} m',
+                context.formatElevation(profile.ascentMeters, signed: true),
                 style: TextStyle(
                   color: scheme.primary,
                   fontSize: 12,
@@ -2357,7 +2893,7 @@ class _ElevationPanelState extends State<_ElevationPanel> {
               ),
               const SizedBox(width: 10),
               Text(
-                '−${profile.descentMeters.round()} m',
+                '-${context.formatElevation(profile.descentMeters)}',
                 style: TextStyle(
                   color: scheme.onSurfaceVariant,
                   fontSize: 12,
@@ -2399,12 +2935,14 @@ class _ElevationPanelState extends State<_ElevationPanel> {
             children: [
               _ElevationValue(
                 label: widget.strings.elevation,
-                value: '${selected.point.elevationMeters?.round() ?? 0} m',
+                value: context.formatElevation(
+                  selected.point.elevationMeters ?? 0,
+                ),
               ),
               const SizedBox(width: 16),
               _ElevationValue(
                 label: widget.strings.distance,
-                value: _formatDistance(selected.distanceMeters),
+                value: context.formatDistance(selected.distanceMeters),
               ),
               const SizedBox(width: 16),
               _ElevationValue(
@@ -2563,7 +3101,10 @@ class _RoutingStatus extends StatelessWidget {
         : planner.isRouting
         ? (Icons.sync_rounded, strings.routingCalculating)
         : planner.hasRoutingError
-        ? (Icons.cloud_off_rounded, strings.routeUnavailable)
+        ? (
+            Icons.cloud_off_rounded,
+            _routingFailureLabel(strings, planner.routingError),
+          )
         : planner.isSnapped
         ? (Icons.route_rounded, strings.routeSnapped)
         : (Icons.alt_route_rounded, strings.routeLocalFallback);
@@ -2598,6 +3139,31 @@ class _RoutingStatus extends StatelessWidget {
       ),
     );
   }
+}
+
+String _routingFailureLabel(AppLocalizations strings, String? rawError) {
+  final error = (rawError ?? '').toLowerCase();
+  if (error.contains('timed out') || error.contains('timeout')) {
+    return strings.routeTimeout;
+  }
+  if (error.contains('network request failed') ||
+      error.contains('socket') ||
+      error.contains('clientexception')) {
+    return strings.routeNoNetwork;
+  }
+  if (error.contains('no route found') ||
+      error.contains('noroute') ||
+      error.contains('no suitable edges') ||
+      error.contains('could not snap')) {
+    return strings.routeNotFound;
+  }
+  if (error.contains('http 429') ||
+      error.contains('http 5') ||
+      error.contains('service returned') ||
+      error.contains('valhalla routing returned')) {
+    return strings.routeProviderUnavailable;
+  }
+  return strings.routeUnavailable;
 }
 
 class _Metric extends StatelessWidget {
@@ -2635,6 +3201,7 @@ class _MapActionButton extends StatelessWidget {
     required this.dark,
     required this.tooltip,
     this.active = false,
+    this.size = 48,
     this.onTap,
   });
 
@@ -2642,6 +3209,7 @@ class _MapActionButton extends StatelessWidget {
   final bool dark;
   final String tooltip;
   final bool active;
+  final double size;
   final VoidCallback? onTap;
 
   @override
@@ -2666,11 +3234,11 @@ class _MapActionButton extends StatelessWidget {
             child: Opacity(
               opacity: onTap == null ? 0.38 : 1,
               child: SizedBox(
-                width: 48,
-                height: 48,
+                width: size,
+                height: size,
                 child: Icon(
                   icon,
-                  size: 20,
+                  size: size <= 42 ? 19 : 20,
                   color: active
                       ? Theme.of(context).colorScheme.onPrimaryContainer
                       : null,

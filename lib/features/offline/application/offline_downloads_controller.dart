@@ -1,10 +1,24 @@
 import 'dart:async';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/domain/offline_region_math.dart';
 import 'package:trail_path/core/services/service_providers.dart';
+import 'package:trail_path/features/settings/application/settings_controller.dart';
+
+bool allowsOfflineDownloadOnConnectivity({
+  required bool wifiOnly,
+  required List<ConnectivityResult> connectivity,
+}) {
+  if (!wifiOnly) {
+    return true;
+  }
+  return connectivity.contains(ConnectivityResult.wifi) ||
+      connectivity.contains(ConnectivityResult.ethernet);
+}
 
 final offlineDownloadsProvider =
     NotifierProvider<OfflineDownloadsController, OfflineDownloadsState>(
@@ -48,6 +62,10 @@ class OfflineDownloadsState {
 
 class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
   bool _restoreScheduled = false;
+  final Map<String, StreamSubscription<OfflineRegion>> _downloadSubscriptions =
+      {};
+  final Map<String, Completer<bool>> _downloadCompletions = {};
+  final Set<String> _cancelledRouteIds = {};
 
   @override
   OfflineDownloadsState build() {
@@ -126,6 +144,31 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
     final database = ref.read(appDatabaseProvider);
 
     try {
+      final preferences =
+          ref.read(settingsControllerProvider).asData?.value ??
+          await ref.read(settingsControllerProvider.future);
+      final connectivity = preferences?.wifiOnlyDownloads ?? false
+          ? await Connectivity().checkConnectivity()
+          : const <ConnectivityResult>[];
+      if (!allowsOfflineDownloadOnConnectivity(
+        wifiOnly: preferences?.wifiOnlyDownloads ?? false,
+        connectivity: connectivity,
+      )) {
+        if (ref.mounted) {
+          state = state.copyWith(
+            error: 'Offline downloads are limited to Wi-Fi by user preference.',
+          );
+        }
+        return false;
+      }
+    } on Object catch (error) {
+      if (ref.mounted) {
+        state = state.copyWith(error: error.toString());
+      }
+      return false;
+    }
+
+    try {
       final existingRegions = await manager.listRegions();
       OfflineRegion? existing;
       for (final region in existingRegions) {
@@ -162,15 +205,45 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
       );
 
       var completed = false;
-      await for (final snapshot in manager.download(request)) {
-        if (!ref.mounted) {
-          return false;
-        }
-        state = state.copyWith(
-          snapshots: {...state.snapshots, routeId: snapshot},
-          clearError: true,
-        );
-        completed = snapshot.isComplete;
+      final completion = Completer<bool>();
+      _downloadCompletions[routeId] = completion;
+
+      late final StreamSubscription<OfflineRegion> subscription;
+      subscription = manager
+          .download(request)
+          .listen(
+            (snapshot) {
+              if (!ref.mounted || _cancelledRouteIds.contains(routeId)) {
+                return;
+              }
+              state = state.copyWith(
+                snapshots: {...state.snapshots, routeId: snapshot},
+                clearError: true,
+              );
+              completed = snapshot.isComplete;
+              if (completed && !completion.isCompleted) {
+                completion.complete(true);
+              }
+            },
+            onError: (Object error, StackTrace stackTrace) {
+              if (!completion.isCompleted) {
+                completion.completeError(error, stackTrace);
+              }
+            },
+            onDone: () {
+              if (!completion.isCompleted) {
+                completion.complete(completed);
+              }
+            },
+          );
+      _downloadSubscriptions[routeId] = subscription;
+
+      completed = await completion.future;
+      await subscription.cancel();
+
+      if (_cancelledRouteIds.contains(routeId)) {
+        await database.setSavedRouteOfflineReady(routeId, isReady: false);
+        return false;
       }
 
       await database.setSavedRouteOfflineReady(routeId, isReady: completed);
@@ -187,12 +260,53 @@ class OfflineDownloadsController extends Notifier<OfflineDownloadsState> {
       }
       return false;
     } finally {
+      _downloadCompletions.remove(routeId);
+      final subscription = _downloadSubscriptions.remove(routeId);
+      await subscription?.cancel();
+      _cancelledRouteIds.remove(routeId);
       if (ref.mounted) {
         final active = {...state.activeRouteIds}..remove(routeId);
         state = state.copyWith(
           activeRouteIds: Set<String>.unmodifiable(active),
         );
       }
+    }
+  }
+
+  Future<bool> cancelDownload(String routeId) async {
+    if (!state.activeRouteIds.contains(routeId)) {
+      return false;
+    }
+
+    final manager = ref.read(offlineMapManagerProvider);
+    final database = ref.read(appDatabaseProvider);
+    _cancelledRouteIds.add(routeId);
+
+    final completion = _downloadCompletions[routeId];
+    if (completion != null && !completion.isCompleted) {
+      completion.complete(false);
+    }
+
+    try {
+      await _downloadSubscriptions.remove(routeId)?.cancel();
+      await manager.delete(routeId);
+      await database.setSavedRouteOfflineReady(routeId, isReady: false);
+
+      if (ref.mounted) {
+        final snapshots = {...state.snapshots}..remove(routeId);
+        final active = {...state.activeRouteIds}..remove(routeId);
+        state = state.copyWith(
+          snapshots: Map<String, OfflineRegion>.unmodifiable(snapshots),
+          activeRouteIds: Set<String>.unmodifiable(active),
+          clearError: true,
+        );
+      }
+      return true;
+    } on Object catch (error) {
+      if (ref.mounted) {
+        state = state.copyWith(error: error.toString());
+      }
+      return false;
     }
   }
 

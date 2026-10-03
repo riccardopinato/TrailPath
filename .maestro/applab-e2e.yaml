@@ -87,19 +87,21 @@ appId: com.riccardopinato.trail_path
 - waitForAnimationToEnd
 - tapOn:
     point: "43%,28%"
-- extendedWaitUntil:
-    visible: "Start here"
-    timeout: 15000
-- tapOn: "Start here"
+- runFlow:
+    when:
+      visible: "Start here"
+    commands:
+      - tapOn: "Start here"
 - extendedWaitUntil:
     visible: "Choose destination"
     timeout: 15000
 - tapOn:
     point: "57%,28%"
-- extendedWaitUntil:
-    visible: "Destination"
-    timeout: 15000
-- tapOn: "Destination"
+- runFlow:
+    when:
+      visible: "Destination"
+    commands:
+      - tapOn: "Destination"
 - extendedWaitUntil:
     visible: "Save route"
     timeout: 60000
@@ -157,9 +159,19 @@ appId: com.riccardopinato.trail_path
     text: '.*Available offline.*'
 
 - tapOn:
-    text: 'Outdoor\s*Tab 5 of 5'
+    text: 'Profile\s*Tab 5 of 5'
+- assertVisible: "Profile"
+- extendedWaitUntil:
+    visible:
+      text: '.*TrailPath Pro.*'
+    timeout: 15000
+- tapOn:
+    text: ".*(Outdoor tools|Strumenti Outdoor|Herramientas Outdoor|Outils Outdoor|Ferramentas Outdoor).*"
 - assertVisible: "Outdoor"
-- assertVisible: "Balanced"
+- assertVisible:
+    text: "Balanced|Bilanciata|Equilibrado|Équilibré"
+- pressKey: BACK
+- assertVisible: "Profile"
 
 - tapOn:
     text: 'Plan\s*Tab 1 of 5'

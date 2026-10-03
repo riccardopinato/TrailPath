@@ -5,6 +5,7 @@ import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/domain/battery_policy.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/outdoor/application/battery_mode_controller.dart';
 import 'package:trail_path/features/outdoor/presentation/back_to_car_screen.dart';
@@ -75,10 +76,10 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(strings.carPositionSaved)));
       }
-    } on Object catch (error) {
+    } on Object {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(error.toString())));
+            .showSnackBar(SnackBar(content: Text(strings.outdoorUnavailable)));
       }
     } finally {
       if (mounted) {
@@ -222,7 +223,7 @@ class _OutdoorScreenState extends ConsumerState<OutdoorScreen> {
               ),
               loading: () => const _LoadingCard(),
               error: (error, stackTrace) =>
-                  _ErrorCard(message: error.toString()),
+                  _ErrorCard(message: strings.outdoorUnavailable),
             ),
             const SizedBox(height: 14),
             FutureBuilder<SafetySnapshot>(
@@ -312,7 +313,7 @@ class _BatteryModeCard extends StatelessWidget {
               const SizedBox(width: 7),
               Expanded(
                 child: Text(
-                  _modeTechnicalLabel(strings, mode),
+                  _modeTechnicalLabel(context, strings, mode),
                   style: TextStyle(
                     color: scheme.onSurfaceVariant,
                     fontSize: 11,
@@ -354,8 +355,7 @@ class _BackToCarCard extends StatelessWidget {
       title: strings.backToCar,
       subtitle: point == null
           ? strings.backToCarHint
-          : '${strings.carSavedAt} ${_formatSavedTime(context, point.savedAt)} · '
-                '±${point.accuracyMeters.round()} m',
+          : '${strings.carSavedAt} ${_formatSavedTime(context, point.savedAt)} · ${context.formatAccuracy(point.accuracyMeters)}',
       child: Row(
         children: [
           Expanded(
@@ -425,7 +425,7 @@ class _SafetyCard extends StatelessWidget {
           ? const LinearProgressIndicator()
           : error != null
           ? Text(
-              error.toString(),
+              strings.safetyUnavailable,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.error,
                 fontSize: 12,
@@ -667,11 +667,14 @@ String _modeHint(AppLocalizations strings, BatteryMode mode) {
   };
 }
 
-String _modeTechnicalLabel(AppLocalizations strings, BatteryMode mode) {
+String _modeTechnicalLabel(
+  BuildContext context,
+  AppLocalizations strings,
+  BatteryMode mode,
+) {
   final policy = batteryModePolicy(mode);
-  return '${strings.gpsEvery} '
-      '${policy.interval.inSeconds}s · '
-      '${policy.distanceFilterMeters} m';
+  return '${strings.gpsEvery} ${policy.interval.inSeconds}s · '
+      '${context.formatDistance(policy.distanceFilterMeters.toDouble())}';
 }
 
 String _formatSavedTime(BuildContext context, DateTime value) {
