@@ -96,7 +96,7 @@ Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current f
 - [x] **Web Preview UX parity:** Web uses the shared planner core, candidate preview/confirmation flow, shared search/routing/map-matching providers, Smart Trace and coalesced incremental MapLibre annotation updates;
 - [ ] **Full-app accessibility + small-screen pass:** TalkBack, large text, contrast, compact route summary and candidate actions across critical screens;
 - [x] **Android release contract evidence:** CI records resolved min/target SDK and verifies merged foreground/location/notification permission declarations from the ARM64 release artifact;
-- [ ] **Production routing-provider decision:** explicitly accept the public routing.openstreetmap.de dependency or switch/self-host behind the existing `RoutingEngine` contract;
+- [x] **Production routing-provider decision:** development/internal builds may use community OSM/Valhalla endpoints, while store readiness requires a dedicated `VALHALLA_BASE_URL` and does not silently fall back to community OSRM;
 - [ ] **Visual regression baseline:** promote an accepted physical/visual checkpoint only after the build-31 UI is approved;
 - [ ] complete exact-artifact ARM64 physical QA, store signing, Play metadata/screenshots and rollout review.
 
@@ -106,7 +106,7 @@ Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current f
 - [x] replace raw `error.toString()` surfaces on primary user-facing screens with localized user-safe categories while retaining technical controller/service error state for diagnostics;
 - [x] localize foreground-service notification text and remaining hardcoded UI/support strings; recording notification copy now follows IT/EN/ES/FR/PT system locale with English fallback, planner/Web support actions are localized;
 - [x] add explicit cancel semantics for long offline downloads; active downloads can be cancelled from Routes or Offline, partial region data is removed, database readiness is reset and the route remains restartable. Download-size review remains part of release QA;
-- [ ] decide whether route/activity/Back-to-Car coordinates require app-level encryption at rest;
+- [x] document the data-at-rest threat model: rely on Android app-private storage/file-based encryption plus disabled backup/data extraction for the current scope; do not add SQLCipher until the threat model changes (`docs/SECURITY_DATA_AT_REST.md`);
 - [x] upgrade `permission_handler` 12.x → 13.x in a dedicated post-RC compatibility step with permission/background regression; v1.5.11 uses 13.0.2 and compileSdk 37 with release APK permission inspection;
 - [x] remove duplicated semantic version source: `pubspec.yaml` is now the sole semantic version source and runtime map/network identity no longer carries a separately maintained version constant;
 - [x] broaden behavioral widget coverage for candidate selection and destructive/error states: extracted candidate actions, shared destructive confirmation and navigation safe-error rendering are exercised as real widgets;
@@ -163,6 +163,7 @@ Goal: make TrailPath feel like a complete product without forcing account creati
 - [x] optional **Google Sign-In** is config-gated and used only for account-backed Cloud Sync.
 - [x] separate identity/auth from local outdoor data; sign-out never silently deletes routes/activities/preferences.
 - [x] document account sign-out/local-data retention/cloud deletion lifecycle before production account enablement.
+- [x] add authenticated in-app account deletion: server identity/cloud rows are deleted first, then local routes/activities/settings/offline maps are purged; failure remains fail-safe to the local copy. Public deletion instructions live in `docs/ACCOUNT_DELETION.md`.
 
 ### v1.4 — Cloud Sync & Cross-device
 
@@ -270,3 +271,17 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] verify persisted activity, route navigation geometry, offline readiness and settings after the package update;
 - [x] retain upgrade evidence with old/new package identity and SHA-256 values;
 - [x] refresh a dedicated 90-day baseline artifact so future migration runs are not tied to the normal one-day x86 runtime artifact.
+
+
+### v1.5.14 — Audit Closure & Certification Repair
+
+- [x] repair the AppLab System UI process-health race while keeping target ANR/FATAL checks fail-closed;
+- [x] protect Pro and migration E2E from foreign emulator ANR dialogs without suppressing TrailPath failures;
+- [x] make upgrade/migration failures always emit stage diagnostics and a failure summary;
+- [x] include live routing, Pro routing and upgrade/migration in the actual certification verdict instead of only in job dependencies;
+- [x] remove hard-coded v1.0 evidence naming from the post-v1 certification bundle;
+- [x] make release-mode Pro entitlement fail closed unless purchase verification is server-backed;
+- [x] add authenticated account + cloud + local/offline data deletion with regression coverage;
+- [x] require a dedicated production Valhalla-compatible provider for store readiness while preserving community providers for development/internal builds;
+- [x] close the local GPS data-at-rest decision with a documented Android threat model and explicit review triggers;
+- [ ] physical ARM64 performance/TalkBack/small-screen validation and external provider/Play configuration remain real-device/provider-console gates, not code defects.
