@@ -17,8 +17,9 @@ void main() {
 
     expect(runner, contains('adb install -r'));
     expect(runner, contains('versionName=1.5.11'));
-    expect(runner, contains('versionName=1.5.13'));
-    expect(runner, contains('Baseline artifact ID: 11021533532'));
+    expect(runner, contains('EXPECTED_NEW_VERSION'));
+    expect(runner, contains('EXPECTED_NEW_CODE'));
+    expect(runner, contains('Baseline bootstrap artifact ID: 11021533532'));
 
     expect(seed, contains('clearState: false'));
     expect(runner, contains('adb shell pm clear'));
