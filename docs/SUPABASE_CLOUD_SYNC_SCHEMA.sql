@@ -56,3 +56,31 @@ create policy "trailpath_sync_delete_own"
 
 create index if not exists trailpath_sync_items_updated_idx
   on public.trailpath_sync_items (user_id, updated_at desc);
+
+
+-- Account deletion endpoint used by the in-app deletion flow.
+-- SECURITY DEFINER is required because authenticated clients cannot delete
+-- auth.users directly. The function accepts no user-supplied identifier and
+-- derives the target exclusively from auth.uid(), preventing cross-account
+-- deletion. trailpath_sync_items is removed by ON DELETE CASCADE.
+create or replace function public.delete_my_trailpath_account()
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  current_user_id uuid := (select auth.uid());
+begin
+  if current_user_id is null then
+    raise exception 'authentication required';
+  end if;
+
+  delete from auth.users
+  where id = current_user_id;
+end;
+$$;
+
+revoke all on function public.delete_my_trailpath_account() from public;
+revoke all on function public.delete_my_trailpath_account() from anon;
+grant execute on function public.delete_my_trailpath_account() to authenticated;
