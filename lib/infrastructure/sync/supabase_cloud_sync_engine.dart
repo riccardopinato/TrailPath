@@ -5,7 +5,7 @@ import 'package:trail_path/core/domain/cloud_sync.dart';
 import 'package:trail_path/core/services/account_service.dart';
 import 'package:trail_path/core/services/cloud_sync_engine.dart';
 
-class SupabaseCloudSyncEngine implements CloudSyncEngine {
+class SupabaseCloudSyncEngine implements AccountDeletingCloudSyncEngine {
   SupabaseCloudSyncEngine({
     required this._database,
     required this._accountService,
@@ -208,6 +208,34 @@ class SupabaseCloudSyncEngine implements CloudSyncEngine {
   }
 
   String _key(SyncEntityType type, String entityId) => '${type.name}:$entityId';
+
+  @override
+  Future<void> deleteAccount() async {
+    if (!isConfigured) {
+      throw StateError('Cloud account deletion is not configured.');
+    }
+
+    final client = _client!;
+    final user = await _ensureUser(client);
+    if (user == null) {
+      throw StateError('Sign in with Google before deleting the cloud account.');
+    }
+
+    // The RPC is SECURITY DEFINER but takes no user id: the database function
+    // derives auth.uid() from the authenticated JWT and can therefore delete
+    // only the caller's auth row. The FK cascade removes synced TrailPath data.
+    await client.rpc('delete_my_trailpath_account');
+
+    // The server-side identity is already gone. Best-effort local sign-out
+    // clears the cached Supabase session; Google sign-out is coordinated by
+    // the profile controller separately.
+    try {
+      await client.auth.signOut();
+    } on Object {
+      // Deletion is authoritative once the RPC succeeds. A now-invalid remote
+      // session must not turn a completed account deletion into a false error.
+    }
+  }
 
   @override
   Future<void> signOut() async {
