@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('v1.5.13 upgrade gate uses a real previous release artifact', () {
+  test('upgrade gate uses a real previous release artifact', () {
     final workflow = File('.github/workflows/ci.yml').readAsStringSync();
     final runner = File('.maestro/run-upgrade-migration.sh').readAsStringSync();
     final seed = File('.maestro/upgrade-seed-v1511.yaml').readAsStringSync();
@@ -20,7 +20,10 @@ void main() {
     expect(runner, contains('versionName=1.5.13'));
     expect(runner, contains('Baseline artifact ID: 11021533532'));
 
-    expect(seed, contains('clearState: true'));
+    expect(seed, contains('clearState: false'));
+    expect(runner, contains('adb shell pm clear'));
+    expect(runner, contains('expected_new_version'));
+    expect(runner, contains('diagnostics.txt'));
     expect(seed, contains('Upgrade Activity'));
     expect(seed, contains('Upgrade Route'));
     expect(seed, contains('Imperial \\(mi, ft\\)'));
