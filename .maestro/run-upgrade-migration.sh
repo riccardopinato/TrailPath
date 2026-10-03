@@ -22,6 +22,7 @@ NEW_CODE=""
 EXPECTED_NEW_VERSION=""
 EXPECTED_NEW_CODE=""
 APKANALYZER=""
+FOREIGN_ANR_GUARD_PID=""
 
 fail() {
   echo "TrailPath upgrade gate failed at stage '$STAGE': $*" >&2
@@ -67,6 +68,10 @@ EOF
 
 on_exit() {
   local exit_code=$?
+  if [ -n "$FOREIGN_ANR_GUARD_PID" ]; then
+    kill "$FOREIGN_ANR_GUARD_PID" >/dev/null 2>&1 || true
+    wait "$FOREIGN_ANR_GUARD_PID" >/dev/null 2>&1 || true
+  fi
   write_diagnostics
   if [ "$exit_code" -ne 0 ] && [ ! -s "$REPORT_DIR/summary.md" ]; then
     cat > "$REPORT_DIR/summary.md" <<EOF
@@ -125,6 +130,16 @@ adb shell pm grant "$APP_ID" android.permission.ACCESS_FINE_LOCATION || true
 adb shell pm grant "$APP_ID" android.permission.ACCESS_COARSE_LOCATION || true
 adb shell pm grant "$APP_ID" android.permission.POST_NOTIFICATIONS || true
 adb emu geo fix 11.7500 45.2320 100 || true
+
+if [ -f "$ROOT_DIR/.applab/scripts/dismiss_foreign_anr.py" ]; then
+  (
+    for _ in $(seq 1 600); do
+      python3 "$ROOT_DIR/.applab/scripts/dismiss_foreign_anr.py"         --package-id "$APP_ID" || true
+      sleep 2
+    done
+  ) &
+  FOREIGN_ANR_GUARD_PID=$!
+fi
 
 STAGE="seed-baseline"
 "$MAESTRO" test "$ROOT_DIR/.maestro/upgrade-seed-v1511.yaml"   --format junit   --output "$REPORT_DIR/seed-results.xml"
