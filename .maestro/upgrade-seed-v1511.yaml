@@ -2,8 +2,10 @@
 # Runs against the pinned real previous-release artifact.
 appId: com.riccardopinato.trail_path
 ---
+# The runner clears package data before granting permissions. Preserve those
+# grants here so this flow tests migration state instead of permission dialogs.
 - launchApp:
-    clearState: true
+    clearState: false
 
 - extendedWaitUntil:
     visible:
