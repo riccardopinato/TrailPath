@@ -579,6 +579,145 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  applab-ux-matrix:
+    name: AppLab Small-screen / Large-text UX Gate
+    needs: validate-and-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout TrailPath
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Download x86_64 release APK
+        uses: actions/download-artifact@v6
+        with:
+          name: TrailPath-v${{ needs.validate-and-build.outputs.app_version }}-ci-x86_64
+          path: apk-ux
+
+      - name: Checkout AppLab
+        uses: actions/checkout@v6
+        with:
+          repository: riccardopinato/AppLab
+          ref: bf3478d1a1a2bf1dad458aa157fdb8c4c83321c1
+          path: .applab
+
+      - name: Install Maestro
+        run: |
+          chmod +x .applab/scripts/*.sh
+          .applab/scripts/install_maestro.sh
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run constrained UX matrix through AppLab
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7_pro
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: |
+            set -euo pipefail
+            APP_ID="com.riccardopinato.trail_path"
+            REPORT_DIR="$GITHUB_WORKSPACE/applab-ux-report"
+            mkdir -p "$REPORT_DIR"
+
+            adb install -r "$GITHUB_WORKSPACE/apk-ux/app-x86_64-release.apk"
+            adb shell pm clear "$APP_ID" >/dev/null || true
+            adb shell wm size 360x640
+            adb shell wm density 320
+            adb shell settings put system font_scale 1.30
+            adb shell pm grant "$APP_ID" android.permission.ACCESS_FINE_LOCATION || true
+            adb shell pm grant "$APP_ID" android.permission.ACCESS_COARSE_LOCATION || true
+            adb shell pm grant "$APP_ID" android.permission.POST_NOTIFICATIONS || true
+            adb emu geo fix 11.7500 45.2320 100 || true
+
+            (
+              for _ in $(seq 1 75); do
+                python3 "$GITHUB_WORKSPACE/.applab/scripts/dismiss_foreign_anr.py" \
+                  --package-id "$APP_ID" || true
+                sleep 1
+              done
+            ) &
+            FOREIGN_ANR_GUARD_PID=$!
+            cleanup() {
+              kill "$FOREIGN_ANR_GUARD_PID" >/dev/null 2>&1 || true
+              wait "$FOREIGN_ANR_GUARD_PID" >/dev/null 2>&1 || true
+            }
+            trap cleanup EXIT
+
+            "$HOME/.maestro/bin/maestro" test \
+              "$GITHUB_WORKSPACE/.maestro/applab-small-screen-e2e.yaml" \
+              --format junit \
+              --output "$REPORT_DIR/results.xml"
+
+            adb exec-out screencap -p > "$REPORT_DIR/final-planner.png"
+            for attempt in 1 2 3 4; do
+              adb shell uiautomator dump /sdcard/trailpath-ux-final.xml >/dev/null 2>&1 || true
+              adb pull /sdcard/trailpath-ux-final.xml "$REPORT_DIR/final-planner.xml" >/dev/null 2>&1 || true
+              if [ -s "$REPORT_DIR/final-planner.xml" ]; then
+                break
+              fi
+              sleep "$attempt"
+            done
+            test -s "$REPORT_DIR/final-planner.png"
+            test -s "$REPORT_DIR/final-planner.xml"
+
+            python3 "$GITHUB_WORKSPACE/.applab/scripts/visual_qa.py" \
+              --screenshot "$REPORT_DIR/final-planner.png" \
+              --ui-hierarchy "$REPORT_DIR/final-planner.xml" \
+              --package-id "$APP_ID" \
+              --output-json "$REPORT_DIR/visual-qa.json" \
+              --output-md "$REPORT_DIR/visual-qa.md"
+
+            python3 "$GITHUB_WORKSPACE/.applab/scripts/interaction_crawler.py" \
+              --package-id "$APP_ID" \
+              --report-dir "$REPORT_DIR" \
+              --max-actions 6
+
+            python3 "$GITHUB_WORKSPACE/.applab/scripts/performance_lab.py" \
+              --package-id "$APP_ID" \
+              --apk "$GITHUB_WORKSPACE/apk-ux/app-x86_64-release.apk" \
+              --report-dir "$REPORT_DIR"
+
+            adb logcat -d > "$REPORT_DIR/logcat.txt"
+            ! grep -Eq "ANR in com\\.riccardopinato\\.trail_path|Process: com\\.riccardopinato\\.trail_path.*FATAL" "$REPORT_DIR/logcat.txt"
+
+            cat > "$REPORT_DIR/summary.md" <<EOF
+            # TrailPath AppLab UX Matrix
+
+            - Result: PASS
+            - Viewport: 360x640 logical test window
+            - Android density override: 320 dpi
+            - Font scale: 1.30
+            - Critical surfaces: Planner, Record, Routes, Offline, Profile, Settings
+            - Smart Visual QA: executed
+            - Safe Interaction Crawler: executed
+            - Performance Lab: executed (emulator advisory only)
+            EOF
+
+      - name: Upload AppLab UX matrix evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: TrailPath-AppLab-UX-${{ github.sha }}
+          path: applab-ux-report/
+          if-no-files-found: warn
+          retention-days: 30
+
   upgrade-migration:
     name: TrailPath Upgrade / Migration AppLab
     needs: validate-and-build
@@ -676,7 +815,7 @@ jobs:
 
   certification-evidence:
     name: Release Certification Evidence
-    needs: [validate-and-build, routing-provider-smoke, android-api29-smoke, applab-android, applab-v15-pro, upgrade-migration]
+    needs: [validate-and-build, routing-provider-smoke, android-api29-smoke, applab-android, applab-v15-pro, applab-ux-matrix, upgrade-migration]
     if: always()
     runs-on: ubuntu-latest
 
@@ -721,6 +860,15 @@ jobs:
           name: TrailPath-AppLab-v15-Pro-${{ github.sha }}
           path: certification/pro-routing
 
+
+      - name: Download UX matrix evidence
+        if: needs.applab-ux-matrix.result != 'skipped' && needs.applab-ux-matrix.result != 'cancelled'
+        continue-on-error: true
+        uses: actions/download-artifact@v6
+        with:
+          name: TrailPath-AppLab-UX-${{ github.sha }}
+          path: certification/ux-matrix
+
       - name: Download upgrade migration evidence
         if: needs.upgrade-migration.result != 'skipped' && needs.upgrade-migration.result != 'cancelled'
         continue-on-error: true
@@ -736,6 +884,7 @@ jobs:
           PRO_ROUTING_RESULT: ${{ needs.applab-v15-pro.result }}
           ROUTING_PROVIDER_RESULT: ${{ needs.routing-provider-smoke.result }}
           API29_RESULT: ${{ needs.android-api29-smoke.result }}
+          UX_MATRIX_RESULT: ${{ needs.applab-ux-matrix.result }}
           UPGRADE_RESULT: ${{ needs.upgrade-migration.result }}
           STORE_SIGNING_AVAILABLE: ${{ needs.validate-and-build.outputs.store_signing_available }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -797,6 +946,7 @@ jobs:
              [ "$API29_RESULT" = "success" ] && \
              [ "$APPLAB_RESULT" = "success" ] && \
              [ "$PRO_ROUTING_RESULT" = "success" ] && \
+             [ "$UX_MATRIX_RESULT" = "success" ] && \
              [ "$UPGRADE_RESULT" = "success" ]; then
             AUTOMATED_VALIDATION="PASS"
           else
@@ -833,6 +983,7 @@ jobs:
           - Android API 29 release smoke: **$API29_RESULT**
           - AppLab Android E2E (API 35): **$APPLAB_RESULT**
           - AppLab v1.5 Pro routing: **$PRO_ROUTING_RESULT**
+          - AppLab small-screen / large-text UX matrix: **$UX_MATRIX_RESULT**
           - Upgrade / Migration AppLab (v1.5.11 → current): **$UPGRADE_RESULT**
           - Store-signing credentials available: **$STORE_SIGNING_AVAILABLE**
           - Formatting / analyze / full Flutter tests: tied to validate-and-build
@@ -883,6 +1034,9 @@ jobs:
           if [ -f certification/applab/summary.md ]; then
             cp certification/applab/summary.md certification/APPLAB_SUMMARY.md
           fi
+          if [ -f certification/ux-matrix/summary.md ]; then
+            cp certification/ux-matrix/summary.md certification/APPLAB_UX_MATRIX_SUMMARY.md
+          fi
           if [ -f certification/upgrade/summary.md ]; then
             cp certification/upgrade/summary.md certification/UPGRADE_MIGRATION_SUMMARY.md
           fi
@@ -903,6 +1057,7 @@ jobs:
             certification/VERDICT.txt
             certification/ARTIFACT_SHA256.txt
             certification/APPLAB_SUMMARY.md
+            certification/APPLAB_UX_MATRIX_SUMMARY.md
             certification/UPGRADE_MIGRATION_SUMMARY.md
           if-no-files-found: error
           retention-days: 30
