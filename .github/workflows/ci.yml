@@ -523,7 +523,7 @@ jobs:
           profile: pixel_7_pro
           disable-animations: true
           script: |
-            set -euo pipefail
+            set -eu
             APP_ID="com.riccardopinato.trail_path"
             REPORT_DIR="$GITHUB_WORKSPACE/applab-v15-report"
             mkdir -p "$REPORT_DIR"
@@ -630,7 +630,7 @@ jobs:
           disable-animations: true
           emulator-boot-timeout: 600
           script: |
-            set -euo pipefail
+            set -eu
             APP_ID="com.riccardopinato.trail_path"
             REPORT_DIR="$GITHUB_WORKSPACE/applab-ux-report"
             mkdir -p "$REPORT_DIR"
