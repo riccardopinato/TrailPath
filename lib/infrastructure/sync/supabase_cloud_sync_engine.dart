@@ -218,7 +218,9 @@ class SupabaseCloudSyncEngine implements AccountDeletingCloudSyncEngine {
     final client = _client!;
     final user = await _ensureUser(client);
     if (user == null) {
-      throw StateError('Sign in with Google before deleting the cloud account.');
+      throw StateError(
+        'Sign in with Google before deleting the cloud account.',
+      );
     }
 
     // The RPC is SECURITY DEFINER but takes no user id: the database function
