@@ -263,7 +263,8 @@ class _AccountCard extends ConsumerWidget {
                       tooltip: strings.deleteAccount,
                       onPressed: cloud.isBusy
                           ? null
-                          : () => unawaited(_confirmDeleteAccount(context, ref)),
+                          : () =>
+                                unawaited(_confirmDeleteAccount(context, ref)),
                       color: Theme.of(context).colorScheme.error,
                       icon: const Icon(Icons.delete_forever_outlined),
                     ),
@@ -357,10 +358,7 @@ Future<void> _openProFeature(
       .push(MaterialPageRoute<void>(builder: (_) => screen));
 }
 
-Future<void> _confirmDeleteAccount(
-  BuildContext context,
-  WidgetRef ref,
-) async {
+Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
   final strings = AppLocalizations.of(context);
   final confirmed = await showDialog<bool>(
     context: context,
