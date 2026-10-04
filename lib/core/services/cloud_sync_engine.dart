@@ -8,7 +8,6 @@ abstract interface class CloudSyncEngine {
   Future<void> signOut();
 }
 
-
 abstract interface class AccountDeletingCloudSyncEngine
     implements CloudSyncEngine {
   /// Permanently removes the authenticated TrailPath cloud account and its
