@@ -522,53 +522,8 @@ jobs:
           arch: x86_64
           profile: pixel_7_pro
           disable-animations: true
-          script: |
-            set -eu
-            APP_ID="com.riccardopinato.trail_path"
-            REPORT_DIR="$GITHUB_WORKSPACE/applab-v15-report"
-            mkdir -p "$REPORT_DIR"
-
-            adb install -r apk-pro/TrailPath-internal-pro-x86_64.apk
-            adb shell pm clear "$APP_ID" >/dev/null || true
-            adb shell pm grant "$APP_ID" android.permission.ACCESS_FINE_LOCATION || true
-            adb shell pm grant "$APP_ID" android.permission.ACCESS_COARSE_LOCATION || true
-            adb shell pm grant "$APP_ID" android.permission.POST_NOTIFICATIONS || true
-            adb emu geo fix 11.7500 45.2320 100 || true
-
-            # Hosted google_apis AVDs can surface a foreign Google SDK Setup ANR
-            # over the app. AppLab dismisses only ANRs whose subject is not the
-            # target package, so a real TrailPath ANR remains fail-closed.
-            (
-              for _ in $(seq 1 60); do
-                python3 "$GITHUB_WORKSPACE/.applab/scripts/dismiss_foreign_anr.py"                   --package-id "$APP_ID" || true
-                sleep 1
-              done
-            ) &
-            FOREIGN_ANR_GUARD_PID=$!
-            cleanup() {
-              kill "$FOREIGN_ANR_GUARD_PID" >/dev/null 2>&1 || true
-              wait "$FOREIGN_ANR_GUARD_PID" >/dev/null 2>&1 || true
-            }
-            trap cleanup EXIT
-
-            set +e
-            "$HOME/.maestro/bin/maestro" test               "$GITHUB_WORKSPACE/.maestro/applab-v15-pro-e2e.yaml"               --format junit               --output "$REPORT_DIR/results.xml"
-            maestro_status=$?
-            set -e
-
-            adb exec-out screencap -p > "$REPORT_DIR/final.png" || true
-            adb shell uiautomator dump /sdcard/trailpath-v15-final.xml >/dev/null 2>&1 || true
-            adb pull /sdcard/trailpath-v15-final.xml "$REPORT_DIR/final.xml" >/dev/null 2>&1 || true
-            adb logcat -d > "$REPORT_DIR/logcat.txt"
-
-            crash_status=0
-            if grep -Eq "ANR in com\\.riccardopinato\\.trail_path|Process: com\\.riccardopinato\\.trail_path.*FATAL" "$REPORT_DIR/logcat.txt"; then
-              crash_status=1
-            fi
-            if [ "$maestro_status" -ne 0 ]; then
-              exit "$maestro_status"
-            fi
-            exit "$crash_status"
+          emulator-boot-timeout: 600
+          script: bash "$GITHUB_WORKSPACE/.maestro/run-applab-v15-pro.sh" "$GITHUB_WORKSPACE/apk-pro/TrailPath-internal-pro-x86_64.apk" "$GITHUB_WORKSPACE/applab-v15-report"
 
       - name: Upload v1.5 Pro AppLab report
         if: always()
@@ -629,85 +584,7 @@ jobs:
           profile: pixel_7_pro
           disable-animations: true
           emulator-boot-timeout: 600
-          script: |
-            set -eu
-            APP_ID="com.riccardopinato.trail_path"
-            REPORT_DIR="$GITHUB_WORKSPACE/applab-ux-report"
-            mkdir -p "$REPORT_DIR"
-
-            adb install -r "$GITHUB_WORKSPACE/apk-ux/app-x86_64-release.apk"
-            adb shell pm clear "$APP_ID" >/dev/null || true
-            adb shell wm size 360x640
-            adb shell wm density 320
-            adb shell settings put system font_scale 1.30
-            adb shell pm grant "$APP_ID" android.permission.ACCESS_FINE_LOCATION || true
-            adb shell pm grant "$APP_ID" android.permission.ACCESS_COARSE_LOCATION || true
-            adb shell pm grant "$APP_ID" android.permission.POST_NOTIFICATIONS || true
-            adb emu geo fix 11.7500 45.2320 100 || true
-
-            (
-              for _ in $(seq 1 75); do
-                python3 "$GITHUB_WORKSPACE/.applab/scripts/dismiss_foreign_anr.py" \
-                  --package-id "$APP_ID" || true
-                sleep 1
-              done
-            ) &
-            FOREIGN_ANR_GUARD_PID=$!
-            cleanup() {
-              kill "$FOREIGN_ANR_GUARD_PID" >/dev/null 2>&1 || true
-              wait "$FOREIGN_ANR_GUARD_PID" >/dev/null 2>&1 || true
-            }
-            trap cleanup EXIT
-
-            "$HOME/.maestro/bin/maestro" test \
-              "$GITHUB_WORKSPACE/.maestro/applab-small-screen-e2e.yaml" \
-              --format junit \
-              --output "$REPORT_DIR/results.xml"
-
-            adb exec-out screencap -p > "$REPORT_DIR/final-planner.png"
-            for attempt in 1 2 3 4; do
-              adb shell uiautomator dump /sdcard/trailpath-ux-final.xml >/dev/null 2>&1 || true
-              adb pull /sdcard/trailpath-ux-final.xml "$REPORT_DIR/final-planner.xml" >/dev/null 2>&1 || true
-              if [ -s "$REPORT_DIR/final-planner.xml" ]; then
-                break
-              fi
-              sleep "$attempt"
-            done
-            test -s "$REPORT_DIR/final-planner.png"
-            test -s "$REPORT_DIR/final-planner.xml"
-
-            python3 "$GITHUB_WORKSPACE/.applab/scripts/visual_qa.py" \
-              --screenshot "$REPORT_DIR/final-planner.png" \
-              --ui-hierarchy "$REPORT_DIR/final-planner.xml" \
-              --package-id "$APP_ID" \
-              --output-json "$REPORT_DIR/visual-qa.json" \
-              --output-md "$REPORT_DIR/visual-qa.md"
-
-            python3 "$GITHUB_WORKSPACE/.applab/scripts/interaction_crawler.py" \
-              --package-id "$APP_ID" \
-              --report-dir "$REPORT_DIR" \
-              --max-actions 6
-
-            python3 "$GITHUB_WORKSPACE/.applab/scripts/performance_lab.py" \
-              --package-id "$APP_ID" \
-              --apk "$GITHUB_WORKSPACE/apk-ux/app-x86_64-release.apk" \
-              --report-dir "$REPORT_DIR"
-
-            adb logcat -d > "$REPORT_DIR/logcat.txt"
-            ! grep -Eq "ANR in com\\.riccardopinato\\.trail_path|Process: com\\.riccardopinato\\.trail_path.*FATAL" "$REPORT_DIR/logcat.txt"
-
-            cat > "$REPORT_DIR/summary.md" <<EOF
-            # TrailPath AppLab UX Matrix
-
-            - Result: PASS
-            - Viewport: 360x640 logical test window
-            - Android density override: 320 dpi
-            - Font scale: 1.30
-            - Critical surfaces: Planner, Record, Routes, Offline, Profile, Settings
-            - Smart Visual QA: executed
-            - Safe Interaction Crawler: executed
-            - Performance Lab: executed (emulator advisory only)
-            EOF
+          script: bash "$GITHUB_WORKSPACE/.maestro/run-applab-ux-matrix.sh" "$GITHUB_WORKSPACE/apk-ux/app-x86_64-release.apk" "$GITHUB_WORKSPACE/applab-ux-report"
 
       - name: Upload AppLab UX matrix evidence
         if: always()
@@ -1074,3 +951,33 @@ jobs:
             certification/ARTIFACT_SHA256.txt
           if-no-files-found: error
           retention-days: 30
+
+      - name: Enforce automated certification result
+        if: always()
+        env:
+          BUILD_RESULT: ${{ needs.validate-and-build.result }}
+          ROUTING_PROVIDER_RESULT: ${{ needs.routing-provider-smoke.result }}
+          API29_RESULT: ${{ needs.android-api29-smoke.result }}
+          APPLAB_RESULT: ${{ needs.applab-android.result }}
+          PRO_ROUTING_RESULT: ${{ needs.applab-v15-pro.result }}
+          UX_MATRIX_RESULT: ${{ needs.applab-ux-matrix.result }}
+          UPGRADE_RESULT: ${{ needs.upgrade-migration.result }}
+        run: |
+          set -euo pipefail
+          failed=0
+          for entry in \
+            "validate-and-build=$BUILD_RESULT" \
+            "routing-provider-smoke=$ROUTING_PROVIDER_RESULT" \
+            "android-api29-smoke=$API29_RESULT" \
+            "applab-android=$APPLAB_RESULT" \
+            "applab-v15-pro=$PRO_ROUTING_RESULT" \
+            "applab-ux-matrix=$UX_MATRIX_RESULT" \
+            "upgrade-migration=$UPGRADE_RESULT"; do
+            name="${entry%%=*}"
+            result="${entry#*=}"
+            if [ "$result" != "success" ]; then
+              echo "::error::Automated certification gate '$name' concluded '$result'."
+              failed=1
+            fi
+          done
+          test "$failed" -eq 0
