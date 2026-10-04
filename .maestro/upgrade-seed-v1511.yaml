@@ -27,11 +27,11 @@ appId: com.riccardopinato.trail_path
     visible: "Units"
     timeout: 15000
 - tapOn:
-    text: "Metric \(km, m\)"
+    text: 'Metric \\(km, m\\)'
 - tapOn:
-    text: "Imperial \(mi, ft\)"
+    text: 'Imperial \\(mi, ft\\)'
 - assertVisible:
-    text: "Imperial \(mi, ft\)"
+    text: 'Imperial \\(mi, ft\\)'
 - pressKey: BACK
 
 # Persist a completed activity.
