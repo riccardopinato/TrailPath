@@ -70,8 +70,12 @@ for attempt in $(seq 1 "$MAX_INFRA_ATTEMPTS"); do
   if [ "$attempt" -lt "$MAX_INFRA_ATTEMPTS" ] &&
      trailpath_maestro_failure_is_transient "$console_log" "$system_log"; then
     echo "Transient Maestro/Android infrastructure failure on attempt $attempt; retrying." | tee -a "$console_log"
-    trailpath_recover_maestro_runtime "$APP_ID"
-    apply_ux_environment
+    if trailpath_recover_maestro_runtime "$APP_ID"; then
+      apply_ux_environment
+    else
+      echo "Runtime recovery did not fully settle; next Maestro attempt will reacquire the device." | tee -a "$console_log"
+      sleep 5
+    fi
     continue
   fi
 
