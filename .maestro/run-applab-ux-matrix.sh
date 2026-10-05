@@ -16,13 +16,21 @@ test -x "$MAESTRO"
 trailpath_wait_for_android_runtime
 
 apply_ux_environment() {
-  adb shell wm size 360x640
+  # Android wm size is expressed in physical pixels. 720x1280 at 320 dpi
+  # produces the intended 360x640 dp Flutter viewport.
+  adb shell wm size 720x1280
   adb shell wm density 320
   adb shell settings put system font_scale 1.30
   adb shell pm grant "$APP_ID" android.permission.ACCESS_FINE_LOCATION || true
   adb shell pm grant "$APP_ID" android.permission.ACCESS_COARSE_LOCATION || true
   adb shell pm grant "$APP_ID" android.permission.POST_NOTIFICATIONS || true
   adb emu geo fix 11.7500 45.2320 100 || true
+
+  local override_size override_density
+  override_size="$(adb shell wm size | tr -d '\r' | awk -F': ' '/Override size/ {print $2}')"
+  override_density="$(adb shell wm density | tr -d '\r' | awk -F': ' '/Override density/ {print $2}')"
+  test "$override_size" = "720x1280"
+  test "$override_density" = "320"
 }
 
 adb install -r "$APK"
@@ -114,7 +122,7 @@ cat > "$REPORT_DIR/summary.md" <<EOF
 # TrailPath AppLab UX Matrix
 
 - Result: PASS
-- Viewport: 360x640 logical test window
+- Viewport: 360x640 dp (720x1280 physical at 320 dpi)
 - Android density override: 320 dpi
 - Font scale: 1.30
 - Critical surfaces: Planner, Record, Routes, Offline, Profile, Settings
