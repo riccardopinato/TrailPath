@@ -5,6 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('AppLab blocking harnesses execute atomically and certification fails closed', () {
     final workflow = File('.github/workflows/ci.yml').readAsStringSync();
+    final mainFlow = File('.maestro/applab-e2e.yaml').readAsStringSync();
+    final proRunner = File('.maestro/run-applab-v15-pro.sh').readAsStringSync();
+    final uxRunner = File('.maestro/run-applab-ux-matrix.sh').readAsStringSync();
+    final helper = File('.maestro/ci_runtime_helpers.sh').readAsStringSync();
     final migrationSeed = File('.maestro/upgrade-seed-v1511.yaml')
         .readAsStringSync();
     final migrationVerify = File('.maestro/upgrade-verify-v1513.yaml')
@@ -22,9 +26,24 @@ void main() {
         'script: bash "\$GITHUB_WORKSPACE/.maestro/run-applab-ux-matrix.sh"',
       ),
     );
+    expect(workflow, isNot(contains('bash "\$GITHUB_WORKSPACE/.maestro/run-offline-e2e.sh"')));
     expect(workflow, contains('name: Enforce automated certification result'));
     expect(workflow, contains('test "\$failed" -eq 0'));
 
+    expect(mainFlow, contains('- setAirplaneMode: enabled'));
+    expect(mainFlow, contains('- setAirplaneMode: disabled'));
+    expect(mainFlow, contains('.*Available offline.*'));
+
+    expect(helper, contains('MaestroDriverStartupException'));
+    expect(helper, contains('AndroidDriverTimeoutException'));
+    expect(helper, contains('DeadSystemException'));
+    expect(proRunner, contains('MAX_INFRA_ATTEMPTS=3'));
+    expect(proRunner, contains('trailpath_maestro_failure_is_transient'));
+    expect(uxRunner, contains('MAX_INFRA_ATTEMPTS=3'));
+    expect(uxRunner, contains('trailpath_maestro_failure_is_transient'));
+
+    expect(migrationSeed, contains('- scrollUntilVisible:'));
+    expect(migrationVerify, contains('- scrollUntilVisible:'));
     expect(migrationSeed, contains("text: 'Metric \\(km, m\\)'"));
     expect(migrationSeed, contains("text: 'Imperial \\(mi, ft\\)'"));
     expect(migrationVerify, contains("text: 'Imperial \\(mi, ft\\)'"));
