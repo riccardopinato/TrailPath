@@ -10,7 +10,8 @@ void main() {
     final uxRunner = File('.maestro/run-applab-ux-matrix.sh')
         .readAsStringSync();
     final helper = File('.maestro/ci_runtime_helpers.sh').readAsStringSync();
-    final resourcePolicy = File('.maestro/applab-resource.json').readAsStringSync();
+    final resourcePolicy = File('.maestro/applab-resource.json')
+        .readAsStringSync();
     final migrationSeed = File('.maestro/upgrade-seed-v1511.yaml')
         .readAsStringSync();
     final migrationVerify = File('.maestro/upgrade-verify-v1513.yaml')
