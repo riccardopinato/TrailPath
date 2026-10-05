@@ -1,4 +1,4 @@
-# Verifies v1.5.11 persistent state after in-place update to v1.5.13.
+# Verifies v1.5.11 persistent state after an in-place update to the current release.
 # clearState MUST remain false: this is the core upgrade contract.
 appId: com.riccardopinato.trail_path
 ---
