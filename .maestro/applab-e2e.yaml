@@ -176,3 +176,42 @@ appId: com.riccardopinato.trail_path
 - tapOn:
     text: 'Plan\s*Tab 1 of 5'
 - assertVisible: "Search place or trail"
+
+# Focused no-network navigation is intentionally part of the same Maestro
+# process. Running a second Maestro session after the full AppLab stress suite
+# caused hosted-emulator system_server deaths unrelated to TrailPath.
+- setAirplaneMode: enabled
+- stopApp
+- launchApp:
+    clearState: false
+- assertNotVisible: "Start TrailPath"
+- tapOn:
+    text: 'Routes\s*Tab 3 of 5'
+- waitForAnimationToEnd
+- tapOn:
+    text: 'Routes\s*Tab 3 of 5'
+- extendedWaitUntil:
+    visible: "Routes"
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      text: '.*TrailPath E2E Route.*'
+    timeout: 30000
+- tapOn: "Navigate"
+- extendedWaitUntil:
+    visible:
+      text: '.*TrailPath E2E Route.*'
+    timeout: 20000
+- assertVisible: "Remaining"
+- assertVisible: "Progress"
+- pressKey: BACK
+- tapOn:
+    text: 'Offline\s*Tab 4 of 5'
+- extendedWaitUntil:
+    visible:
+      text: '.*Available offline.*'
+    timeout: 20000
+- setAirplaneMode: disabled
+- tapOn:
+    text: 'Plan\s*Tab 1 of 5'
+- assertVisible: "Search place or trail"
