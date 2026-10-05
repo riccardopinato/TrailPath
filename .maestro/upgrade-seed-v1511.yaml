@@ -22,9 +22,15 @@ appId: com.riccardopinato.trail_path
 - extendedWaitUntil:
     visible: "Profile"
     timeout: 15000
-- tapOn: "Settings"
+- scrollUntilVisible:
+    element:
+      text: "Settings|Impostazioni|Ajustes|Réglages|Definições"
+    direction: DOWN
+- tapOn:
+    text: "Settings|Impostazioni|Ajustes|Réglages|Definições"
 - extendedWaitUntil:
-    visible: "Units"
+    visible:
+      text: "Units|Unità|Unidades|Unités"
     timeout: 15000
 - tapOn:
     text: 'Metric \(km, m\)'
