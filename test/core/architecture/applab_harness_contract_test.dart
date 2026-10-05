@@ -10,6 +10,7 @@ void main() {
     final uxRunner = File('.maestro/run-applab-ux-matrix.sh')
         .readAsStringSync();
     final helper = File('.maestro/ci_runtime_helpers.sh').readAsStringSync();
+    final resourcePolicy = File('.maestro/applab-resource.json').readAsStringSync();
     final migrationSeed = File('.maestro/upgrade-seed-v1511.yaml')
         .readAsStringSync();
     final migrationVerify = File('.maestro/upgrade-verify-v1513.yaml')
@@ -43,11 +44,24 @@ void main() {
     expect(helper, contains('DeadSystemException'));
     expect(helper, contains('DeviceServerDiedException'));
     expect(helper, contains('StatusRuntimeException: UNAVAILABLE'));
+    expect(helper, contains('UiAutomationService.*already registered'));
+    expect(helper, contains('Bad file descriptor'));
+    expect(helper, contains('dev.mobile.maestro'));
+    expect(helper, contains('adb kill-server'));
+    expect(helper, contains('adb start-server'));
     expect(helper, contains('adb forward --remove-all'));
     expect(proRunner, contains('MAX_INFRA_ATTEMPTS=3'));
     expect(proRunner, contains('trailpath_maestro_failure_is_transient'));
     expect(uxRunner, contains('MAX_INFRA_ATTEMPTS=3'));
     expect(uxRunner, contains('trailpath_maestro_failure_is_transient'));
+    expect(
+      uxRunner,
+      contains('Runtime recovery did not fully settle; next Maestro attempt'),
+    );
+
+    expect(resourcePolicy, contains('"trim_levels": ["RUNNING_LOW"]'));
+    expect(resourcePolicy, contains('"settle_seconds": 5.0'));
+    expect(resourcePolicy, contains('"process_death_cycles": 1'));
 
     expect(
       migrationSeed,
@@ -60,6 +74,14 @@ void main() {
       contains(
         'text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"',
       ),
+    );
+    expect(
+      migrationSeed,
+      isNot(contains('text: "Units|Unità|Unidades|Unités"')),
+    );
+    expect(
+      migrationVerify,
+      isNot(contains('text: "Units|Unità|Unidades|Unités"')),
     );
     expect(migrationSeed, contains("text: 'Metric \\(km, m\\)'"));
     expect(migrationSeed, contains("text: 'Imperial \\(mi, ft\\)'"));
