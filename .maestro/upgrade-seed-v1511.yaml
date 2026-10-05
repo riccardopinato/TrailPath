@@ -30,7 +30,7 @@ appId: com.riccardopinato.trail_path
     text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"
 - extendedWaitUntil:
     visible:
-      text: "Units|Unità|Unidades|Unités"
+      text: 'Metric \(km, m\)'
     timeout: 15000
 - tapOn:
     text: 'Metric \(km, m\)'
