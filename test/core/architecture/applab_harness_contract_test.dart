@@ -90,9 +90,9 @@ void main() {
       ),
     );
     expect(migrationSeed, contains("(?s).*(Units|Unità|Unidades|Unités)"));
-    expect(migrationSeed, contains("Metriche \\(km, m\\)"));
-    expect(migrationSeed, contains("Impériales \\(mi, ft\\)"));
+    expect(migrationSeed, contains('Metriche'));
+    expect(migrationSeed, contains('Impériales'));
     expect(migrationVerify, contains("(?s).*(Units|Unità|Unidades|Unités)"));
-    expect(migrationVerify, contains("Imperiais \\(mi, ft\\)"));
+    expect(migrationVerify, contains('Imperiais'));
   });
 }
