@@ -35,7 +35,13 @@ recover_adb() {
 
 is_maestro_infra_failure() {
   local log_file="$1"
-  grep -Eq     "AndroidOperationFailedException|Failure calling service package|Broken pipe|device offline|device .* not found|ADB server didn't ACK|Connection reset|installMaestroDriverApp"     "$log_file"
+  local system_log="${2:-${REPORT_ROOT}/offline-maestro-system.log}"
+
+  adb logcat -b all -d -v threadtime > "$system_log" 2>&1 || true
+
+  grep -Eqi     "AndroidOperationFailedException|Failure calling service package|Broken pipe|device offline|device .*not found|ADB server didn't ACK|Connection reset|installMaestroDriverApp|Maestro Android driver did not start up in time|AndroidDriverTimeoutException|MaestroDriverStartupException"     "$log_file" && return 0
+
+  grep -Eqi     "DeadSystemException|The system died|registerUiTestAutomationService.*null object reference|UiAutomationConnection.*NullPointerException|system_server.*(died|crash|restarting)"     "$system_log"
 }
 
 if ! adb_ready; then
@@ -58,7 +64,7 @@ while [ "$attempt" -le "$MAX_INFRA_ATTEMPTS" ]; do
     exit 0
   fi
 
-  if [ "$attempt" -lt "$MAX_INFRA_ATTEMPTS" ] && is_maestro_infra_failure "$ATTEMPT_LOG"; then
+  if [ "$attempt" -lt "$MAX_INFRA_ATTEMPTS" ] && is_maestro_infra_failure "$ATTEMPT_LOG" "${REPORT_ROOT}/offline-maestro-attempt-${attempt}-system-logcat.txt"; then
     echo "Transient ADB/Maestro infrastructure failure on attempt $attempt; recovering ADB before retry."       | tee -a "${REPORT_ROOT}/offline-maestro.log"
     if ! recover_adb; then
       echo "ADB/package-manager recovery failed." | tee -a "${REPORT_ROOT}/offline-maestro.log"
