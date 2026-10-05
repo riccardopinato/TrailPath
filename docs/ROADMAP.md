@@ -294,3 +294,14 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] classify Maestro device-server death / gRPC UNAVAILABLE / closed forwarded sockets as retryable hosted-emulator infrastructure, with stale ADB forwards cleared during recovery;
 - [x] make the v1.5.11 migration seed/verify target the already-visible Flutter Settings semantics directly instead of relying on a brittle scroll selector;
 - [ ] rerun the complete release matrix and promote only when Core, API29, main E2E, Pro, UX and Upgrade/Migration are all green.
+
+
+### v1.5.16 — Deterministic AppLab & Migration Closure
+
+- [x] prove the main TrailPath E2E user journey itself passes through recording recovery, route creation, navigation, offline persistence and no-network navigation before the later stress-lab failure;
+- [x] remove the migration false-negative selector on the localized `Units` label and wait for the concrete persisted preference value instead;
+- [x] classify UiAutomation already-registered / bad-file-descriptor failures as harness infrastructure and reset stale Maestro instrumentation + ADB forwards before retry;
+- [x] keep small-screen retries alive when the first runtime-recovery pass cannot fully reacquire the hosted emulator;
+- [x] define a TrailPath-specific resource/process-death policy with supported foreground trim level and a 5 s recovery settle window;
+- [x] fix AppLab Resource Pressure upstream so ANR/FATAL evaluation is scoped to diagnostics emitted after the intentional process kill and relaunch;
+- [ ] pin the validated AppLab fix commit and rerun Core, API29, main E2E, Pro, UX and Upgrade/Migration to a single all-green release matrix.
