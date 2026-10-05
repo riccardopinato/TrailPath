@@ -52,7 +52,7 @@ appId: com.riccardopinato.trail_path
     text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"
 - extendedWaitUntil:
     visible:
-      text: 'Imperial \(mi, ft\)'
+      text: '(?s).*(Units|Unità|Unidades|Unités)\\s*(Imperial \\(mi, ft\\)|Imperiali \\(mi, ft\\)|Imperiales \\(mi, ft\\)|Impériales \\(mi, ft\\)|Imperiais \\(mi, ft\\)).*'
     timeout: 15000
 - assertVisible:
-    text: 'Imperial \(mi, ft\)'
+    text: '(?s).*(Units|Unità|Unidades|Unités)\\s*(Imperial \\(mi, ft\\)|Imperiali \\(mi, ft\\)|Imperiales \\(mi, ft\\)|Impériales \\(mi, ft\\)|Imperiais \\(mi, ft\\)).*'
