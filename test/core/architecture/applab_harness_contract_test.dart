@@ -7,7 +7,8 @@ void main() {
     final workflow = File('.github/workflows/ci.yml').readAsStringSync();
     final mainFlow = File('.maestro/applab-e2e.yaml').readAsStringSync();
     final proRunner = File('.maestro/run-applab-v15-pro.sh').readAsStringSync();
-    final uxRunner = File('.maestro/run-applab-ux-matrix.sh').readAsStringSync();
+    final uxRunner = File('.maestro/run-applab-ux-matrix.sh')
+        .readAsStringSync();
     final helper = File('.maestro/ci_runtime_helpers.sh').readAsStringSync();
     final migrationSeed = File('.maestro/upgrade-seed-v1511.yaml')
         .readAsStringSync();
@@ -26,7 +27,10 @@ void main() {
         'script: bash "\$GITHUB_WORKSPACE/.maestro/run-applab-ux-matrix.sh"',
       ),
     );
-    expect(workflow, isNot(contains('bash "\$GITHUB_WORKSPACE/.maestro/run-offline-e2e.sh"')));
+    expect(
+      workflow,
+      isNot(contains('bash "\$GITHUB_WORKSPACE/.maestro/run-offline-e2e.sh"')),
+    );
     expect(workflow, contains('name: Enforce automated certification result'));
     expect(workflow, contains('test "\$failed" -eq 0'));
 
