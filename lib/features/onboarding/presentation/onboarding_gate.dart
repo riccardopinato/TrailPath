@@ -91,12 +91,7 @@ class _OnboardingScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(
-                      24,
-                      compact ? 18 : 28,
-                      24,
-                      18,
-                    ),
+                    padding: EdgeInsets.fromLTRB(24, compact ? 18 : 28, 24, 18),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 640),
@@ -107,9 +102,7 @@ class _OnboardingScreen extends StatelessWidget {
                               header: true,
                               child: Text(
                                 strings.onboardingTitle,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineLarge
+                                style: Theme.of(context).textTheme.headlineLarge
                                     ?.copyWith(fontWeight: FontWeight.w900),
                               ),
                             ),
