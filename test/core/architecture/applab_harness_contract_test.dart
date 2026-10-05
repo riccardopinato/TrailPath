@@ -12,6 +12,8 @@ void main() {
     final helper = File('.maestro/ci_runtime_helpers.sh').readAsStringSync();
     final resourcePolicy = File('.maestro/applab-resource.json')
         .readAsStringSync();
+    final configurationPolicy = File('.maestro/applab-configuration.json')
+        .readAsStringSync();
     final migrationSeed = File('.maestro/upgrade-seed-v1511.yaml')
         .readAsStringSync();
     final migrationVerify = File('.maestro/upgrade-verify-v1513.yaml')
@@ -32,6 +34,10 @@ void main() {
     expect(
       workflow,
       isNot(contains('bash "\$GITHUB_WORKSPACE/.maestro/run-offline-e2e.sh"')),
+    );
+    expect(
+      workflow,
+      contains('APPLAB_PROJECT_ROOT="\$GITHUB_WORKSPACE" RUN_MAESTRO=true'),
     );
     expect(workflow, contains('name: Enforce automated certification result'));
     expect(workflow, contains('test "\$failed" -eq 0'));
@@ -63,6 +69,13 @@ void main() {
     expect(resourcePolicy, contains('"trim_levels": ["RUNNING_LOW"]'));
     expect(resourcePolicy, contains('"settle_seconds": 5.0'));
     expect(resourcePolicy, contains('"process_death_cycles": 1'));
+    expect(configurationPolicy, contains('"rotation_cycles": 1'));
+    expect(configurationPolicy, contains('"background_cycles": 1'));
+    expect(configurationPolicy, contains('"settle_seconds": 5.0'));
+
+    expect(uxRunner, contains('adb shell wm size 720x1280'));
+    expect(uxRunner, contains('adb shell wm density 320'));
+    expect(uxRunner, isNot(contains('adb shell wm size 360x640')));
 
     expect(
       migrationSeed,
@@ -76,16 +89,10 @@ void main() {
         'text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"',
       ),
     );
-    expect(
-      migrationSeed,
-      isNot(contains('text: "Units|Unità|Unidades|Unités"')),
-    );
-    expect(
-      migrationVerify,
-      isNot(contains('text: "Units|Unità|Unidades|Unités"')),
-    );
-    expect(migrationSeed, contains("text: 'Metric \\(km, m\\)'"));
-    expect(migrationSeed, contains("text: 'Imperial \\(mi, ft\\)'"));
-    expect(migrationVerify, contains("text: 'Imperial \\(mi, ft\\)'"));
+    expect(migrationSeed, contains("(?s).*(Units|Unità|Unidades|Unités)"));
+    expect(migrationSeed, contains("Metriche \\(km, m\\)"));
+    expect(migrationSeed, contains("Impériales \\(mi, ft\\)"));
+    expect(migrationVerify, contains("(?s).*(Units|Unità|Unidades|Unités)"));
+    expect(migrationVerify, contains("Imperiais \\(mi, ft\\)"));
   });
 }
