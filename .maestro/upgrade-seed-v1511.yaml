@@ -22,12 +22,12 @@ appId: com.riccardopinato.trail_path
 - extendedWaitUntil:
     visible: "Profile"
     timeout: 15000
-- scrollUntilVisible:
-    element:
-      text: "Settings|Impostazioni|Ajustes|Réglages|Definições"
-    direction: DOWN
+- extendedWaitUntil:
+    visible:
+      text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"
+    timeout: 15000
 - tapOn:
-    text: "Settings|Impostazioni|Ajustes|Réglages|Definições"
+    text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"
 - extendedWaitUntil:
     visible:
       text: "Units|Unità|Unidades|Unités"
