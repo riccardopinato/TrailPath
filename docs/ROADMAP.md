@@ -304,4 +304,14 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] keep small-screen retries alive when the first runtime-recovery pass cannot fully reacquire the hosted emulator;
 - [x] define a TrailPath-specific resource/process-death policy with supported foreground trim level and a 5 s recovery settle window;
 - [x] fix AppLab Resource Pressure upstream so ANR/FATAL evaluation is scoped to diagnostics emitted after the intentional process kill and relaunch;
-- [ ] pin the validated AppLab fix commit and rerun Core, API29, main E2E, Pro, UX and Upgrade/Migration to a single all-green release matrix.
+- [x] pin the validated AppLab fix commit and isolate the remaining false negatives by evidence.
+
+
+
+### v1.5.17 — AppLab Policy & Viewport Root-Cause Fixes
+
+- [x] pass the TrailPath repository root explicitly to AppLab so project-specific lifecycle/resource policies are actually loaded instead of silently falling back to generic defaults;
+- [x] add a TrailPath lifecycle policy with one rotation/background cycle and a 5 s settle window, preserving fail-closed crash/ANR checks without artificial one-second platform-view churn;
+- [x] fix the small-screen matrix geometry: 720×1280 physical at 320 dpi now yields the intended 360×640 dp Flutter viewport instead of the accidental 180×320 dp viewport;
+- [x] prove from migration failure evidence that Flutter exposes the Units dropdown as a combined accessibility node and update seed/verify selectors to match that semantics across IT/EN/ES/FR/PT;
+- [ ] rerun the complete matrix and promote only when Core, API29, main E2E, Pro, UX and Upgrade/Migration are green in the same run.
