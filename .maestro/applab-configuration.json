@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "enabled": true,
+  "required": false,
+  "rotation_cycles": 1,
+  "background_cycles": 1,
+  "settle_seconds": 5.0,
+  "expected_text_regex": [
+    "Search place or trail|Cerca luogo o sentiero|Buscar lugar o sendero|Rechercher un lieu ou sentier|Pesquisar local ou trilho"
+  ],
+  "forbidden_text_regex": [
+    "Start TrailPath|Inizia con TrailPath|Empezar con TrailPath|Commencer avec TrailPath|Começar com TrailPath"
+  ]
+}
