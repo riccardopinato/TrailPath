@@ -450,7 +450,7 @@ jobs:
             adb shell pm grant com.riccardopinato.trail_path android.permission.POST_NOTIFICATIONS || true
             adb emu geo fix 11.7500 45.2320 100 || true
 
-            RUN_MAESTRO=true MAESTRO_FLOW="$GITHUB_WORKSPACE/.maestro/applab-e2e.yaml" REPORT_DIR="$GITHUB_WORKSPACE/applab-report" .applab/scripts/verify_apk.sh "$GITHUB_WORKSPACE/apk/app-x86_64-release.apk" "com.riccardopinato.trail_path"
+            APPLAB_PROJECT_ROOT="$GITHUB_WORKSPACE" RUN_MAESTRO=true MAESTRO_FLOW="$GITHUB_WORKSPACE/.maestro/applab-e2e.yaml" REPORT_DIR="$GITHUB_WORKSPACE/applab-report" .applab/scripts/verify_apk.sh "$GITHUB_WORKSPACE/apk/app-x86_64-release.apk" "com.riccardopinato.trail_path"
 
             grep -Fq -- "- Result: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
             grep -Fq -- "- Maestro: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
