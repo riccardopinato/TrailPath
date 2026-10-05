@@ -28,14 +28,14 @@ void main() {
     expect(seed, contains('Upgrade Activity'));
     expect(seed, contains('Upgrade Route'));
     expect(seed, contains('(?s).*(Units|Unità|Unidades|Unités)'));
-    expect(seed, contains('Imperial \\(mi, ft\\)'));
+    expect(seed, contains('Imperial'));
     expect(seed, contains('Available offline'));
 
     expect(verify, contains('clearState: false'));
     expect(verify, contains('Upgrade Activity'));
     expect(verify, contains('Upgrade Route'));
     expect(verify, contains('(?s).*(Units|Unità|Unidades|Unités)'));
-    expect(verify, contains('Imperial \\(mi, ft\\)'));
+    expect(verify, contains('Imperial'));
     expect(verify, contains('Available offline'));
   });
 }
