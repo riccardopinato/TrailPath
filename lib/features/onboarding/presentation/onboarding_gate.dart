@@ -86,92 +86,122 @@ class _OnboardingScreen extends StatelessWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 640),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Semantics(
-                        header: true,
-                        child: Text(
-                          strings.onboardingTitle,
-                          style: Theme.of(context).textTheme.headlineLarge
-                              ?.copyWith(fontWeight: FontWeight.w900),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        strings.onboardingIntro,
-                        style: Theme.of(context).textTheme.bodyLarge
-                            ?.copyWith(color: scheme.onSurfaceVariant),
-                      ),
-                      const SizedBox(height: 26),
-                      _OnboardingCard(
-                        icon: Icons.route_rounded,
-                        title: strings.onboardingPlanTitle,
-                        body: strings.onboardingPlanBody,
-                      ),
-                      const SizedBox(height: 12),
-                      _OnboardingCard(
-                        icon: Icons.cloud_done_rounded,
-                        title: strings.onboardingOfflineTitle,
-                        body: strings.onboardingOfflineBody,
-                      ),
-                      const SizedBox(height: 12),
-                      _OnboardingCard(
-                        icon: Icons.navigation_rounded,
-                        title: strings.onboardingRecordTitle,
-                        body: strings.onboardingRecordBody,
-                      ),
-                      const SizedBox(height: 20),
-                      Semantics(
-                        container: true,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+            final compact = constraints.maxHeight < 720;
+            return Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      24,
+                      compact ? 18 : 28,
+                      24,
+                      18,
+                    ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 640),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Icon(
-                              Icons.privacy_tip_outlined,
-                              size: 20,
-                              color: scheme.primary,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
+                            Semantics(
+                              header: true,
                               child: Text(
-                                strings.onboardingPrivacy,
-                                style: TextStyle(
-                                  color: scheme.onSurfaceVariant,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                strings.onboardingTitle,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineLarge
+                                    ?.copyWith(fontWeight: FontWeight.w900),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              strings.onboardingIntro,
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(color: scheme.onSurfaceVariant),
+                            ),
+                            SizedBox(height: compact ? 18 : 26),
+                            _OnboardingCard(
+                              icon: Icons.route_rounded,
+                              title: strings.onboardingPlanTitle,
+                              body: strings.onboardingPlanBody,
+                            ),
+                            const SizedBox(height: 12),
+                            _OnboardingCard(
+                              icon: Icons.cloud_done_rounded,
+                              title: strings.onboardingOfflineTitle,
+                              body: strings.onboardingOfflineBody,
+                            ),
+                            const SizedBox(height: 12),
+                            _OnboardingCard(
+                              icon: Icons.navigation_rounded,
+                              title: strings.onboardingRecordTitle,
+                              body: strings.onboardingRecordBody,
+                            ),
+                            const SizedBox(height: 20),
+                            Semantics(
+                              container: true,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.privacy_tip_outlined,
+                                    size: 20,
+                                    color: scheme.primary,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      strings.onboardingPrivacy,
+                                      style: TextStyle(
+                                        color: scheme.onSurfaceVariant,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 26),
-                      SizedBox(
-                        height: 52,
-                        child: FilledButton.icon(
-                          key: const ValueKey('onboarding_start'),
-                          onPressed: saving ? null : onStart,
-                          icon: saving
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(Icons.arrow_forward_rounded),
-                          label: Text(strings.onboardingStart),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: scheme.surface,
+                    border: Border(
+                      top: BorderSide(color: scheme.outlineVariant),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 640),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: FilledButton.icon(
+                            key: const ValueKey('onboarding_start'),
+                            onPressed: saving ? null : onStart,
+                            icon: saving
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.arrow_forward_rounded),
+                            label: Text(strings.onboardingStart),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             );
           },
         ),
