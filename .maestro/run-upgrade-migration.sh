@@ -239,7 +239,9 @@ run_maestro_with_retry() {
     fi
 
     echo "Transient migration harness failure on attempt $attempt; recovering." | tee -a "$console_log"
-    trailpath_recover_maestro_runtime "$APP_ID" || return "$status"
+    if ! trailpath_recover_maestro_runtime "$APP_ID"; then
+      echo "Runtime recovery did not fully settle; attempting stage-specific reset." | tee -a "$console_log"
+    fi
     if [ "$retry_mode" = "reset-baseline" ]; then
       prepare_baseline_state || return "$status"
     fi
