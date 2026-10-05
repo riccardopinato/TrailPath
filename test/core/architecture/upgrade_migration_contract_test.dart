@@ -27,15 +27,15 @@ void main() {
     expect(runner, contains('diagnostics.txt'));
     expect(seed, contains('Upgrade Activity'));
     expect(seed, contains('Upgrade Route'));
+    expect(seed, contains('(?s).*(Units|Unità|Unidades|Unités)'));
     expect(seed, contains('Imperial \\(mi, ft\\)'));
-    expect(seed, isNot(contains('Units|Unità|Unidades|Unités')));
     expect(seed, contains('Available offline'));
 
     expect(verify, contains('clearState: false'));
     expect(verify, contains('Upgrade Activity'));
     expect(verify, contains('Upgrade Route'));
+    expect(verify, contains('(?s).*(Units|Unità|Unidades|Unités)'));
     expect(verify, contains('Imperial \\(mi, ft\\)'));
-    expect(verify, isNot(contains('Units|Unità|Unidades|Unités')));
     expect(verify, contains('Available offline'));
   });
 }
