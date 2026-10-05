@@ -41,13 +41,26 @@ void main() {
     expect(helper, contains('MaestroDriverStartupException'));
     expect(helper, contains('AndroidDriverTimeoutException'));
     expect(helper, contains('DeadSystemException'));
+    expect(helper, contains('DeviceServerDiedException'));
+    expect(helper, contains('StatusRuntimeException: UNAVAILABLE'));
+    expect(helper, contains('adb forward --remove-all'));
     expect(proRunner, contains('MAX_INFRA_ATTEMPTS=3'));
     expect(proRunner, contains('trailpath_maestro_failure_is_transient'));
     expect(uxRunner, contains('MAX_INFRA_ATTEMPTS=3'));
     expect(uxRunner, contains('trailpath_maestro_failure_is_transient'));
 
-    expect(migrationSeed, contains('- scrollUntilVisible:'));
-    expect(migrationVerify, contains('- scrollUntilVisible:'));
+    expect(
+      migrationSeed,
+      contains(
+        'text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"',
+      ),
+    );
+    expect(
+      migrationVerify,
+      contains(
+        'text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"',
+      ),
+    );
     expect(migrationSeed, contains("text: 'Metric \\(km, m\\)'"));
     expect(migrationSeed, contains("text: 'Imperial \\(mi, ft\\)'"));
     expect(migrationVerify, contains("text: 'Imperial \\(mi, ft\\)'"));
