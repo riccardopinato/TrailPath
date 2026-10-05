@@ -285,3 +285,12 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] require a dedicated production Valhalla-compatible provider for store readiness while preserving community providers for development/internal builds;
 - [x] close the local GPS data-at-rest decision with a documented Android threat model and explicit review triggers;
 - [ ] physical ARM64 performance/TalkBack/small-screen validation and external provider/Play configuration remain real-device/provider-console gates, not code defects.
+
+
+### v1.5.15 — AppLab Root-Cause Closure
+
+- [x] fix a real compact-accessibility defect: the onboarding primary CTA is pinned outside the scroll body and remains reachable at 360×640 with 130% font scaling;
+- [x] add a widget regression proving the onboarding CTA remains inside the constrained viewport;
+- [x] classify Maestro device-server death / gRPC UNAVAILABLE / closed forwarded sockets as retryable hosted-emulator infrastructure, with stale ADB forwards cleared during recovery;
+- [x] make the v1.5.11 migration seed/verify target the already-visible Flutter Settings semantics directly instead of relying on a brittle scroll selector;
+- [ ] rerun the complete release matrix and promote only when Core, API29, main E2E, Pro, UX and Upgrade/Migration are all green.
