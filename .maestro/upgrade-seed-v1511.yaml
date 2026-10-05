@@ -30,14 +30,18 @@ appId: com.riccardopinato.trail_path
     text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"
 - extendedWaitUntil:
     visible:
-      text: 'Metric \(km, m\)'
+      text: '(?s).*(Units|Unità|Unidades|Unités)\\s*(Metric \\(km, m\\)|Metriche \\(km, m\\)|Métricas \\(km, m\\)|Métriques \\(km, m\\)).*'
     timeout: 15000
 - tapOn:
-    text: 'Metric \(km, m\)'
+    text: '(?s).*(Units|Unità|Unidades|Unités)\\s*(Metric \\(km, m\\)|Metriche \\(km, m\\)|Métricas \\(km, m\\)|Métriques \\(km, m\\)).*'
+- extendedWaitUntil:
+    visible:
+      text: '(Imperial \\(mi, ft\\)|Imperiali \\(mi, ft\\)|Imperiales \\(mi, ft\\)|Impériales \\(mi, ft\\)|Imperiais \\(mi, ft\\))'
+    timeout: 10000
 - tapOn:
-    text: 'Imperial \(mi, ft\)'
+    text: '(Imperial \\(mi, ft\\)|Imperiali \\(mi, ft\\)|Imperiales \\(mi, ft\\)|Impériales \\(mi, ft\\)|Imperiais \\(mi, ft\\))'
 - assertVisible:
-    text: 'Imperial \(mi, ft\)'
+    text: '(?s).*(Units|Unità|Unidades|Unités)\\s*(Imperial \\(mi, ft\\)|Imperiali \\(mi, ft\\)|Imperiales \\(mi, ft\\)|Impériales \\(mi, ft\\)|Imperiais \\(mi, ft\\)).*'
 - pressKey: BACK
 
 # Persist a completed activity.
