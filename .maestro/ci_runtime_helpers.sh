@@ -21,7 +21,7 @@ trailpath_maestro_failure_is_transient() {
 
   adb logcat -b all -d -v threadtime > "$system_log" 2>&1 || true
 
-  if grep -Eqi     "Broken pipe|Failure calling service package|device offline|device .*not found|ADB server didn't ACK|Connection reset|closed.*transport|transport.*error|Maestro Android driver did not start up in time|AndroidDriverTimeoutException|MaestroDriverStartupException|installMaestroDriverApp"     "$console_log"; then
+  if grep -Eqi     "Broken pipe|Failure calling service package|device offline|device .*not found|ADB server didn't ACK|Connection reset|closed.*transport|transport.*error|Maestro Android driver did not start up in time|AndroidDriverTimeoutException|MaestroDriverStartupException|DeviceServerDiedException|Device server died during|StatusRuntimeException: UNAVAILABLE|Command failed .*: closed|installMaestroDriverApp"     "$console_log"; then
     return 0
   fi
 
@@ -38,6 +38,8 @@ trailpath_recover_maestro_runtime() {
   trailpath_wait_for_android_runtime || return 1
   adb shell am force-stop "$app_id" >/dev/null 2>&1 || true
   adb shell am force-stop com.github.uiautomator >/dev/null 2>&1 || true
-  sleep 3
+  adb forward --remove-all >/dev/null 2>&1 || true
+  adb shell input keyevent KEYCODE_HOME >/dev/null 2>&1 || true
+  sleep 4
   return 0
 }
