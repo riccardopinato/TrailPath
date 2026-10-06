@@ -5,26 +5,26 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 ## Current version
 
 Stable certification baseline: **v1.0.0+31**  
-Post-v1 cumulative development candidate: **v1.5.20+57**
+Post-v1 cumulative development candidate: **v1.5.21+58**
 
 ### Post-v1 cumulative candidate
 
-The v1.5 branch contains the approved v1.1→v1.5 train plus the v1.5.3→v1.5.20 hardening sequence: Smart Trace/map layers, TrailPath Pro, optional account/cloud sync, Route Lab, Collections, outdoor intelligence, routing redundancy, zoom-aware trace matching, cancellable offline downloads, user-safe localized errors, Android permission-contract evidence, localized foreground recording notifications and stronger behavioral widget coverage. Runtime/provider features remain fail-safe when commercial configuration is absent.
+The v1.5 branch contains the approved v1.1→v1.5 train plus the v1.5.3→v1.5.21 hardening sequence: Smart Trace/map layers, TrailPath Pro, optional account/cloud sync, Route Lab, Collections, outdoor intelligence, routing redundancy, zoom-aware trace matching, cancellable offline downloads, user-safe localized errors, Android permission-contract evidence, localized foreground recording notifications and stronger behavioral widget coverage. Runtime/provider features remain fail-safe when commercial configuration is absent.
 
 
 TrailPath v1.0.0 is the first stable Android release candidate. No new product scope is added here: the milestone is limited to final regression, artifact certification, release evidence and production-readiness gates.
 
 ### Current certification status
 
-**AUTOMATED VALIDATION PASS — v1.0.0+31.** TrailPath CI #395 completed successfully on audited runtime source `8cb9f2be11ddd7eddc39b73cb7a6f1932b7cbcd1`: format, analyze, 77 Flutter tests, ARM64/x86_64 release builds, AAB structure/size gate, API 29 smoke and the complete API 35 AppLab E2E matrix are green.
+**AUTOMATED VALIDATION PASS — v1.5.21+58.** TrailPath CI **#822** completed the full blocking matrix successfully on source `dea2c63f13f6fdf1ec8df4c1845b6a257ef54b5e`: format/analyze/tests, Web Preview, ARM64/x86_64 releases, AAB structure/size, live routing providers, API 29, main API 35 AppLab E2E, Pro routing, 360×640 / 130% text UX, and real-artifact v1.5.11→v1.5.21 Upgrade/Migration.
 
-The generated Evidence Bundle verdict is still **BLOCKED**, not CERTIFIED, because store-signing credentials are absent and the exact ARM64 candidate still requires physical-device QA, Play Store listing/screenshots review and staged-rollout/rollback approval.
+The Evidence Bundle remains **BLOCKED**, not CERTIFIED, for external release reasons only: store signing is not configured, the exact ARM64 candidate still needs physical-device QA, and Play Store listing/screenshots plus staged-rollout/rollback review are not yet approved.
 
-Exact audited ARM64 candidate: **33,704,085 bytes**, SHA-256 `14e198503f1fe4568a2cf4abb69dc4ba7271a6f9985643e7c7185a582f06c38a`.
+Exact audited v1.5.21 ARM64 candidate: **35,820,865 bytes**, SHA-256 `6a93b9348413ad52fe7d2138ed03ad0b7b0971c485deb1c0176c8d58ba764af5`.
 
-Pinned AppLab harness: `bf3478d1a1a2bf1dad458aa157fdb8c4c83321c1`.
+Pinned AppLab harness: `d6f2df29099e4744e750480321b15bc04b045d61`.
 
-The 2026-09-27 deep audit found no code-level P0 crash/data-loss blocker in the automated path. Remaining release-quality work is explicit: physical ARM64 map/selection performance validation, restoration of Web Preview UX parity with the build-31 planner flow, full-app accessibility/small-screen validation, resolved Android SDK/merged foreground-service evidence and a production routing-provider decision. See `docs/FULL_AUDIT_v1.0.0.md`.
+The 2026-10-06 deep audit finds no remaining code-level P0/P1 blocker in the automated release path. AppLab also reports Smart Visual QA PASS, Safe Interaction Crawler PASS, Safe Journey Crawler PASS, System/Network/Persistence/Configuration/Resource/Background labs PASS. Storage inspection is WARN because the release APK is intentionally non-debuggable, and emulator Performance Lab remains advisory until physical ARM64 frame/startup validation. See `docs/AUDIT_2026-10-06.md`.
 
 ### Included
 
