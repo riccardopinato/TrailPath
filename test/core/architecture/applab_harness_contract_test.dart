@@ -89,10 +89,16 @@ void main() {
         'text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"',
       ),
     );
-    expect(migrationSeed, contains("(?s).*(Units|Unità|Unidades|Unités)"));
-    expect(migrationSeed, contains('Metriche'));
-    expect(migrationSeed, contains('Impériales'));
-    expect(migrationVerify, contains("(?s).*(Units|Unità|Unidades|Unités)"));
-    expect(migrationVerify, contains('Imperiais'));
+    expect(migrationSeed, contains(".*(Metric|Metriche|Métricas|Métriques).*"));
+    expect(migrationSeed, contains(".*(Imperial|Imperiali|Imperiales|Impériales|Imperiais).*"));
+    expect(migrationVerify, contains(".*(Imperial|Imperiali|Imperiales|Impériales|Imperiais).*"));
+
+    expect(helper, contains('trailpath_prepare_maestro_attempt'));
+    expect(helper, contains('adb logcat -c'));
+    expect(helper, contains('never in parallel'));
+    expect(proRunner, contains('trailpath_prepare_maestro_attempt'));
+    expect(uxRunner, contains('trailpath_prepare_maestro_attempt'));
+    expect(proRunner, isNot(contains('for _ in \$(seq 1 180)')));
+    expect(uxRunner, isNot(contains('for _ in \$(seq 1 180)')));
   });
 }
