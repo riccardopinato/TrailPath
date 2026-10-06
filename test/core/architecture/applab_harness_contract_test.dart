@@ -39,10 +39,7 @@ void main() {
       workflow,
       isNot(contains('bash "\$GITHUB_WORKSPACE/.maestro/run-offline-e2e.sh"')),
     );
-    expect(
-      workflow,
-      contains('APPLAB_PROJECT_ROOT="\$GITHUB_WORKSPACE"'),
-    );
+    expect(workflow, contains('APPLAB_PROJECT_ROOT="\$GITHUB_WORKSPACE"'));
     expect(workflow, contains('RUN_MAESTRO=true'));
     expect(workflow, contains('APPLAB_VISUAL_BASELINE_DIR='));
     expect(workflow, contains('APPLAB_PERFORMANCE_BASELINE_JSON='));
