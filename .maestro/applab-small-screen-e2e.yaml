@@ -69,14 +69,14 @@ appId: com.riccardopinato.trail_path
 # The accessibility contract is that it remains reachable by scrolling.
 - scrollUntilVisible:
     element:
-      text: "Settings|Impostazioni|Ajustes|Réglages|Definições"
+      text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"
     direction: DOWN
     timeout: 20000
 - tapOn:
-    text: "Settings|Impostazioni|Ajustes|Réglages|Definições"
+    text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"
 - extendedWaitUntil:
     visible:
-      text: "Units|Unità|Unidades|Unités"
+      text: ".*(Units|Unità|Unidades|Unités).*"
     timeout: 15000
 - assertVisible:
     text: "GPS.*|GPS e download|GPS y descargas|GPS et téléchargements|GPS e downloads"
