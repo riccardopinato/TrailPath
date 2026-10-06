@@ -36,7 +36,10 @@ void main() {
     expect(verify, contains('clearState: false'));
     expect(verify, contains('Upgrade Activity'));
     expect(verify, contains('Upgrade Route'));
-    expect(verify, contains('.*(Imperial|Imperiali|Imperiales|Impériales|Imperiais).*'));
+    expect(
+      verify,
+      contains('.*(Imperial|Imperiali|Imperiales|Impériales|Imperiais).*'),
+    );
     expect(verify, contains('Imperial'));
     expect(verify, contains('Available offline'));
   });
