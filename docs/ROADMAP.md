@@ -209,7 +209,7 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] add optional backend purchase-token verification and require it for a store-signed AAB.
 - [x] document the GitHub configuration contract for Google OAuth, premium maps, dedicated TrailPath Supabase and Google Play verification.
 - [ ] configure the real external credentials/projects in their provider consoles before production enablement; CI must continue to report missing services instead of embedding placeholders.
-- [ ] repeat the physical-device regression on the exact v1.5.21 ARM64 candidate (SHA-256 `6a93b9348413ad52fe7d2138ed03ad0b7b0971c485deb1c0176c8d58ba764af5`); the old v1.5.3/v1.5.2 field-test target is superseded.
+- [ ] repeat the physical-device regression on the exact v1.5.21 ARM64 candidate from CI #833 (SHA-256 `606c540b89e3b5bbfbc1bc4e387b2f0e8fa17d4da59b898bf44971332a1a2100`); the old v1.5.3/v1.5.2 field-test target is superseded.
 
 ### Product principles for the approved roadmap
 
@@ -359,4 +359,4 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] retain PID stabilization for hosted-emulator process recycling without weakening target ANR/FATAL fail-closed behavior;
 - [x] pin all TrailPath blocking AppLab jobs to validated harness commit `d6f2df29099e4744e750480321b15bc04b045d61`;
 - [x] persist PASS-only AppLab visual and performance baselines in the main E2E gate so later runs detect regressions instead of staying permanently at NO_BASELINE;
-- [x] promote v1.5.21 automated candidate: CI #822 passes Core/build, live routing, API29, main E2E, Pro routing, constrained UX, real-artifact Upgrade/Migration and Release Certification Evidence in the same run. Production certification remains BLOCKED only by external/physical gates.
+- [x] promote v1.5.21 automated candidate: CI #833 passes Core/build, live routing, API29, main E2E, Pro routing, constrained UX, real-artifact Upgrade/Migration and Release Certification Evidence in the same run. Production certification remains BLOCKED only by external/physical gates.
