@@ -45,7 +45,7 @@ appId: com.riccardopinato.trail_path
     text: "Routes\\s*Tab 3 of 5|Percorsi.*3.*5|Rutas.*3.*5|Parcours.*3.*5|Percursos.*3.*5"
 - extendedWaitUntil:
     visible:
-      text: "Your routes|I tuoi percorsi|Tus rutas|Vos parcours|Os teus percursos"
+      text: "No saved routes|Nessun percorso salvato|No hay rutas guardadas|Aucun parcours enregistré|Nenhum percurso guardado"
     timeout: 15000
 - takeScreenshot: "ux-small-routes"
 
