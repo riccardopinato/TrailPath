@@ -315,3 +315,13 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] fix the small-screen matrix geometry: 720×1280 physical at 320 dpi now yields the intended 360×640 dp Flutter viewport instead of the accidental 180×320 dp viewport;
 - [x] prove from migration failure evidence that Flutter exposes the Units dropdown as a combined accessibility node and update seed/verify selectors to match that semantics across IT/EN/ES/FR/PT;
 - [ ] rerun the complete matrix and promote only when Core, API29, main E2E, Pro, UX and Upgrade/Migration are green in the same run.
+
+
+### v1.5.18 — Deterministic AppLab UiAutomation Closure
+
+- [x] remove the logically invalid small-screen assertion that expected a populated `Your routes` section on a fresh profile; the gate now verifies the real localized empty-routes state;
+- [x] make migration preference selection independent of Flutter combined-semantics ordering by matching the concrete Metric/Imperial values rather than label/value concatenation;
+- [x] stop running AppLab's UiAutomator-based foreign-ANR probe concurrently with Maestro; probes are serialized before each Maestro attempt;
+- [x] clear attempt-scoped logcat before Maestro so stale UiAutomation faults cannot misclassify a deterministic assertion as transient infrastructure;
+- [x] apply the serialized ANR/UiAutomation contract consistently to Pro, small-screen and upgrade/migration harnesses;
+- [ ] rerun the full release matrix and promote only if Core, API29, main E2E, Pro, small-screen and Upgrade/Migration all pass in the same CI run.
