@@ -325,3 +325,12 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] clear attempt-scoped logcat before Maestro so stale UiAutomation faults cannot misclassify a deterministic assertion as transient infrastructure;
 - [x] apply the serialized ANR/UiAutomation contract consistently to Pro, small-screen and upgrade/migration harnesses;
 - [ ] rerun the full release matrix and promote only if Core, API29, main E2E, Pro, small-screen and Upgrade/Migration all pass in the same CI run.
+
+
+### v1.5.19 — Deterministic Accessibility / AppLab Closure
+
+- [x] use combined-semantics-safe selectors for Profile → Settings and Units on the 360×640 dp / 130% font-scale matrix;
+- [x] prove from AppLab hierarchy evidence that the Settings card remains in the scrollable Profile list and the previous failure was selector mismatch, not missing UI;
+- [x] stop classifying deterministic Maestro visibility/assertion failures as transient merely because emulator logs contain unrelated transport noise;
+- [x] keep explicit Maestro driver/device failures retryable while preserving fail-closed product assertions;
+- [ ] promote the automated candidate only after Core, API29, main E2E, Pro, small-screen/large-text and Upgrade/Migration are green in the same run.
