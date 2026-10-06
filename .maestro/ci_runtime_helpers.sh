@@ -25,6 +25,12 @@ trailpath_maestro_failure_is_transient() {
     return 0
   fi
 
+  # A deterministic Maestro assertion must stay a product/test failure even if
+  # the emulator log still contains unrelated boot-time transport noise.
+  if grep -Eqi     "No visible element found|Assertion is false|assertVisible.*failed|Element not found|Flow Failed"     "$console_log"; then
+    return 1
+  fi
+
   if grep -Eqi     "DeadSystemException|The system died|registerUiTestAutomationService.*null object reference|UiAutomationConnection.*NullPointerException|UiAutomationService.*already registered|already registered.*UiAutomation|Bad file descriptor|system_server.*(died|crash|restarting)|ServiceManager.*(dead|Bad file descriptor)"     "$system_log"; then
     return 0
   fi
