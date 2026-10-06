@@ -293,7 +293,7 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] add a widget regression proving the onboarding CTA remains inside the constrained viewport;
 - [x] classify Maestro device-server death / gRPC UNAVAILABLE / closed forwarded sockets as retryable hosted-emulator infrastructure, with stale ADB forwards cleared during recovery;
 - [x] make the v1.5.11 migration seed/verify target the already-visible Flutter Settings semantics directly instead of relying on a brittle scroll selector;
-- [ ] rerun the complete release matrix and promote only when Core, API29, main E2E, Pro, UX and Upgrade/Migration are all green.
+- [x] rerun the complete release matrix after deterministic selector/retry fixes; v1.5.19 proved Core, API29, Pro, UX and Upgrade/Migration green together, isolating the final main-E2E failure to AppLab System UI crash attribution.
 
 
 ### v1.5.16 — Deterministic AppLab & Migration Closure
@@ -314,7 +314,7 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] add a TrailPath lifecycle policy with one rotation/background cycle and a 5 s settle window, preserving fail-closed crash/ANR checks without artificial one-second platform-view churn;
 - [x] fix the small-screen matrix geometry: 720×1280 physical at 320 dpi now yields the intended 360×640 dp Flutter viewport instead of the accidental 180×320 dp viewport;
 - [x] prove from migration failure evidence that Flutter exposes the Units dropdown as a combined accessibility node and update seed/verify selectors to match that semantics across IT/EN/ES/FR/PT;
-- [ ] rerun the complete matrix and promote only when Core, API29, main E2E, Pro, UX and Upgrade/Migration are green in the same run.
+- [x] rerun the complete matrix; v1.5.19 isolated the only remaining failure to AppLab System UI Lab while every other blocking gate passed.
 
 
 ### v1.5.18 — Deterministic AppLab UiAutomation Closure
@@ -324,7 +324,7 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] stop running AppLab's UiAutomator-based foreign-ANR probe concurrently with Maestro; probes are serialized before each Maestro attempt;
 - [x] clear attempt-scoped logcat before Maestro so stale UiAutomation faults cannot misclassify a deterministic assertion as transient infrastructure;
 - [x] apply the serialized ANR/UiAutomation contract consistently to Pro, small-screen and upgrade/migration harnesses;
-- [ ] rerun the full release matrix and promote only if Core, API29, main E2E, Pro, small-screen and Upgrade/Migration all pass in the same CI run.
+- [x] rerun the full release matrix; Core, API29, Pro, small-screen and Upgrade/Migration passed together on v1.5.19, leaving only the System UI Lab false-positive path.
 
 
 ### v1.5.19 — Deterministic Accessibility / AppLab Closure
@@ -333,4 +333,15 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] prove from AppLab hierarchy evidence that the Settings card remains in the scrollable Profile list and the previous failure was selector mismatch, not missing UI;
 - [x] stop classifying deterministic Maestro visibility/assertion failures as transient merely because emulator logs contain unrelated transport noise;
 - [x] keep explicit Maestro driver/device failures retryable while preserving fail-closed product assertions;
-- [ ] promote the automated candidate only after Core, API29, main E2E, Pro, small-screen/large-text and Upgrade/Migration are green in the same run.
+- [~] promote the automated candidate only after Core, API29, main E2E, Pro, small-screen/large-text and Upgrade/Migration are green in the same run; v1.5.20 pins the AppLab System UI crash-attribution fix for the final matrix.
+
+
+### v1.5.20 — AppLab System UI Crash Attribution Closure
+
+- [x] inspect the complete v1.5.19 AppLab evidence bundle instead of relying only on the job exit code;
+- [x] prove the v1.5.19 main user journey, visual journey, process restart, API29, Pro, small-screen and real-artifact migration paths are healthy;
+- [x] isolate the remaining main-E2E failure to AppLab System UI Lab crash attribution rather than TrailPath runtime behavior;
+- [x] fix AppLab to clear pre-lab log history and associate FATAL EXCEPTION only with the target process inside the same AndroidRuntime crash record;
+- [x] add upstream AppLab self-tests covering foreign fatal, target fatal and target ANR classification;
+- [x] pin every blocking TrailPath AppLab job to the audited AppLab fix commit;
+- [ ] promote only after the complete v1.5.20 release matrix is green in one run.
