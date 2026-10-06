@@ -94,8 +94,14 @@ void main() {
       ),
     );
     expect(migrationSeed, contains(".*(Metric|Metriche|Métricas|Métriques).*"));
-    expect(migrationSeed, contains(".*(Imperial|Imperiali|Imperiales|Impériales|Imperiais).*"));
-    expect(migrationVerify, contains(".*(Imperial|Imperiali|Imperiales|Impériales|Imperiais).*"));
+    expect(
+      migrationSeed,
+      contains(".*(Imperial|Imperiali|Imperiales|Impériales|Imperiais).*"),
+    );
+    expect(
+      migrationVerify,
+      contains(".*(Imperial|Imperiali|Imperiales|Impériales|Imperiais).*"),
+    );
 
     expect(helper, contains('trailpath_prepare_maestro_attempt'));
     expect(helper, contains('adb logcat -c'));
