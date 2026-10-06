@@ -41,8 +41,11 @@ void main() {
     );
     expect(
       workflow,
-      contains('APPLAB_PROJECT_ROOT="\$GITHUB_WORKSPACE" RUN_MAESTRO=true'),
+      contains('APPLAB_PROJECT_ROOT="\$GITHUB_WORKSPACE"'),
     );
+    expect(workflow, contains('RUN_MAESTRO=true'));
+    expect(workflow, contains('APPLAB_VISUAL_BASELINE_DIR='));
+    expect(workflow, contains('APPLAB_PERFORMANCE_BASELINE_JSON='));
     expect(workflow, contains('name: Enforce automated certification result'));
     expect(workflow, contains('test "\$failed" -eq 0'));
     const appLabSystemUiFixSha = 'd6f2df29099e4744e750480321b15bc04b045d61';
