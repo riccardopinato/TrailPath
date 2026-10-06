@@ -37,27 +37,13 @@ adb install -r "$APK"
 adb shell pm clear "$APP_ID" >/dev/null || true
 apply_ux_environment
 
-FOREIGN_ANR_GUARD_PID=""
 cleanup() {
-  if [ -n "$FOREIGN_ANR_GUARD_PID" ]; then
-    kill "$FOREIGN_ANR_GUARD_PID" >/dev/null 2>&1 || true
-    wait "$FOREIGN_ANR_GUARD_PID" >/dev/null 2>&1 || true
-  fi
   adb shell wm size reset >/dev/null 2>&1 || true
   adb shell wm density reset >/dev/null 2>&1 || true
   adb shell settings put system font_scale 1.0 >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 
-if [ -f "$ROOT_DIR/.applab/scripts/dismiss_foreign_anr.py" ]; then
-  (
-    for _ in $(seq 1 180); do
-      python3 "$ROOT_DIR/.applab/scripts/dismiss_foreign_anr.py" --package-id "$APP_ID" || true
-      sleep 1
-    done
-  ) &
-  FOREIGN_ANR_GUARD_PID=$!
-fi
 
 maestro_status=1
 for attempt in $(seq 1 "$MAX_INFRA_ATTEMPTS"); do
@@ -65,6 +51,7 @@ for attempt in $(seq 1 "$MAX_INFRA_ATTEMPTS"); do
   system_log="$REPORT_DIR/maestro-attempt-$attempt-system-logcat.txt"
   result_xml="$REPORT_DIR/results-attempt-$attempt.xml"
 
+  trailpath_prepare_maestro_attempt "$ROOT_DIR/.applab" "$APP_ID" || true
   set +e
   "$MAESTRO" test "$ROOT_DIR/.maestro/applab-small-screen-e2e.yaml"     --format junit     --output "$result_xml"     2>&1 | tee "$console_log"
   maestro_status="${PIPESTATUS[0]}"
