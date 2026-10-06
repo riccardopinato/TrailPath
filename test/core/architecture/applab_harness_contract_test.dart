@@ -45,6 +45,13 @@ void main() {
     );
     expect(workflow, contains('name: Enforce automated certification result'));
     expect(workflow, contains('test "\$failed" -eq 0'));
+    const appLabSystemUiFixSha =
+        '0d2edb19a10c78eb0d6d9fb950af3e9ae21470af';
+    expect(
+      RegExp(appLabSystemUiFixSha).allMatches(workflow).length,
+      6,
+      reason: 'Every blocking AppLab checkout must use the audited fix.',
+    );
 
     expect(mainFlow, contains('- setAirplaneMode: enabled'));
     expect(mainFlow, contains('- setAirplaneMode: disabled'));
