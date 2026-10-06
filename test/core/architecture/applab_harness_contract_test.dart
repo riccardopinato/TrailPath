@@ -105,7 +105,7 @@ void main() {
 
     expect(helper, contains('trailpath_prepare_maestro_attempt'));
     expect(helper, contains('adb logcat -c'));
-    expect(helper, contains('never in parallel'));
+    expect(helper, contains('compete for UiAutomationService'));
     expect(proRunner, contains('trailpath_prepare_maestro_attempt'));
     expect(uxRunner, contains('trailpath_prepare_maestro_attempt'));
     expect(proRunner, isNot(contains('for _ in \$(seq 1 180)')));
