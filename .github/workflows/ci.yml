@@ -93,7 +93,7 @@ jobs:
           flutter pub outdated --no-dev-dependencies || true
 
       - name: Generate Drift code
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build
 
       - name: Verify Dart formatting
         run: |
