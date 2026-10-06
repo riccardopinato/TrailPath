@@ -27,14 +27,16 @@ void main() {
     expect(runner, contains('diagnostics.txt'));
     expect(seed, contains('Upgrade Activity'));
     expect(seed, contains('Upgrade Route'));
-    expect(seed, contains('(?s).*(Units|Unità|Unidades|Unités)'));
+    expect(seed, contains('.*(Metric|Metriche|Métricas|Métriques).*'));
     expect(seed, contains('Imperial'));
+    expect(runner, contains('trailpath_prepare_maestro_attempt'));
+    expect(runner, isNot(contains('FOREIGN_ANR_GUARD_PID')));
     expect(seed, contains('Available offline'));
 
     expect(verify, contains('clearState: false'));
     expect(verify, contains('Upgrade Activity'));
     expect(verify, contains('Upgrade Route'));
-    expect(verify, contains('(?s).*(Units|Unità|Unidades|Unités)'));
+    expect(verify, contains('.*(Imperial|Imperiali|Imperiales|Impériales|Imperiais).*'));
     expect(verify, contains('Imperial'));
     expect(verify, contains('Available offline'));
   });
