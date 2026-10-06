@@ -32,7 +32,6 @@ EXPECTED_NEW_CODE=""
 EXPECTED_NEW_SPLIT_CODE=""
 APKANALYZER=""
 APKSIGNER=""
-FOREIGN_ANR_GUARD_PID=""
 QA_OLD_APK=""
 QA_NEW_APK=""
 
@@ -109,10 +108,6 @@ EOF
 
 on_exit() {
   local exit_code=$?
-  if [ -n "$FOREIGN_ANR_GUARD_PID" ]; then
-    kill "$FOREIGN_ANR_GUARD_PID" >/dev/null 2>&1 || true
-    wait "$FOREIGN_ANR_GUARD_PID" >/dev/null 2>&1 || true
-  fi
   if [ "$exit_code" -ne 0 ]; then
     capture_failure_evidence
   fi
@@ -224,6 +219,7 @@ run_maestro_with_retry() {
     attempt_xml="$REPORT_DIR/${output_name%.xml}-attempt-$attempt.xml"
 
     set +e
+    trailpath_prepare_maestro_attempt "$ROOT_DIR/.applab" "$APP_ID" || true
     "$MAESTRO" test "$flow" --format junit --output "$attempt_xml" 2>&1 | tee "$console_log"
     status="${PIPESTATUS[0]}"
     set -e
@@ -252,15 +248,6 @@ run_maestro_with_retry() {
 STAGE="install-baseline"
 prepare_baseline_state || fail "baseline installation/readiness failed"
 
-if [ -f "$ROOT_DIR/.applab/scripts/dismiss_foreign_anr.py" ]; then
-  (
-    for _ in $(seq 1 600); do
-      python3 "$ROOT_DIR/.applab/scripts/dismiss_foreign_anr.py" --package-id "$APP_ID" || true
-      sleep 2
-    done
-  ) &
-  FOREIGN_ANR_GUARD_PID=$!
-fi
 
 STAGE="seed-baseline"
 run_maestro_with_retry "$ROOT_DIR/.maestro/upgrade-seed-v1511.yaml" "seed-results.xml" "reset-baseline" ||
