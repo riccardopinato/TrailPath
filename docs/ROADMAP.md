@@ -94,7 +94,7 @@ Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current f
 - [~] **Selection accuracy / camera padding:** exact coordinates are fixed, but physical QA must verify bottom-edge pin visibility, sheet occlusion and accidental taps on the exact ARM64 artifact;
 - [ ] **Physical ARM64 frame budget:** validate startup, pan/zoom, point preview, route editing and waypoint drag on a representative real Android device; emulator Performance Lab is advisory only;
 - [x] **Web Preview UX parity:** Web uses the shared planner core, candidate preview/confirmation flow, shared search/routing/map-matching providers, Smart Trace and coalesced incremental MapLibre annotation updates;
-- [ ] **Full-app accessibility + small-screen pass:** TalkBack, large text, contrast, compact route summary and candidate actions across critical screens;
+- [~] **Full-app accessibility + small-screen pass:** automated 360×640 dp / 130% large-text AppLab matrix passes on v1.5.21; physical TalkBack focus/order, contrast perception and exact-device checks remain open;
 - [x] **Android release contract evidence:** CI records resolved min/target SDK and verifies merged foreground/location/notification permission declarations from the ARM64 release artifact;
 - [x] **Production routing-provider decision:** development/internal builds may use community OSM/Valhalla endpoints, while store readiness requires a dedicated `VALHALLA_BASE_URL` and does not silently fall back to community OSRM;
 - [ ] **Visual regression baseline:** promote an accepted physical/visual checkpoint only after the build-31 UI is approved;
@@ -209,7 +209,7 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] add optional backend purchase-token verification and require it for a store-signed AAB.
 - [x] document the GitHub configuration contract for Google OAuth, premium maps, dedicated TrailPath Supabase and Google Play verification.
 - [ ] configure the real external credentials/projects in their provider consoles before production enablement; CI must continue to report missing services instead of embedding placeholders.
-- [ ] repeat the physical-device regression on the v1.5.3 Pro APK after the v1.5.2 routing field test feedback is complete.
+- [ ] repeat the physical-device regression on the exact v1.5.21 ARM64 candidate (SHA-256 `6a93b9348413ad52fe7d2138ed03ad0b7b0971c485deb1c0176c8d58ba764af5`); the old v1.5.3/v1.5.2 field-test target is superseded.
 
 ### Product principles for the approved roadmap
 
