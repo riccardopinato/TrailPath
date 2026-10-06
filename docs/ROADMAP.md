@@ -345,3 +345,17 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] add upstream AppLab self-tests covering foreign fatal, target fatal and target ANR classification;
 - [x] pin every blocking TrailPath AppLab job to the audited AppLab fix commit;
 - [ ] promote only after the complete v1.5.20 release matrix is green in one run.
+
+
+### v1.5.21 — Unified AppLab Android Runtime Attribution
+
+- [x] prove from repeated v1.5.19/v1.5.20 evidence that the remaining blocking failure is AppLab crash attribution, not a TrailPath user-flow/runtime failure;
+- [x] replace duplicated broad FATAL/Process regexes across AppLab System, Network, Storage, Persistence, Background, Upgrade, Configuration, Resource Pressure and Interaction Crawler paths with one target-scoped AndroidRuntime classifier;
+- [x] bind Android fatal records to the AndroidRuntime emitter PID and require a matching target Process/PID line, preventing Launcher/SystemUI/UiAutomation crashes from being reclassified as TrailPath crashes;
+- [x] make the central AppLab verifier consume the same classifier instead of combining unrelated logcat records with grep context;
+- [x] persist System UI Lab logcat plus exact crash-attribution evidence for future auditability;
+- [x] repair backend diagnostics so an arbitrary AndroidRuntime fatal is not automatically treated as a target-app fatal;
+- [x] cover foreign fatal, interleaved foreign/target records, real target fatal and target ANR with AppLab self-tests;
+- [x] retain PID stabilization for hosted-emulator process recycling without weakening target ANR/FATAL fail-closed behavior;
+- [x] pin all TrailPath blocking AppLab jobs to validated harness commit `d6f2df29099e4744e750480321b15bc04b045d61`;
+- [ ] promote v1.5.21 only after Core, routing, API29, main E2E, Pro, constrained UX and real-artifact Upgrade/Migration are green in the same CI run.
