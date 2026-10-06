@@ -58,3 +58,26 @@ trailpath_recover_maestro_runtime() {
   sleep 5
   trailpath_wait_for_android_runtime
 }
+
+
+trailpath_prepare_maestro_attempt() {
+  local applab_root="$1"
+  local app_id="$2"
+  local anr_filter="$applab_root/scripts/dismiss_foreign_anr.py"
+
+  trailpath_wait_for_android_runtime || return 1
+  adb forward --remove-all >/dev/null 2>&1 || true
+
+  # AppLab's ANR probe uses UiAutomator. Run it only before Maestro, never in
+  # parallel, otherwise both clients compete for UiAutomationService and can
+  # produce "already registered", closed transport and driver-death failures.
+  if [ -f "$anr_filter" ]; then
+    python3 "$anr_filter" --package-id "$app_id" >/dev/null 2>&1 || true
+    sleep 2
+  fi
+
+  # Keep transient classification scoped to the current attempt instead of
+  # matching stale emulator/UiAutomation faults from a previous retry.
+  adb logcat -c >/dev/null 2>&1 || true
+  trailpath_wait_for_android_runtime
+}
