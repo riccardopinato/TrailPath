@@ -123,12 +123,8 @@ void main() {
       smallScreenFlow,
       contains('.*(Settings|Impostazioni|Ajustes|Réglages|Definições).*'),
     );
-    expect(
-      smallScreenFlow,
-      contains('.*(Units|Unità|Unidades|Unités).*'),
-    );
+    expect(smallScreenFlow, contains('.*(Units|Unità|Unidades|Unités).*'));
     expect(helper, contains('No visible element found'));
     expect(helper, contains('A deterministic Maestro assertion'));
-
   });
 }
