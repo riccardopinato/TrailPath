@@ -9,6 +9,10 @@ void main() {
     final proRunner = File('.maestro/run-applab-v15-pro.sh').readAsStringSync();
     final uxRunner = File('.maestro/run-applab-ux-matrix.sh')
         .readAsStringSync();
+    final migrationRunner = File('.maestro/run-upgrade-migration.sh')
+        .readAsStringSync();
+    final smallScreenFlow = File('.maestro/applab-small-screen-e2e.yaml')
+        .readAsStringSync();
     final helper = File('.maestro/ci_runtime_helpers.sh').readAsStringSync();
     final resourcePolicy = File('.maestro/applab-resource.json')
         .readAsStringSync();
@@ -100,5 +104,14 @@ void main() {
     expect(uxRunner, contains('trailpath_prepare_maestro_attempt'));
     expect(proRunner, isNot(contains('for _ in \$(seq 1 180)')));
     expect(uxRunner, isNot(contains('for _ in \$(seq 1 180)')));
+    expect(migrationRunner, contains('trailpath_prepare_maestro_attempt'));
+    expect(migrationRunner, isNot(contains('FOREIGN_ANR_GUARD_PID')));
+    expect(
+      smallScreenFlow,
+      contains(
+        'No saved routes|Nessun percorso salvato|No hay rutas guardadas|Aucun parcours enregistré|Nenhum percurso guardado',
+      ),
+    );
+    expect(smallScreenFlow, isNot(contains('Your routes|I tuoi percorsi')));
   });
 }
