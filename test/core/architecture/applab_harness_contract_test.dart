@@ -45,7 +45,7 @@ void main() {
     );
     expect(workflow, contains('name: Enforce automated certification result'));
     expect(workflow, contains('test "\$failed" -eq 0'));
-    const appLabSystemUiFixSha = '939bb5e1dbe317ce333ba019ad20d112f2dbf114';
+    const appLabSystemUiFixSha = 'd6f2df29099e4744e750480321b15bc04b045d61';
     expect(
       RegExp(appLabSystemUiFixSha).allMatches(workflow).length,
       6,
