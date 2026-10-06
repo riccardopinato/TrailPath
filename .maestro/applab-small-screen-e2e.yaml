@@ -65,6 +65,13 @@ appId: com.riccardopinato.trail_path
     timeout: 15000
 - takeScreenshot: "ux-small-profile"
 
+# On the constrained viewport Settings is intentionally below the fold.
+# The accessibility contract is that it remains reachable by scrolling.
+- scrollUntilVisible:
+    element:
+      text: "Settings|Impostazioni|Ajustes|Réglages|Definições"
+    direction: DOWN
+    timeout: 20000
 - tapOn:
     text: "Settings|Impostazioni|Ajustes|Réglages|Definições"
 - extendedWaitUntil:
