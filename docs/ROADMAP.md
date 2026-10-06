@@ -115,7 +115,7 @@ Current runtime candidate: **v1.0.0+31**. TrailPath CI **#395** is the current f
 ### P3 — polish
 - [ ] finish top-toolbar declutter if physical testing still finds the map chrome crowded;
 - [x] localize OSM search attribution/support copy;
-- [ ] revisit generic Safe Interaction Crawler discoverability; current crawler finds only one safe action.
+- [x] revisit generic Safe Interaction Crawler discoverability; AppLab run #822 discovers 3 safe actions (Map layers, Search, Profile) and the journey crawler observes 4 states / 6 transitions without runtime failures.
 
 Full detail: `docs/FULL_AUDIT_v1.0.0.md`.
 
@@ -333,7 +333,7 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] prove from AppLab hierarchy evidence that the Settings card remains in the scrollable Profile list and the previous failure was selector mismatch, not missing UI;
 - [x] stop classifying deterministic Maestro visibility/assertion failures as transient merely because emulator logs contain unrelated transport noise;
 - [x] keep explicit Maestro driver/device failures retryable while preserving fail-closed product assertions;
-- [~] promote the automated candidate only after Core, API29, main E2E, Pro, small-screen/large-text and Upgrade/Migration are green in the same run; v1.5.20 pins the AppLab System UI crash-attribution fix for the final matrix.
+- [x] automated candidate promotion criterion satisfied by v1.5.21 CI #822: Core, routing, API29, main E2E, Pro, small-screen/large-text and Upgrade/Migration are green in the same run.
 
 
 ### v1.5.20 — AppLab System UI Crash Attribution Closure
@@ -344,7 +344,7 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] fix AppLab to clear pre-lab log history and associate FATAL EXCEPTION only with the target process inside the same AndroidRuntime crash record;
 - [x] add upstream AppLab self-tests covering foreign fatal, target fatal and target ANR classification;
 - [x] pin every blocking TrailPath AppLab job to the audited AppLab fix commit;
-- [ ] promote only after the complete v1.5.20 release matrix is green in one run.
+- [x] v1.5.20 promotion requirement superseded and satisfied by the complete v1.5.21 run #822 matrix.
 
 
 ### v1.5.21 — Unified AppLab Android Runtime Attribution
@@ -358,4 +358,4 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] cover foreign fatal, interleaved foreign/target records, real target fatal and target ANR with AppLab self-tests;
 - [x] retain PID stabilization for hosted-emulator process recycling without weakening target ANR/FATAL fail-closed behavior;
 - [x] pin all TrailPath blocking AppLab jobs to validated harness commit `d6f2df29099e4744e750480321b15bc04b045d61`;
-- [ ] promote v1.5.21 only after Core, routing, API29, main E2E, Pro, constrained UX and real-artifact Upgrade/Migration are green in the same CI run.
+- [x] promote v1.5.21 automated candidate: CI #822 passes Core/build, live routing, API29, main E2E, Pro routing, constrained UX, real-artifact Upgrade/Migration and Release Certification Evidence in the same run. Production certification remains BLOCKED only by external/physical gates.
