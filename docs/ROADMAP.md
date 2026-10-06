@@ -358,4 +358,5 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] cover foreign fatal, interleaved foreign/target records, real target fatal and target ANR with AppLab self-tests;
 - [x] retain PID stabilization for hosted-emulator process recycling without weakening target ANR/FATAL fail-closed behavior;
 - [x] pin all TrailPath blocking AppLab jobs to validated harness commit `d6f2df29099e4744e750480321b15bc04b045d61`;
+- [x] persist PASS-only AppLab visual and performance baselines in the main E2E gate so later runs detect regressions instead of staying permanently at NO_BASELINE;
 - [x] promote v1.5.21 automated candidate: CI #822 passes Core/build, live routing, API29, main E2E, Pro routing, constrained UX, real-artifact Upgrade/Migration and Release Certification Evidence in the same run. Production certification remains BLOCKED only by external/physical gates.
