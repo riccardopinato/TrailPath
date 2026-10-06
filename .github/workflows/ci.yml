@@ -428,6 +428,22 @@ jobs:
           chmod +x .applab/scripts/*.sh
           .applab/scripts/install_maestro.sh
 
+      - name: Restore AppLab visual baseline
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: .applab-visual-baseline
+          key: trailpath-applab-visual-v2-main-e2e-${{ github.sha }}
+          restore-keys: |
+            trailpath-applab-visual-v2-main-e2e-
+
+      - name: Restore AppLab performance baseline
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: .applab-performance-baseline
+          key: trailpath-applab-performance-v1-main-e2e-${{ github.sha }}
+          restore-keys: |
+            trailpath-applab-performance-v1-main-e2e-
+
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
@@ -450,7 +466,7 @@ jobs:
             adb shell pm grant com.riccardopinato.trail_path android.permission.POST_NOTIFICATIONS || true
             adb emu geo fix 11.7500 45.2320 100 || true
 
-            APPLAB_PROJECT_ROOT="$GITHUB_WORKSPACE" RUN_MAESTRO=true MAESTRO_FLOW="$GITHUB_WORKSPACE/.maestro/applab-e2e.yaml" REPORT_DIR="$GITHUB_WORKSPACE/applab-report" .applab/scripts/verify_apk.sh "$GITHUB_WORKSPACE/apk/app-x86_64-release.apk" "com.riccardopinato.trail_path"
+            APPLAB_PROJECT_ROOT="$GITHUB_WORKSPACE" APPLAB_VISUAL_BASELINE_DIR="$GITHUB_WORKSPACE/.applab-visual-baseline" APPLAB_PERFORMANCE_BASELINE_JSON="$GITHUB_WORKSPACE/.applab-performance-baseline/performance-lab.json" RUN_MAESTRO=true MAESTRO_FLOW="$GITHUB_WORKSPACE/.maestro/applab-e2e.yaml" REPORT_DIR="$GITHUB_WORKSPACE/applab-report" .applab/scripts/verify_apk.sh "$GITHUB_WORKSPACE/apk/app-x86_64-release.apk" "com.riccardopinato.trail_path"
 
             grep -Fq -- "- Result: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
             grep -Fq -- "- Maestro: PASS" "$GITHUB_WORKSPACE/applab-report/summary.md"
@@ -458,6 +474,46 @@ jobs:
             test -s "$GITHUB_WORKSPACE/applab-report/post-maestro.png"
             test -s "$GITHUB_WORKSPACE/applab-report/logcat.txt"
             ! grep -Eq "ANR in com\\.riccardopinato\\.trail_path|Process: com\\.riccardopinato\\.trail_path.*FATAL" "$GITHUB_WORKSPACE/applab-report/logcat.txt"
+
+      - name: Prepare PASS-only AppLab visual baseline
+        id: trailpath-visual-baseline
+        if: success()
+        run: |
+          python .applab/scripts/prepare_visual_baseline.py \
+            --report-dir "$GITHUB_WORKSPACE/applab-report" \
+            --baseline-dir "$GITHUB_WORKSPACE/.applab-visual-baseline" \
+            --repository "$GITHUB_REPOSITORY" \
+            --resolved-sha "$GITHUB_SHA" \
+            --run-id "$GITHUB_RUN_ID" \
+            --version "1.0.0" \
+            --github-output "$GITHUB_OUTPUT"
+
+      - name: Save PASS-only AppLab visual baseline
+        if: steps.trailpath-visual-baseline.outputs.promote == 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: .applab-visual-baseline
+          key: trailpath-applab-visual-v2-main-e2e-${{ github.sha }}-${{ github.run_id }}
+
+      - name: Prepare PASS-only AppLab performance baseline
+        id: trailpath-performance-baseline
+        if: success()
+        run: |
+          python .applab/scripts/prepare_performance_baseline.py \
+            --report-dir "$GITHUB_WORKSPACE/applab-report" \
+            --baseline-dir "$GITHUB_WORKSPACE/.applab-performance-baseline" \
+            --repository "$GITHUB_REPOSITORY" \
+            --resolved-sha "$GITHUB_SHA" \
+            --run-id "$GITHUB_RUN_ID" \
+            --version "1.0.0" \
+            --github-output "$GITHUB_OUTPUT"
+
+      - name: Save PASS-only AppLab performance baseline
+        if: steps.trailpath-performance-baseline.outputs.promote == 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: .applab-performance-baseline
+          key: trailpath-applab-performance-v1-main-e2e-${{ github.sha }}-${{ github.run_id }}
 
       - name: Upload AppLab report
         if: always()
