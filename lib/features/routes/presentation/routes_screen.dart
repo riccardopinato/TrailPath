@@ -7,6 +7,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/database/database_providers.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
+import 'package:trail_path/core/presentation/confirmation_dialog.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/navigation/presentation/navigation_screen.dart';
 import 'package:trail_path/features/offline/application/offline_downloads_controller.dart';
@@ -38,7 +40,7 @@ class RoutesScreen extends ConsumerWidget {
                 error: (error, stackTrace) => _RoutesMessage(
                   icon: Icons.error_outline_rounded,
                   title: strings.locationUnavailable,
-                  message: error.toString(),
+                  message: strings.routesUnavailable,
                 ),
                 data: (routeItems) => activities.when(
                   loading: () =>
@@ -46,7 +48,7 @@ class RoutesScreen extends ConsumerWidget {
                   error: (error, stackTrace) => _RoutesMessage(
                     icon: Icons.error_outline_rounded,
                     title: strings.locationUnavailable,
-                    message: error.toString(),
+                    message: strings.routesUnavailable,
                   ),
                   data: (activityItems) {
                     if (routeItems.isEmpty && activityItems.isEmpty) {
@@ -171,7 +173,7 @@ class RoutesScreen extends ConsumerWidget {
     try {
       final document = ref.read(appDatabaseProvider).activityToGpx(activity);
       final xml = await ref.read(gpxServiceProvider).export(document);
-      final name = activity.name ?? 'TrailPath activity';
+      final name = activity.name ?? strings.activitySummary;
 
       await SharePlus.instance.share(
         ShareParams(
@@ -202,25 +204,15 @@ class RoutesScreen extends ConsumerWidget {
     SavedRoute route,
   ) async {
     final strings = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showTrailPathConfirmationDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(strings.deleteRoute),
-        content: Text(route.name),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(strings.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(strings.delete),
-          ),
-        ],
-      ),
+      title: strings.deleteRoute,
+      message: route.name,
+      confirmLabel: strings.delete,
+      cancelLabel: strings.cancel,
     );
 
-    if (confirmed == true) {
+    if (confirmed) {
       final success = await ref
           .read(offlineDownloadsProvider.notifier)
           .deleteRouteAndOfflineData(route.id);
@@ -237,25 +229,15 @@ class RoutesScreen extends ConsumerWidget {
     Activity activity,
   ) async {
     final strings = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showTrailPathConfirmationDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(strings.deleteActivity),
-        content: Text(activity.name ?? strings.yourActivities),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(strings.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(strings.delete),
-          ),
-        ],
-      ),
+      title: strings.deleteActivity,
+      message: activity.name ?? strings.yourActivities,
+      confirmLabel: strings.delete,
+      cancelLabel: strings.cancel,
     );
 
-    if (confirmed == true) {
+    if (confirmed) {
       await ref.read(appDatabaseProvider).discardActivity(activity.id);
     }
   }
@@ -283,7 +265,7 @@ class _RouteCard extends StatelessWidget {
       icon: Icons.route_rounded,
       title: route.name,
       subtitle:
-          '${_formatDistance(route.distanceMeters)} · '
+          '${context.formatDistance(route.distanceMeters)} · '
           '${_formatDuration(duration)} · '
           '${_profileName(strings, route.profile)}',
       onPrimary: onNavigate,
@@ -316,9 +298,9 @@ class _ActivityCard extends StatelessWidget {
       icon: Icons.directions_walk_rounded,
       title: name,
       subtitle:
-          '${_formatDistance(activity.distanceMeters)} · '
+          '${context.formatDistance(activity.distanceMeters)} · '
           '${_formatDuration(duration)} · '
-          '+${activity.ascentMeters.round()} m · '
+          '${context.formatElevation(activity.ascentMeters, signed: true)} · '
           '${_profileName(strings, activity.profile)}',
       onShare: onShare,
       onDelete: onDelete,
@@ -454,17 +436,23 @@ class _OfflineRouteAction extends ConsumerWidget {
     final progress = downloads.progress(route.id);
 
     if (active) {
-      return Tooltip(
-        message: strings.downloadingOffline,
-        child: SizedBox(
-          width: 44,
-          height: 44,
-          child: Padding(
-            padding: const EdgeInsets.all(11),
-            child: CircularProgressIndicator(
-              strokeWidth: 2.4,
-              value: progress > 0 ? progress : null,
-            ),
+      return IconButton(
+        tooltip: strings.cancelDownload,
+        onPressed: () {
+          ref.read(offlineDownloadsProvider.notifier).cancelDownload(route.id);
+        },
+        icon: SizedBox(
+          width: 28,
+          height: 28,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              CircularProgressIndicator(
+                strokeWidth: 2.4,
+                value: progress > 0 ? progress : null,
+              ),
+              const Icon(Icons.close_rounded, size: 16),
+            ],
           ),
         ),
       );
@@ -502,7 +490,11 @@ class _OfflineRouteAction extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              success ? strings.offlineReady : strings.offlineFailed,
+              success
+                  ? strings.offlineReady
+                  : ref.read(offlineDownloadsProvider).error == null
+                  ? strings.offlineCancelled
+                  : strings.offlineFailed,
             ),
           ),
         );
@@ -599,13 +591,6 @@ class _RoutesMessage extends StatelessWidget {
       ),
     );
   }
-}
-
-String _formatDistance(double meters) {
-  if (meters < 1000) {
-    return '${meters.round()} m';
-  }
-  return '${(meters / 1000).toStringAsFixed(1)} km';
 }
 
 String _formatDuration(Duration duration) {

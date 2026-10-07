@@ -13,6 +13,8 @@ final recordingControllerProvider =
       RecordingController.new,
     );
 
+enum RecordingFinishResult { saved, tooShort, saveFailed }
+
 class RecordingState {
   const RecordingState({
     this.snapshot = const TrackRecorderSnapshot(
@@ -24,6 +26,7 @@ class RecordingState {
     this.profile = RouteProfile.hiking,
     this.activityId,
     this.hasRecoveredDraft = false,
+    this.hasPendingFinalization = false,
     this.isCheckingRecovery = false,
     this.error,
   });
@@ -32,6 +35,7 @@ class RecordingState {
   final RouteProfile profile;
   final String? activityId;
   final bool hasRecoveredDraft;
+  final bool hasPendingFinalization;
   final bool isCheckingRecovery;
   final String? error;
 
@@ -45,6 +49,7 @@ class RecordingState {
     String? activityId,
     bool clearActivityId = false,
     bool? hasRecoveredDraft,
+    bool? hasPendingFinalization,
     bool? isCheckingRecovery,
     String? error,
     bool clearError = false,
@@ -54,6 +59,8 @@ class RecordingState {
       profile: profile ?? this.profile,
       activityId: clearActivityId ? null : activityId ?? this.activityId,
       hasRecoveredDraft: hasRecoveredDraft ?? this.hasRecoveredDraft,
+      hasPendingFinalization:
+          hasPendingFinalization ?? this.hasPendingFinalization,
       isCheckingRecovery: isCheckingRecovery ?? this.isCheckingRecovery,
       error: clearError ? null : error ?? this.error,
     );
@@ -66,6 +73,8 @@ class RecordingController extends Notifier<RecordingState> {
   DateTime? _lastPersistedAt;
   int _lastPersistedPointCount = 0;
   TrackRecorderStatus? _lastPersistedStatus;
+  TrackRecorderSnapshot? _pendingFinalSnapshot;
+  String? _pendingFinalName;
   bool _recoveryChecked = false;
   late TrackRecorder _recorder;
   late AppDatabase _database;
@@ -144,14 +153,14 @@ class RecordingController extends Notifier<RecordingState> {
   }
 
   void setProfile(RouteProfile profile) {
-    if (state.isActive) {
+    if (state.isActive || state.hasPendingFinalization) {
       return;
     }
     state = state.copyWith(profile: profile);
   }
 
   Future<void> start() async {
-    if (state.isActive) {
+    if (state.isActive || state.hasPendingFinalization) {
       return;
     }
 
@@ -287,43 +296,74 @@ class RecordingController extends Notifier<RecordingState> {
     }
   }
 
-  Future<bool> finish(String name) async {
+  Future<RecordingFinishResult> finish(String name) async {
     final activityId = state.activityId;
-    if (activityId == null || !state.isActive) {
-      return false;
+    if (activityId == null) {
+      return RecordingFinishResult.saveFailed;
     }
 
     final profile = state.profile;
+    TrackRecorderSnapshot completed;
+
     try {
-      final completed = await _recorder.stop();
-      await _persistChain;
+      final pending = _pendingFinalSnapshot;
+      if (pending != null) {
+        completed = pending;
+      } else {
+        if (!state.isActive) {
+          return RecordingFinishResult.saveFailed;
+        }
+        completed = await _recorder.stop();
+        await _persistChain;
+        _pendingFinalSnapshot = completed;
+      }
 
       if (completed.points.length < 2) {
         await _database.discardActivity(activityId);
+        _pendingFinalSnapshot = null;
+        _pendingFinalName = null;
         if (ref.mounted) {
           state = RecordingState(profile: profile);
           _resetPersistenceState();
         }
-        return false;
+        return RecordingFinishResult.tooShort;
       }
 
+      final finalName = name.trim().isEmpty
+          ? 'TrailPath activity'
+          : name.trim();
+      _pendingFinalName = finalName;
       await _database.completeActivity(
         activityId: activityId,
-        name: name.trim().isEmpty ? 'TrailPath activity' : name.trim(),
+        name: finalName,
         snapshot: completed,
       );
 
+      _pendingFinalSnapshot = null;
+      _pendingFinalName = null;
       if (ref.mounted) {
         state = RecordingState(profile: profile);
         _resetPersistenceState();
       }
-      return true;
+      return RecordingFinishResult.saved;
     } on Object catch (error) {
       if (ref.mounted) {
-        state = state.copyWith(error: error.toString());
+        state = state.copyWith(
+          snapshot: _pendingFinalSnapshot ?? state.snapshot,
+          hasPendingFinalization: _pendingFinalSnapshot != null,
+          error: error.toString(),
+        );
       }
-      return false;
+      return RecordingFinishResult.saveFailed;
     }
+  }
+
+  Future<RecordingFinishResult> retryFinish() async {
+    final name = _pendingFinalName;
+    if (_pendingFinalSnapshot == null || name == null) {
+      return RecordingFinishResult.saveFailed;
+    }
+    return finish(name);
   }
 
   Future<void> discard() async {
@@ -342,6 +382,8 @@ class RecordingController extends Notifier<RecordingState> {
       await _database.discardActivity(activityId);
     }
 
+    _pendingFinalSnapshot = null;
+    _pendingFinalName = null;
     if (ref.mounted) {
       state = RecordingState(profile: profile);
       _resetPersistenceState();
@@ -433,6 +475,8 @@ class RecordingController extends Notifier<RecordingState> {
   }
 
   void _resetPersistenceState() {
+    _pendingFinalSnapshot = null;
+    _pendingFinalName = null;
     _lastPersistedAt = null;
     _lastPersistedPointCount = 0;
     _lastPersistedStatus = null;

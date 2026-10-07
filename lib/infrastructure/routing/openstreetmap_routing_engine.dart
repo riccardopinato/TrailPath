@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/core/logging/app_logger.dart';
 import 'package:trail_path/core/services/service_contracts.dart';
 import 'package:trail_path/infrastructure/network/http_retry.dart';
 
@@ -13,7 +14,7 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
   OpenStreetMapRoutingEngine({
     http.Client? client,
     this.timeout = const Duration(seconds: 12),
-    this.maxWaypointsPerRequest = 20,
+    this.maxWaypointsPerRequest = 8,
     this.maxRetries = 2,
     this.retryBaseDelay = const Duration(milliseconds: 350),
     this.maxRetryDelay = const Duration(seconds: 4),
@@ -151,11 +152,25 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
     }
 
     final routes = payload['routes'];
-    if (routes is! List || routes.isEmpty || routes.first is! Map) {
+    if (routes is! List || routes.isEmpty) {
       throw const RoutingException('No route found.');
     }
 
-    final route = Map<String, dynamic>.from(routes.first as Map);
+    final routeCandidates = <Map<String, dynamic>>[
+      for (final rawRoute in routes)
+        if (rawRoute is Map) Map<String, dynamic>.from(rawRoute),
+    ];
+    if (routeCandidates.isEmpty) {
+      throw const RoutingException('No route found.');
+    }
+
+    final route = routeCandidates.reduce((best, candidate) {
+      final bestDistance =
+          (best['distance'] as num?)?.toDouble() ?? double.infinity;
+      final candidateDistance =
+          (candidate['distance'] as num?)?.toDouble() ?? double.infinity;
+      return candidateDistance < bestDistance ? candidate : best;
+    });
     final geometryJson = route['geometry'];
     if (geometryJson is! Map) {
       throw const RoutingException('Missing route geometry.');
@@ -244,10 +259,12 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
       'https://routing.openstreetmap.de/'
       '$service/route/v1/driving/$coordinates',
     ).replace(
-      queryParameters: const {
+      queryParameters: {
         'overview': 'full',
         'geometries': 'geojson',
         'steps': 'false',
+        'continue_straight': 'false',
+        'alternatives': 'true',
       },
     );
   }
@@ -267,14 +284,25 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
 
         if (!isTransientHttpStatus(response.statusCode) ||
             attempt == maxRetries) {
+          AppLogger.warning(
+            'routing provider=$engineId status=${response.statusCode} '
+            'profile=${_serviceForProfileName(uri)} attempt=${attempt + 1}',
+          );
           throw RoutingException(
             'Routing service returned HTTP ${response.statusCode}.',
           );
         }
 
+        AppLogger.warning(
+          'routing retry provider=$engineId status=${response.statusCode} '
+          'attempt=${attempt + 1}/${maxRetries + 1}',
+        );
         await _delay(_retryDelay(response, attempt));
       } on TimeoutException catch (error) {
         lastNetworkError = error;
+        AppLogger.warning(
+          'routing timeout provider=$engineId attempt=${attempt + 1}/${maxRetries + 1}',
+        );
         if (attempt == maxRetries) {
           throw RoutingException(
             'Routing request timed out after ${maxRetries + 1} attempts.',
@@ -283,6 +311,9 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
         await _delay(_retryDelay(null, attempt));
       } on http.ClientException catch (error) {
         lastNetworkError = error;
+        AppLogger.warning(
+          'routing network-error provider=$engineId attempt=${attempt + 1}/${maxRetries + 1}',
+        );
         if (attempt == maxRetries) {
           throw RoutingException(
             'Routing network request failed after ${maxRetries + 1} attempts: '
@@ -294,6 +325,16 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
     }
 
     throw RoutingException('Routing request failed: $lastNetworkError');
+  }
+
+  String _serviceForProfileName(Uri uri) {
+    if (uri.path.contains('routed-bike')) {
+      return 'bike';
+    }
+    if (uri.path.contains('routed-foot')) {
+      return 'foot';
+    }
+    return 'unknown';
   }
 
   Map<String, String> _requestHeaders() {
@@ -346,9 +387,32 @@ class FallbackRoutingEngine implements RoutingEngine {
       return fallback.calculate(request);
     }
 
-    // A snapped outdoor route must be real or fail explicitly.
-    // Never turn a provider failure into a fake straight-line route.
-    return primary.calculate(request);
+    try {
+      return await primary.calculate(request);
+    } on Object catch (primaryError, primaryStack) {
+      AppLogger.warning(
+        'routing fallback primary=${primary.engineId} failed; '
+        'trying=${fallback.engineId} profile=${request.profile.name} '
+        'waypoints=${request.points.length}',
+      );
+      try {
+        final fallbackPlan = await fallback.calculate(request);
+        if (fallbackPlan.isSnapped) {
+          AppLogger.info(
+            'routing fallback selected provider=${fallbackPlan.routingSource} '
+            'profile=${request.profile.name} waypoints=${request.points.length}',
+          );
+          return fallbackPlan;
+        }
+      } on Object catch (fallbackError, fallbackStack) {
+        AppLogger.error(
+          'routing fallback failed provider=${fallback.engineId}',
+          error: fallbackError,
+          stackTrace: fallbackStack,
+        );
+      }
+      Error.throwWithStackTrace(primaryError, primaryStack);
+    }
   }
 }
 
