@@ -10,3 +10,14 @@ This matrix defines the minimum device/API evidence required for v1.0.
 
 The exact artifact SHA-256 is part of the Evidence Bundle. A physical-device
 result is valid only for the ARM64 APK with that same SHA-256.
+
+
+## Current automated evidence
+
+- Candidate: **v1.5.21+58**
+- Full automated matrix: **TrailPath CI #835 — PASS**
+- Pinned AppLab harness: `d6f2df29099e4744e750480321b15bc04b045d61`
+- AppLab-tested x86_64 SHA-256: `ca46fb550780f623e4e8b7336bd4a6f8f3fd50b410ed0ae468a5d729a95ef051`
+- Physical candidate ARM64 SHA-256: `55c0446381371e545b738117c640879e44ca4680cb36582fba4cee873f89e89d`
+- Automated validation: **PASS**
+- Production status: **BLOCKED** only by store/provider configuration and physical/release evidence.
