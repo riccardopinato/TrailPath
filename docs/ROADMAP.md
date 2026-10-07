@@ -209,7 +209,7 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] add optional backend purchase-token verification and require it for a store-signed AAB.
 - [x] document the GitHub configuration contract for Google OAuth, premium maps, dedicated TrailPath Supabase and Google Play verification.
 - [ ] configure the real external credentials/projects in their provider consoles before production enablement; CI must continue to report missing services instead of embedding placeholders.
-- [ ] repeat the physical-device regression on the exact v1.5.21 ARM64 candidate from CI #835 (SHA-256 `55c0446381371e545b738117c640879e44ca4680cb36582fba4cee873f89e89d`); the old v1.5.3/v1.5.2 field-test target is superseded.
+- [ ] repeat the physical-device regression on the exact v1.5.21 ARM64 candidate from CI #838 (SHA-256 `1b10cf45e11c6553af0a1803e6eecbd2abefdc1c00002e2a8ac2817a173b7c3a`); the old v1.5.3/v1.5.2 field-test target is superseded.
 
 ### Product principles for the approved roadmap
 
