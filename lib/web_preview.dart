@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/collection_sampling.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
+import 'package:trail_path/core/domain/map_matching.dart';
 import 'package:trail_path/core/domain/models.dart';
+import 'package:trail_path/core/localization/app_localizations.dart';
 import 'package:trail_path/core/services/planner_service_providers.dart';
 import 'package:trail_path/features/planner/application/route_planner_controller.dart';
 
@@ -28,6 +31,13 @@ class TrailPathWebPreview extends StatelessWidget {
         useMaterial3: true,
         colorSchemeSeed: const Color(0xFF2E7D32),
       ),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       home: const _PreviewScreen(),
     );
   }
@@ -49,12 +59,14 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
   List<Line> _routeLines = const [];
   List<Circle> _waypointCircles = const [];
   List<Circle> _midpointCircles = const [];
-  Circle? _searchCircle;
-  PlaceSearchResult? _searchResult;
+  Circle? _candidateCircle;
+  GeoPoint? _candidatePoint;
+  String? _candidateLabel;
   RoutePlannerState? _pendingPlanner;
   bool _syncRunning = false;
   bool _searchBusy = false;
   bool _traceMode = false;
+  MapMatchMode _traceMatchMode = MapMatchMode.trails;
   bool _traceDrawing = false;
   bool _traceProcessing = false;
   int? _tracePointerId;
@@ -241,44 +253,97 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
             ]);
     }
 
-    final result = _searchResult;
-    if (result == null) {
-      final stale = _searchCircle;
-      _searchCircle = null;
+    final candidate = _candidatePoint;
+    if (candidate == null) {
+      final stale = _candidateCircle;
+      _candidateCircle = null;
       if (stale != null && map.circles.contains(stale)) {
         await map.removeCircle(stale);
       }
     } else {
       final options = CircleOptions(
-        geometry: LatLng(result.point.latitude, result.point.longitude),
+        geometry: LatLng(candidate.latitude, candidate.longitude),
         circleRadius: 8,
         circleColor: '#1565C0',
         circleStrokeColor: '#FFFFFF',
         circleStrokeWidth: 2.5,
       );
-      final current = _searchCircle;
+      final current = _candidateCircle;
       if (current != null && map.circles.contains(current)) {
         await map.updateCircle(current, options);
       } else {
-        _searchCircle = await map.addCircle(options, const <String, dynamic>{
-          'kind': 'search',
+        _candidateCircle = await map.addCircle(options, const <String, dynamic>{
+          'kind': 'candidate',
         });
       }
     }
   }
 
-  void _addPoint(math.Point<double> _, LatLng latLng) {
-    if (_selectedWaypointIndex != null || _routeSelected) {
-      setState(() {
-        _selectedWaypointIndex = null;
-        _routeSelected = false;
-      });
+  void _previewCandidateLatLng(LatLng latLng) {
+    _previewCandidate(
+      GeoPoint(latitude: latLng.latitude, longitude: latLng.longitude),
+    );
+  }
+
+  void _previewCandidate(GeoPoint point, {String? label}) {
+    setState(() {
+      _candidatePoint = point;
+      _candidateLabel = label?.trim().isEmpty == true ? null : label?.trim();
+      _selectedWaypointIndex = null;
+      _routeSelected = false;
+    });
+    _scheduleMapSync(ref.read(routePlannerProvider));
+  }
+
+  void _cancelCandidate() {
+    if (_candidatePoint == null) {
+      return;
     }
-    ref
-        .read(routePlannerProvider.notifier)
-        .addPoint(
-          GeoPoint(latitude: latLng.latitude, longitude: latLng.longitude),
-        );
+    setState(() {
+      _candidatePoint = null;
+      _candidateLabel = null;
+    });
+    _scheduleMapSync(ref.read(routePlannerProvider));
+  }
+
+  void _confirmCandidate(_WebCandidateIntent intent) {
+    final candidate = _candidatePoint;
+    if (candidate == null) {
+      return;
+    }
+
+    final planner = ref.read(routePlannerProvider);
+    final controller = ref.read(routePlannerProvider.notifier);
+    switch (intent) {
+      case _WebCandidateIntent.start:
+        if (planner.points.isEmpty) {
+          controller.addPoint(candidate);
+        } else {
+          controller.movePoint(0, candidate);
+        }
+      case _WebCandidateIntent.destination:
+        if (planner.points.isEmpty) {
+          controller.addPoint(candidate);
+        } else if (planner.points.length == 1) {
+          controller.addPoint(candidate);
+        } else {
+          controller.movePoint(planner.points.length - 1, candidate);
+        }
+      case _WebCandidateIntent.waypoint:
+        if (planner.points.length >= 2) {
+          controller.insertPointAt(planner.points.length - 1, candidate);
+        } else {
+          controller.addPoint(candidate);
+        }
+    }
+
+    setState(() {
+      _candidatePoint = null;
+      _candidateLabel = null;
+      _selectedWaypointIndex = null;
+      _routeSelected = planner.points.isNotEmpty;
+    });
+    _scheduleMapSync(ref.read(routePlannerProvider));
   }
 
   Future<void> _insertPoint(math.Point<double> _, LatLng latLng) async {
@@ -292,8 +357,8 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
         distanceToPolylineMeters(candidate, planner.geometry) > 80) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tieni premuto più vicino al percorso.'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).routePressTooFar),
           ),
         );
       }
@@ -441,11 +506,16 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
       if (!mounted) {
         return;
       }
+      if (results.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).noSearchResults)),
+        );
+      }
       setState(() => _searchResults = results);
-    } on Object catch (error) {
+    } on Object {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ricerca non disponibile: $error')),
+          SnackBar(content: Text(AppLocalizations.of(context).searchFailed)),
         );
       }
     } finally {
@@ -457,11 +527,10 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
 
   Future<void> _focusSearchResult(PlaceSearchResult result) async {
     setState(() {
-      _searchResult = result;
       _searchResults = const [];
       _searchController.text = result.name;
     });
-    _scheduleMapSync(ref.read(routePlannerProvider));
+    _previewCandidate(result.point, label: result.name);
 
     final map = _map;
     if (map != null) {
@@ -472,14 +541,6 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
         ),
       );
     }
-  }
-
-  void _addSearchResultAsWaypoint() {
-    final result = _searchResult;
-    if (result == null) {
-      return;
-    }
-    ref.read(routePlannerProvider.notifier).addPoint(result.point);
   }
 
   void _toggleTraceMode() {
@@ -494,8 +555,18 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
       _selectedWaypointIndex = null;
       if (_traceMode) {
         _routeSelected = false;
+        _candidatePoint = null;
+        _candidateLabel = null;
       }
     });
+    _scheduleMapSync(ref.read(routePlannerProvider));
+  }
+
+  void _setTraceMatchMode(MapMatchMode mode) {
+    if (_traceProcessing || _traceMatchMode == mode) {
+      return;
+    }
+    setState(() => _traceMatchMode = mode);
   }
 
   void _onTracePointerDown(PointerDownEvent event) {
@@ -564,7 +635,11 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
       return;
     }
 
-    final sampled = sampleEvenly(screenPoints, maxItems: 56);
+    final sampled = sampleEvenly(screenPoints, maxItems: 90);
+    if (sampled.length < 2) {
+      return;
+    }
+
     setState(() => _traceProcessing = true);
     try {
       final geoPoints = <GeoPoint>[];
@@ -584,13 +659,63 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
         return;
       }
 
-      final accepted = ref
-          .read(routePlannerProvider.notifier)
-          .addTrace(geoPoints);
+      double? gestureToleranceMeters;
+      if (_traceMatchMode != MapMatchMode.free && geoPoints.isNotEmpty) {
+        try {
+          final reference = geoPoints[geoPoints.length ~/ 2];
+          final metersPerPixel = await map.getMetersPerPixelAtLatitude(
+            reference.latitude,
+          );
+          final baseTolerance = _traceMatchMode == MapMatchMode.trails
+              ? 36.0
+              : 30.0;
+          final maxTolerance = _traceMatchMode == MapMatchMode.trails
+              ? 220.0
+              : 180.0;
+          gestureToleranceMeters = (metersPerPixel * 18)
+              .clamp(baseTolerance, maxTolerance)
+              .toDouble();
+        } on Object {
+          // Keep provider defaults when browser projection metrics are
+          // temporarily unavailable.
+        }
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      final plannerState = ref.read(routePlannerProvider);
+      final plannerController = ref.read(routePlannerProvider.notifier);
+      var accepted = false;
+
+      if (_traceMatchMode == MapMatchMode.free) {
+        accepted = plannerController.addTrace(geoPoints);
+      } else {
+        final matchInput = <GeoPoint>[
+          if (plannerState.points.isNotEmpty) plannerState.points.last,
+          ...geoPoints,
+        ];
+        final match = await ref
+            .read(mapMatchingEngineProvider)
+            .match(
+              TraceMatchRequest(
+                trace: matchInput,
+                profile: plannerState.profile,
+                mode: _traceMatchMode,
+                gestureToleranceMeters: gestureToleranceMeters,
+              ),
+            );
+        if (!mounted) {
+          return;
+        }
+        accepted = plannerController.applyMatchedTrace(match);
+      }
+
       if (!accepted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Traccia troppo corta.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).traceTooShort)),
+        );
         return;
       }
 
@@ -598,10 +723,10 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
         _routeSelected = true;
         _selectedWaypointIndex = null;
       });
-    } on Object catch (error) {
+    } on Object {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Traccia non disponibile: $error')),
+          SnackBar(content: Text(AppLocalizations.of(context).traceFailed)),
         );
       }
     } finally {
@@ -632,6 +757,7 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final planner = ref.watch(routePlannerProvider);
     final controller = ref.read(routePlannerProvider.notifier);
 
@@ -651,14 +777,22 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
       searchController: _searchController,
       searchBusy: _searchBusy,
       searchResults: _searchResults,
-      selectedSearchResult: _searchResult,
+      candidatePoint: _candidatePoint,
+      candidateLabel: _candidateLabel,
       selectedWaypointIndex: _selectedWaypointIndex,
       traceMode: _traceMode,
+      traceMatchMode: _traceMatchMode,
       traceProcessing: _traceProcessing,
       onSearch: _searchPlaces,
       onSearchSelected: _focusSearchResult,
-      onAddSearchWaypoint: _addSearchResultAsWaypoint,
+      onCandidateStart: () => _confirmCandidate(_WebCandidateIntent.start),
+      onCandidateDestination: () =>
+          _confirmCandidate(_WebCandidateIntent.destination),
+      onCandidateWaypoint: () =>
+          _confirmCandidate(_WebCandidateIntent.waypoint),
+      onCandidateCancel: _cancelCandidate,
       onToggleTrace: _toggleTraceMode,
+      onTraceMatchModeChanged: _setTraceMatchMode,
       onProfileChanged: controller.setProfile,
       onUndo: planner.canUndo ? controller.undo : null,
       onRedo: planner.canRedo ? controller.redo : null,
@@ -694,7 +828,7 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
       },
       onMapClick: (point, coordinates) {
         if (!_traceMode) {
-          _addPoint(point, coordinates);
+          _previewCandidateLatLng(coordinates);
         }
       },
       onMapLongClick: (point, coordinates) {
@@ -751,10 +885,10 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
                 ),
                 label: Text(
                   planner.isRouting
-                      ? 'Calcolo percorso…'
+                      ? strings.routingCalculating
                       : planner.isSnapped
-                      ? 'Routing OSM'
-                      : 'Planner condiviso',
+                      ? strings.routeSnapped
+                      : strings.routingReady,
                 ),
               ),
             ),
@@ -797,6 +931,8 @@ class _PreviewScreenState extends ConsumerState<_PreviewScreen> {
   }
 }
 
+enum _WebCandidateIntent { start, destination, waypoint }
+
 class _PlannerPanel extends StatelessWidget {
   const _PlannerPanel({
     required this.planner,
@@ -805,14 +941,20 @@ class _PlannerPanel extends StatelessWidget {
     required this.searchController,
     required this.searchBusy,
     required this.searchResults,
-    required this.selectedSearchResult,
+    required this.candidatePoint,
+    required this.candidateLabel,
     required this.selectedWaypointIndex,
     required this.traceMode,
+    required this.traceMatchMode,
     required this.traceProcessing,
     required this.onSearch,
     required this.onSearchSelected,
-    required this.onAddSearchWaypoint,
+    required this.onCandidateStart,
+    required this.onCandidateDestination,
+    required this.onCandidateWaypoint,
+    required this.onCandidateCancel,
     required this.onToggleTrace,
+    required this.onTraceMatchModeChanged,
     required this.onProfileChanged,
     required this.onUndo,
     required this.onRedo,
@@ -826,14 +968,20 @@ class _PlannerPanel extends StatelessWidget {
   final TextEditingController searchController;
   final bool searchBusy;
   final List<PlaceSearchResult> searchResults;
-  final PlaceSearchResult? selectedSearchResult;
+  final GeoPoint? candidatePoint;
+  final String? candidateLabel;
   final int? selectedWaypointIndex;
   final bool traceMode;
+  final MapMatchMode traceMatchMode;
   final bool traceProcessing;
   final VoidCallback onSearch;
   final ValueChanged<PlaceSearchResult> onSearchSelected;
-  final VoidCallback onAddSearchWaypoint;
+  final VoidCallback onCandidateStart;
+  final VoidCallback onCandidateDestination;
+  final VoidCallback onCandidateWaypoint;
+  final VoidCallback onCandidateCancel;
   final VoidCallback onToggleTrace;
+  final ValueChanged<MapMatchMode> onTraceMatchModeChanged;
   final ValueChanged<RouteProfile> onProfileChanged;
   final VoidCallback? onUndo;
   final VoidCallback? onRedo;
@@ -842,6 +990,7 @@ class _PlannerPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final routeReady =
         planner.geometry.length >= 2 && planner.isSnapped && !planner.isRouting;
@@ -852,7 +1001,7 @@ class _PlannerPanel extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         children: [
           Text(
-            'Pianifica un percorso',
+            strings.planner,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
@@ -867,7 +1016,7 @@ class _PlannerPanel extends StatelessWidget {
             textInputAction: TextInputAction.search,
             onSubmitted: (_) => onSearch(),
             decoration: InputDecoration(
-              labelText: 'Cerca luogo o sentiero',
+              labelText: strings.searchPlace,
               prefixIcon: const Icon(Icons.search_rounded),
               suffixIcon: searchBusy
                   ? const Padding(
@@ -879,7 +1028,7 @@ class _PlannerPanel extends StatelessWidget {
                       ),
                     )
                   : IconButton(
-                      tooltip: 'Cerca',
+                      tooltip: strings.searchPlace,
                       onPressed: onSearch,
                       icon: const Icon(Icons.arrow_forward_rounded),
                     ),
@@ -905,12 +1054,59 @@ class _PlannerPanel extends StatelessWidget {
                 onTap: () => onSearchSelected(result),
               ),
           ],
-          if (selectedSearchResult != null) ...[
-            const SizedBox(height: 8),
-            FilledButton.tonalIcon(
-              onPressed: onAddSearchWaypoint,
-              icon: const Icon(Icons.add_location_alt_outlined),
-              label: Text('Aggiungi ${selectedSearchResult!.name} al percorso'),
+          if (candidatePoint != null) ...[
+            const SizedBox(height: 10),
+            Card(
+              margin: EdgeInsets.zero,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      candidateLabel ?? strings.tapMapContinue,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if (planner.points.isEmpty)
+                          FilledButton.icon(
+                            onPressed: onCandidateStart,
+                            icon: const Icon(Icons.trip_origin_rounded),
+                            label: Text(strings.startHere),
+                          )
+                        else if (planner.points.length == 1)
+                          FilledButton.icon(
+                            onPressed: onCandidateDestination,
+                            icon: const Icon(Icons.flag_rounded),
+                            label: Text(strings.setDestination),
+                          )
+                        else ...[
+                          OutlinedButton.icon(
+                            onPressed: onCandidateWaypoint,
+                            icon: const Icon(Icons.add_location_alt_outlined),
+                            label: Text(strings.addWaypoint),
+                          ),
+                          FilledButton.icon(
+                            onPressed: onCandidateDestination,
+                            icon: const Icon(Icons.flag_rounded),
+                            label: Text(strings.setDestination),
+                          ),
+                        ],
+                        TextButton(
+                          onPressed: onCandidateCancel,
+                          child: Text(strings.cancel),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
           const SizedBox(height: 16),
@@ -926,7 +1122,7 @@ class _PlannerPanel extends StatelessWidget {
                     for (final profile in RouteProfile.values)
                       DropdownMenuItem(
                         value: profile,
-                        child: Text(_profileLabel(profile)),
+                        child: Text(_profileLabel(strings, profile)),
                       ),
                   ],
                   onChanged: planner.isRouting
@@ -959,7 +1155,7 @@ class _PlannerPanel extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      _friendlyRoutingError(planner.routingError!),
+                      _friendlyRoutingError(strings, planner.routingError!),
                       style: TextStyle(color: scheme.onErrorContainer),
                     ),
                   ),
@@ -984,12 +1180,12 @@ class _PlannerPanel extends StatelessWidget {
                         ? Icons.check_circle_rounded
                         : Icons.more_horiz_rounded,
                     label: routeReady
-                        ? 'Percorso agganciato · ${planner.routingSource}'
+                        ? '${strings.routeSnapped} · ${planner.routingSource}'
                         : planner.points.length < 2
-                        ? 'Aggiungi almeno 2 punti'
+                        ? strings.pointsShort
                         : planner.isRouting
-                        ? 'Calcolo percorso…'
-                        : 'Percorso non disponibile',
+                        ? strings.routingCalculating
+                        : strings.routeUnavailable,
                     iconColor: routeReady ? scheme.primary : null,
                   ),
                   if (planner.hasElevation) ...[
@@ -1010,7 +1206,9 @@ class _PlannerPanel extends StatelessWidget {
             FilledButton.tonalIcon(
               onPressed: onRemoveWaypoint,
               icon: const Icon(Icons.delete_outline_rounded),
-              label: Text('Rimuovi waypoint ${selectedWaypointIndex! + 1}'),
+              label: Text(
+                '${strings.removeWaypoint} #${selectedWaypointIndex! + 1}',
+              ),
             ),
           ],
           const SizedBox(height: 12),
@@ -1019,8 +1217,36 @@ class _PlannerPanel extends StatelessWidget {
                 ? null
                 : onToggleTrace,
             icon: Icon(traceMode ? Icons.close_rounded : Icons.draw_rounded),
-            label: Text(traceMode ? 'Esci da Trace Mode' : 'Trace Mode'),
+            label: Text(traceMode ? strings.cancel : strings.traceMode),
           ),
+          if (traceMode) ...[
+            const SizedBox(height: 10),
+            SegmentedButton<MapMatchMode>(
+              segments: [
+                ButtonSegment(
+                  value: MapMatchMode.trails,
+                  label: Text(strings.traceFollowTrails),
+                ),
+                ButtonSegment(
+                  value: MapMatchMode.roads,
+                  label: Text(strings.traceFollowRoads),
+                ),
+                ButtonSegment(
+                  value: MapMatchMode.free,
+                  label: Text(strings.traceFree),
+                ),
+              ],
+              selected: {traceMatchMode},
+              showSelectedIcon: false,
+              onSelectionChanged: traceProcessing
+                  ? null
+                  : (selection) {
+                      if (selection.isNotEmpty) {
+                        onTraceMatchModeChanged(selection.first);
+                      }
+                    },
+            ),
+          ],
           const SizedBox(height: 10),
           Row(
             children: [
@@ -1028,7 +1254,7 @@ class _PlannerPanel extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: planner.isRouting ? null : onUndo,
                   icon: const Icon(Icons.undo_rounded),
-                  label: const Text('Annulla'),
+                  label: Text(strings.undo),
                 ),
               ),
               const SizedBox(width: 8),
@@ -1036,7 +1262,7 @@ class _PlannerPanel extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: planner.isRouting ? null : onRedo,
                   icon: const Icon(Icons.redo_rounded),
-                  label: const Text('Ripeti'),
+                  label: Text(strings.redo),
                 ),
               ),
             ],
@@ -1045,7 +1271,7 @@ class _PlannerPanel extends StatelessWidget {
           FilledButton.tonalIcon(
             onPressed: onClear,
             icon: const Icon(Icons.delete_sweep_rounded),
-            label: const Text('Pulisci percorso'),
+            label: Text(strings.clear),
           ),
           const SizedBox(height: 12),
           Text(
@@ -1132,22 +1358,38 @@ class _MetricRow extends StatelessWidget {
   }
 }
 
-String _profileLabel(RouteProfile profile) {
+String _profileLabel(AppLocalizations strings, RouteProfile profile) {
   return switch (profile) {
-    RouteProfile.hiking => 'Hiking',
-    RouteProfile.trailRunning => 'Trail running',
-    RouteProfile.walking => 'Walking',
-    RouteProfile.mountainBike => 'Mountain bike',
-    RouteProfile.cycling => 'Cycling',
-    RouteProfile.dogWalk => 'Dog walk',
+    RouteProfile.hiking => strings.profileHiking,
+    RouteProfile.trailRunning => strings.profileTrailRun,
+    RouteProfile.walking => strings.profileWalking,
+    RouteProfile.mountainBike => strings.profileMtb,
+    RouteProfile.cycling => strings.profileCycling,
+    RouteProfile.dogWalk => strings.profileDogWalk,
   };
 }
 
-String _friendlyRoutingError(String raw) {
-  if (raw.contains('timed out') ||
-      raw.contains('network request failed') ||
-      raw.contains('ClientException')) {
-    return 'Il servizio di routing non è raggiungibile. Riprova tra poco.';
+String _friendlyRoutingError(AppLocalizations strings, String raw) {
+  final error = raw.toLowerCase();
+  if (error.contains('timed out') || error.contains('timeout')) {
+    return strings.routeTimeout;
   }
-  return raw.replaceFirst('RoutingException: ', '');
+  if (error.contains('network request failed') ||
+      error.contains('socket') ||
+      error.contains('clientexception')) {
+    return strings.routeNoNetwork;
+  }
+  if (error.contains('no route found') ||
+      error.contains('noroute') ||
+      error.contains('no suitable edges') ||
+      error.contains('could not snap')) {
+    return strings.routeNotFound;
+  }
+  if (error.contains('http 429') ||
+      error.contains('http 5') ||
+      error.contains('service returned') ||
+      error.contains('valhalla routing returned')) {
+    return strings.routeProviderUnavailable;
+  }
+  return strings.routeUnavailable;
 }

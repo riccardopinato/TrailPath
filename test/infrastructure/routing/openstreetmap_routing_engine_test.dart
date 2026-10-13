@@ -41,6 +41,159 @@ void main() {
   );
 
   test(
+    'requests alternatives and chooses the shortest two-point route',
+    () async {
+      Uri? requestedUri;
+      final payload = _successPayload();
+      (payload['routes'] as List).add({
+        'distance': 980.0,
+        'duration': 940.0,
+        'geometry': {
+          'coordinates': [
+            [11.0, 45.0],
+            [11.004, 45.004],
+            [11.01, 45.01],
+          ],
+        },
+      });
+      final engine = OpenStreetMapRoutingEngine(
+        client: MockClient((request) async {
+          requestedUri = request.url;
+          return http.Response(jsonEncode(payload), 200);
+        }),
+        maxRetries: 0,
+      );
+      addTearDown(engine.dispose);
+
+      final plan = await engine.calculate(_request());
+
+      expect(requestedUri?.queryParameters['alternatives'], 'true');
+      expect(requestedUri?.queryParameters['continue_straight'], 'false');
+      expect(plan.distanceMeters, 980);
+    },
+  );
+
+  test(
+    'selects shortest provider alternative with multiple waypoints',
+    () async {
+      Uri? requestedUri;
+      final payload = _successPayload()
+        ..['routes'] = [
+          {
+            'distance': 1800.0,
+            'duration': 1000.0,
+            'geometry': {
+              'coordinates': [
+                [11.0, 45.0],
+                [11.005, 45.005],
+                [11.01, 45.01],
+              ],
+            },
+          },
+          {
+            'distance': 1450.0,
+            'duration': 950.0,
+            'geometry': {
+              'coordinates': [
+                [11.0, 45.0],
+                [11.004, 45.004],
+                [11.01, 45.01],
+              ],
+            },
+          },
+        ]
+        ..['waypoints'] = [
+          {
+            'location': [11.0, 45.0],
+          },
+          {
+            'location': [11.005, 45.005],
+          },
+          {
+            'location': [11.01, 45.01],
+          },
+        ];
+      final engine = OpenStreetMapRoutingEngine(
+        client: MockClient((request) async {
+          requestedUri = request.url;
+          return http.Response(jsonEncode(payload), 200);
+        }),
+        maxRetries: 0,
+      );
+      addTearDown(engine.dispose);
+
+      final plan = await engine.calculate(
+        const RouteRequest(
+          points: [
+            GeoPoint(latitude: 45.0, longitude: 11.0),
+            GeoPoint(latitude: 45.005, longitude: 11.005),
+            GeoPoint(latitude: 45.01, longitude: 11.01),
+          ],
+          profile: RouteProfile.hiking,
+        ),
+      );
+
+      expect(requestedUri?.queryParameters['alternatives'], 'true');
+      expect(plan.distanceMeters, 1450);
+    },
+  );
+
+  test(
+    'chunks dense waypoint routes before calling the public router',
+    () async {
+      var requests = 0;
+      final engine = OpenStreetMapRoutingEngine(
+        client: MockClient((request) async {
+          requests++;
+          final coordinates = request.url.pathSegments.last.split(';');
+          final payload = {
+            'code': 'Ok',
+            'routes': [
+              {
+                'distance': 1000.0,
+                'duration': 600.0,
+                'geometry': {
+                  'coordinates': [
+                    for (final coordinate in coordinates)
+                      [
+                        double.parse(coordinate.split(',')[0]),
+                        double.parse(coordinate.split(',')[1]),
+                      ],
+                  ],
+                },
+              },
+            ],
+            'waypoints': [
+              for (final coordinate in coordinates)
+                {
+                  'location': [
+                    double.parse(coordinate.split(',')[0]),
+                    double.parse(coordinate.split(',')[1]),
+                  ],
+                },
+            ],
+          };
+          return http.Response(jsonEncode(payload), 200);
+        }),
+        maxRetries: 0,
+      );
+      addTearDown(engine.dispose);
+
+      final points = [
+        for (var i = 0; i < 20; i++)
+          GeoPoint(latitude: 45 + i * 0.001, longitude: 11 + i * 0.001),
+      ];
+      final plan = await engine.calculate(
+        RouteRequest(points: points, profile: RouteProfile.hiking),
+      );
+
+      expect(requests, greaterThan(1));
+      expect(plan.snappedWaypoints, hasLength(20));
+      expect(plan.isSnapped, isTrue);
+    },
+  );
+
+  test(
     'honors numeric Retry-After for rate limiting before retrying',
     () async {
       var requests = 0;

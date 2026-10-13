@@ -9,6 +9,7 @@ import 'package:trail_path/core/config/map_config.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/localization/app_localizations.dart';
+import 'package:trail_path/core/localization/measurement_formatter.dart';
 import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/outdoor/application/battery_mode_controller.dart';
 
@@ -365,7 +366,7 @@ class _BackToCarPanel extends StatelessWidget {
                     Text(
                       distance == null
                           ? strings.waitingForGps
-                          : _formatDistance(distance),
+                          : context.formatDistance(distance),
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
@@ -401,7 +402,7 @@ class _BackToCarPanel extends StatelessWidget {
                   ? strings.locationPermissionNeeded
                   : error == 'location-service'
                   ? strings.locationServiceOff
-                  : error!,
+                  : strings.locationUnavailable,
               style: TextStyle(
                 color: scheme.error,
                 fontSize: 12,
@@ -426,13 +427,6 @@ double _cameraZoomForDistance(double meters) {
     return 12.5;
   }
   return 10.5;
-}
-
-String _formatDistance(double meters) {
-  if (meters < 1000) {
-    return '${meters.round()} m';
-  }
-  return '${(meters / 1000).toStringAsFixed(1)} km';
 }
 
 String _cardinalDirection(double bearing) {

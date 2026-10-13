@@ -1,0 +1,92 @@
+# TrailPath small-screen / large-text AppLab gate.
+# Runs on a constrained logical viewport with Android font scale 1.30.
+appId: com.riccardopinato.trail_path
+---
+- launchApp:
+    clearState: false
+
+- extendedWaitUntil:
+    visible:
+      text: "Start TrailPath|Inizia con TrailPath|Empezar con TrailPath|Commencer avec TrailPath|Começar com TrailPath|Search place or trail|Cerca luogo o sentiero|Buscar lugar o sendero|Rechercher un lieu ou sentier|Pesquisar local ou trilho"
+    timeout: 25000
+
+- runFlow:
+    when:
+      visible:
+        text: "Start TrailPath|Inizia con TrailPath|Empezar con TrailPath|Commencer avec TrailPath|Começar com TrailPath"
+    commands:
+      - tapOn:
+          text: "Start TrailPath|Inizia con TrailPath|Empezar con TrailPath|Commencer avec TrailPath|Começar com TrailPath"
+
+- extendedWaitUntil:
+    visible:
+      text: "Search place or trail|Cerca luogo o sentiero|Buscar lugar o sendero|Rechercher un lieu ou sentier|Pesquisar local ou trilho"
+    timeout: 20000
+
+# Planner top chrome must remain reachable on the constrained viewport.
+- assertVisible:
+    text: "Map layers|Livelli mappa|Capas del mapa|Couches de carte|Camadas do mapa"
+- assertVisible:
+    text: "Draw route|Disegna percorso|Dibujar ruta|Dessiner l’itinéraire|Desenhar rota"
+- assertVisible:
+    text: "Center on my location|Centra sulla mia posizione|Centrar en mi ubicación|Centrer sur ma position|Centrar na minha localização"
+- takeScreenshot: "ux-small-planner"
+
+# Every primary destination remains reachable with large text.
+- tapOn:
+    text: "Record\\s*Tab 2 of 5|Registra.*2.*5|Grabar.*2.*5|Enregistrer.*2.*5|Gravar.*2.*5"
+- extendedWaitUntil:
+    visible:
+      text: "Start recording|Avvia registrazione|Iniciar grabación|Démarrer l’enregistrement|Iniciar gravação"
+    timeout: 15000
+- takeScreenshot: "ux-small-record"
+
+- tapOn:
+    text: "Routes\\s*Tab 3 of 5|Percorsi.*3.*5|Rutas.*3.*5|Parcours.*3.*5|Percursos.*3.*5"
+- extendedWaitUntil:
+    visible:
+      text: "No saved routes|Nessun percorso salvato|No hay rutas guardadas|Aucun parcours enregistré|Nenhum percurso guardado"
+    timeout: 15000
+- takeScreenshot: "ux-small-routes"
+
+- tapOn:
+    text: "Offline\\s*Tab 4 of 5|Offline.*4.*5"
+- extendedWaitUntil:
+    visible:
+      text: "Offline maps|Mappe offline|Mapas offline|Cartes hors ligne"
+    timeout: 15000
+- takeScreenshot: "ux-small-offline"
+
+- tapOn:
+    text: "Profile\\s*Tab 5 of 5|Profilo.*5.*5|Perfil.*5.*5|Profil.*5.*5"
+- extendedWaitUntil:
+    visible:
+      text: "Profile|Profilo|Perfil|Profil"
+    timeout: 15000
+- takeScreenshot: "ux-small-profile"
+
+# On the constrained viewport Settings is intentionally below the fold.
+# The accessibility contract is that it remains reachable by scrolling.
+- scrollUntilVisible:
+    element:
+      text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"
+- extendedWaitUntil:
+    visible:
+      text: ".*(Units|Unità|Unidades|Unités).*"
+    timeout: 15000
+- assertVisible:
+    text: "GPS.*|GPS e download|GPS y descargas|GPS et téléchargements|GPS e downloads"
+- takeScreenshot: "ux-small-settings"
+
+- pressKey: BACK
+- tapOn:
+    text: "Plan\\s*Tab 1 of 5|Pianifica.*1.*5|Planificar.*1.*5|Planifier.*1.*5|Planear.*1.*5"
+- extendedWaitUntil:
+    visible:
+      text: "Search place or trail|Cerca luogo o sentiero|Buscar lugar o sendero|Rechercher un lieu ou sentier|Pesquisar local ou trilho"
+    timeout: 15000
+- takeScreenshot: "ux-small-final-planner"

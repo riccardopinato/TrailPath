@@ -7,8 +7,10 @@ Back to Car position and app settings are stored on the device in the local Drif
 database. The Android app disables platform backup and device-transfer extraction
 for this user data.
 
-TrailPath currently has no account system, advertising SDK, analytics SDK or
-cloud sync.
+TrailPath v1.0 has no account, advertising SDK, analytics SDK or cloud sync.
+The post-v1 development train adds optional Google account + Supabase Cloud Sync,
+both disabled when runtime configuration is absent. There is still no advertising
+or analytics SDK.
 
 ## Location
 
@@ -28,10 +30,13 @@ services:
 - map style/tile requests to the configured OpenFreeMap endpoint;
 - place-search text and language to the configured Nominatim endpoint;
 - selected route waypoints to the configured OpenStreetMap routing endpoint;
-- sampled route coordinates to Open-Meteo for elevation lookup.
+- sampled Smart Trace coordinates to the configured Valhalla map-matching endpoint;
+- sampled route coordinates to Open-Meteo for elevation lookup and, when Route Lab is used, weather along the route;
+- bounded route-corridor queries to the configured Overpass endpoint for outdoor POIs and surface classification;
+- when the user enables Pro provider-backed maps, map styles/tiles and optional terrain DEM requests to the configured commercial map provider (currently MapTiler).
 
 These services receive the request information required to answer the operation.
-TrailPath does not add an account identifier to those requests.
+TrailPath does not add a TrailPath/Google account identifier to map, routing, map-matching, elevation, weather or Overpass requests.
 
 ## Sharing
 
@@ -55,3 +60,21 @@ for foreground/background GPS service behavior where Android requires it.
 Android cleartext HTTP traffic is disabled. Signing secrets and keystores are
 excluded from source control and store signing is configured to fail closed when
 explicitly required.
+
+
+## Optional account and cloud sync
+
+TrailPath remains local-first. Google account sign-in and Supabase Cloud Sync are optional and are disabled when their runtime configuration is absent.
+
+When a user explicitly signs in and enables/uses Cloud Sync, Google identity tokens are used only to establish the configured Supabase authenticated session. TrailPath may then send the following to that Supabase project under the authenticated user's row-level-security scope:
+
+- saved route metadata, geometry and waypoints;
+- completed activity metadata and recorded geometry;
+- selected app preferences that are intended to follow the user across devices;
+- Route Collections and their saved-route membership.
+
+Recording drafts, live GPS samples that have not become completed activities, native offline map tiles and the saved Back-to-Car point are not part of the current cloud-sync payload.
+
+The mobile app must use only a Supabase **publishable** client key. A service-role/secret key must never be bundled in the application.
+
+Signing out of Google/Supabase does not delete the local Drift database. Account deletion and server-side data deletion are separate explicit operations that must be provided/configured before public cloud-account rollout.

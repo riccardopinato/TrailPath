@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trail_path/core/domain/elevation_math.dart';
 import 'package:trail_path/core/domain/geo_math.dart';
+import 'package:trail_path/core/domain/map_matching.dart';
 import 'package:trail_path/core/domain/models.dart';
 import 'package:trail_path/core/services/planner_service_providers.dart';
 
@@ -145,6 +146,80 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     }
 
     _applyPoints(next);
+  }
+
+  bool applyMatchedTrace(TraceMatchResult match) {
+    if (match.geometry.length < 2) {
+      return false;
+    }
+
+    final previousPoints = List<GeoPoint>.unmodifiable(state.points);
+    final previousGeometry = List<GeoPoint>.unmodifiable(state.geometry);
+    final previousLegs = _copyLegCache();
+    final canAppendLeg = _hasLegCacheFor(previousPoints);
+    final matched = List<GeoPoint>.unmodifiable(match.geometry);
+
+    _pushUndo();
+    _redoStack.clear();
+    final generation = ++_routingGeneration;
+    _elevationGeneration++;
+
+    late final List<GeoPoint> nextPoints;
+    late final List<GeoPoint> nextGeometry;
+    late final Duration nextDuration;
+
+    if (previousPoints.isEmpty) {
+      nextPoints = List<GeoPoint>.unmodifiable([matched.first, matched.last]);
+      nextGeometry = matched;
+      nextDuration = match.estimatedDuration;
+      _legGeometries = [matched];
+    } else {
+      nextPoints = List<GeoPoint>.unmodifiable([
+        ...previousPoints,
+        matched.last,
+      ]);
+
+      final baseGeometry = previousGeometry.length >= 2
+          ? previousGeometry
+          : previousPoints;
+      final seamDistance = baseGeometry.isEmpty
+          ? double.infinity
+          : haversineMeters(baseGeometry.last, matched.first);
+      nextGeometry = List<GeoPoint>.unmodifiable([
+        ...baseGeometry,
+        ...(seamDistance <= 25 ? matched.skip(1) : matched),
+      ]);
+      nextDuration = state.estimatedDuration + match.estimatedDuration;
+
+      if (canAppendLeg) {
+        _legGeometries = [...previousLegs, matched];
+      } else {
+        _legGeometries = const [];
+      }
+    }
+
+    final distance = calculateRouteDistanceMeters(nextGeometry);
+    state = state.copyWith(
+      points: nextPoints,
+      geometry: nextGeometry,
+      distanceMeters: distance,
+      estimatedDuration: nextDuration == Duration.zero
+          ? _estimateDuration(distance, state.profile)
+          : nextDuration,
+      canUndo: _undoStack.isNotEmpty,
+      canRedo: false,
+      isRouting: false,
+      isSnapped: true,
+      routingSource: match.source,
+      elevationProfile: const ElevationProfile.unavailable(),
+      isElevationLoading: true,
+      editHandles: _buildEditHandles(_legGeometries),
+      clearImportedName: true,
+      clearRoutingError: true,
+    );
+
+    unawaited(_refreshElevation(generation, nextGeometry));
+    return true;
   }
 
   bool addTrace(List<GeoPoint> rawTrace) {
@@ -329,6 +404,57 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     _undoStack.add(List<GeoPoint>.unmodifiable(state.points));
     final next = _redoStack.removeLast();
     _applyPoints(next);
+  }
+
+  void reverseRoute() {
+    if (state.points.length < 2) {
+      return;
+    }
+    _pushUndo();
+    _redoStack.clear();
+    _applyPoints(List<GeoPoint>.unmodifiable(state.points.reversed));
+  }
+
+  bool closeLoop() {
+    if (state.points.length < 2) {
+      return false;
+    }
+    final first = state.points.first;
+    final last = state.points.last;
+    if (haversineMeters(first, last) <= 5) {
+      return false;
+    }
+
+    _pushUndo();
+    _redoStack.clear();
+    _applyPoints(List<GeoPoint>.unmodifiable([...state.points, first]));
+    return true;
+  }
+
+  bool makeOutAndBack() {
+    if (state.points.length < 2) {
+      return false;
+    }
+
+    final returnPoints = state.points.reversed.skip(1).toList(growable: false);
+    if (returnPoints.isEmpty) {
+      return false;
+    }
+
+    _pushUndo();
+    _redoStack.clear();
+    _applyPoints(
+      List<GeoPoint>.unmodifiable([...state.points, ...returnPoints]),
+    );
+    return true;
+  }
+
+  bool eraseLastSegment() {
+    if (state.points.length < 2) {
+      return false;
+    }
+    removePoint(state.points.length - 1);
+    return true;
   }
 
   void clear() {
@@ -598,6 +724,12 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
   }) async {
     final generation = ++_routingGeneration;
     final profile = state.profile;
+    final baselineDistance = state.distanceMeters;
+    final baselineDuration = state.estimatedDuration;
+    final removedDistance = previousLegs
+        .skip(oldLegStart)
+        .take(oldLegRemoveCount)
+        .fold<double>(0, (sum, leg) => sum + calculateRouteDistanceMeters(leg));
     final spanPoints = List<GeoPoint>.unmodifiable(
       nextPoints.sublist(startWaypoint, endWaypoint + 1),
     );
@@ -660,11 +792,25 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
 
       final geometry = _mergeLegs(_legGeometries);
       final distance = calculateRouteDistanceMeters(geometry);
+      final unaffectedDistance = (baselineDistance - removedDistance)
+          .clamp(0.0, double.infinity)
+          .toDouble();
+      final baselineMillis = baselineDuration.inMilliseconds;
+      final unaffectedMillis = baselineDistance > 0 && baselineMillis > 0
+          ? baselineMillis * unaffectedDistance / baselineDistance
+          : _estimateDuration(
+              unaffectedDistance,
+              profile,
+            ).inMilliseconds.toDouble();
+      final mergedDuration = Duration(
+        milliseconds: (unaffectedMillis + plan.estimatedDuration.inMilliseconds)
+            .round(),
+      );
       state = state.copyWith(
         points: stablePoints,
         geometry: geometry,
         distanceMeters: distance,
-        estimatedDuration: _estimateDuration(distance, profile),
+        estimatedDuration: mergedDuration,
         isRouting: false,
         isSnapped: true,
         routingSource: plan.routingSource,
@@ -702,12 +848,20 @@ class RoutePlannerController extends Notifier<RoutePlannerState> {
     _legGeometries = [for (final leg in legs) List<GeoPoint>.unmodifiable(leg)];
     final geometry = _mergeLegs(_legGeometries);
     final distance = calculateRouteDistanceMeters(geometry);
+    final baselineDistance = state.distanceMeters;
+    final baselineMillis = state.estimatedDuration.inMilliseconds;
+    final duration = baselineDistance > 0 && baselineMillis > 0
+        ? Duration(
+            milliseconds: (baselineMillis * distance / baselineDistance)
+                .round(),
+          )
+        : _estimateDuration(distance, state.profile);
 
     state = state.copyWith(
       points: List<GeoPoint>.unmodifiable(points),
       geometry: geometry,
       distanceMeters: distance,
-      estimatedDuration: _estimateDuration(distance, state.profile),
+      estimatedDuration: duration,
       canUndo: _undoStack.isNotEmpty,
       canRedo: _redoStack.isNotEmpty,
       isRouting: false,

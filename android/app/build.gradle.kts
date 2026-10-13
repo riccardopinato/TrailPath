@@ -36,7 +36,7 @@ kotlin {
 
 android {
     namespace = "com.riccardopinato.trail_path"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

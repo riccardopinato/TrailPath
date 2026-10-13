@@ -4,8 +4,8 @@ import 'package:trail_path/core/database/app_database.dart';
 import 'package:trail_path/core/domain/models.dart';
 
 void main() {
-  for (final legacyVersion in [1, 2]) {
-    test('migrates schema v$legacyVersion to v3 without data loss', () async {
+  for (final legacyVersion in [1, 2, 3, 4]) {
+    test('migrates schema v$legacyVersion to v5 without data loss', () async {
       final executor = _legacyDatabase(legacyVersion);
       final database = AppDatabase.forTesting(executor);
       addTearDown(database.close);
@@ -13,7 +13,7 @@ void main() {
       // Opening the first query executes Drift's migration strategy.
       const versionPragma = 'PRAGMA user_version';
       final versionRow = await database.customSelect(versionPragma).getSingle();
-      expect(versionRow.read<int>('user_version'), 3);
+      expect(versionRow.read<int>('user_version'), 5);
 
       final completed = await database.watchCompletedActivities().first;
       expect(completed, hasLength(1));
@@ -53,6 +53,7 @@ void main() {
 
       await database.setSetting('migration_probe', 'ok');
       expect(await database.getSetting('migration_probe'), 'ok');
+      expect(await database.pendingSyncCount(), 0);
     });
   }
 }
@@ -101,6 +102,37 @@ CREATE TABLE waypoints (
   name TEXT
 );
 ''');
+
+      if (version >= 3) {
+        raw.execute('''
+CREATE TABLE saved_return_points (
+  id TEXT NOT NULL PRIMARY KEY,
+  latitude REAL NOT NULL,
+  longitude REAL NOT NULL,
+  elevation_meters REAL,
+  saved_at INTEGER NOT NULL,
+  accuracy_meters REAL NOT NULL
+);
+''');
+        raw.execute('''
+CREATE TABLE app_settings (
+  key TEXT NOT NULL PRIMARY KEY,
+  value TEXT NOT NULL
+);
+''');
+      }
+
+      if (version >= 4) {
+        raw.execute('''
+CREATE TABLE sync_outbox_entries (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  entity_type TEXT NOT NULL,
+  entity_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+''');
+      }
 
       raw.execute(
         "INSERT INTO activities "

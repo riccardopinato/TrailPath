@@ -15,8 +15,10 @@ void main() {
     expect(source, contains('selected: active'));
     expect(source, contains('Tooltip('));
     expect(source, contains('message: tooltip'));
-    expect(source, contains('width: 48'));
-    expect(source, contains('height: 48'));
+    expect(source, contains('this.size = 48'));
+    expect(source, contains('width: size'));
+    expect(source, contains('height: size'));
+    expect(source, contains('final actionSize = compact ? 44.0 : 48.0'));
 
     expect(
       source,

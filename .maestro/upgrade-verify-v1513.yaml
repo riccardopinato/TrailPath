@@ -1,0 +1,58 @@
+# Verifies v1.5.11 persistent state after an in-place update to the current release.
+# clearState MUST remain false: this is the core upgrade contract.
+appId: com.riccardopinato.trail_path
+---
+- launchApp:
+    clearState: false
+
+- assertNotVisible: "Start TrailPath"
+- extendedWaitUntil:
+    visible: "Search place or trail"
+    timeout: 20000
+
+# Route and completed activity must survive the APK replacement.
+- tapOn:
+    text: 'Routes\s*Tab 3 of 5'
+- extendedWaitUntil:
+    visible:
+      text: ".*Upgrade Route.*"
+    timeout: 20000
+- assertVisible:
+    text: ".*Upgrade Activity.*"
+
+# Persisted route geometry remains usable by Navigation.
+- tapOn: "Navigate"
+- extendedWaitUntil:
+    visible: "Remaining"
+    timeout: 20000
+- assertVisible: "Progress"
+- pressKey: BACK
+
+# Native offline readiness must survive the package update.
+- tapOn:
+    text: 'Offline\s*Tab 4 of 5'
+- extendedWaitUntil:
+    visible:
+      text: ".*Upgrade Route.*"
+    timeout: 30000
+- assertVisible:
+    text: ".*Available offline.*"
+
+# Database-backed settings must survive as well.
+- tapOn:
+    text: 'Profile\s*Tab 5 of 5'
+- extendedWaitUntil:
+    visible: "Profile"
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"
+    timeout: 15000
+- tapOn:
+    text: ".*(Settings|Impostazioni|Ajustes|Réglages|Definições).*"
+- extendedWaitUntil:
+    visible:
+      text: '.*(Imperial|Imperiali|Imperiales|Impériales|Imperiais).*'
+    timeout: 15000
+- assertVisible:
+    text: '.*(Imperial|Imperiali|Imperiales|Impériales|Imperiais).*'

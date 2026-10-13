@@ -56,7 +56,7 @@ void main() {
     expect(pausedDraft.distanceMeters, 140);
 
     final saved = await controller.finish('Morning trail');
-    expect(saved, isTrue);
+    expect(saved, RecordingFinishResult.saved);
     expect(await database.latestRecoverableActivity(), isNull);
 
     final completed = await database.watchCompletedActivities().first;

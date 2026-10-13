@@ -55,6 +55,54 @@ void main() {
     expect(state.points, hasLength(2));
   });
 
+  test(
+    'route tools close loop, reverse, out-and-back and erase atomically',
+    () async {
+      final container = containerWith(const StraightLineRoutingEngine());
+      addTearDown(container.dispose);
+
+      final controller = container.read(routePlannerProvider.notifier);
+      const a = GeoPoint(latitude: 45.0, longitude: 11.0);
+      const b = GeoPoint(latitude: 45.01, longitude: 11.01);
+      const c = GeoPoint(latitude: 45.02, longitude: 11.02);
+
+      controller
+        ..addPoint(a)
+        ..addPoint(b)
+        ..addPoint(c);
+      await _flushAsync();
+
+      expect(controller.closeLoop(), isTrue);
+      await _flushAsync();
+      var state = container.read(routePlannerProvider);
+      expect(state.points, [a, b, c, a]);
+
+      controller.undo();
+      await _flushAsync();
+      state = container.read(routePlannerProvider);
+      expect(state.points, [a, b, c]);
+
+      controller.reverseRoute();
+      await _flushAsync();
+      state = container.read(routePlannerProvider);
+      expect(state.points, [c, b, a]);
+
+      controller.undo();
+      await _flushAsync();
+      expect(container.read(routePlannerProvider).points, [a, b, c]);
+
+      expect(controller.makeOutAndBack(), isTrue);
+      await _flushAsync();
+      state = container.read(routePlannerProvider);
+      expect(state.points, [a, b, c, b, a]);
+
+      expect(controller.eraseLastSegment(), isTrue);
+      await _flushAsync();
+      state = container.read(routePlannerProvider);
+      expect(state.points, [a, b, c, b]);
+    },
+  );
+
   test('changing route profile recalculates estimated duration', () async {
     final container = containerWith(const StraightLineRoutingEngine());
     addTearDown(container.dispose);
@@ -208,8 +256,14 @@ void main() {
     expect(engine.requests, hasLength(1));
     expect(engine.requests.single.points, hasLength(3));
     expect(container.read(routePlannerProvider).points, hasLength(4));
-    expect(container.read(routePlannerProvider).editHandles, hasLength(3));
-    expect(container.read(routePlannerProvider).canSave, isTrue);
+    final rerouted = container.read(routePlannerProvider);
+    expect(rerouted.editHandles, hasLength(3));
+    expect(rerouted.canSave, isTrue);
+    expect(
+      (rerouted.estimatedDuration.inSeconds - rerouted.distanceMeters).abs(),
+      lessThan(2),
+      reason: 'Partial reroute should preserve provider-derived ETA semantics.',
+    );
   });
 
   test('inserting a point near the route reroutes only one old leg', () async {

@@ -12,6 +12,56 @@ import 'package:trail_path/core/services/service_providers.dart';
 import 'package:trail_path/features/navigation/presentation/navigation_screen.dart';
 
 void main() {
+  testWidgets('navigation renders a user-safe error when engine start fails', (
+    tester,
+  ) async {
+    final database = AppDatabase.memory();
+    final engine = _FakeNavigationEngine(throwOnStart: true);
+    addTearDown(database.close);
+    addTearDown(engine.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(database),
+          navigationEngineProvider.overrideWithValue(engine),
+          navigationFeedbackProvider.overrideWithValue(
+            const _SilentNavigationFeedback(),
+          ),
+        ],
+        child: MaterialApp(
+          home: NavigationScreen(
+            routeName: 'Broken route',
+            route: RoutePlan(
+              geometry: const [
+                GeoPoint(latitude: 45.0, longitude: 11.0),
+                GeoPoint(latitude: 45.01, longitude: 11.01),
+              ],
+              distanceMeters: 1500,
+              ascentMeters: 40,
+              descentMeters: 20,
+              estimatedDuration: const Duration(minutes: 20),
+              profile: RouteProfile.hiking,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('Broken route'), findsOneWidget);
+    expect(
+      find.text(
+        'La navigazione ha incontrato un problema temporaneo. Riprova.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('engine-start-secret'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('navigation starts after localization dependencies are ready', (
     tester,
   ) async {
@@ -58,6 +108,9 @@ void main() {
 }
 
 class _FakeNavigationEngine implements NavigationEngine {
+  _FakeNavigationEngine({this.throwOnStart = false});
+
+  final bool throwOnStart;
   final StreamController<NavigationEvent> _controller =
       StreamController<NavigationEvent>.broadcast();
 
@@ -71,6 +124,9 @@ class _FakeNavigationEngine implements NavigationEngine {
     RoutePlan route, {
     BatteryMode mode = BatteryMode.balanced,
   }) async {
+    if (throwOnStart) {
+      throw StateError('engine-start-secret');
+    }
     started = true;
     _controller.add(
       NavigationEvent(

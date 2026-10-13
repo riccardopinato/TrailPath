@@ -10,8 +10,13 @@ real-world evidence.
 
 ## Physical ARM64 QA evidence
 
-The physical test must use the exact ARM64 APK whose SHA-256 appears in the
-current v1.0 Evidence Bundle. Rebuilding the APK invalidates this evidence.
+Current automated candidate: **v1.5.21+58**, TrailPath CI **#835**.
+Exact ARM64 APK SHA-256:
+`55c0446381371e545b738117c640879e44ca4680cb36582fba4cee873f89e89d`
+(35,820,865 bytes).
+
+The physical test must use this exact ARM64 APK whose SHA-256 appears in the
+current Evidence Bundle. Rebuilding the APK invalidates this evidence.
 
 Minimum critical flow:
 

@@ -1,4 +1,5 @@
 import 'package:trail_path/core/domain/battery_policy.dart';
+import 'package:trail_path/core/domain/map_matching.dart';
 import 'package:trail_path/core/domain/models.dart';
 
 abstract interface class MapEngine {
@@ -11,6 +12,12 @@ abstract interface class RoutingEngine {
   String get engineId;
 
   Future<RoutePlan> calculate(RouteRequest request);
+}
+
+abstract interface class MapMatchingEngine {
+  String get engineId;
+
+  Future<TraceMatchResult> match(TraceMatchRequest request);
 }
 
 abstract interface class ElevationEngine {
