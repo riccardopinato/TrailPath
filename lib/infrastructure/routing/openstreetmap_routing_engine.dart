@@ -383,7 +383,9 @@ class RoutingProviderChain implements RoutingEngine {
 
   @override
   String get engineId {
-    final providers = snappedProviders.map((provider) => provider.engineId).join('>');
+    final providers = snappedProviders
+        .map((provider) => provider.engineId)
+        .join('>');
     return providers.isEmpty
         ? 'routing-provider-chain-empty'
         : '$providers+${unsnappedFallback.engineId}';

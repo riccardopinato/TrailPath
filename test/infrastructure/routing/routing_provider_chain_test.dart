@@ -12,129 +12,144 @@ void main() {
     profile: RouteProfile.hiking,
   );
 
-  test('returns the first snapped provider without probing the next one', () async {
-    final primary = _RecordingRoutingEngine(
-      'primary',
-      plan: _snappedPlan('primary'),
-    );
-    final secondary = _RecordingRoutingEngine(
-      'secondary',
-      plan: _snappedPlan('secondary'),
-    );
-    final engine = RoutingProviderChain(
-      snappedProviders: [primary, secondary],
-      unsnappedFallback: const StraightLineRoutingEngine(),
-    );
+  test(
+    'returns the first snapped provider without probing the next one',
+    () async {
+      final primary = _RecordingRoutingEngine(
+        'primary',
+        plan: _snappedPlan('primary'),
+      );
+      final secondary = _RecordingRoutingEngine(
+        'secondary',
+        plan: _snappedPlan('secondary'),
+      );
+      final engine = RoutingProviderChain(
+        snappedProviders: [primary, secondary],
+        unsnappedFallback: const StraightLineRoutingEngine(),
+      );
 
-    final plan = await engine.calculate(request);
+      final plan = await engine.calculate(request);
 
-    expect(plan.routingSource, 'primary');
-    expect(primary.calls, 1);
-    expect(secondary.calls, 0);
-  });
+      expect(plan.routingSource, 'primary');
+      expect(primary.calls, 1);
+      expect(secondary.calls, 0);
+    },
+  );
 
-  test('fails over to the next snapped provider after primary failure', () async {
-    final primary = _RecordingRoutingEngine(
-      'primary',
-      error: const RoutingException('primary unavailable'),
-    );
-    final secondary = _RecordingRoutingEngine(
-      'secondary',
-      plan: _snappedPlan('secondary'),
-    );
-    final engine = RoutingProviderChain(
-      snappedProviders: [primary, secondary],
-      unsnappedFallback: const StraightLineRoutingEngine(),
-    );
+  test(
+    'fails over to the next snapped provider after primary failure',
+    () async {
+      final primary = _RecordingRoutingEngine(
+        'primary',
+        error: const RoutingException('primary unavailable'),
+      );
+      final secondary = _RecordingRoutingEngine(
+        'secondary',
+        plan: _snappedPlan('secondary'),
+      );
+      final engine = RoutingProviderChain(
+        snappedProviders: [primary, secondary],
+        unsnappedFallback: const StraightLineRoutingEngine(),
+      );
 
-    final plan = await engine.calculate(request);
+      final plan = await engine.calculate(request);
 
-    expect(plan.routingSource, 'secondary');
-    expect(plan.isSnapped, isTrue);
-    expect(primary.calls, 1);
-    expect(secondary.calls, 1);
-  });
+      expect(plan.routingSource, 'secondary');
+      expect(plan.isSnapped, isTrue);
+      expect(primary.calls, 1);
+      expect(secondary.calls, 1);
+    },
+  );
 
-  test('preserves the final provider failure when every provider fails', () async {
-    final primary = _RecordingRoutingEngine(
-      'primary',
-      error: const RoutingException('primary unavailable'),
-    );
-    final secondary = _RecordingRoutingEngine(
-      'secondary',
-      error: const RoutingException('secondary no route'),
-    );
-    final engine = RoutingProviderChain(
-      snappedProviders: [primary, secondary],
-      unsnappedFallback: const StraightLineRoutingEngine(),
-    );
+  test(
+    'preserves the final provider failure when every provider fails',
+    () async {
+      final primary = _RecordingRoutingEngine(
+        'primary',
+        error: const RoutingException('primary unavailable'),
+      );
+      final secondary = _RecordingRoutingEngine(
+        'secondary',
+        error: const RoutingException('secondary no route'),
+      );
+      final engine = RoutingProviderChain(
+        snappedProviders: [primary, secondary],
+        unsnappedFallback: const StraightLineRoutingEngine(),
+      );
 
-    await expectLater(
-      engine.calculate(request),
-      throwsA(
-        isA<RoutingException>().having(
-          (error) => error.message,
-          'message',
-          'secondary no route',
+      await expectLater(
+        engine.calculate(request),
+        throwsA(
+          isA<RoutingException>().having(
+            (error) => error.message,
+            'message',
+            'secondary no route',
+          ),
         ),
-      ),
-    );
-    expect(primary.calls, 1);
-    expect(secondary.calls, 1);
-  });
+      );
+      expect(primary.calls, 1);
+      expect(secondary.calls, 1);
+    },
+  );
 
-  test('rejects an unsnapped provider result and tries the next provider', () async {
-    final primary = _RecordingRoutingEngine(
-      'primary',
-      plan: _unsnappedPlan('primary'),
-    );
-    final secondary = _RecordingRoutingEngine(
-      'secondary',
-      plan: _snappedPlan('secondary'),
-    );
-    final engine = RoutingProviderChain(
-      snappedProviders: [primary, secondary],
-      unsnappedFallback: const StraightLineRoutingEngine(),
-    );
+  test(
+    'rejects an unsnapped provider result and tries the next provider',
+    () async {
+      final primary = _RecordingRoutingEngine(
+        'primary',
+        plan: _unsnappedPlan('primary'),
+      );
+      final secondary = _RecordingRoutingEngine(
+        'secondary',
+        plan: _snappedPlan('secondary'),
+      );
+      final engine = RoutingProviderChain(
+        snappedProviders: [primary, secondary],
+        unsnappedFallback: const StraightLineRoutingEngine(),
+      );
 
-    final plan = await engine.calculate(request);
+      final plan = await engine.calculate(request);
 
-    expect(plan.routingSource, 'secondary');
-    expect(plan.isSnapped, isTrue);
-    expect(primary.calls, 1);
-    expect(secondary.calls, 1);
-  });
+      expect(plan.routingSource, 'secondary');
+      expect(plan.isSnapped, isTrue);
+      expect(primary.calls, 1);
+      expect(secondary.calls, 1);
+    },
+  );
 
-  test('snapToNetwork false stays local and never calls remote providers', () async {
-    final primary = _RecordingRoutingEngine(
-      'primary',
-      error: const RoutingException('must not be called'),
-    );
-    final secondary = _RecordingRoutingEngine(
-      'secondary',
-      error: const RoutingException('must not be called'),
-    );
-    final engine = RoutingProviderChain(
-      snappedProviders: [primary, secondary],
-      unsnappedFallback: const StraightLineRoutingEngine(),
-    );
+  test(
+    'snapToNetwork false stays local and never calls remote providers',
+    () async {
+      final primary = _RecordingRoutingEngine(
+        'primary',
+        error: const RoutingException('must not be called'),
+      );
+      final secondary = _RecordingRoutingEngine(
+        'secondary',
+        error: const RoutingException('must not be called'),
+      );
+      final engine = RoutingProviderChain(
+        snappedProviders: [primary, secondary],
+        unsnappedFallback: const StraightLineRoutingEngine(),
+      );
 
-    final plan = await engine.calculate(
-      const RouteRequest(
-        points: [
-          GeoPoint(latitude: 45.0, longitude: 11.0),
-          GeoPoint(latitude: 45.01, longitude: 11.01),
-        ],
-        profile: RouteProfile.hiking,
-        snapToNetwork: false,
-      ),
-    );
+      final plan = await engine.calculate(
+        const RouteRequest(
+          points: [
+            GeoPoint(latitude: 45.0, longitude: 11.0),
+            GeoPoint(latitude: 45.01, longitude: 11.01),
+          ],
+          profile: RouteProfile.hiking,
+          snapToNetwork: false,
+        ),
+      );
 
-    expect(plan.isSnapped, isFalse);
-    expect(plan.routingSource, 'straight-line');
-    expect(primary.calls, 0);
-    expect(secondary.calls, 0);
-  });
+      expect(plan.isSnapped, isFalse);
+      expect(plan.routingSource, 'straight-line');
+      expect(primary.calls, 0);
+      expect(secondary.calls, 0);
+    },
+  );
 }
 
 class _RecordingRoutingEngine implements RoutingEngine {
