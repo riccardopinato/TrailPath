@@ -15,9 +15,9 @@ final routingEngineProvider = Provider<RoutingEngine>((ref) {
     // silently fall back to a community OSRM endpoint when it is unavailable.
     final production = ValhallaRoutingEngine();
     ref.onDispose(production.dispose);
-    return FallbackRoutingEngine(
-      primary: production,
-      fallback: const StraightLineRoutingEngine(),
+    return RoutingProviderChain(
+      snappedProviders: [production],
+      unsnappedFallback: const StraightLineRoutingEngine(),
     );
   }
 
@@ -27,12 +27,9 @@ final routingEngineProvider = Provider<RoutingEngine>((ref) {
   final secondary = ValhallaRoutingEngine();
   ref.onDispose(primary.dispose);
   ref.onDispose(secondary.dispose);
-  return FallbackRoutingEngine(
-    primary: primary,
-    fallback: FallbackRoutingEngine(
-      primary: secondary,
-      fallback: const StraightLineRoutingEngine(),
-    ),
+  return RoutingProviderChain(
+    snappedProviders: [primary, secondary],
+    unsnappedFallback: const StraightLineRoutingEngine(),
   );
 });
 
