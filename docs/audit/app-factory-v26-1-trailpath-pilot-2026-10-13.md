@@ -9,8 +9,9 @@
   - Code Hygiene v0.2 DRAFT / PROCESS CANDIDATE
 - TrailPath post-v1 baseline:
   `feature/v1.1-v1.5 @ 44b95f8cb398cb141938452254c96a20d55b6eea`
-- Repository `main` is an older v0.9.15 lineage and is not treated as the
-  post-v1 product truth for this pilot.
+- Verified repository `main` at pilot time:
+  `3f44ab37c0881e4315033797c451cec723e23cd2` / `0.9.15+27`.
+  The pilot intentionally targets the separate post-v1 cumulative lineage above.
 
 ## Historical Trace Mode finding
 
@@ -100,3 +101,22 @@ v1.5.22 source change.
 ## Pre-CI verdict
 
 **IMPLEMENTED — EXACT-HEAD VALIDATION PENDING**
+
+
+## AppLab E2E stability note
+
+On exact head `2e85677a77fda4b0e6e9f7a2f00c05b44cedb33d`, the comprehensive
+AppLab Android E2E lane produced two different non-deterministic failures while
+all focused/runtime/build gates remained green:
+
+1. attempt 1 reached the full journey and later reported a Configuration &
+   Lifecycle Stress Lab ANR signal that was not retained in the final target
+   logcat;
+2. attempt 2 failed much earlier because Maestro reported the Record bottom-nav
+   tap as completed while the screenshot/UI remained on the healthy Plan screen.
+
+The previous v1.5.21 exact source baseline passed the same AppLab E2E lane in
+TrailPath CI #841. The E2E flow therefore keeps all product assertions but adds
+a bounded idempotent retry only when the previous Plan state is still visible
+after the Record-tab tap. This does not convert a missing Record screen into a
+PASS: `Start recording` / `Recovered recording` remain mandatory.
