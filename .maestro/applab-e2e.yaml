@@ -1,4 +1,4 @@
-# TrailPath v0.9.15 release-candidate E2E gate.
+# TrailPath post-v1 release-candidate E2E gate.
 # Covers first-run onboarding, recording/recovery, route persistence,
 # real OSM routing, navigation, completed offline download and offline restart.
 appId: com.riccardopinato.trail_path
@@ -17,7 +17,18 @@ appId: com.riccardopinato.trail_path
 # Recording lifecycle + process recovery.
 - tapOn:
     text: 'Record\s*Tab 2 of 5'
-- assertVisible: "Start recording"
+# Hosted-emulator input can occasionally acknowledge a bottom-nav tap without
+# changing the selected tab. Retry only while the previous Plan state remains
+# visible, then still require the real Record state.
+- runFlow:
+    when:
+      visible: "Search place or trail"
+    commands:
+      - tapOn:
+          text: 'Record\s*Tab 2 of 5'
+- extendedWaitUntil:
+    visible: "Start recording"
+    timeout: 15000
 - setLocation:
     latitude: 45.232000
     longitude: 11.750000
@@ -42,6 +53,12 @@ appId: com.riccardopinato.trail_path
     clearState: false
 - tapOn:
     text: 'Record\s*Tab 2 of 5'
+- runFlow:
+    when:
+      visible: "Search place or trail"
+    commands:
+      - tapOn:
+          text: 'Record\s*Tab 2 of 5'
 - extendedWaitUntil:
     visible: "Recovered recording"
     timeout: 15000

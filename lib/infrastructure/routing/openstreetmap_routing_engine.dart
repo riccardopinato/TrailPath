@@ -372,47 +372,76 @@ class OpenStreetMapRoutingEngine implements RoutingEngine {
   }
 }
 
-class FallbackRoutingEngine implements RoutingEngine {
-  const FallbackRoutingEngine({required this.primary, required this.fallback});
+class RoutingProviderChain implements RoutingEngine {
+  const RoutingProviderChain({
+    required this.snappedProviders,
+    required this.unsnappedFallback,
+  });
 
-  final RoutingEngine primary;
-  final RoutingEngine fallback;
+  final List<RoutingEngine> snappedProviders;
+  final RoutingEngine unsnappedFallback;
 
   @override
-  String get engineId => '${primary.engineId}+${fallback.engineId}';
+  String get engineId {
+    final providers = snappedProviders
+        .map((provider) => provider.engineId)
+        .join('>');
+    return providers.isEmpty
+        ? 'routing-provider-chain-empty'
+        : '$providers+${unsnappedFallback.engineId}';
+  }
 
   @override
   Future<RoutePlan> calculate(RouteRequest request) async {
     if (!request.snapToNetwork) {
-      return fallback.calculate(request);
+      return unsnappedFallback.calculate(request);
+    }
+    if (snappedProviders.isEmpty) {
+      throw const RoutingException(
+        'No snapped routing provider is configured.',
+      );
     }
 
-    try {
-      return await primary.calculate(request);
-    } on Object catch (primaryError, primaryStack) {
-      AppLogger.warning(
-        'routing fallback primary=${primary.engineId} failed; '
-        'trying=${fallback.engineId} profile=${request.profile.name} '
-        'waypoints=${request.points.length}',
-      );
+    Object? lastError;
+    StackTrace? lastStackTrace;
+
+    for (var index = 0; index < snappedProviders.length; index++) {
+      final provider = snappedProviders[index];
       try {
-        final fallbackPlan = await fallback.calculate(request);
-        if (fallbackPlan.isSnapped) {
+        final plan = await provider.calculate(request);
+        if (!plan.isSnapped) {
+          throw RoutingException(
+            'Routing provider ${provider.engineId} returned an unsnapped route.',
+          );
+        }
+        if (index > 0) {
           AppLogger.info(
-            'routing fallback selected provider=${fallbackPlan.routingSource} '
+            'routing failover selected provider=${plan.routingSource} '
             'profile=${request.profile.name} waypoints=${request.points.length}',
           );
-          return fallbackPlan;
         }
-      } on Object catch (fallbackError, fallbackStack) {
-        AppLogger.error(
-          'routing fallback failed provider=${fallback.engineId}',
-          error: fallbackError,
-          stackTrace: fallbackStack,
-        );
+        return plan;
+      } on Object catch (error, stackTrace) {
+        lastError = error;
+        lastStackTrace = stackTrace;
+        final hasNext = index + 1 < snappedProviders.length;
+        if (hasNext) {
+          AppLogger.warning(
+            'routing provider=${provider.engineId} failed; '
+            'trying=${snappedProviders[index + 1].engineId} '
+            'profile=${request.profile.name} waypoints=${request.points.length}',
+          );
+        } else {
+          AppLogger.error(
+            'routing provider chain exhausted at provider=${provider.engineId}',
+            error: error,
+            stackTrace: stackTrace,
+          );
+        }
       }
-      Error.throwWithStackTrace(primaryError, primaryStack);
     }
+
+    Error.throwWithStackTrace(lastError!, lastStackTrace!);
   }
 }
 

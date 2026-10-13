@@ -360,3 +360,16 @@ Goal: convert field feedback from the v1.5 Pro APK into repeatable release gates
 - [x] pin all TrailPath blocking AppLab jobs to validated harness commit `d6f2df29099e4744e750480321b15bc04b045d61`;
 - [x] persist PASS-only AppLab visual and performance baselines in the main E2E gate so later runs detect regressions instead of staying permanently at NO_BASELINE;
 - [x] promote v1.5.21 automated candidate: CI #833 first passed the unified matrix; CI #835 reconfirms Core/build, live routing, API29, main E2E, Pro routing, constrained UX, real-artifact Upgrade/Migration and Release Certification Evidence while also proving PASS-only visual/performance baseline restore-and-compare. Production certification remains BLOCKED only by external/physical gates.
+
+### v1.5.22 — Routing Failover & App Factory Governance Pilot
+
+- [x] adopt a repository-local `AGENTS.md` resolved from App-Factory-Core CURRENT rather than chat memory;
+- [x] preserve the advanced `feature/v1.1-v1.5` lineage as the post-v1 product baseline instead of treating stale `main` as current product truth;
+- [x] replace the nested `FallbackRoutingEngine` path with an explicit ordered `RoutingProviderChain`;
+- [x] keep `snapToNetwork=false` fully local and prevent remote routing providers from being called;
+- [x] preserve fail-closed semantics: an unsnapped provider result never becomes a saved snapped route;
+- [x] use OSM first and Valhalla second for development/internal routing, with the final provider failure preserved when all snapped providers fail;
+- [x] remove the superseded fallback wrapper and replace its regression tests with provider-chain coverage;
+- [x] audit the historical Trace Mode field failure: the current Smart Trace implementation already uses map-local pointer coordinates, Android physical-pixel projection scaling and zoom-aware matching tolerance, so the obsolete main-branch fix path is not reintroduced;
+- [ ] exact-head CI / Web / Android / AppLab gates for v1.5.22+59;
+- [ ] physical ARM64 field retest remains a separate external evidence gate.

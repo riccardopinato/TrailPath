@@ -5,26 +5,28 @@ TrailPath is an outdoor route utility focused on fast planning, reliable track r
 ## Current version
 
 Stable certification baseline: **v1.0.0+31**  
-Post-v1 cumulative development candidate: **v1.5.21+58**
+Post-v1 cumulative development candidate: **v1.5.22+59**
 
 ### Post-v1 cumulative candidate
 
-The v1.5 branch contains the approved v1.1→v1.5 train plus the v1.5.3→v1.5.21 hardening sequence: Smart Trace/map layers, TrailPath Pro, optional account/cloud sync, Route Lab, Collections, outdoor intelligence, routing redundancy, zoom-aware trace matching, cancellable offline downloads, user-safe localized errors, Android permission-contract evidence, localized foreground recording notifications and stronger behavioral widget coverage. Runtime/provider features remain fail-safe when commercial configuration is absent.
+The v1.5 branch contains the approved v1.1→v1.5 train plus the v1.5.3→v1.5.22 hardening sequence: Smart Trace/map layers, TrailPath Pro, optional account/cloud sync, Route Lab, Collections, outdoor intelligence, routing redundancy, zoom-aware trace matching, cancellable offline downloads, user-safe localized errors, Android permission-contract evidence, localized foreground recording notifications and stronger behavioral widget coverage. Runtime/provider features remain fail-safe when commercial configuration is absent.
 
 
 TrailPath v1.0.0 is the first stable Android release candidate. No new product scope is added here: the milestone is limited to final regression, artifact certification, release evidence and production-readiness gates.
 
 ### Current certification status
 
-**AUTOMATED VALIDATION PASS — v1.5.21+58.** TrailPath CI **#833** completed the full blocking matrix successfully on source `a295f396c66da5dacb74731c763893660d4d6c85`: format/analyze/tests, Web Preview, ARM64/x86_64 releases, AAB structure/size, live routing providers, API 29, main API 35 AppLab E2E, Pro routing, 360×640 / 130% text UX, and real-artifact v1.5.11→v1.5.21 Upgrade/Migration.
+**v1.5.22+59 is the current development candidate and is not yet promoted by prior v1.5.21 evidence.** It replaces the nested routing fallback wrapper with an explicit provider chain so OSM→Valhalla failover is testable and the final provider failure is preserved. The v1.5.21 CI #841 result below remains the last fully audited release evidence until v1.5.22 exact-head validation completes.
+
+**AUTOMATED VALIDATION PASS — v1.5.21+58.** TrailPath CI **#841** completed the full blocking matrix successfully on source `44b95f8cb398cb141938452254c96a20d55b6eea`: format/analyze/tests, Web Preview, ARM64/x86_64 releases, AAB structure/size, live routing providers, API 29, main API 35 AppLab E2E, Pro routing, 360×640 / 130% text UX, and real-artifact v1.5.11→v1.5.21 Upgrade/Migration.
 
 The Evidence Bundle remains **BLOCKED**, not CERTIFIED, for external release reasons only: store signing is not configured, the exact ARM64 candidate still needs physical-device QA, and Play Store listing/screenshots plus staged-rollout/rollback review are not yet approved.
 
-Exact audited v1.5.21 ARM64 candidate: **35,820,865 bytes**, SHA-256 `606c540b89e3b5bbfbc1bc4e387b2f0e8fa17d4da59b898bf44971332a1a2100`.
+Exact audited v1.5.21 ARM64 candidate: **35,820,865 bytes**, SHA-256 `79fc6c4b56a29e8f0725dd6963819c19c579ea0a40cac933f28bce8eca4e9a3b`.
 
 Pinned AppLab harness: `d6f2df29099e4744e750480321b15bc04b045d61`.
 
-The 2026-10-06 deep audit finds no remaining code-level P0/P1 blocker in the automated release path. CI #833 reports Smart Visual QA PASS, Safe Interaction Crawler PASS, System UI/Network/Configuration/Resource/Background labs PASS; Safe Journey and Persistence remain non-blocking WARN lanes and are retained as harness/advisory evidence rather than promoted to product defects. Storage inspection is WARN because the release APK is intentionally non-debuggable, and emulator Performance Lab remains advisory until physical ARM64 frame/startup validation. See `docs/AUDIT_2026-10-06.md`.
+The 2026-10-06 deep audit finds no remaining code-level P0/P1 blocker in the automated release path. CI #841 reports Smart Visual QA PASS, Safe Interaction Crawler PASS, System UI/Network/Configuration/Resource/Background labs PASS; Safe Journey and Persistence remain non-blocking WARN lanes and are retained as harness/advisory evidence rather than promoted to product defects. Storage inspection is WARN because the release APK is intentionally non-debuggable, and emulator Performance Lab remains advisory until physical ARM64 frame/startup validation. See `docs/AUDIT_2026-10-06.md`.
 
 ### Included
 
