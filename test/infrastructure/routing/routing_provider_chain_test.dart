@@ -172,7 +172,10 @@ RoutePlan _snappedPlan(String source) {
     profile: RouteProfile.hiking,
     isSnapped: true,
     routingSource: source,
-    snappedWaypoints: const [points.first, points.last],
+    snappedWaypoints: const [
+      GeoPoint(latitude: 45.0, longitude: 11.0),
+      GeoPoint(latitude: 45.01, longitude: 11.01),
+    ],
   );
 }
 
