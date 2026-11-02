@@ -1,0 +1,61 @@
+name: Golden v25 TrailPath pinned-source verification
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/golden-v25-pinned-source.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout EXACT registered donor source
+        uses: actions/checkout@v4
+        with:
+          ref: 3f44ab37c0881e4315033797c451cec723e23cd2
+          persist-credentials: false
+
+      - name: Assert tested source SHA
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "3f44ab37c0881e4315033797c451cec723e23cd2"
+          echo "TESTED_SOURCE_SHA=$(git rev-parse HEAD)"
+
+      - name: Java toolchain
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Flutter project toolchain
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.5"
+          channel: stable
+          cache: true
+
+      - name: Resolve pinned-project dependencies
+        run: flutter pub get
+
+      - name: Generate pinned-project Drift code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze pinned source
+        run: flutter analyze
+
+      - name: Test targeted geography and routing policies
+        run: |
+          flutter test \
+            test/core/domain/geo_math_test.dart \
+            test/core/domain/battery_policy_test.dart \
+            test/infrastructure/routing/openstreetmap_routing_engine_test.dart \
+            test/infrastructure/routing/fallback_routing_engine_test.dart \
+            test/infrastructure/navigation/route_navigation_engine_test.dart \
+            test/infrastructure/elevation/elevation_profile_test.dart
+
+      - name: Test full pinned source suite
+        run: flutter test
