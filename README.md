@@ -115,3 +115,8 @@ The Android native scaffold is committed and validated by CI for reproducible bu
 Open the app, create or select a route, and go. TrailPath is designed as a tool first, not a social network.
 
 See docs/ARCHITECTURE.md and docs/ROADMAP.md.
+
+
+## Template Notion — riferimenti
+
+[Catalogo Template Notion](docs/TEMPLATE_NOTION/README.md): ricerca su modelli potenzialmente adattabili a TrailPath, nessuna importazione o funzionalità attivata.

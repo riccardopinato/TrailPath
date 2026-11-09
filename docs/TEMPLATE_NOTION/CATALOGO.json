@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "application": "TrailPath",
+  "repository": "riccardopinato/TrailPath",
+  "catalogue_type": "public_research_index",
+  "updated_at": "2026-11-09",
+  "master_reference": "riccardopinato/Idee-app-Archivi-riferimenti/17-RICERCA-TEMPLATE-UX",
+  "entries": [
+    {
+      "id": "TN-TRAILPATH-0001",
+      "master_ref": "TPLUX-REF-0011",
+      "title": "Trip Planner",
+      "app_fit": "SECONDARY_LIMITED",
+      "adaptation": "Solo tracciati, tappe/POI e preparazione dell'uscita: dati di booking/finance sono fuori dal perimetro di routing outdoor TrailPath.",
+      "evidence_level": "E2_EXPORT_STRUCTURE_VERIFIED",
+      "product_status": "RESEARCH_NOT_APPROVED",
+      "implementation_status": "NOT_IMPLEMENTED_FROM_THIS_SOURCE",
+      "reuse_mode": "ORIGINAL_IN_APP_ONLY",
+      "source_audit_url": "https://github.com/riccardopinato/Idee-app-Archivi-riferimenti/blob/main/17-RICERCA-TEMPLATE-UX/LOTTO_NOTION_2026_11_09_12_ZIP.md"
+    }
+  ]
+}
